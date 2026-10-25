@@ -31,7 +31,7 @@ Governing requirements:
 ## Acceptance criteria
 
 - [x] 上述 11 项逐项修复或写明不修的理由.
-- [ ] 修复后在隔离目标仓库用一个中等规模的真实 issue (不是玩具函数) 在 Claude Code 和 Codex 各冒烟一次, 记录耗时, Reviewer 轮数和卡住之处.
+- [x] 修复后在隔离目标仓库用一个中等规模的真实 issue (不是玩具函数) 在 Claude Code 和 Codex 各冒烟一次, 记录耗时, Reviewer 轮数和卡住之处.
 - [x] 全量测试和分发检查通过.
 
 ## Blocked by
@@ -60,3 +60,22 @@ Governing requirements:
 - `node arw.mjs terms check --include .scratch/0001-claude-code-migration/`: 失败项 (`Artifact` 用词, 本 effort 旧 issue 的中文比例) 在 `main` 上已存在, 与本 ticket 无关.
 - Spec Readiness: haiku high, 同一线程 9 轮, 约 29 分钟 (04:47 到 05:16), 第 9 轮 `No problems.`. 前 8 轮的问题大多来自本 effort spec 原有内容 (缺 Module Design, 长期规格旧句子), 每轮修正后的新文字又引出新问题.
 - effort spec 新增的 `## Module Design` 不是新实施范围: 第 4 轮 Spec Readiness 按 `MODULE-DESIGN-APPLICABILITY` 指出本 effort 修改了正式运行时代码却没有该章节, 不补就不能就绪. 内容只描述 `HEAD` 已有的 Claude 后端, 路由, Projection 和公共工具.
+
+冒烟 (ticket 16 的对比基线, 2026-10-26, 修复提交 `4619e92` 的源码 arw):
+
+- 目标: 自建的 tasklog CLI (约 330 行, 8 个测试), issue "Due dates and agenda" (spec 带 Module Design, 预估 250 行). 每个平台一个隔离仓库, 临时 HOME, 源码 `arw` 包装脚本, `arw workflow init --platform codex --platform claude-code`.
+- 用户回复 (模拟, 均是真实用户会给的回答): Codex 2 次 ("测试阈值 100 ms, 语言检查本次例外"; spec 兼容性歧义选推荐项 1). Claude Code 2 次 (Spec Readiness 指出的周日边界和 spec 补写按建议改; "阈值 100 ms 写进 AGENTS.md, 要求 Reviewer 每次 Bash 只跑一条 git 命令后重审").
+- 墙钟时间只算 Agent 运行, 不含等用户回复的时间.
+
+| 平台 | Main | Reviewer | 墙钟 | Main 工具调用 | Spec Readiness 轮数 | 提交审核轮数 | 结果 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Codex | 默认 `gpt-6.1-sol` high, `codex exec` | `gpt-6-luna` xhigh | 19 分钟 (46 s + 385 s + 725 s) | 82 次命令 + 12 次文件修改 | 2 | 2 (要求符合与 Code Standards 各 2) | 提交 `1ad188c`, 350 行 |
+| Claude Code | `sonnet` high, `claude -p` | `haiku` high | 62 分钟 (425 s + 2464 s + 835 s) | 66 | 5 | 要求符合 4, Code Standards 3 | 提交 `f4a6dc3`, Main 费用约 4.2 美元 |
+
+卡住之处:
+
+- 两个平台: 新初始化仓库没有测试单回调耗时阈值, 也没有语言检查配置, 规则要求用户决定. Codex 动手前就停下来问; Claude Code 先实施, 到提交审核才因此卡住.
+- Claude Code: Reviewer 用 `cd ... && git ...` 这类组合命令, 被 Claude 后端的 `dontAsk` 只读放行规则拒绝. 两轮提交审核因此 `incomplete`; 在 handoff 中要求单条 git 命令后才通过. 这是 ARW 缺陷, 未在本 ticket 修复.
+- Claude Code: Main 先写代码再做 Spec Readiness. Spec Readiness 用了 5 轮, 每轮都对新补的 spec 文字提出新问题.
+- Codex: Reviewer 运行在 Codex 沙盒外的管理进程中. `codex exec --sandbox workspace-write` 内启动的管理进程拉起的 App Server 报 `Read-only file system`, 所以冒烟时先在沙盒外启动了管理进程, 相当于用户批准在沙盒外运行 `arw background-agent`. 冒烟仓库放在 `/tmp` 下时, Codex 拒绝创建辅助程序.
+- Codex: `arw lba` 的 Main session 列显示 "# AGENTS.md instructions for ...", 标题取自注入的指令而不是用户消息.
