@@ -1,6 +1,6 @@
 # 本仓库双平台投影
 
-Status: done
+Status: completed
 
 ## What to build
 

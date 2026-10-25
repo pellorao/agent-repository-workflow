@@ -12,9 +12,12 @@ Status: ready-for-agent
 4. Codex 中 PTY canonical 模式会截断长 JSONL 请求 (需 `stty -echo -icanon`): 在 Codex 用法中写明, 或让入口不依赖长单行.
 5. 新初始化的仓库上 `arw terms check` 失败 (没有术语表, 语言检查未配置): 初始化后的默认状态应能通过.
 7. 用户决定 (2026-10-26): `arw background-agent` 标准输入结束时, 先等未返回的 `wait_agent` 等响应写出再退出, 不再取消; 删除 `reviewer-launch` 中的 `sleep` 绕法.
+8. 审计发现: 长期 spec `docs/specs/agent-repository-workflow/spec.md:47` 仍写 Reviewer 填 Engine 清单, 改为 txt 报告.
+9. 审计发现: `docs/agents/subagent-allocation.md` 只有 Codex 模型映射, 补 Claude Code 映射.
+10. 审计发现: Claude 后端 Reviewer 可能加载祖先目录的 `CLAUDE.md` 和用户 memory (冒烟需用 `claudeMdExcludes` 排除): 实测 Reviewer 实际上下文, 在后端强制排除.
 6. ready 记录绑定到实现文件, 实施后必须再复审一轮: 绑定只覆盖设计文档 (spec, issue), 不覆盖实现文件.
 
-预估改动: 约 100 行.
+预估改动: 约 150 行.
 
 ## Spec Requirement
 
@@ -24,7 +27,8 @@ Governing requirements:
 
 ## Acceptance criteria
 
-- [ ] 上述 7 项逐项修复或写明不修的理由.
+- [ ] 上述 10 项逐项修复或写明不修的理由.
+- [ ] 修复后在隔离目标仓库用一个中等规模的真实 issue (不是玩具函数) 在 Claude Code 和 Codex 各冒烟一次, 记录耗时, Reviewer 轮数和卡住之处.
 - [ ] 全量测试和分发检查通过.
 
 ## Blocked by
