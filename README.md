@@ -158,6 +158,12 @@ arw workflow verify
 
 `--dry-run` shows how the newer workflow would change this repository. After confirming the plan, the second command applies the update and the last command reads back the result.
 
+When upgrading from an earlier ARW version, also check the following:
+
+- `code-spec-reviewer` and `commit-audit-reviewer` have been merged into `requirements-reviewer`. Settings under the old role names in `config.json` or `arw.config.json` are ignored; move any model settings you gave them to `reviewers.requirements-reviewer`.
+- Spec Readiness records are now schema version 7. `arw spec-readiness verify` reports older records of not-yet-committed issues as stale, including `not-applicable` exception records. Regenerate them with the normal `prepare -> review -> generate -> promote -> verify` sequence, or `generate -> promote -> verify` for an exception.
+- When the new workflow no longer contains a rule document that held repository-owned content, `arw workflow update` moves that content into the repository-owned region of `AGENTS.md` under a heading naming the old path, deletes the old file, and lists the paths after the update. Review the moved content and merge or delete it.
+
 Run `arw workflow remove` when you no longer want ARW in the target repository. The command asks you to choose how to handle platform Agent configuration, `.arwignore`, Code Map, and mixed Agent documents. ARW does not treat files whose ownership it cannot prove as deletable.
 
 ## Complete one JIRA request across multiple repositories

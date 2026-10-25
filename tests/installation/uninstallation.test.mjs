@@ -953,5 +953,5 @@ test('installed uninstall command executes through the real CLI entry point', as
 
     assert.equal(stderr, '');
     assert.match(stdout, /Uninstalled agent-repository-workflow from /);
-    assert.deepEqual(await readdir(installationDirectory), ['background-agent-state']);
+    await assert.rejects(readdir(installationDirectory), {code: 'ENOENT'});
 });

@@ -335,6 +335,25 @@ test('update inserts one LF before retained repository-major text', async t => {
     );
 });
 
+test('update moves repository-owned content of a removed rule document into AGENTS.md', async t => {
+    const distribution = await createDistribution(t);
+    const oldRules = Buffer.from('<!-- arw:managed:start -->\n# Old rules\n<!-- arw:managed:end -->\n<!-- arw:repository-owned:start -->\nNone.\n<!-- arw:repository-owned:end -->\n');
+    const oldDistribution = {...distribution, payload: [...distribution.payload, {bytes: oldRules, path: 'baseline/docs/agents/old.md'}]};
+    const root = await createRepository(t);
+    const initialized = await initWorkflow({distribution: oldDistribution, repositoryRoot: root});
+    assert.equal(initialized.applied, true, JSON.stringify(initialized.diagnostics));
+    const oldPath = join(root, 'docs/agents/old.md');
+    await writeFile(oldPath, (await readFile(oldPath, 'utf8')).replace('None.', 'Local rule.'), 'utf8');
+    await git(root, ['add', '.']);
+    await git(root, ['commit', '--quiet', '-m', 'initialized']);
+
+    const updated = /** @type {WorkflowResult & {migratedRuleDocuments?: string[]}} */ (await runRepositoryWorkflow({distribution, operation: 'update', repositoryRoot: root}));
+    assert.equal(updated.applied, true, JSON.stringify(updated.diagnostics));
+    assert.deepEqual(updated.migratedRuleDocuments, ['docs/agents/old.md']);
+    assert.deepEqual(await readdir(join(root, 'docs/agents')), ['roles']);
+    assert.match(await readFile(join(root, 'AGENTS.md'), 'utf8'), /<!-- arw:repository-owned:start -->\n# 迁自 `docs\/agents\/old.md` 的仓库自有内容\n\nLocal rule.\n<!-- arw:repository-owned:end -->/u);
+});
+
 test('update safely migrates a verified v1 repository-major document to baseline-major ownership', async t => {
     const distribution = await createDistribution(t);
     const oldDistribution = {

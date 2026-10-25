@@ -1,5 +1,7 @@
 # 分离 Commit Audit 审核与实现责任
 
+状态: 历史记录. `code-spec-reviewer` 和 `commit-audit-reviewer` 已合并为 `requirements-reviewer`, Reviewer 改写自然语言 `review.txt`, 不再有 JSONL 草稿, `arw commit-audit generate` 和审计文件提升; 当前做法见[提交工作流](../../.agents/skills/commit/SKILL.md#commit-audit). 实现者不判断自己候选的验收结论这一原则继续有效.
+
 Commit Audit 的 Gate 1 和 Gate 2 判断完整交付是否满足正式要求. 实现者同时判断自己的验收结论会削弱独立性, 因而实现协调, 独立语义审核和机械结果生成分别承担责任. 这些边界影响提交流程, Reviewer Role 及审计文件的权威关系.
 
 ## Decision
@@ -10,7 +12,7 @@ Gate 1 和 Gate 2 在通用提交工作流判定 Commit Audit 适用后运行; �
 
 Validation 与 Comments 的整章记录身份由[产品记录合同](../specs/agent-repository-workflow/spec.md#implementation-records)拥有. Gate 1 的要求来自正式交付要求与验收条件, 两个记录章节不产生要求或授权例外, 内容变化本身不触发语义复审. Main Agent 仍核对实际证据, 新失败及相反证据, 并负责准确的记录差异和最终证据定位检查. 这不豁免正式要求, 整份 issue 或其他完整治理输入, 也不解除真实验收依赖.
 
-Commit Audit 适用时, Main Agent 按[当前仓库的审计版本规则](../../.agents/skills/commit/SKILL.md#exclusive-commit-audit)固定完整实时索引, HEAD, 候选范围, 关联上下文, 治理输入及执行规则, 再为本次唯一 effort 提供完整排序的 `authorizingIssueIds`, 准备独立 Reviewer Request, 并调用 `commit-audit-reviewer`. 旧轮完整结束前这些输入保持不变, 同一仓库不执行另一提交. 固定版本的其他审核及已授权源工作树工作可以继续, 包括本候选已经获准的修复; 新字节不流入旧轮, 旧轮完整结束后才暂存新实现并交接替代版本.
+Commit Audit 适用时, Main Agent 按[当前仓库的审计版本规则](../../.agents/skills/commit/SKILL.md#commit-audit)固定完整实时索引, HEAD, 候选范围, 关联上下文, 治理输入及执行规则, 再为本次唯一 effort 提供完整排序的 `authorizingIssueIds`, 准备独立 Reviewer Request, 并调用 `commit-audit-reviewer`. 旧轮完整结束前这些输入保持不变, 同一仓库不执行另一提交. 固定版本的其他审核及已授权源工作树工作可以继续, 包括本候选已经获准的修复; 新字节不流入旧轮, 旧轮完整结束后才暂存新实现并交接替代版本.
 
 `authorizingIssueIds` 表示已暂存实现的完整 issue 授权范围. `gate1` 只表示本次提交实际适用 Gate 1 的子集. 未完成 issue 可以授权中间提交而不进入 Gate 1. Engine 从实时已暂存索引推导机械可见终态转换并拒绝授权或 Gate 1 遗漏, Reviewer 复核 Git 无法证明的仅代码候选, 重新打开后再次完成的历史, 以及任意代码与 issue 的语义关系.
 

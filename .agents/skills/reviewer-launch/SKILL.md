@@ -10,7 +10,7 @@ Reviewer 的审核行为由 [Reviewer 责任](../../../docs/agents/reviewer.md) 
 平台差异:
 
 - Codex: 通过命令工具启动无附加参数的 `arw background-agent`, 保留该进程的工具会话, 逐行写入 JSONL 请求并读取响应和通知. 管理进程在共享 Codex App Server 中为每个 Reviewer 创建独立根线程, 不占用 Main Agent 的原生子 Agent 槽位, 不用原生子 Agent 工具代替该入口.
-- Claude Code: Claude 后端完成前, `arw background-agent` 报告当前只支持 Codex. 不绕过审核关卡, 不用 Claude Code 原生 subagent 代替独立 Reviewer; 需要审核时告知用户, 由用户决定在 Codex 中运行审核或等待.
+- Claude Code: Bash 工具不保留可续写的进程会话, 每次操作单独运行一次 `arw background-agent`, 用 heredoc 把本次的 JSONL 请求写入标准输入, 读完响应后进程随标准输入结束退出, 管理进程和已启动的审核继续运行. 长时间等待用带 `timeout_ms` 的 `wait_agent` 分次调用. 未选择 `anthropic` 的 Reviewer 设置在这里默认用 Claude 后端 `haiku` 和 `high`. 不用 Claude Code 原生 subagent 代替独立 Reviewer.
 
 ## Fix the review version
 
