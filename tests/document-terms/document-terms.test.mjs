@@ -355,11 +355,17 @@ test('Document Terms Module 收集完整 include 失败集合并阻止 context �
     assert.equal(result.status, 'failed');
 });
 
-test('Document Terms Module 在术语表发现失败时不产生 include finding', async () => {
-    const {result} = await checkContents([
+test('Document Terms Module 没有术语表时只在配置了语言检查时失败, 且不产生 include finding', async () => {
+    const {result: fresh} = await checkContents([
         ['README.md', '# Reader\n'],
     ], {...immediateRequest, include: ['missing']});
+    assert.equal(fresh.status, 'passed');
+    assert.deepEqual(fresh.contexts, []);
 
+    const config = {configVersion: 2, languageChecks: {english: {language: 'english', minPercentage: 100, include: ['docs/']}}};
+    const {result} = await checkContents([
+        ['arw.config.json', JSON.stringify(config)], ['README.md', '# Reader\n'],
+    ], {...immediateRequest, include: ['missing']});
     assert.deepEqual(result.diagnostics, [{code: 'terms-glossary-missing', path: '.'}]);
 });
 

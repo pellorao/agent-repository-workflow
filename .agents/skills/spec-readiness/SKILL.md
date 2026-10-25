@@ -10,7 +10,7 @@ Spec Readiness 针对每个实施 issue 运行, 不针对 Application Source Iss
 ## Authorization timing
 
 - Spec Readiness 在 spec 和 issue 设计定稿时审核一次, 不在报告完成或提交审核时重复. 已授权 issue 在已确认设计范围内的实施可以与首次审核并行; 尚未确认的重要设计和其他真实前置结果仍须先解决.
-- 不通过时修正后复审: 重新执行 `prepare -> review -> generate -> promote`, Reviewer 按 [复审规则](../../../docs/agents/reviewer.md#re-review) 只看改动部分及其影响范围. 治理 Input 字节, Reviewer Role 或 subject 变化后旧记录不授权新版本, 新鲜度检查不放宽.
+- 不通过时修正后复审: 重新执行 `prepare -> review -> generate -> promote`, Reviewer 按 [复审规则](../../../docs/agents/reviewer.md#re-review) 只看改动部分及其影响范围. 治理 Input 字节, Reviewer Role 或 subject 变化后旧记录不授权新版本, 新鲜度检查不放宽. `architecture-evidence` 是 issue 本身会修改的实现事实, 不受新鲜度检查: 实施改动它不需要复审.
 - `arw spec-readiness verify --issue issue:<NNNN>:<NN>` 只在提交前运行 (见 `commit` Skill), 必须取得退出码 `0`; `1` 表示记录缺失, 格式错误, 过期, 语义未满足或对该 issue 无效, `2` 表示命令用法无效. 缺失, 过期或 `gap` 结果阻断提交, 不阻断不依赖该结果的已授权工作.
 
 ## Subject
@@ -27,7 +27,7 @@ subject 是连续的 `## What to build`, `## Spec Requirement` 和 `## Acceptanc
 
 ## Prepare and review
 
-1. 选择一个尚不存在的安全绝对 `.txt` `draftPath`, 位于当前 issue 的 `spec-readiness` 用途临时工作区内, 并按 [Reviewer 运行规则](../../../docs/specs/agent-repository-workflow/spec.md#reviewer-runtime) 使用独立报告目录. 不把 Request, Input 或执行规则副本放进该目录.
+1. 选择一个尚不存在的安全绝对 `.txt` `draftPath`, 位于当前 issue 的 `spec-readiness` 用途临时工作区 (`.tmp/<agent-platform>/<sessionId>/<NNNN>_<NN>/spec-readiness/`) 内一个只放该草稿的子目录, 如 `<workspace>/round-1/report/draft.txt`. 该子目录是 Reviewer 的报告目录 (`writePaths`), 不把 Request, Input, 执行规则副本或 `stateDirectory` 放进去; 否则启动时返回 `report-binding-invalid`.
 2. 准备 Input 对象: `draftPath` 和非空的 `inputs` 数组, 每项是 `role` 和仓库相对的 `filePath`. 至少包含一个 `governing-spec` 或 `governing-prd`, 以及每个适用的 `adr`, `domain-context` (每个适用的上下文文档) 和 `architecture-evidence` (已有的必要实现事实). 每个 Input 准备时必须已经存在, 并且是本轮权威设计或必要证据, 不用尚未创建的内容代替. Agent 指令, Reviewer Role, 平台 Agent 配置和本地跟踪器 issue 永远不是 Input; 不推断省略的 Input, 也不加入无关的术语表或决定.
 3. 运行 `arw spec-readiness prepare --issue issue:<NNNN>:<NN>`, Input 对象从标准输入传入; 输入可能接近平台长度限制时改用 `--input <temp-json-path>`. `prepare` 创建空草稿, 冻结 subject, 创建不可变的完整 Reviewer Request, 并只打印其绝对路径. 后续 `prepare` 使较早的请求失去生成和提升资格. 不把请求 JSON 复制到 Agent 消息中.
 4. 按 `reviewer-launch` Skill 启动 `spec-readiness-reviewer`. 线程身份是该角色加只含当前 issue 的 ID 集合; 初次 `handoff` 只提供 Request 路径, `reportPath` 是绑定的 `draftPath`. 每轮使用新的完整请求和空草稿.
@@ -35,7 +35,7 @@ subject 是连续的 `## What to build`, `## Spec Requirement` 和 `## Acceptanc
 
 ## Generate, promote and verify
 
-- Reviewer 返回 `ready` 后运行 `arw spec-readiness generate --issue issue:<NNNN>:<NN> --input <draft-txt-path>`, 传入精确绑定的 `draftPath`. Engine 拒绝其他路径和空草稿; 草稿精确为 `No problems.` 时记为 `satisfied`, 否则记为 `gap`. 它在当前 issue 工作区写入模式版本 7 记录并只打印其路径. 生成本身不授权实施. Main Agent 每轮从 Reviewer 声称已检查的内容中抽查一两处; 发现漏检时该轮结果作废并重审.
+- Reviewer 返回 `ready` 后运行 `arw spec-readiness generate --issue issue:<NNNN>:<NN> --input <draft-txt-path>`, 传入精确绑定的 `draftPath`. Engine 拒绝其他路径和空草稿; 草稿精确为 `No problems.` 时记为 `satisfied`, 否则记为 `gap`. 它在当前 issue 工作区写入模式版本 7 记录并只打印其路径. 生成本身不授权实施. Main Agent 每轮自选一两处 Reviewer 应当检查的要求或代码位置抽查; 发现漏检时该轮结果作废并重审.
 - 运行 `arw spec-readiness promote --input <generated-path>`, 传入精确生成路径, 不编辑其字节. 它是写入 `.scratch/<NNNN>-<effort-slug>/issues/<NN>.spec-readiness.json` 的唯一边界, 写入前重新验证请求, subject, Input 字节, Reviewer Role 和派生结果; 任何失败都保留先前记录. 有效的 `gap` 记录可以作为诊断结果提升, 但不满足授权.
 - 提交前按 [授权时点](#authorization-timing) 运行 `verify`. 只有模式版本 7 记录有效; 更早版本和 effort 根目录的 `spec-readiness.json` 只是历史记录, Engine 不读取, 不迁移也不删除它们.
 

@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0001:15",
+  "request": {
+    "digest": "1fcc7e085116df67f0ad3bbf908dc7188cb1c965c7d910bb208c9040014a37d6",
+    "filePath": ".tmp/claude-code/06588b1e-7f07-4832-8933-107aaf5b5978/0001_15/spec-readiness/requests/request-fc240d38-3932-4dee-80ed-39670cba22d1.json",
+    "id": "fc240d38-3932-4dee-80ed-39670cba22d1"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "658f4283cabb570c22c4f8ad59eb3afc858a34bc9973c25f581ba324cd1561d3"
+  },
+  "inputs": [
+    {
+      "filePath": ".scratch/0001-claude-code-migration/spec.md",
+      "role": "governing-spec",
+      "sha256": "e13ba193b4ce9b2c7408dc839b5d57dc1348605589328ca49091efe00581c314"
+    },
+    {
+      "filePath": "docs/adr/0032-run-claude-reviewers-through-headless-claude.md",
+      "role": "adr",
+      "sha256": "a6dd97879e365d35f1631eb5fa93d1497330510a87413aefc630bd1e80181372"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow/spec.md",
+      "role": "architecture-evidence",
+      "sha256": "4cd51a1939c810e6b14d767e93ae81a14480f9440f3db3909b318e435ed1152c"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0001-claude-code-migration/issues/15-smoke-followups.md",
+    "sha256": "2d808b70f7d9216818927b681e9272e10360b145f682b6bf4f2dbbcbb17434f6"
+  },
+  "result": "satisfied"
+}

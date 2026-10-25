@@ -786,6 +786,18 @@ test('verify aggregates stale Inputs with other independently determinable findi
     });
 });
 
+test('implementing the issue does not stale its architecture evidence', async t => {
+    const repositoryRoot = await createRepository(t);
+    await mkdir(join(repositoryRoot, 'src'), {recursive: true});
+    await writeFile(join(repositoryRoot, 'src', 'app.mjs'), 'export const before = 1;\n', 'utf8');
+    const prepared = await prepare(repositoryRoot, {inputs: [...normalInputs, {filePath: 'src/app.mjs', role: 'architecture-evidence'}]});
+    await writeFile(join(repositoryRoot, 'src', 'app.mjs'), 'export const during = 2;\n', 'utf8');
+    const generated = await generate(repositoryRoot, prepared.draftPath);
+    await promoteSpecReadiness({inputPath: generated.path, platformAdapter: adapter, repositoryRoot});
+    await writeFile(join(repositoryRoot, 'src', 'app.mjs'), 'export const after = 3;\n', 'utf8');
+    assert.deepEqual(await verifySpecReadiness({issueId: 'issue:0001:01', repositoryRoot}), {authorized: true, findings: []});
+});
+
 test('prepare rejects conflicting roles, issue Inputs and unknown roles', async t => {
     const repositoryRoot = await createRepository(t);
     await assert.rejects(prepare(repositoryRoot, {inputs: [

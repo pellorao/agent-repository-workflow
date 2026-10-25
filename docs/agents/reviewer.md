@@ -27,7 +27,7 @@ Reviewer 只读取该版本, 不从正在变化的工作树补取证据或更新
 
 ## Independent runtime
 
-普通 Code Standards, 要求符合审核和 Spec Readiness 审核通过 `arw background-agent` 在共享 Codex App Server 中以独立根线程运行; 跨调用方控制, 容量, 恢复和生命周期遵循 [通用后台 Agent 控制规则](../specs/agent-repository-workflow/spec.md#background-agent-control), 设置与运行信任遵循 [Reviewer 运行规则](../specs/agent-repository-workflow/spec.md#reviewer-runtime). 所有模型完整使用本公共规则和对应 Canonical Role, 不使用非 GPT 专有角色或输出覆盖. Reviewer 不取得用户沟通或 Git 写入权限.
+普通 Code Standards, 要求符合审核和 Spec Readiness 审核通过 `arw background-agent` 以独立根会话运行 (Codex 后端是共享 Codex App Server 中的根线程, Claude 后端是独立的 `claude -p` 会话); 控制, 容量, 恢复, 生命周期和模型设置由 ARW 运行入口负责. 所有模型完整使用本公共规则和对应 Canonical Role, 不使用非 GPT 专有角色或输出覆盖. Reviewer 不取得用户沟通或 Git 写入权限.
 
 ## Single-agent execution
 
@@ -39,11 +39,11 @@ Reviewer 只读取该版本, 不从正在变化的工作树补取证据或更新
 
 跨运行环境的通信只允许 Main Agent 向 Reviewer 发送工作指示, Reviewer 向 Main Agent 发送已核实问题, 必要进度, 阻塞或具体治理冲突等中途消息; 程序的自动工作指示和错误恢复由程序负责. Reviewer 独立完成审核, 不向 Main Agent 或用户索取信息, 征求同意或请求审批; 必要输入不足时按角色规则返回 `incomplete`.
 
-Reviewer 核实问题后先写入绑定报告, 再通过 `arw background-agent` 的 `send_message` 及时通知: 使用运行环境提供的 `ARW_BACKGROUND_AGENT_RUN_ID` 作为 `runId`, 用 `message` 提交通知正文, 保存返回的消息编号与状态. 完成完整绑定报告后按角色格式结束原生回合. 原生进度文字和最终响应不自动生成 ARW 消息, 中途消息不替代报告; 最终交付按 [Reviewer 通信与会话规则](../specs/agent-repository-workflow/spec.md#communication-and-sessions) 由运行层核实.
+Reviewer 核实问题后先写入绑定报告, 再通过 `arw background-agent` 的 `send_message` 及时通知: 使用运行环境提供的 `ARW_BACKGROUND_AGENT_RUN_ID` 作为 `runId`, 用 `message` 提交通知正文, 保存返回的消息编号与状态; 运行环境没有提供 `ARW_BACKGROUND_AGENT_RUN_ID` 时 (如 Claude 后端) 跳过通知, 只写报告. 完成完整绑定报告后按角色格式结束原生回合. 原生进度文字和最终响应不自动生成 ARW 消息, 中途消息不替代报告; 最终交付由运行层核实.
 
 Reviewer 使用 Codex 原生 `on-request` 和 `auto_review` 处理仓库外访问, 保留原生网络审批, `web_search` 与 MCP 设置. 需要人工决定的用户输入, 权限或 MCP 请求不转交用户或 Main Agent 代答, 由运行层给出原生协议允许的拒绝响应并让 Reviewer 看到原因; 命令和文件审批使用继续当前回合的 `decline`. 拒绝只针对这次请求, Reviewer 继续利用已有输入完成其余检查; 只有必要检查或报告确实无法完成时, 说明具体不足并返回 `incomplete`.
 
-墙钟时间和原生 token 计量由运行层按 [Reviewer 运行规则](../specs/agent-repository-workflow/spec.md#reviewer-runtime) 记录, 无法取得时保留未知, 不记为 0; 计量和通知都不替代完整文件报告或正式结果授权.
+墙钟时间和原生 token 计量由运行层记录, 无法取得时保留未知, 不记为 0; 计量和通知都不替代完整文件报告或正式结果授权.
 
 ## Evidence and scope
 
