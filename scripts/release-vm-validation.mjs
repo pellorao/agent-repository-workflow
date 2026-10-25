@@ -23,7 +23,7 @@ import {
     startReleaseValidationRun,
 } from '../lib/release/release-vm-validation.mjs';
 import {RELEASE_MACHINE_KEYS, resolveReleaseValidationScenario} from '../lib/release/release-validation-registry.mjs';
-import {createCodexPlatformAdapter} from '../lib/arw-common/platform-adapter.mjs';
+import {createCurrentPlatformAdapter} from '../lib/arw-common/platform-adapter.mjs';
 import {discoverRepository} from '../lib/arw-common/repository.mjs';
 
 const usage = 'Usage:\n'
@@ -48,7 +48,7 @@ const usage = 'Usage:\n'
  * @property {TextOutput} [errorOutput]
  * @property {WorkspaceBoundary} [validateWorkspacePath]
  * @property {typeof discoverRepository} [discoverRepository]
- * @property {ReturnType<typeof createCodexPlatformAdapter>} [platformAdapter]
+ * @property {ReturnType<typeof createCurrentPlatformAdapter>} [platformAdapter]
  * @property {typeof loadReleaseValidationInputs} [loadInputs]
  * @property {typeof loadReleaseVmConfiguration} [loadConfiguration]
  * @property {typeof startReleaseValidationRun} [startRun]
@@ -246,7 +246,7 @@ export const runReleaseVmValidationCli = async (/** @type {string[]} */ args, /*
             return resolvedWorkspaceBoundary;
         }
         const repository = await (operations.discoverRepository ?? discoverRepository)();
-        const agentIdentity = (operations.platformAdapter ?? createCodexPlatformAdapter()).getCurrentAgentIdentity();
+        const agentIdentity = (operations.platformAdapter ?? createCurrentPlatformAdapter()).getCurrentAgentIdentity();
         resolvedWorkspaceBoundary = createReleaseSessionWorkspaceBoundary({agentIdentity, repositoryRoot: repository.root});
         return resolvedWorkspaceBoundary;
     };
