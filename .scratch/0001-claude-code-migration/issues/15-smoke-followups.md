@@ -1,6 +1,6 @@
 # 冒烟发现的日常使用问题
 
-Status: ready-for-agent
+Status: completed
 
 ## What to build
 

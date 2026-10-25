@@ -66,5 +66,13 @@ subagent 可以向所属运行环境的 Main Agent 申请协作者, 不自行创
 | 中 | `gpt-6.1-sol` | `low` | `medium` | `high` |
 | 高 | `gpt-6.1-sol` | `medium` | `high` | `xhigh` |
 
+Claude Code 使用以下映射; 用户级规则另有模型选择要求时以用户级规则为准.
+
+| 智力需求 | 模型 | 低努力 | 中努力 | 高努力 |
+| --- | --- | --- | --- | --- |
+| 低 | `haiku` | `low` | `medium` | `high` |
+| 中 | `sonnet` | `low` | `medium` | `high` |
+| 高 | `opus` | `medium` | `high` | `xhigh` |
+
 当前创建非预定义 subagent 的 Interface 不能逐次设置 Fast 参数. 表中的模型和推理强度是当前可传递的配置; Standard 主会话下的实际 Fast 状态由平台决定, 不属于本映射的承诺.
 <!-- arw:repository-owned:end -->

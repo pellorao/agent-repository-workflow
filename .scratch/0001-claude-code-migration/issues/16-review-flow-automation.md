@@ -10,7 +10,16 @@ Status: ready-for-agent
 - 非实施提交的 6 步手工机械检查改为一条命令.
 - 规则和 Skill 中对应的手工步骤删除.
 
-目标: 一张典型 ticket 的 Main 机械工具调用减半以上, 在 15 的中等规模冒烟上对比测量.
+ticket 15 中等规模冒烟 (约 330 行 CLI, 同一 issue) 的基线: Codex 约 19 分钟, Spec Readiness 2 轮, 提交审核 2+2 轮; Claude Code 约 62 分钟, Spec Readiness 5 轮 (worker 自己的提交 9 轮), 提交审核 4+3 轮, Main 66 次工具调用. 冒烟中的流程摩擦一并处理:
+
+- 复审收敛: 复审只看上一轮问题是否解决和本轮改动引入的新问题, 不重新审整份文档 (haiku Spec Readiness 每轮对新补的文字提新问题, 不收敛).
+- Claude 后端 Reviewer 的组合 Bash (`cd … && git …`) 被只读放行规则拒绝, 导致 `incomplete`: Reviewer 指令要求每次只跑一条命令并用 `git -C`, 或让放行规则覆盖.
+- `implement` Skill 的 Entry 加硬检查: 没有就绪记录不开始实施 (Claude Main 曾先写代码后做 Spec Readiness).
+- `workflow init` 给出默认的测试单回调耗时阈值, 默认不开启语言检查 (两边都在此停下问用户).
+- `wait_agent` 增加等到完成的选项; `stateDirectory`, `resultPath` 的位置写进 `reviewer-launch`; followup 后 `turnId` 仍为 `turn-1` 的问题排查.
+- Codex 沙盒内启动的管理进程无法拉起 App Server: 文档写明在沙盒外预启动, 或让管理进程自行脱离沙盒.
+
+目标: 在 15 的同一中等规模冒烟上重测, Claude Code 墙钟和 Main 工具调用都减半以上, Reviewer 总轮数明显下降.
 
 预估改动: 净减.
 
