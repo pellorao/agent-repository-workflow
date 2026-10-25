@@ -1,6 +1,6 @@
 # 其余模块校验链压缩
 
-Status: ready-for-agent
+Status: completed
 
 ## What to build
 
@@ -16,8 +16,8 @@ Governing requirements:
 
 ## Acceptance criteria
 
-- [ ] 完整测试套件通过, 只为被删除的功能删除测试.
-- [ ] `lib/` 行数净减, 变化记入 `## Comments`.
+- [x] 完整测试套件通过, 只为被删除的功能删除测试.
+- [x] `lib/` 行数净减, 变化记入 `## Comments`.
 
 ## Blocked by
 
@@ -36,3 +36,6 @@ Governing requirements:
 - 跳过 (ticket 14 范围或不确定): `lib/background-agent/**`, `lib/commit-audit/**`, `lib/reviewer-runtime/**`, `lib/spec-readiness/**`, `lib/arw-common/reviewer-configuration.mjs`, `lib/arw-background-agent-host.mjs`, `lib/workflow-distribution/skill-reference-review.mjs` 及 `workflow-distribution-sync.mjs` 中的 review 结果校验, `lib/common/evidence-locators.mjs`, `lib/common/windows-command-line.mjs` (仅 background-agent 使用).
 - 按 `6fa9082` 新增的两条原则补做一轮: 删除对已校验数据的二次判断 (repository-configuration 解析结果, workflow-distribution 配置字节与形状, installation 内部不变量, file-transaction/json 对 filesystem 结果的复查, configuration-conversion 未知路径复查), 改用类型断言; 内联只用一次的单行辅助函数 (jira-client, issue-documents, platform-adapter, configuration-conversion, markdown-visible-text, file-transaction, document-terms). 保留 workflow-distribution 批量读取的 `try/catch`, 它保证返回排序上第一个失败 (有测试覆盖).
 - `lib/` 行数 30479 → 29649 (-830). typecheck 通过; 测试 709 项, 仅 1 项因 `AGENTS.md` 迁移期改名而失败 (预期); `check-workflow-distribution` 通过.
+- 整个迁移 (`2376779..main`, `lib`/`scripts`/入口) 的 `/simplify` 一轮完成, 只做删减与合并: commit-audit 内联只用一次的 `json`, `REVIEW_FILE`, `parseIssueId`, `requestDirectory`, 去掉 CLI 已校验的 `isAbsolute` 复查, 治理文档存在性检查并入 Gate 2 分支; claude-sessions 的 usage 累加改为一次解构; skill-reference-review 的键集合比较改用 `exactKeys`; release-validation-config 删去对 `parseJson` 成功结果的 `value` 复查; reviewer-capability 脚本删去多余模板字符串. 本轮 +25/-38, `lib/` 28847 → 28834 (-13); 整个迁移 `lib/` 30479 → 28834.
+- 本轮保留: `createReleaseLoader` 的 `unknown` 参数包装 (测试传入部分 fake, 合并后 typecheck 失败); spec-readiness 本地 `assertExactKeys` (错误信息与 canonical-contract 不同, 属旧代码); `scripts/release-vm.mjs`, `scripts/release-guest-check.mjs` 未动 (VM 验证 worker 使用中).
+- 本轮验证: typecheck 通过; 测试 694 项, 仅 1 项因 `AGENTS.md` 迁移期改名而失败 (预期); `check-workflow-distribution` 与 `project-claude-skills --check` 通过.

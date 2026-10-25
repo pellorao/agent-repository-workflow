@@ -32,7 +32,7 @@ const overlay = async (/** @type {string} */ part) => {
     }
 };
 const listFiles = async (/** @type {string} */ directory) => (await readdir(directory, {recursive: true, withFileTypes: true}))
-    .filter(entry => entry.isFile() && !entry.parentPath.includes(`${join(directory, '.git')}`))
+    .filter(entry => entry.isFile() && !entry.parentPath.includes(join(directory, '.git')))
     .map(entry => join(entry.parentPath, entry.name).slice(directory.length + 1).split('\\').join('/'));
 
 await mkdir(dirname(target), {recursive: true});
