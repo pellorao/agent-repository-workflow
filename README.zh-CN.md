@@ -156,6 +156,12 @@ arw workflow verify
 
 `--dry-run` 只显示新版工作流会怎样改变这个仓库. 确认计划后, 第二条命令写入更新, 最后一条命令只读核对结果.
 
+从较早的 ARW 版本升级时, 还要核对以下几点:
+
+- `code-spec-reviewer` 和 `commit-audit-reviewer` 已并入 `requirements-reviewer`. `config.json` 或 `arw.config.json` 中旧角色名下的设置会被忽略; 原先给它们设的模型需改到 `reviewers.requirements-reviewer`.
+- Spec Readiness 记录升到版本 7. `arw spec-readiness verify` 会把尚未提交的 issue 的旧版本记录判为过期, 包括 `not-applicable` 例外记录. 按正常的 `prepare -> review -> generate -> promote -> verify` 重新生成; 例外记录按 `generate -> promote -> verify` 重新生成.
+- 新版工作流不再包含某个含仓库自有内容的规则文档时, `arw workflow update` 把这些内容迁入 `AGENTS.md` 的仓库自有区域, 放在注明原路径的标题下, 删除原文件, 并在更新完成后列出这些路径. 请核对迁入的内容, 合并或删除.
+
 不再让这个目标仓库使用 ARW 时运行 `arw workflow remove`. 命令会让用户明确选择如何处理平台 Agent 配置, `.arwignore`, Code Map 和混合 Agent 文档. ARW 不会把无法证明归属的文件当作可删除内容.
 
 ## 在多个仓库中完成一个 JIRA 需求

@@ -71,7 +71,7 @@ step('arw workflow verify', fresh('arw workflow verify', target));
 
 step('卸载', run(process.execPath, [join(INSTALLATION, 'uninstall.mjs'), '--non-interactive', '--remove-config', 'true'], {cwd: target}));
 step('卸载后新终端不再解析 arw', fresh(locate), false);
-// 已知: 卸载后可能留下空的 background-agent-state 目录, 这里只要求不剩文件.
+// 卸载后不应剩任何文件.
 const leftovers = existsSync(INSTALLATION)
     ? readdirSync(INSTALLATION, {recursive: true, withFileTypes: true}).filter(entry => !entry.isDirectory())
     : [];

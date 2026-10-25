@@ -13,6 +13,7 @@
         "docs/licenses/**",
         "distribution/skills/**",
         "distribution/baseline/docs/licenses/**",
+        "CLAUDE.md",
         "README.md",
         "README.zh-CN.md",
         "docs/manuals/**"
