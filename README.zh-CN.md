@@ -301,7 +301,7 @@ Main Agent 先确认完成证据和准确 staged candidate. `code-review` Skill 
 
 冻结后, Main Agent 为候选准备 Commit Audit Request, `commit-audit-reviewer` 核对 issue 要求和本批次适用的长期要求, 并把完整结果写入绑定 JSONL. Reviewer 返回完成状态后, Main Agent 调用 ARW 生成正式记录, 只按返回映射提升准确字节, 再运行 `arw commit-audit verify` 和其余机械检查. 审计开始后, 任何冻结实施字节变化都会使原审核和审计失效.
 
-只有调查, 设计或其他封闭的非实施内容组成的候选可以使用较轻的提交路线. 候选一旦包含当前仓库实施产物, 就使用完整实施提交流程. 具体比较准备, 结果复用和恢复规则由目标仓库的 `code-review` Skill 与 `docs/agents/commits.md` 拥有, README 不复制它们的完整协议.
+只有调查, 设计或其他封闭的非实施内容组成的候选可以使用较轻的提交路线. 候选一旦包含当前仓库实施产物, 就使用完整实施提交流程. 具体比较准备, 结果复用和恢复规则由目标仓库的 `code-review` 与 `commit` Skill 拥有, README 不复制它们的完整协议.
 
 ## 常用命令
 

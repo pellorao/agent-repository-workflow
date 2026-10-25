@@ -66,7 +66,7 @@ Tests are organized under `tests/` by the same lasting responsibilities. Choose 
 
 ### Enter the validation workflow
 
-The [validation rules (Chinese)](../agents/validation.md) and [Source Checkout deterministic validation rules (Chinese)](../agents/source-checkout-validation.md) own the Source Checkout validation entry points. Common command names include:
+The [validation rules (Chinese)](../../.agents/skills/validation/SKILL.md) and [Source Checkout deterministic validation rules (Chinese)](../agents/source-checkout-validation.md) own the Source Checkout validation entry points. Common command names include:
 
 ~~~text
 pnpm typecheck
@@ -86,7 +86,7 @@ This route covers documentation owned by the Source Checkout, workflow sources, 
 
 ### Check documentation and terminology
 
-Use this route to maintain reader documentation, Agent documents, long-term specifications, or terminology. The target document and applicable governance sources own the content. Start with the [writing rules (Chinese)](../agents/writing.md) and [validation rules (Chinese)](../agents/validation.md). The [reader documentation specification (Chinese)](../specs/arw-reader-documentation/spec.md) also assigns responsibilities among reader documents.
+Use this route to maintain reader documentation, Agent documents, long-term specifications, or terminology. The target document and applicable governance sources own the content. Start with the [writing rules (Chinese)](../agents/writing.md) and [validation rules (Chinese)](../../.agents/skills/validation/SKILL.md). The [reader documentation specification (Chinese)](../specs/arw-reader-documentation/spec.md) also assigns responsibilities among reader documents.
 
 Common check command names are:
 
@@ -257,6 +257,6 @@ The dependency direction allows specific business implementations to depend on `
 - [Upstream Sync long-term specification (Chinese)](../specs/agent-repository-workflow-upstream-sync/spec.md): behavior contract for adopting external sources.
 - [Release long-term specification (Chinese)](../specs/agent-repository-workflow-release/spec.md): release candidates, Reviewer capabilities, VMs, archives, tags, and external writes.
 - [Reader documentation specification (Chinese)](../specs/arw-reader-documentation/spec.md): README and manual responsibilities and boundaries.
-- [Validation rules (Chinese)](../agents/validation.md): current Agent validation responsibilities and documentation checks.
+- [Validation rules (Chinese)](../../.agents/skills/validation/SKILL.md): current Agent validation responsibilities and documentation checks.
 - [Source Checkout deterministic validation rules (Chinese)](../agents/source-checkout-validation.md): current complete validation entry points and coverage routes.
-- [Commit rules (Chinese)](../agents/commits.md): scope, reviews, and Commit Audit when the user requests a commit.
+- [Commit rules (Chinese)](../../.agents/skills/commit/SKILL.md): scope, reviews, and Commit Audit when the user requests a commit.

@@ -303,7 +303,7 @@ The Main Agent first confirms completion evidence and the exact staged candidate
 
 After freezing, the Main Agent prepares a Commit Audit Request for the candidate. `commit-audit-reviewer` checks issue requirements and applicable long-term requirements for this batch, and writes its complete result to the bound JSONL. After the Reviewer returns completion, the Main Agent asks ARW to generate the formal record, promotes only the exact bytes from the returned mapping, then runs `arw commit-audit verify` and the other mechanical checks. Any change to frozen implementation bytes after the audit starts invalidates the review and audit.
 
-A candidate containing only investigation, design, or other closed non-implementation content may use the lighter commit path. Once a candidate includes implementation deliverables for the current repository, use the complete implementation commit workflow. The target repository's `code-review` Skill and `docs/agents/commits.md` own exact comparison preparation, result reuse, and recovery rules; this README does not copy their full protocols.
+A candidate containing only investigation, design, or other closed non-implementation content may use the lighter commit path. Once a candidate includes implementation deliverables for the current repository, use the complete implementation commit workflow. The target repository's `code-review` and `commit` Skills own exact comparison preparation, result reuse, and recovery rules; this README does not copy their full protocols.
 
 ## Common commands
 

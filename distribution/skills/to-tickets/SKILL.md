@@ -8,7 +8,7 @@ disable-model-invocation: true
 
 将计划, 规范或当前对话拆分为一组纵向切片 issue, 每项声明阻断它的其他 issue. 编写和发布前遵循 [Subagent 分配](../../../docs/agents/subagent-allocation.md) 与 [Agent 文件写入](../../../docs/agents/agent-writes.md).
 
-创建本地实施 issue 时, 按 [Issue requirements](../../../docs/agents/issue-tracker.md#issue-requirements) 使用唯一的要求引用格式.
+创建本地实施 issue 时, 按 [Issue requirements](../issue-tracking/SKILL.md#issue-requirements) 使用唯一的要求引用格式.
 
 如果尚未提供 issue 跟踪器和分流标签词汇, 运行只读 `arw workflow verify`. 如果验证报告仓库尚未初始化, 告知用户另行运行 `arw workflow init`.
 
@@ -78,7 +78,7 @@ disable-model-invocation: true
 
 ### 5. Publish to the configured tracker
 
-按 `docs/agents/issue-tracker.md` 记录的跟踪器发布已批准 issue. 两种跟踪器中的 issue 相同, 只有阻断关系的表达方式不同:
+按 `issue-tracking` Skill 记录的跟踪器发布已批准 issue. 两种跟踪器中的 issue 相同, 只有阻断关系的表达方式不同:
 
 - **Local files** -> 使用对话已建立的 effort. 需要新 effort 时, 以当前最大编号加一创建 `.scratch/<NNNN>-<effort-slug>/`. 在其 `issues/` 下为每项 issue 写一个 `<NN>-<issue-slug>.md`, 按依赖顺序从 `01` 编号. 数字部分是 issue 身份, slug 只提高路径可读性. 每个文件的 `Blocked by` 列出所依赖的编号和标题. 使用下列章节式 `<issue-template>`, 每个文件只放一项 issue.
 - **实际 issue 跟踪器** -> 按依赖顺序为每个已批准任务分别发布一个 issue, 使阻断关系可以引用真实身份. 平台提供原生阻断或子 issue 关系时使用它, 否则在 `Blocked by` 中列出阻断 issue. 除非另有指示, 应用 `ready-for-agent` 分流标签.
@@ -99,7 +99,7 @@ disable-model-invocation: true
 
 ## Spec Requirement
 
-本节的精确格式由 [Issue requirements](../../../docs/agents/issue-tracker.md#issue-requirements) 定义.
+本节的精确格式由 [Issue requirements](../issue-tracking/SKILL.md#issue-requirements) 定义.
 
 ## Acceptance criteria
 

@@ -66,7 +66,7 @@ pnpm test
 
 ### 进入验证流程
 
-源码仓库验证入口由 [验证规则](../agents/validation.md) 和 [源码仓库确定性验证](../agents/source-checkout-validation.md) 拥有. 常用命令名称包括:
+源码仓库验证入口由 [验证规则](../../.agents/skills/validation/SKILL.md) 和 [源码仓库确定性验证](../agents/source-checkout-validation.md) 拥有. 常用命令名称包括:
 
 ```text
 pnpm typecheck
@@ -86,7 +86,7 @@ git diff --check
 
 ### 文档和术语检查
 
-维护读者文档, Agent 文档, 长期规格或术语时使用这条路线. 内容由目标文档及适用治理来源拥有, 写作与验证入口是 [写作规则](../agents/writing.md) 和 [验证规则](../agents/validation.md). 读者文档另由 [读者文档规范](../specs/arw-reader-documentation/spec.md) 说明文档分工.
+维护读者文档, Agent 文档, 长期规格或术语时使用这条路线. 内容由目标文档及适用治理来源拥有, 写作与验证入口是 [写作规则](../agents/writing.md) 和 [验证规则](../../.agents/skills/validation/SKILL.md). 读者文档另由 [读者文档规范](../specs/arw-reader-documentation/spec.md) 说明文档分工.
 
 常用检查命令是:
 
@@ -257,6 +257,6 @@ node scripts/release-vm-validation.mjs prepare-bundles --candidate <full-object-
 - [Upstream Sync 长期规格](../specs/agent-repository-workflow-upstream-sync/spec.md): 外部来源采用的行为合同.
 - [发布长期规格](../specs/agent-repository-workflow-release/spec.md): 发布候选, Reviewer 能力, VM, 归档, 标签和外部写入.
 - [读者文档规范](../specs/arw-reader-documentation/spec.md): README 与全部手册的读者目标和责任边界.
-- [验证规则](../agents/validation.md): 当前 Agent 验证责任和文档检查.
+- [验证规则](../../.agents/skills/validation/SKILL.md): 当前 Agent 验证责任和文档检查.
 - [源码仓库确定性验证](../agents/source-checkout-validation.md): 当前完整验证入口和覆盖路由.
-- [提交规则](../agents/commits.md): 用户请求提交后的范围, 审核和 Commit Audit 流程.
+- [提交规则](../../.agents/skills/commit/SKILL.md): 用户请求提交后的范围, 审核和 Commit Audit 流程.

@@ -41,7 +41,7 @@ ARW 源码仓库不作为自身 Workflow Distribution 的目标仓库. Repositor
 
 仅供 Source Checkout 使用的 `$reviewer-benchmark` Skill 不属于共享工作流载荷, 发布前同步不把它写入 Workflow Distribution, 安装和平台投射不把它带入目标仓库. 它的操作规则由该 Skill 单独拥有, 本文只拥有源码限定的分发边界, 不复制基准操作流程.
 
-实际位置必须包含 `docs/agents/code-maps.md`. Code Map 是否适用于目标仓库由 Repository Profile 决定, 不通过是否把该文件放入 Workflow Distribution 来表达.
+Code Map 是否适用于目标仓库由 Repository Profile 决定, 不通过是否分发 `code-maps` Skill 来表达.
 
 `.arwignore` 是仓库自有初始文件, 不从源码仓库当前实际配置复制. 维护者需要改变该初始文件时, 必须直接修改 Workflow Distribution 中对应的来源.
 
@@ -494,7 +494,7 @@ Markdown Visible Text Module 与 Document Language Analysis Module 保持独立,
 
 [ADR-0018](../../adr/0018-use-bounded-mechanical-trust-for-initial-arw-security.md) 的 Source Scope 可移植性, 来源符号链接排除和信任根决定保持不变. Filesystem Module 的路径范围与祖先链接拒绝把既有有界机械信任应用到通用文件操作, 但不验证来源身份, 不扩大 Source Scope, 不承诺跨平台文件名可移植性, 也不声称抵抗恶意信任根或并发替换. 这项公共 Interface 深化不建立新的授权主体, 持久格式, 信任根或恢复责任, 因而由本规格拥有准确合同, 不新增 ADR.
 
-[ADR-0004](../../adr/0004-maintain-an-arw-skills-distribution-fork.md), [ADR-0007](../../adr/0007-compose-baseline-with-repository-overlays.md), [ADR-0015](../../adr/0015-use-versioned-skill-package-grammars.md), [ADR-0016](../../adr/0016-use-repository-owned-agent-projection-configs.md) 和 [ADR-0021](../../adr/0021-use-explicit-typed-distribution-manifest.md) 中仍有效的决定继续适用, 与 ADR-0026 冲突的部分以 ADR-0026 为当前权威. 按 [ADR 写作规则](../../agents/rule-and-design-changes.md#scope-and-authority), 部分有效的记录仅在有助于理解当前选择时简要保留紧邻前一次决定, 完全被取代的记录只指向现行权威.
+[ADR-0004](../../adr/0004-maintain-an-arw-skills-distribution-fork.md), [ADR-0007](../../adr/0007-compose-baseline-with-repository-overlays.md), [ADR-0015](../../adr/0015-use-versioned-skill-package-grammars.md), [ADR-0016](../../adr/0016-use-repository-owned-agent-projection-configs.md) 和 [ADR-0021](../../adr/0021-use-explicit-typed-distribution-manifest.md) 中仍有效的决定继续适用, 与 ADR-0026 冲突的部分以 ADR-0026 为当前权威. 按 [ADR 写作规则](../../../.agents/skills/rule-and-design-changes/SKILL.md#writing-durable-documents), 部分有效的记录仅在有助于理解当前选择时简要保留紧邻前一次决定, 完全被取代的记录只指向现行权威.
 
 ## Requirement ownership
 
@@ -525,7 +525,7 @@ JSON Module 测试覆盖字符串, 字节与限定范围内的文件解析, 严�
 
 源码仓库的完整验证命令与矩阵由[源码仓库验证规则](../../agents/source-checkout-validation.md)拥有, 不依赖彼此结果的必要检查可以并行. 准确输入相同的有效结果复用, 等价普通快照和最终主仓库授权检查遵循[产品验证合同](../agent-repository-workflow/spec.md#validation-strategy), 不省略必要完整检查. Document Terms 检查当前工作树的默认范围与当前 effort; `pnpm test` 保留确定性 Document Terms Module, CLI 和 Adapter 行为覆盖. `pnpm typecheck` 只读取根 `tsconfig.json` 覆盖的受 Git 管理 `.mjs`, 不生成代码, 声明或其他产物. 源码仓库发布的候选内容, 归档, VM 和标签验证由发布长期规格补充.
 
-测试新增, 最少充分覆盖与用户主动清理使用同一[产品测试治理合同](../agent-repository-workflow/spec.md#validation-strategy), 不因源码仓库身份增加逐例批准. 本仓库单个测试回调耗时阈值只由[测试性能流程](../../agents/test-performance-optimization.md#threshold)的 Repository-owned 声明拥有, 不把它推广为全局固定值. [独立清理流程](../../agents/test-value-cleanup.md)协调低价值删除和剩余套件的性能优化, 不启动自动维护或改变普通运行的失败条件.
+测试新增, 最少充分覆盖与用户主动清理使用同一[产品测试治理合同](../agent-repository-workflow/spec.md#validation-strategy), 不因源码仓库身份增加逐例批准. 本仓库单个测试回调耗时阈值只由根 `AGENTS.md` 的 Repository-owned 声明拥有 ([测试性能流程](../../../.agents/skills/test-performance-optimization/SKILL.md#threshold)), 不把它推广为全局固定值. [独立清理流程](../../../.agents/skills/test-value-cleanup/SKILL.md)协调低价值删除和剩余套件的性能优化, 不启动自动维护或改变普通运行的失败条件.
 
 ## Test presentation
 

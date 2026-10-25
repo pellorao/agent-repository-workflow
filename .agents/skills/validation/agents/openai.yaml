@@ -1,0 +1,5 @@
+interface:
+  display_name: "Validation"
+  short_description: "Choose and run required validation"
+policy:
+  allow_implicit_invocation: true

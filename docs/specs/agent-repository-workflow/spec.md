@@ -40,7 +40,7 @@ ARW 是本地仓库工作流管理器. 它不自主发起 Agent 编码工作, �
 | Application Source Issue | 只镜像关联 Module 实施 issue 的状态, 不执行本地实施. | 不运行. |
 | Wayfinder issue | 记录研究或设计问题, 不替代实施 issue. | 不运行. |
 
-Spec Readiness 使用 `prepare -> independent review -> generate -> promote -> verify`. Engine 冻结完整治理输入, issue 中连续的交付结果, 要求选择与验收条件, 以及 Main Agent 选择的草稿路径, 并把 Reviewer Role 身份与哈希独立绑定到请求. 独立 Reviewer 在绑定路径写入语义问题, 完整审核没有问题时写入明确的无问题标记. Engine 从最终草稿推导完整的临时规范结果, Main Agent 只提升准确生成字节. issue 特定的 `verify` 核对当前设计的有效就绪结果. 首次就绪审核可以与已授权实施并行, 有效结果的完成, 审计与提交检查时点由[设计就绪工作流](../../agents/spec-readiness.md#authorization-timing)拥有.
+Spec Readiness 使用 `prepare -> independent review -> generate -> promote -> verify`. Engine 冻结完整治理输入, issue 中连续的交付结果, 要求选择与验收条件, 以及 Main Agent 选择的草稿路径, 并把 Reviewer Role 身份与哈希独立绑定到请求. 独立 Reviewer 在绑定路径写入语义问题, 完整审核没有问题时写入明确的无问题标记. Engine 从最终草稿推导完整的临时规范结果, Main Agent 只提升准确生成字节. issue 特定的 `verify` 核对当前设计的有效就绪结果. 首次就绪审核可以与已授权实施并行, 有效结果的完成, 审计与提交检查时点由[设计就绪工作流](../../../.agents/skills/spec-readiness/SKILL.md#authorization-timing)拥有.
 
 Spec Readiness 的结果生成与验证不判断开放语义, 原生会话控制和线程身份由共享 Reviewer 运行责任管理. 会话延续不等于准备度结果仍然有效: 任一治理输入, 审核对象, Reviewer Role 或结果绑定变化都会使旧记录失效. 审核对象是连续的 `## What to build`, `## Spec Requirement` 和 `## Acceptance criteria`. `Status:`, `## Blocked by`, `## Validation` 和 `## Comments` 不进入审核对象. 完整 issue 格式与阻断问题图由 ARW Artifact 清单和 Issue Gate 独立验证.
 
@@ -517,7 +517,7 @@ Engine 对同一 finding 按文件合并重复, 重叠和相邻选中范围, 剔
 
 ## Commit Audit
 
-Main Agent 在仓库 `.tmp/` 下为每次审核建立独立 Request 目录. 固定名称 `input.json` 只包含同一 effort 的排序 `authorizingIssueIds`, 以及适用时的一个空要求确认. `arw commit-audit prepare --input <absolute-input-path>` 使用该文件的父目录, 从实时 Git 索引物化完整 `request.json`, 并在独立的 `reports/` 子目录中创建空 `review.jsonl`, 然后只输出 Request 的绝对路径. 报告目录使用 [Reviewer 运行规则](#reviewer-runtime) 的目录写授权, `input.json`, `request.json` 和正式结果生成目录保持只读. 除本次 `input.json` 外, 受管理文件碰撞使准备关闭式失败且不覆盖. 每个 Request 目录独立, 可以同时保留; [提交工作流](../../agents/commits.md#exclusive-commit-audit)拥有完整索引, HEAD 和输入的固定及替代版本交接责任, 不阻止独立的已授权源工作树写入.
+Main Agent 在仓库 `.tmp/` 下为每次审核建立独立 Request 目录. 固定名称 `input.json` 只包含同一 effort 的排序 `authorizingIssueIds`, 以及适用时的一个空要求确认. `arw commit-audit prepare --input <absolute-input-path>` 使用该文件的父目录, 从实时 Git 索引物化完整 `request.json`, 并在独立的 `reports/` 子目录中创建空 `review.jsonl`, 然后只输出 Request 的绝对路径. 报告目录使用 [Reviewer 运行规则](#reviewer-runtime) 的目录写授权, `input.json`, `request.json` 和正式结果生成目录保持只读. 除本次 `input.json` 外, 受管理文件碰撞使准备关闭式失败且不覆盖. 每个 Request 目录独立, 可以同时保留; [提交工作流](../../../.agents/skills/commit/SKILL.md#exclusive-commit-audit)拥有完整索引, HEAD 和输入的固定及替代版本交接责任, 不阻止独立的已授权源工作树写入.
 
 Reviewer 只接收 Request 路径, 读取冻结的 Git 索引, 在绑定 `review.jsonl` 中为每项独立要求写一行, 然后只返回 `ready | incomplete`. 每行包含精确单行 `source`, 要求文本, `satisfied | gap | uncertain` 结果和非空证据; 问题项还包含 finding. 文件证据按仓库相对路径分组, 使用经过排序及合并的单行或闭区间集合. 命令证据保存命令和整数退出码.
 
@@ -899,13 +899,13 @@ Document Repository Interface 不改变 ADR-0013 的 Agent 写入分工, 因为�
 
 ## Validation strategy
 
-不依赖彼此结果且没有共享写入冲突的必要验证可以并行. 输入, 配置, 依赖, 必要环境及验证合同准确相同且没有新失败或相反证据时, 可以复用完整有效结果; 实际变化只重跑受影响范围. 已证明来源与执行环境等价的耗时检查可以在普通候选快照中运行, 不建立 Git 工作树登记. 最终依赖主仓库实时索引, 当前设计或 Git 可见文档的授权检查仍在主仓库执行, Main Agent 只在这些短检查时协调相关写入. 定向检查, 不等价快照或相似输出不能替代必要完整验证, 具体操作由[验证规则](../../agents/validation.md)拥有.
+不依赖彼此结果且没有共享写入冲突的必要验证可以并行. 输入, 配置, 依赖, 必要环境及验证合同准确相同且没有新失败或相反证据时, 可以复用完整有效结果; 实际变化只重跑受影响范围. 已证明来源与执行环境等价的耗时检查可以在普通候选快照中运行, 不建立 Git 工作树登记. 最终依赖主仓库实时索引, 当前设计或 Git 可见文档的授权检查仍在主仓库执行, Main Agent 只在这些短检查时协调相关写入. 定向检查, 不等价快照或相似输出不能替代必要完整验证, 具体操作由[验证规则](../../../.agents/skills/validation/SKILL.md)拥有.
 
-普通及真实端到端测试都在已授权交付范围内自主选择必要案例, 不要求逐例提前申请或用户批准. 仍须先判断现有覆盖能否证明独立风险, 使用最少充分覆盖, 避免配置值, 文档句子或实现逻辑的重复断言. 日常工作已经覆盖的真实端到端流程通常不新增, 必须有具体可观察结果与实际回归风险支持必要性. 新建或语义修改后按目标仓库在[测试性能流程](../../agents/test-performance-optimization.md#threshold)声明的单回调阈值测量; 超限仍需用户对准确案例及实测耗时批准例外. 该阈值属于目标仓库, 普通运行不因墙钟超限自动失败, 不通过拆分案例或外移实际等待掩盖耗时.
+普通及真实端到端测试都在已授权交付范围内自主选择必要案例, 不要求逐例提前申请或用户批准. 仍须先判断现有覆盖能否证明独立风险, 使用最少充分覆盖, 避免配置值, 文档句子或实现逻辑的重复断言. 日常工作已经覆盖的真实端到端流程通常不新增, 必须有具体可观察结果与实际回归风险支持必要性. 新建或语义修改后按目标仓库在根 `AGENTS.md` Repository-owned 区域声明的单回调阈值测量 ([测试性能流程](../../../.agents/skills/test-performance-optimization/SKILL.md#threshold)); 超限仍需用户对准确案例及实测耗时批准例外. 该阈值属于目标仓库, 普通运行不因墙钟超限自动失败, 不通过拆分案例或外移实际等待掩盖耗时.
 
 低价值测试清理由用户主动发起, 在匹配活动 issue 中确定本次范围和目标, 不自动建立周期任务. 清理保留权限, 身份, 数据安全, 事务恢复, 正式报告格式及绑定等核心保证和正式运行时行为. 低风险独立观察的裁减需要本次用户明确接受准确范围和实际损失, 不继承历史单次接受决定, 不以清理目标授权削弱核心保证.
 
-本次清理的默认范围, 目标, 计数口径, 价值判断, 删除与优化衔接, 具体授权及审核反馈由[独立清理流程](../../agents/test-value-cleanup.md)统一定义. 单回调阈值, 测量和性能优化仍由[测试性能流程](../../agents/test-performance-optimization.md#threshold)拥有. 清理细则保留单一权威来源, 避免默认值或统计口径调整时多处内容分歧.
+本次清理的默认范围, 目标, 计数口径, 价值判断, 删除与优化衔接, 具体授权及审核反馈由[独立清理流程](../../../.agents/skills/test-value-cleanup/SKILL.md)统一定义. 单回调阈值, 测量和性能优化仍由[测试性能流程](../../../.agents/skills/test-performance-optimization/SKILL.md#threshold)拥有. 清理细则保留单一权威来源, 避免默认值或统计口径调整时多处内容分歧.
 
 通用后台 Agent 的公开控制测试让两个仓库与多个 Main Agent 客户端同时请求最后名额, 观察只有一个用户级管理进程取得所有权, 最多持有一个 ARW 专用共享 App Server, 且其中已加载的独立根线程不超过配置名额. 非本机连接或没有当前用户私密凭据的控制请求不得进入任务控制; 该控制通道不改变 Agent 原生模型网络权限. 根线程启动中, 内部卸载中和存活未知都占名额; 满额时只回收最近最少使用且已保存恢复事实, 没有待处理任务, 子 Agent, 工具或人工交互的空闲根线程, 确认该根线程及相关后代和工具实际卸载后才加载新根线程, 不影响其他根线程; 全部忙碌时立即返回容量不足. 新工作与空闲回收同时到达时, 原运行不能在接受工作后被关闭; 同一原生线程也不能同时恢复到两个环境. 安全卸载后 `followup_task` 恢复准确原线程再交付新工作, `send_message` 或仅查询不启动 App Server. 最后一个根线程卸载且相关工具退出后, 观察连续 60 秒无后台根线程或已接受待启动任务才关闭共享 App Server; 期间新任务取消关闭并复用, 下次空闲重新计时, 由一次性计时事件触发关闭. 安装, 更新和卸载维护在取得授权且安全核对完成后可立即关闭共享 App Server. 多个根线程并发时分别使用本轮模型, 提供方, 推理强度, 服务档位, 工作目录, 权限和环境, 原生请求与通知按线程, 回合及运行身份准确归属; Reviewer 根线程的协作禁令不改变普通后台根线程.
 

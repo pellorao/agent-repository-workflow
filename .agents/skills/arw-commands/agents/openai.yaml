@@ -1,0 +1,5 @@
+interface:
+  display_name: "ARW Commands"
+  short_description: "Use canonical arw commands"
+policy:
+  allow_implicit_invocation: true

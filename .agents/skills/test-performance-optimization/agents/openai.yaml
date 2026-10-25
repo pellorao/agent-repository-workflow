@@ -1,0 +1,5 @@
+interface:
+  display_name: "Test Performance"
+  short_description: "Measure and optimize test durations"
+policy:
+  allow_implicit_invocation: true

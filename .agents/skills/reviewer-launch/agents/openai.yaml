@@ -1,0 +1,5 @@
+interface:
+  display_name: "Reviewer Launch"
+  short_description: "Launch and control independent Reviewers"
+policy:
+  allow_implicit_invocation: true

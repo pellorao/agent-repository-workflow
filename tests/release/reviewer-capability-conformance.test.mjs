@@ -166,9 +166,9 @@ const runReviewerCapabilityCli = (/** @type {string[]} */ args, /** @type {unkno
 const targetedProjectFiles = {
     'AGENTS.md': '# Test Agent Instructions\n\nRead each applicable linked Agent instruction.\n',
     'docs/agents/agent-writes.md': '# Agent Writes\n\nWrite only the bound Reviewer draft.\n',
-    'docs/agents/domain.md': '# Domain\n\nInspect unfamiliar domain concepts before judging them.\n',
+    '.agents/skills/domain-modeling/SKILL.md': '# Domain\n\nInspect unfamiliar domain concepts before judging them.\n',
     'docs/agents/environment.md': '# Environment\n\nCreate temporary files only inside the scenario.\n',
-    'docs/agents/issue-tracker.md': '# Issue Tracker Instructions\n\nApply the issue and specification workflow.\n',
+    '.agents/skills/issue-tracking/SKILL.md': '# Issue Tracker Instructions\n\nApply the issue and specification workflow.\n',
     'docs/agents/reviewer.md': '# Reviewer Responsibilities\n\nRead applicable Agent instructions inside this Repository.\n',
     'docs/agents/roles/code-spec-reviewer.md': '# code-spec-reviewer\n\nCanonical targeted test role.\n',
     'docs/agents/writing.md': '# Writing\n\nUse exact paths and deterministic records.\n',
@@ -208,14 +208,14 @@ const createCommitAuditReviewerProjectOnce = async (/** @type {test.TestContext}
         files: {
             'AGENTS.md': targetedProjectFiles['AGENTS.md'],
             'docs/agents/agent-writes.md': '# Agent Writes\n\nWrite only the bound Reviewer draft.\n',
-            'docs/agents/arw-operations.md': '# ARW Operations\n\nUse the current Commit Audit commands.\n',
-            'docs/agents/domain.md': '# Domain\n\nInspect unfamiliar domain concepts before judging them.\n',
+            '.agents/skills/arw-commands/SKILL.md': '# ARW Operations\n\nUse the current Commit Audit commands.\n',
+            '.agents/skills/domain-modeling/SKILL.md': '# Domain\n\nInspect unfamiliar domain concepts before judging them.\n',
             'docs/agents/environment.md': targetedProjectFiles['docs/agents/environment.md'],
-            'docs/agents/issue-tracker.md': targetedProjectFiles['docs/agents/issue-tracker.md'],
+            '.agents/skills/issue-tracking/SKILL.md': targetedProjectFiles['.agents/skills/issue-tracking/SKILL.md'],
             'docs/agents/reviewer.md': targetedProjectFiles['docs/agents/reviewer.md'],
             'docs/agents/roles/commit-audit-reviewer.md': '# commit-audit-reviewer\n\nCanonical targeted test role.\n',
             'docs/agents/roles/commit-audit-reviewer/gate-2.md': '# Gate 2 Requirements\n\nAudit the applicable long-term rules.\n',
-            'docs/agents/validation.md': '# Validation\n\nUse relevant read-only validation when needed.\n',
+            '.agents/skills/validation/SKILL.md': '# Validation\n\nUse relevant read-only validation when needed.\n',
             'docs/agents/writing.md': '# Writing\n\nUse exact paths and deterministic records.\n',
         },
         prefix: 'arw-reviewer-capability-commit-audit-',
@@ -236,9 +236,9 @@ const createSpecReadinessReviewerProjectOnce = async (/** @type {test.TestContex
         files: {
             'AGENTS.md': targetedProjectFiles['AGENTS.md'],
             'docs/agents/agent-writes.md': '# Agent Writes\n\nWrite only the bound Reviewer draft.\n',
-            'docs/agents/domain.md': '# Domain\n\nRead the scenario domain.\n',
+            '.agents/skills/domain-modeling/SKILL.md': '# Domain\n\nRead the scenario domain.\n',
             'docs/agents/environment.md': targetedProjectFiles['docs/agents/environment.md'],
-            'docs/agents/issue-tracker.md': targetedProjectFiles['docs/agents/issue-tracker.md'],
+            '.agents/skills/issue-tracking/SKILL.md': targetedProjectFiles['.agents/skills/issue-tracking/SKILL.md'],
             'docs/agents/reviewer.md': targetedProjectFiles['docs/agents/reviewer.md'],
             'docs/agents/roles/spec-readiness-reviewer.md': '# spec-readiness-reviewer\n\nCanonical targeted test role.\n',
             'docs/agents/roles/spec-readiness-reviewer/findings.md': '# Findings\n\nUse formal findings.\n',
@@ -578,7 +578,7 @@ const codeStandardsCapabilityFixtureWork = (async () => {
         files: {
             'AGENTS.md': targetedProjectFiles['AGENTS.md'],
             'docs/agents/agent-writes.md': targetedProjectFiles['docs/agents/agent-writes.md'],
-            'docs/agents/domain.md': targetedProjectFiles['docs/agents/domain.md'],
+            '.agents/skills/domain-modeling/SKILL.md': targetedProjectFiles['.agents/skills/domain-modeling/SKILL.md'],
             'docs/agents/environment.md': targetedProjectFiles['docs/agents/environment.md'],
             'docs/agents/reviewer.md': targetedProjectFiles['docs/agents/reviewer.md'],
             'docs/agents/roles/code-standards-reviewer.md': '# code-standards-reviewer\n\nCanonical targeted test role.\n',
@@ -2313,10 +2313,10 @@ test('targeted Commit Audit preparation completes with the production Git comman
         await readFile(join(prepared.handoffs[0].scenarioRoot, 'docs', 'agents', 'agent-writes.md'), 'utf8'),
         await readFile(join(process.cwd(), 'docs', 'agents', 'agent-writes.md'), 'utf8'),
     );
-    for (const instructionPath of ['domain.md', 'validation.md']) {
+    for (const instructionPath of ['.agents/skills/domain-modeling/SKILL.md', '.agents/skills/validation/SKILL.md']) {
         assert.equal(
-            await readFile(join(prepared.handoffs[0].scenarioRoot, 'docs', 'agents', instructionPath), 'utf8'),
-            await readFile(join(process.cwd(), 'docs', 'agents', instructionPath), 'utf8'),
+            await readFile(join(prepared.handoffs[0].scenarioRoot, instructionPath), 'utf8'),
+            await readFile(join(process.cwd(), instructionPath), 'utf8'),
         );
     }
 });

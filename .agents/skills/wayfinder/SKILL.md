@@ -12,7 +12,7 @@ The destination varies per effort, and naming it is the first act of charting �
 
 Wayfinder is **planning** by default: each ticket resolves a decision, and the map is done when the way is clear — nothing left to decide before someone goes and does the thing. The pull to just do the work is usually the signal you've reached the edge of the map and it's time to hand off. An effort can override this in its **Notes** — carrying execution into the map itself — but absent that, produce decisions, not deliverables.
 
-Resolving a Wayfinder issue does not generate Gate 1 or Gate 2. Record its answer and terminal status through the tracker workflow. When the user asks for a Git commit, follow the candidate classification in `docs/agents/commits.md`. A candidate containing only eligible non-implementation content uses its mechanical non-implementation commit workflow. A candidate containing implementation work uses the implementation issue workflow for the complete candidate. Stop when content is unclassified; do not infer that it is implementation work.
+Resolving a Wayfinder issue does not generate Gate 1 or Gate 2. Record its answer and terminal status through the tracker workflow. When the user asks for a Git commit, follow the candidate classification in the `commit` Skill. A candidate containing only eligible non-implementation content uses its mechanical non-implementation commit workflow. A candidate containing implementation work uses the implementation issue workflow for the complete candidate. Stop when content is unclassified; do not infer that it is implementation work.
 
 ## Refer by name
 
@@ -20,7 +20,7 @@ Every map and ticket has a **name**: its title. In everything the human reads, i
 
 ## The Map
 
-The map is one canonical map artifact on this repo's issue tracker. Its decision tickets are Wayfinder issues in the same effort. Read `docs/agents/issue-tracker.md` before creating or updating either artifact.
+The map is one canonical map artifact on this repo's issue tracker. Its decision tickets are Wayfinder issues in the same effort. Read the `issue-tracking` Skill before creating or updating either artifact.
 
 The map is an **index**, not a store. It lists the decisions made and points at the tickets that hold their detail; a decision lives in exactly one place — its ticket — so the map never restates it, only gists it and links.
 
@@ -112,7 +112,7 @@ User invokes with a map reference, which the local tracker resolves. A ticket is
 1. Load the **map** — the low-res view, not every ticket body.
 2. Choose the ticket. If the user named one, use it. Otherwise take the first frontier ticket in order. **Claim it** through the local tracker before any work.
 3. Work through the question — **zoom as needed**: fetch the full body of any related or closed ticket on demand; invoke the skills the `## Notes` block names. If in doubt, use `$grilling` and `$domain-modeling`.
-4. Finish the ticket through the local tracker. If it belongs on the route, record `## Answer`, **append a context pointer** to the map's Decisions-so-far, then set `Status:` to `resolved`. If it lies beyond the destination, follow [Out of scope](#out-of-scope) instead. Follow `docs/agents/issue-tracker.md` for the answer location and fields.
+4. Finish the ticket through the local tracker. If it belongs on the route, record `## Answer`, **append a context pointer** to the map's Decisions-so-far, then set `Status:` to `resolved`. If it lies beyond the destination, follow [Out of scope](#out-of-scope) instead. Follow the `issue-tracking` Skill for the answer location and fields.
 5. Add newly-surfaced tickets, then record their blockers; graduate any fog the answer has made specifiable, clearing each graduated patch from **Not yet specified** so it lives only as its new ticket. If the answer reveals that another ticket sits beyond the destination, leave its resolution for a separate session. If the decision invalidates other parts of the map, update the affected tickets through the local tracker.
 
 The user may run unblocked tickets in parallel, so expect other sessions to be editing the tracker concurrently.

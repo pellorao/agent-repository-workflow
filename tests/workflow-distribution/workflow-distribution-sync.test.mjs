@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
-import {mkdir, readFile, rm, writeFile} from 'node:fs/promises';
+import {mkdir, readFile, writeFile} from 'node:fs/promises';
 import {dirname, join} from 'node:path';
 import test from 'node:test';
 
@@ -75,7 +75,6 @@ const createSourceCheckout = async (/** @type {test.TestContext} */ t) => {
     const root = await createTemporaryDirectory(t, 'arw-sync-');
     await write(root, 'AGENTS.md', 'Repository text.\n<!-- arw:managed:start -->\nManaged root.\n<!-- arw:managed:end -->\nSource-only text.\n');
     await write(root, 'docs/agents/writing.md', '<!-- arw:managed:start -->\nManaged writing.\n<!-- arw:managed:end -->\n');
-    await write(root, 'docs/agents/code-maps.md', '# Code Maps\n\nShared workflow.\n');
     await write(root, 'docs/agents/reviewer.md', '<!-- arw:managed:start -->\n# Reviewer Responsibilities\n\nShared reviewer rules.\n<!-- arw:managed:end -->\n<!-- arw:repository-owned:start -->\nNone.\n<!-- arw:repository-owned:end -->\n');
     await write(root, 'docs/agents/reviewer-role-seeds.md', '# Reviewer Role Seeds\n\nSource Checkout only.\n');
     await write(root, 'docs/agents/roles/reviewer.md', '# Reviewer\n');
@@ -306,27 +305,6 @@ test('sync prepare rejects invalid on-demand Role source layouts before rebuildi
             );
         });
     }
-});
-
-test('sync prepare requires the actual Code Map workflow source', async t => {
-    const root = await createSourceCheckout(t);
-    const stateAdapter = cleanState([]);
-    const analysis = await prepareWorkflowDistributionReview({repositoryRoot: root, stateAdapter});
-    await rm(join(root, 'docs', 'agents', 'code-maps.md'));
-    await write(root, 'distribution/baseline/docs/agents/code-maps.md', '# Existing Code Maps\n');
-
-    const result = await prepareWorkflowDistributionSync({
-        repositoryRoot: root,
-        review: completedReview(analysis),
-        stateAdapter,
-    });
-    assert.equal(result.status, 'blocked');
-    assert.deepEqual(result.diagnostics, [{
-        code: 'agent-document-source-missing',
-        message: 'A required actual Agent document is missing.',
-        path: 'docs/agents/code-maps.md',
-    }]);
-    assert.equal('operations' in result, false);
 });
 
 test('sync prepare rejects a case-folded collision between a protected seed and a generated target', async t => {

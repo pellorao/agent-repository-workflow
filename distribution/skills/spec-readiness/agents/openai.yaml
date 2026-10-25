@@ -1,0 +1,5 @@
+interface:
+  display_name: "Spec Readiness"
+  short_description: "Run independent design readiness review"
+policy:
+  allow_implicit_invocation: true

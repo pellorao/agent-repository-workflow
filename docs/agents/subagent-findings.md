@@ -20,11 +20,11 @@
 - 重复受影响验证, 实际受影响的 Code Review 轴和适用提交审计的成本.
 - 如果适用, 因此为当前候选取得全部有效结果造成的额外等待.
 
-如果用户拒绝问题, 或决定其影响不足以证明变更和重复关卡是合理的, 则不根据该问题更改候选内容. 用户决定修正 Agent 指令或持久设计或治理文档, 不等于批准具体差异. 编辑前遵循 `docs/agents/rule-and-design-changes.md`.
+如果用户拒绝问题, 或决定其影响不足以证明变更和重复关卡是合理的, 则不根据该问题更改候选内容. 用户决定修正 Agent 指令或持久设计或治理文档, 不等于批准具体差异. 编辑前遵循 `rule-and-design-changes` Skill.
 
 ## Authorization results
 
-Main Agent 不得覆盖独立的 Spec Readiness 或 Commit Audit 授权结果. 有争议的就绪结果按 [最终授权时点](spec-readiness.md#authorization-timing)阻断对应的完成, 审计和提交, 不自动停止不依赖该结果的已授权工作. 有争议的 Commit Audit 结果仍阻断对应提交. 替代结论由负责的 Reviewer 按完整受审版本重新判断, 当前版本的正式授权还须完成所属工作流的生成, 提升和验证.
+Main Agent 不得覆盖独立的 Spec Readiness 或 Commit Audit 授权结果. 有争议的就绪结果按 `spec-readiness` Skill 的最终授权时点阻断对应的完成, 审计和提交, 不自动停止不依赖该结果的已授权工作. 有争议的 Commit Audit 结果仍阻断对应提交. 替代结论由负责的 Reviewer 按完整受审版本重新判断, 当前版本的正式授权还须完成所属工作流的生成, 提升和验证.
 
 ## Reviewer challenges
 

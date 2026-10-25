@@ -45,7 +45,6 @@ const createSourceCheckout = async (/** @type {test.TestContext} */ t) => {
     const root = await createTemporaryDirectory(t, 'arw-sync-exact-seed-');
     await write(root, 'AGENTS.md', '<!-- arw:managed:start -->\nManaged root.\n<!-- arw:managed:end -->\n');
     await write(root, 'docs/agents/writing.md', '<!-- arw:managed:start -->\nManaged writing.\n<!-- arw:managed:end -->\n');
-    await write(root, 'docs/agents/code-maps.md', '# Code Maps\n');
     await write(root, 'docs/agents/roles/reviewer.md', '# Reviewer\n');
     await write(root, 'docs/licenses/arw/LICENSE.example-source', 'License.\n');
     await write(root, '.agents/skills/review/SKILL.md', 'Use $review and $external.\n');

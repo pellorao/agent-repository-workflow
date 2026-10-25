@@ -47,22 +47,21 @@ Subagent 只写 Main Agent 分配的范围, Git 写入只由与用户沟通的 M
 
 ## Workflow Triggers
 
-行动前使用每个匹配的条目, 并遵循所指文档中的条件性交接规则.
+行动前使用每个匹配的条目, 并遵循所指 Skill 或文档中的条件性交接规则.
 
-- 构建, 修复, 修改或完成仓库交付内容前, 使用 `implement` Skill.
-- 开始多步实施, 调研或文档编写任务前, 以及委派工作或创建 subagent 前, 读取 `docs/agents/subagent-allocation.md`.
-- 更改已跟踪文件前, 读取 `docs/agents/issue-gate.md`.
-- 实现前, 读取 `docs/agents/spec-readiness.md`, 按其规定安排就绪审核与最终授权检查.
-- 更改行为, 测试或运行验证前, 读取 `docs/agents/validation.md`.
-- 用户要求清理低价值测试时, 读取 `docs/agents/test-value-cleanup.md`.
+- 更改已跟踪文件, 或构建, 修复, 修改, 完成仓库交付内容前: `implement` Skill (Entry 确认授权 issue).
+- 实现前安排就绪审核与最终授权检查: `spec-readiness` Skill.
+- 更改行为, 测试或运行验证前: `validation` Skill; 创建或语义修改测试案例后测量耗时: `test-performance-optimization` Skill; 用户要求清理低价值测试: `test-value-cleanup` Skill.
+- 处理 issue, map, spec 或其工作流字段前, 以及报告 issue 完成前: `issue-tracking` Skill.
+- 启动或控制独立 Reviewer 前: `reviewer-launch` Skill.
+- 用户请求 Git 提交后, 在提交验证或提交前: `commit` Skill.
+- 修改 Agent 指令或保存持久设计或治理的文档前: `rule-and-design-changes` Skill.
+- 探索不熟悉的领域, 命名持久领域概念或决定架构边界前: `domain-modeling` Skill.
+- 处理 ARW 命令和仓库发现时: `arw-commands` Skill; Code Map 适用时: `code-maps` Skill.
+- 开始多步任务, 委派工作或创建 subagent 前, 读取 `docs/agents/subagent-allocation.md`.
 - 创建或重命名文件或目录, 或编写仓库文本前, 读取 `docs/agents/writing.md`.
 - 创建临时文件或目录前, 读取 `docs/agents/environment.md`.
-- 处理 issue, map, spec 或其工作流字段前, 以及报告 issue 完成前, 读取 `docs/agents/issue-tracker.md`.
 - 接受或处理负责识别问题的 subagent 所提供的问题前, 读取 `docs/agents/subagent-findings.md`.
-- 修改 Agent 指令或保存持久设计或治理的文档前, 读取 `docs/agents/rule-and-design-changes.md`.
-- 探索不熟悉的领域, 命名持久领域概念或决定架构边界前, 读取 `docs/agents/domain.md`.
-- 用户请求 Git 提交后, 在提交验证或提交前读取 `docs/agents/commits.md`.
-- 处理 ARW 命令和仓库发现时, 读取 `docs/agents/arw-operations.md`.
 
 Code Map roots: (none)
 <!-- arw:managed:end -->

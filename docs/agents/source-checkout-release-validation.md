@@ -56,7 +56,7 @@ Registry 中的跨平台 Installation 场景必须使用候选捆绑包携带的
 
 只有上述审核收敛过程修改了候选, 才在审核全部通过后返回一次 `Repair iteration`. 完整本地发布验证再次成功, 且审核对象, 输入和适用规则保持不变时, 按 `code-review` 复用已有的 Spec Readiness 和 Gate 3 通过结果, 不重新调用 Reviewer. 没有发生候选修改时直接继续本节后续步骤.
 
-Gate 3 具备当前完整有效的通过结果后, 当前发布准备 issue 的职责已经完成. Main Agent 按 [issue 完成责任](issue-tracker.md#issue-lifecycle)更新真实终态和文字未变且已经满足的验收标记, 在 `## Validation` 中保存实际验收证据, 在 `## Comments` 中记录讨论和审核事件. 两个记录章节变化按统一记录责任机械核对, 其他候选变化按 `code-review` 的实际输入有效性规则处理. 终态转换继续按通用提交规则运行 Gate 1, Gate 2, Commit Audit 和 `commit-audit verify`; 没有发布专用审核豁免.
+Gate 3 具备当前完整有效的通过结果后, 当前发布准备 issue 的职责已经完成. Main Agent 按 [issue 完成责任](../../.agents/skills/issue-tracking/SKILL.md#issue-lifecycle)更新真实终态和文字未变且已经满足的验收标记, 在 `## Validation` 中保存实际验收证据, 在 `## Comments` 中记录讨论和审核事件. 两个记录章节变化按统一记录责任机械核对, 其他候选变化按 `code-review` 的实际输入有效性规则处理. 终态转换继续按通用提交规则运行 Gate 1, Gate 2, Commit Audit 和 `commit-audit verify`; 没有发布专用审核豁免.
 
 Commit Audit Reviewer 要求修改实现, 测试, 治理或 issue 正式要求时, 当前 Commit Audit 结果按通用提交规则失效, Main Agent 回到本节的审核收敛过程. 按实际影响刷新必要就绪, 验证及代码审核轴并取得全部适用的有效通过结果后, 再返回一次 `Repair iteration`. 只有完整本地发布验证重新通过, 审核结果仍可复用, 且 issue 仍满足终态转换要求时, 才重新执行 Commit Audit. 两个记录章节的变化按下方闭合收尾范围处理, 不因此重跑本地发布验证. Commit Audit 不会提前到完整本地发布验证或 issue 终态转换之前.
 

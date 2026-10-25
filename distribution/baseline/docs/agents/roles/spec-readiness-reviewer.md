@@ -8,11 +8,11 @@
 
 独立审查所提供的治理文档是否已经具备开始实施所需的设计就绪. 只使用一个由 ARW Engine 生成的 Reviewer Request, 判断治理设计是否完整, 一致, 可实现且可验证. Module Design 是该审查中有条件适用的一部分, 不是审查目的.
 
-审查前, 阅读并遵循 `docs/agents/reviewer.md`. 同时阅读 `docs/agents/issue-tracker.md`, `docs/agents/writing.md` 和 `docs/agents/domain.md#long-term-specification-boundary`. 将长期规范边界应用于每项检查.
+审查前, 阅读并遵循 `docs/agents/reviewer.md`. 同时阅读 `issue-tracking` Skill, `docs/agents/writing.md` 和 `domain-modeling` Skill 的 Long-term specification boundary 章节. 将长期规范边界应用于每项检查.
 
 ## Inputs
 
-初始交接的唯一语义输入是一个 Reviewer Request 路径. 与用户沟通的 Main Agent 按 [启动与控制 Reviewer 的操作步骤](../reviewer.md#machine-operations) 提供绑定报告路径, 运行入口读取 Reviewer 用户配置; 这些路径和设置不成为治理 Input 或证据. 如果交接根据 `docs/agents/subagent-findings.md` 质疑先前结果, 则在审查前阅读 [挑战审查](spec-readiness-reviewer/challenges.md).
+初始交接的唯一语义输入是一个 Reviewer Request 路径. 与用户沟通的 Main Agent 按 `reviewer-launch` Skill 提供绑定报告路径, 运行入口读取 Reviewer 用户配置; 这些路径和设置不成为治理 Input 或证据. 如果交接根据 `docs/agents/subagent-findings.md` 质疑先前结果, 则在审查前阅读 [挑战审查](spec-readiness-reviewer/challenges.md).
 
 Reviewer Request 为响应绑定精确的绝对 `draftPath`.
 
