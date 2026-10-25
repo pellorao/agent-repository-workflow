@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {mkdir, readFile, writeFile} from 'node:fs/promises';
+import {mkdir, readFile, rm, writeFile} from 'node:fs/promises';
 import {dirname, join} from 'node:path';
 import test from 'node:test';
 import {fileURLToPath} from 'node:url';
@@ -16,11 +16,14 @@ const settings = {model: 'haiku', modelProvider: 'anthropic', reasoningEffort: '
 const fixture = async (t, environment = {}) => {
     const directory = await createTemporaryDirectory(t, 'arw-claude-sessions-');
     const log = join(directory, 'calls.jsonl');
-    const sessions = createClaudeSessions({executable, environment: {...process.env, ...environment, FAKE_CLAUDE_LOG: log, CLAUDE_CONFIG_DIR: directory}});
+    await writeFile(join(directory, 'config.json'), JSON.stringify({configVersion: 3, editor: {command: 'code', args: ['{file}']}, reviewEditor: {command: 'code', args: ['{file}']},
+        jira: {listLimit: 50}, reviewers: {'code-spec-reviewer': {env: {ANTHROPIC_BASE_URL: 'https://models.example'}}}}));
+    const sessions = createClaudeSessions({executable,
+        environment: {...process.env, ...environment, FAKE_CLAUDE_LOG: log, CLAUDE_CONFIG_DIR: directory}});
     t.after(() => sessions.close());
     /** @type {Array<() => void>} */
     const waiters = [];
-    const open = () => sessions.open({settings, cwd: directory, readPaths: [], writePaths: [join(directory, 'reports')],
+    const open = () => sessions.open({settings: {...settings, programDirectory: directory}, role: 'code-spec-reviewer', cwd: directory, readPaths: [], writePaths: [join(directory, 'reports')],
         onNotification: () => {for (const wake of waiters.splice(0)) wake();}});
     const changed = () => new Promise(resolve => {waiters.push(() => resolve(undefined));});
     const calls = async () => (await readFile(log, 'utf8')).trim().split('\n').map(line => JSON.parse(line));
@@ -52,6 +55,8 @@ test('a new Claude session runs one restricted turn and later turns resume it', 
     const [created, resumed] = await f.calls();
     assert.equal(created.prompt, 'Review it.');
     assert.equal(created.cwd, f.directory);
+    assert.equal(created.baseUrl, 'https://models.example');
+    assert.equal(JSON.parse(created.args[created.args.indexOf('--json-schema') + 1]).required[0], 'status');
     for (const [flag, value] of [['--session-id', threadId], ['--model', 'haiku'], ['--effort', 'high'], ['--permission-mode', 'dontAsk'],
         ['--tools', 'Read,Grep,Glob,Edit,Write'], ['--allowedTools', `Edit(/${join(f.directory, 'reports')}/**)`], ['--append-system-prompt', 'Reviewer rules.']]) {
         assert.equal(created.args[created.args.indexOf(flag) + 1], value, flag);
@@ -105,7 +110,7 @@ test('a Claude Code Main starts, follows up, waits for and interrupts a Claude R
     await mkdir(stateDirectory, {recursive: true});
     await mkdir(programDirectory);
     await writeFile(join(programDirectory, 'config.json'), JSON.stringify({configVersion: 3, editor: {command: 'code', args: ['{file}']},
-        reviewEditor: {command: 'code', args: ['{file}']}, jira: {listLimit: 50}}));
+        reviewEditor: {command: 'code', args: ['{file}']}, jira: {listLimit: 50}, reviewers: {'code-spec-reviewer': {env: {ANTHROPIC_BASE_URL: 'https://host.example'}}}}));
     const log = join(directory, 'calls.jsonl');
     /** @type {NodeJS.ProcessEnv} */ const environment = {...process.env, FAKE_CLAUDE_LOG: log, CLAUDE_CONFIG_DIR: directory};
     const started = host = await createBackgroundAgentHost({installationDirectory: join(directory, 'installation'), programDirectory,
@@ -133,6 +138,10 @@ test('a Claude Code Main starts, follows up, waits for and interrupts a Claude R
         assert.fail('The Claude Reviewer did not complete.');
     };
     const first = await report('first');
+    await writeFile(join(repositoryRoot, 'arw.config.json'), JSON.stringify({configVersion: 2, reviewers: {'code-spec-reviewer': {env: {ANTHROPIC_AUTH_TOKEN: 'secret'}}}}));
+    const rejected = await started.dispatch({ownerId: 'main-session', caller, operation: 'spawn_agent', input: {...handoff, ...first}});
+    assert.match(JSON.stringify(rejected), /code-spec-reviewer\.env is allowed only in the user-level ARW config\.json/);
+    await rm(join(repositoryRoot, 'arw.config.json'));
     const {runId} = await dispatch('spawn_agent', {...handoff, ...first});
     assert.deepEqual(await completion(runId), {status: 'ready', reportPath: first.reportPath});
     assert.match(renderBackgroundAgents(await started.manager.list()), /idle +code-spec-reviewer +.*main-session/);
@@ -142,6 +151,7 @@ test('a Claude Code Main starts, follows up, waits for and interrupts a Claude R
     const calls = (await readFile(log, 'utf8')).trim().split('\n').map(line => JSON.parse(line));
     assert.equal(calls.length, 2);
     assert.equal(calls[0].args[calls[0].args.indexOf('--model') + 1], 'haiku');
+    assert.equal(calls[0].baseUrl, 'https://host.example');
     assert.equal(calls[1].args[calls[1].args.indexOf('--resume') + 1], calls[0].args[calls[0].args.indexOf('--session-id') + 1]);
 
     environment.FAKE_CLAUDE_MODE = 'hang';
