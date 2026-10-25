@@ -18,3 +18,7 @@ upstream/.workspaces/
 
 # 状态页
 .status/
+
+# Claude Code 本地文件; .claude/skills/ 是提交的投影
+.claude/worktrees/
+.claude/settings.local.json

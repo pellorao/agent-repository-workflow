@@ -421,6 +421,33 @@ In Claude Code, a Reviewer whose `modelProvider` is `"anthropic"` runs through h
 
 Because `env` may hold credentials, it is accepted only in the user-level `config.json`. If a repository's `arw.config.json` contains `env`, configuration validation fails and the Reviewer does not start.
 
+### Allow common ARW commands in Claude Code
+
+ARW does not generate `.claude/settings.json`. To let Claude Code run these `arw` commands without prompting, as Codex does with `.codex/rules/default.rules`, merge the `permissions.allow` list below into the user-level `~/.claude/settings.json` or the repository's `.claude/settings.json`. In the ARW source repository, where commands run as `node arw.mjs`, replace `arw ` with `node arw.mjs ` in each entry.
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "Bash(arw list:*)",
+      "Bash(arw li:*)",
+      "Bash(arw lm:*)",
+      "Bash(arw ls:*)",
+      "Bash(arw print:*)",
+      "Bash(arw spec-readiness prepare:*)",
+      "Bash(arw spec-readiness verify:*)",
+      "Bash(arw --version:*)",
+      "Bash(arw migrate artifacts:*)",
+      "Bash(arw code-map verify:*)",
+      "Bash(arw text check:*)",
+      "Bash(arw text fix:*)",
+      "Bash(arw workflow verify:*)",
+      "Bash(arw workflow update:*)"
+    ]
+  }
+}
+```
+
 ## Included Skills
 
 `arw workflow init` installs applicable Skills for the platforms selected by the user. Codex uses `.agents/skills` in the target repository; Claude Code uses `.claude/skills`. A Skill is a set of task-specific operating instructions. You can name one directly in a conversation, for example, `Use $grill-with-docs to confirm the requirements with me`.
