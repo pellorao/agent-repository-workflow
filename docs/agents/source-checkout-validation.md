@@ -20,7 +20,7 @@ Windows PATH 覆盖使用公开责任归属操作实际检验安装写入, 等�
 
 Issue 文档要求覆盖包括相对于仓库根目录的 spec 和仓库文档引用, 可选锚点, `Not required`, 错误位置, `../`, `./`, 绝对路径, 反斜杠, NUL, 路径穿越和无效锚点. Spec Readiness 和 Commit Audit 必须使用相同的归一化结果, 且不得相对于 issue 目录进行解析. 路径规则迁移只能更改非终态 issue 当前的 `## Spec Requirement`. 定向检查保留终态 issue 字节和 `## Comments` 字节.
 
-Reviewer Capability Conformance 覆盖仍由 [Reviewer Capability Validation](reviewer-capability-validation.md) 负责. 发布验证中省略 Spec Readiness 的规则和测试覆盖由 [Source Checkout Release Validation](source-checkout-release-validation.md) 负责. 不得在此复制这些矩阵.
+Reviewer Capability Conformance 覆盖仍由 [Reviewer Capability Validation](reviewer-capability-validation.md) 负责. 不得在此复制这些矩阵.
 
 ### Application and JIRA workflow
 
@@ -39,20 +39,6 @@ Module 修正覆盖包括每个软锁, Acceptance 任务列表标记归一化, �
 完成流程覆盖包括只涉及 spec 的验收, effort issue 下限, 唯一验证 issue, 依赖完整性, 普通 `wontfix`, 验证 issue 的 `completed` 要求, 读取已经提交的 HEAD, 以及精确的 effort 上游证明. JIRA 写入覆盖包括来源和目标状态, 精确评论身份, 较新页面之前的最新 10 条评论, 有目标但没有评论时的修复, 有评论但没有转换时的恢复, 零个或多个转换, 评论优先顺序, 完整成功操作, 每个失败阶段及其影响, 写入后验证, 以及发生变化的授权输入.
 
 常规覆盖不访问真实 JIRA 服务, 不读取真实令牌, 不启动真实浏览器, 也不修改用户仓库. 实时本地服务是确定性集成证据, 不是第二个 HTTP Adapter.
-
-### Post-tag Bootstrap
-
-确定性的 `post-tag` Bootstrap 覆盖在创建任何临时资源前, 实际检验仓库, 引用, 对象, 安装程序路径和字节验证. 因此获取失败时没有临时清理. 临时创建成功后, 覆盖独占文件物化, 启动器准备, 子进程成功, 非零退出, 信号终止, 生成进程失败, 事件和启动器诊断, 以及从最终化路径精确执行一次清理尝试. 实际检验隔离的启动器和进程环境, 但不把精确的环境构建方式设为合同. 保留实际的子进程退出代码, 信号和可用流. 诊断顺序保持为获取, 物化, 子进程结果, 事件, 启动器和清理. 清理失败位于更早的诊断之后, 并把原本成功的结果改为失败.
-
-### Release validation archives and Registry
-
-归档覆盖使用生产创建和验证 Interface, 以及隔离的来源和目标目录. 覆盖创建和验证成功对象, 未知归档类型, 无效来源或路径, 不安全或格式错误的项, 规范 tar 和精确清单, 独占目标, 写入和关闭失败, 不完整目标清理, 附加清理错误, 干净重试, 来源字节绑定, 验证期间零写入, 以及没有部分解码结果.
-
-Release Validation Registry Interface 覆盖提供当前有效的初始化 issue 场景选择, 并断言完整的 `succeeded` 结果, 完整 Registry, 规范顺序, 唯一选择绑定, 深度不可变性, 重复调用的语义相等和零外部副作用. 把非字符串和空选择覆盖为 `TypeError`, 把未注册或不适用的选择覆盖为具有稳定诊断且没有 `registry` 载荷的完整 `blocked` 结果. 断言完整的返回结构, 使当前 Module 定义无效时测试失败. 不得向生产 Interface 添加 Registry 覆盖值或仅用于测试的输入, 也不得为这项纯计算编造 `failed` 分支.
-
-### Release validation Adapters
-
-Release Candidate Process Seam 覆盖通过公开 Interface 提供确定性的子进程结果, 并验证可执行文件, 参数向量, 仓库工作目录, 观察顺序和失败映射. Machine Lifecycle 和 VMware Guest Adapter 覆盖通过其公开 Interface 提供确定性的进程, 观察, 复制和运行结果, 然后验证所请求的操作, 参数, 返回结果和工作流顺序. 复制覆盖验证从主机到来宾系统和从来宾系统到主机的 SCP 中来源与目标的顺序, Windows 和 POSIX 来宾系统路径拼写, 平台特定引用, 固定主机密钥参数和凭据省略. 测试可以记录调用来执行这些断言, 但记录对象, 字段和存储结构不属于合同.
 
 ## Source Checkout validation commands
 

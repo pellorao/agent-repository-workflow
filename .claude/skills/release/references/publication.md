@@ -1,0 +1,53 @@
+# 发布参考
+
+以下步骤都在 VM 验证全部通过之后进行. 每个外部写入前, 都先向维护者说明准确的项目, `origin`, 分支, 版本和 commit, 并取得授权.
+
+## Push and tag
+
+1. 确认 `git rev-parse HEAD` 等于 VM `PASS` 行中的 commit, 且工作树干净. 如果候选之后又有改动, 回到 Skill 第 2 节.
+2. `git push origin <branch>`, 然后用 `git ls-remote origin refs/heads/<branch>` 确认远端分支指向该 commit. 推送前确认 `git remote get-url origin` 等于 `release-validation.json` 中的规范 HTTPS 地址, 不一致时停止.
+3. `git tag <version> <commit>`, 然后 `git push origin refs/tags/<version>`. tag 名就是 `MAJOR.MINOR.PATCH`, 不加 `v` 前缀. 推送后用 `git ls-remote --tags origin <version>` 确认 tag 指向该 commit. 规范远端第一次看到的 tag 就必须指向正式 commit, 已推送的 tag 绝不移动.
+
+## Verify the public Bootstrap
+
+在临时目录中, 用公开 HTTPS 地址验证用户实际使用的安装方式:
+
+```text
+curl -fsSL https://raw.githubusercontent.com/<owner>/<repo>/<version>/scripts/install-arw.mjs -o <tmp>/install-arw.mjs
+HOME=<tmp>/home node <tmp>/install-arw.mjs --version <version> --non-interactive --register-path false
+<tmp>/home/.agent-repository-workflow/arw --version
+```
+
+最后一条命令必须输出 `<version>`. 验证完成后删除 `<tmp>`.
+
+## Publish the GitHub announcement
+
+先写公告文件. 公告的 title 和正文都使用中文:
+
+- 比较范围是上一个正式 Release tag 到本次 tag. 只写安装者, 使用者或维护者能在本次 tag 上观察到的变化. 中间提交引入后又被撤销或替换的内容不写, 发布验证流程等内部细节也不写.
+- 标题后先用一段简介概括本版本的主题和收益. 然后只列出实际有内容的分类: 新功能, 问题修复, 文档, 日常维护. 每个条目先用普通语言说明结果, 再链接对应的提交.
+- 必须包含安装章节, 依次说明: 支持的 Node.js 版本; 下载本版本的 `scripts/install-arw.mjs`, 用 Node.js 运行; 重新打开终端并运行 `arw --version` 验证; 新仓库用 `arw workflow init` 初始化, 已受管仓库用 `arw workflow update` 更新. 不提供克隆源码仓库的安装方式.
+- 最后是 `Changelog`: 包含上一个 tag 到本次 tag 的比较链接, 以及仍然有效的逐项提交链接. 首次发布没有上一个 tag, 此时省略比较链接.
+
+把准确的 title 和完整的公告文件交给维护者审核. 批准后不再修改; 任何修改都要重新审核.
+
+确认 `gh auth status` 通过后, 先运行只读查看:
+
+```text
+gh release view <version> --repo <project> --json tagName,name,body,isDraft,isPrerelease,targetCommitish,url
+```
+
+- Release 已存在: 如果 tag, title 和正文都与批准的内容一致, 并且不是 draft 或 prerelease, 视为已完成. 任一字段冲突时停止, 不做更新或删除.
+- Release 不存在: 运行 `gh release create <version> --repo <project> --verify-tag --title <title> --notes-file <approved-file>`. 不加 `--target`, 不自动生成公告, 不上传资产. 创建后再运行一次 `view` 核对. 创建超时或结果不明确时, 也只运行 `view`, 不盲目重复创建.
+
+tag 指向的 commit 以 `git ls-remote` 的结果为准, 不以 `targetCommitish` 为准.
+
+## Recover a failed tag
+
+Bootstrap 验证失败时:
+
+1. 确认本地和远端 tag 都仍然指向候选 commit. 无法确认时停止, 询问维护者.
+2. 一次性删除这两个 tag: `git push origin :refs/tags/<version>` 和 `git tag -d <version>`. 删除后确认两处都已不存在.
+3. 把问题记录到发布准备 issue, 修复后形成新候选, 从 Skill 第 2 节重新开始.
+
+GitHub Release 的创建或核对失败发生在 Bootstrap 验证通过之后. 这种情况下保留 tag, 记录远端 Release 的准确状态后停止. 后续的创建, 更新或删除都需要维护者重新决定.

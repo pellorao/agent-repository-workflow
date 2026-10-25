@@ -1,24 +1,7 @@
 {
-  "initializationIssueScenario": "scenarios/ubuntu/fresh-agent-assisted",
-  "prepareBundles": {
-    "hostCommandTimeoutMs": 300000
-  },
   "repositories": {
     "sourceCheckout": {
       "url": "https://github.com/pellorao/agent-repository-workflow.git"
-    }
-  },
-  "vmware": {
-    "hardPowerOffCompatibility": {
-      "exitCode": 4294967295,
-      "stderr": "",
-      "stdoutTemplate": "Error: The virtual machine is not powered on: {machineLocation}\n",
-      "vmrunVersion": "vmrun version 1.17.0.25219725"
-    },
-    "softPowerOffTimeoutMs": {
-      "Alpine": 6000,
-      "Ubuntu": 6000,
-      "Windows 11": 9000
     }
   }
 }

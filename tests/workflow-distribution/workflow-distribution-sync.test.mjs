@@ -616,6 +616,7 @@ test('sync prepare exposes only a digest and apply directly rebuilds the fixed g
     await write(root, '.agents/skills/reviewer-benchmark/SKILL.md', 'Use $reviewer-benchmark and $source-only-external.\n');
     await write(root, '.agents/skills/reviewer-benchmark/agents/openai.yaml', 'policy:\n  allow_implicit_invocation: false\n');
     await write(root, '.agents/skills/reviewer-benchmark/references/strata.md', 'Source-only model operations.\n');
+    await write(root, '.agents/skills/release/SKILL.md', 'Source-only release operations.\n');
     const stateAdapter = cleanState([]);
     const analysis = await prepareWorkflowDistributionReview({repositoryRoot: root, stateAdapter});
     await write(root, 'distribution/rogue/nested.txt', 'obsolete\n');
@@ -642,7 +643,7 @@ test('sync prepare exposes only a digest and apply directly rebuilds the fixed g
     const built = await buildWorkflowDistribution({distributionDirectory: join(root, 'distribution')});
     assert.equal(built.status, 'succeeded', JSON.stringify(built.diagnostics));
     if (built.status !== 'succeeded') throw new Error('Expected rebuilt Workflow Distribution.');
-    assert.equal(built.payload.some(file => file.path.startsWith('skills/reviewer-benchmark/')), false);
+    assert.equal(built.payload.some(file => /^skills\/(?:reviewer-benchmark|release)\//u.test(file.path)), false);
     assert.ok(built.payload.some(file => file.path === 'baseline/docs/agents/roles/reviewer.md'));
     for (const [platform, adapter] of /** @type {const} */ ([
         ['codex', createCodexPlatformAdapter()],

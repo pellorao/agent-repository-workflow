@@ -6,20 +6,10 @@ import test from 'node:test';
 import {createTemporaryDirectory} from '../helpers/cleanup.mjs';
 import {
     createScopedFilesystem,
-    isPortableFilename,
     joinRelativePath,
     resolveAbsolutePathWithinScope,
     resolveRelativePathWithinScope,
 } from '../../lib/common/filesystem.mjs';
-
-test('Filesystem filename portability rejects Windows-invalid components without restricting ordinary Unicode or long paths', () => {
-    for (const value of ['', '.', '..', 'bad:name', 'folder/file', 'folder\\file', 'line\nfeed', 'zero\0byte', 'trailing.', 'trailing ', 'NUL.txt', 'LPT3.log', 'COM\u00b2.log', 'a'.repeat(256), '\u754c'.repeat(86), null]) {
-        assert.equal(isPortableFilename(value), false, JSON.stringify(value));
-    }
-    for (const value of ['.git', '.hidden', 'ignored file.bin', 'caf\u00e9.txt', 'COM10.txt', 'a'.repeat(255), '\u754c'.repeat(85)]) {
-        assert.equal(isPortableFilename(value), true, value);
-    }
-});
 
 test('Filesystem Module resolves relative and absolute paths within a scope without I/O', () => {
     const scope = resolve('missing-scope');

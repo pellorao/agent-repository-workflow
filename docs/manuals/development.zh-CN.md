@@ -19,9 +19,9 @@ ARW Artifact 指 `.scratch` 中登记的 issue, map 和 spec 工作记录. Spec 
 | 修改共享工作流或平台投射 | [Workflow Distribution 和 Platform Projection](#workflow-distribution-和-platform-projection) | 实际工作流文件, 分发配置和开发长期规格 |
 | 采用外部 Skill Package 更新 | [Upstream Sync](#upstream-sync) | 来源配置, Base/Ours/Theirs 和 Upstream Sync 规则 |
 | 修改 Reviewer Role, 独立运行或验证 Reviewer 能力 | [Reviewer 配置和能力验证](#reviewer-配置和能力验证) | 规范 Role, 用户配置和 Reviewer 能力规则 |
-| 验证跨操作系统安装或维护受验环境 | [跨操作系统验证环境](#跨操作系统验证环境) | 活动 issue, VM 规则和发布登记表 |
+| 验证跨操作系统安装或维护受验环境 | [跨操作系统验证环境](#跨操作系统验证环境) | 活动 issue 和 `$release` Skill |
 | 准备首次 GitHub 源码迁移 | [首次 GitHub 迁移](#首次-github-源码迁移) | 已批准的迁移说明和最新源码文件快照 |
-| 验证并发布稳定版本 | [稳定版本发布](#稳定版本发布) | 发布长期规格和源码仓库发布规则 |
+| 验证并发布稳定版本 | [稳定版本发布](#稳定版本发布) | 发布长期规格和 `$release` Skill |
 
 Agent 执行工作时从根 `AGENTS.md` 进入适用规则. 本手册只帮助维护者选择内容路线, 不说明 Agent 工作流. 如果一个任务横跨多条路线, 先分别找到各自的权威来源和操作入口.
 
@@ -164,26 +164,7 @@ node scripts/reviewer-capability-conformance.mjs prepare
 
 ### 跨操作系统验证环境
 
-验证跨操作系统安装行为或维护受验环境时使用这条路线. 从 [跨平台 VM 验证](../agents/cross-platform-vm-validation.md) 进入当前环境要求, 命令, 场景和维护说明. 对应的源码仓库编排入口是 `scripts/release-vm-validation.mjs`.
-
-两个验证目标由仓库外的本地解压源码目录提供, 分别是 `agentAssisted` 和 `plain`. 它们不需要原 Git 历史或固定原 commit ID. 独立的仓库外 sources JSON 提供两个绝对目录路径, 并与 VM JSON 分开保存:
-
-~~~json
-{
-  "agentAssisted": {"directory": "<absolute-agent-assisted-directory>"},
-  "plain": {"directory": "<absolute-plain-directory>"}
-}
-~~~
-
-准备 bundle 时必须显式提供该 sources 文件的路径:
-
-~~~text
-node scripts/release-vm-validation.mjs prepare-bundles --candidate <full-object-id> --workspace <absolute-session-workspace> --sources <absolute-json-path>
-~~~
-
-准备过程会在每次运行的临时工作区复制当前源码, 在那里初始化临时 Git 仓库, 创建一个本地提交, 并为每个目标制作 bundle. 它不修改原目录, 也不访问 GitLab. VM JSON 仍为 schema version 2, 不包含这些本地来源路径.
-
-同一次验证运行中的全部 VM 使用同一组已准备 bundle. 要验证变化后的源码目录, 需要准备一次新运行.
+需要证明安装, PATH 登记和 `arw workflow init` 在真实 Windows 与 Linux 系统中可用时使用这条路线. 源码仓库专用的 `$release` Skill (`.agents/skills/release/`) 说明 VM 配置, 受验系统要求和快照纪律. `scripts/release-vm.mjs` 还原 VMware 快照, 经 SSH 传入候选 Git bundle, 在 guest 中运行 `scripts/release-guest-check.mjs`, 结束后再次还原快照.
 
 ### 首次 GitHub 源码迁移
 
@@ -193,13 +174,7 @@ node scripts/release-vm-validation.mjs prepare-bundles --candidate <full-object-
 
 ### 稳定版本发布
 
-当前没有稳定版本. 完整发布验证仍要求一个 prior stable release, VM 矩阵也包含从旧版本安装和转换的场景. 即使候选在没有更早稳定 tag 时可以使用空树基线, bundle 准备仍要求 `priorRelease`. 这不证明完整的首次发布矩阵已经受支持. 在另行达成设计并完成实现前, 不跳过旧版本场景, 不虚构 prior release, 不选择新版本号, 也不宣称首次发布已就绪.
-
-未来获得授权的正式发布使用外部 `gh` CLI. Release conformance 通过且用户批准准确 title 和公告内容后, 流程只在目标 Release 不存在时创建它, 随后读回远端对象并核对. 它不会更新已存在的 Release, 也不会在未获授权时创建 Release. 本次源码迁移本身不执行版本发布.
-
-验证或发布稳定版本时使用这条路线. 发布候选和外部发布责任由 [发布长期规格](../specs/agent-repository-workflow-release/spec.md) 拥有, 当前操作从 [Source Checkout 发布验证](../agents/source-checkout-release-validation.md) 进入.
-
-相关维护入口是 `scripts/release-vm-validation.mjs`, `scripts/release-conformance.mjs`, `scripts/create-release-evidence-archive.mjs` 和 `scripts/verify-post-tag-bootstrap.mjs`. 各入口的调用关系和参数由 Source Checkout 发布规则负责.
+验证或发布稳定版本时使用这条路线. Agent 只在维护者显式调用该 Skill 时执行 (Codex 中为 `$release`, Claude Code 中为 `/release`); 本地检查, VM 验证, tag, 公开 Bootstrap 检查, GitHub Release 和 tag 恢复都由该 Skill 负责. 发布合同由 [发布长期规格](../specs/agent-repository-workflow-release/spec.md) 拥有.
 
 ## 按责任导航代码
 
@@ -220,17 +195,13 @@ node scripts/release-vm-validation.mjs prepare-bundles --candidate <full-object-
 | 入口 | 责任 |
 | --- | --- |
 | `scripts/check-workflow-distribution.mjs` | 验证生产工作流分发载荷和平台投射 |
-| `scripts/create-release-evidence-archive.mjs` | 创建或验证发布流程要求的证据归档 |
 | `scripts/generate-install-arw.mjs` | 生成或核对可单独下载的引导脚本 |
 | `scripts/install-arw.mjs` | 可单独下载并从固定发布来源启动安装的引导脚本 |
-| `scripts/prepare-release-version-fixtures.mjs` | 为发布矩阵准备版本生命周期所需的隔离夹具 |
-| `scripts/release-conformance.mjs` | 验证绑定证据的 `pre-tag` 或 `post-tag` 发布候选 |
-| `scripts/release-guest-step.mjs` | 在受验系统内执行发布登记表分配的单步产品场景 |
-| `scripts/release-vm-validation.mjs` | 准备发布捆绑包并编排受验系统验证 |
+| `scripts/release-guest-check.mjs` | 在可丢弃的受验系统中检查安装, PATH 登记, `arw workflow init` 和卸载 |
+| `scripts/release-vm.mjs` | 在 VMware VM 中运行 guest 检查并还原快照 |
 | `scripts/reviewer-capability-conformance.mjs` | 准备或验证 Reviewer 能力场景 |
 | `scripts/sync-workflow-distribution.mjs` | 审核, 准备并应用发布前工作流分发同步 |
 | `scripts/upstream-sync.mjs` | 执行固定外部来源的 Upstream Sync 生命周期 |
-| `scripts/verify-post-tag-bootstrap.mjs` | 从已发布标签取得引导脚本并验证调用链 |
 
 ### lib
 
@@ -255,7 +226,7 @@ node scripts/release-vm-validation.mjs prepare-bundles --candidate <full-object-
 - [开发长期规格](../specs/agent-repository-workflow-development/spec.md): 源码仓库布局, 工作流分发, 平台投射和公共 Module.
 - [安装长期规格](../specs/agent-repository-workflow-installation/spec.md): 引导脚本, 安装, 全局配置, PATH 和卸载.
 - [Upstream Sync 长期规格](../specs/agent-repository-workflow-upstream-sync/spec.md): 外部来源采用的行为合同.
-- [发布长期规格](../specs/agent-repository-workflow-release/spec.md): 发布候选, Reviewer 能力, VM, 归档, 标签和外部写入.
+- [发布长期规格](../specs/agent-repository-workflow-release/spec.md): 发布候选, Reviewer 能力, VM 验证, 标签和外部写入.
 - [读者文档规范](../specs/arw-reader-documentation/spec.md): README 与全部手册的读者目标和责任边界.
 - [验证规则](../../.agents/skills/validation/SKILL.md): 当前 Agent 验证责任和文档检查.
 - [源码仓库确定性验证](../agents/source-checkout-validation.md): 当前完整验证入口和覆盖路由.

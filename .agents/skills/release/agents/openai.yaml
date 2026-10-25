@@ -1,0 +1,5 @@
+interface:
+  display_name: "Release"
+  short_description: "Validate on VMs and publish an ARW release"
+policy:
+  allow_implicit_invocation: false

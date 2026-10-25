@@ -19,9 +19,9 @@ An ARW Artifact is a registered issue, map, or specification work record under `
 | Change a shared workflow or platform projection | [Workflow Distribution and Platform Projection](#workflow-distribution-and-platform-projection) | Actual workflow files, distribution configuration, and development long-term specification |
 | Adopt an external Skill Package update | [Upstream Sync](#upstream-sync) | Source configuration, Base/Ours/Theirs, and Upstream Sync rules |
 | Change a Reviewer Role, independent execution, or Reviewer capability validation | [Reviewer configuration and capability validation](#reviewer-configuration-and-capability-validation) | Canonical Role, user configuration, and Reviewer capability rules |
-| Validate cross-operating-system installation or maintain the test environment | [Cross-operating-system validation environment](#cross-operating-system-validation-environment) | Active issue, VM rules, and release registry |
+| Validate cross-operating-system installation or maintain the test environment | [Cross-operating-system validation environment](#cross-operating-system-validation-environment) | Active issue and the `$release` Skill |
 | Prepare the initial GitHub source migration | [Initial GitHub migration](#initial-github-migration) | Approved migration instructions and the latest source file snapshot |
-| Validate or publish a stable release | [Stable release](#stable-release) | Release long-term specification and Source Checkout release rules |
+| Validate or publish a stable release | [Stable release](#stable-release) | Release long-term specification and the `$release` Skill |
 
 An Agent starts from the root `AGENTS.md` and follows the applicable rules. This manual helps maintainers choose a content route; it does not describe the Agent workflow. If a task spans multiple routes, find the authoritative source and entry point for each route first.
 
@@ -164,26 +164,7 @@ The staged Reviewer capability validation documents define the command modes and
 
 ### Cross-operating-system validation environment
 
-Use this route to validate installation behavior across operating systems or maintain the test environment. The [cross-platform VM validation rules (Chinese)](../agents/cross-platform-vm-validation.md) describe the current environment requirements, commands, scenarios, and maintenance. The Source Checkout orchestration entry point is `scripts/release-vm-validation.mjs`.
-
-Two validation targets are supplied as extracted source directories outside the repository: `agentAssisted` and `plain`. They need no original Git history or fixed original commit ID. An external sources JSON file, kept separate from the VM JSON, supplies their absolute directory paths:
-
-~~~json
-{
-  "agentAssisted": {"directory": "<absolute-agent-assisted-directory>"},
-  "plain": {"directory": "<absolute-plain-directory>"}
-}
-~~~
-
-Prepare bundles with an explicit path to that sources file:
-
-~~~text
-node scripts/release-vm-validation.mjs prepare-bundles --candidate <full-object-id> --workspace <absolute-session-workspace> --sources <absolute-json-path>
-~~~
-
-Preparation copies the current source into a per-run working area, initializes a temporary Git repository there, creates one local commit, and builds a bundle for each target. It does not change the original directories or access GitLab. The VM JSON retains schema version 2; these local source paths do not go into that file.
-
-Every VM in one validation run uses the same prepared bundles. To validate changed source directories, prepare a new run.
+Use this route to prove that installation, PATH registration, and `arw workflow init` work on real Windows and Linux systems. The source-only `$release` Skill (`.agents/skills/release/`, Chinese) describes the VM configuration, guest requirements, and snapshot discipline. `scripts/release-vm.mjs` restores a VMware snapshot, copies a candidate Git bundle over SSH, runs `scripts/release-guest-check.mjs` in the guest, and restores the snapshot again.
 
 ### Initial GitHub migration
 
@@ -193,13 +174,7 @@ This migration is separate from a version release. It does not create a tag or G
 
 ### Stable release
 
-Use this route to validate or publish a stable version. The [release long-term specification (Chinese)](../specs/agent-repository-workflow-release/spec.md) owns candidate and external publication responsibility. Start with the [Source Checkout release validation rules (Chinese)](../agents/source-checkout-release-validation.md).
-
-Related maintenance entry points are `scripts/release-vm-validation.mjs`, `scripts/release-conformance.mjs`, `scripts/create-release-evidence-archive.mjs`, and `scripts/verify-post-tag-bootstrap.mjs`. The Source Checkout release rules define how these entry points relate and which parameters they use.
-
-There is currently no stable release. The existing full release validation requires a prior stable release, while the VM matrix also includes installation and conversion from an older release. Although a candidate can use an empty-tree baseline when no older stable tag exists, bundle preparation still requires `priorRelease`. This does not establish that the complete first-release matrix is supported. Do not skip the older-release scenarios, invent a prior release, select a version number, or claim first-release readiness without a separately agreed design and implementation.
-
-For a later authorized release, maintainers use the external `gh` CLI. After release conformance passes and the user approves the exact title and notes, the process may create a GitHub Release only when the target is absent, then reads the remote object back and checks it. It does not update an existing Release or create one without authorization. The initial source migration itself does not perform a version release.
+Use this route to validate or publish a stable version. An Agent does it only when the maintainer explicitly invokes the Skill (`$release` in Codex, `/release` in Claude Code), which owns the local checks, VM validation, tag, public Bootstrap check, GitHub Release, and tag recovery. The [release long-term specification (Chinese)](../specs/agent-repository-workflow-release/spec.md) owns the release contract.
 
 ## Navigate code by responsibility
 
@@ -220,17 +195,13 @@ Direct children of `scripts/` are entry points for Source Checkout maintainers o
 | Entry point | Responsibility |
 | --- | --- |
 | `scripts/check-workflow-distribution.mjs` | Validate production Workflow Distribution payloads and platform projections |
-| `scripts/create-release-evidence-archive.mjs` | Create or validate the evidence archive required by the release workflow |
 | `scripts/generate-install-arw.mjs` | Generate or check the separately downloadable bootstrap script |
 | `scripts/install-arw.mjs` | Separately downloadable bootstrap script that starts installation from a fixed release source |
-| `scripts/prepare-release-version-fixtures.mjs` | Prepare isolated fixtures for version lifecycles in the release matrix |
-| `scripts/release-conformance.mjs` | Validate a release candidate with bound `pre-tag` or `post-tag` evidence |
-| `scripts/release-guest-step.mjs` | Run one product scenario assigned by the release registry in a test system |
-| `scripts/release-vm-validation.mjs` | Prepare release bundles and orchestrate test-system validation |
+| `scripts/release-guest-check.mjs` | In a disposable test system, check install, PATH registration, `arw workflow init`, and uninstall |
+| `scripts/release-vm.mjs` | Run the guest check in a VMware VM and restore its snapshot |
 | `scripts/reviewer-capability-conformance.mjs` | Prepare or verify Reviewer capability scenarios |
 | `scripts/sync-workflow-distribution.mjs` | Review, prepare, and apply pre-release Workflow Distribution synchronization |
 | `scripts/upstream-sync.mjs` | Run the fixed external-source Upstream Sync lifecycle |
-| `scripts/verify-post-tag-bootstrap.mjs` | Get the bootstrap script from a published tag and verify the call chain |
 
 ### lib
 
@@ -255,7 +226,7 @@ The dependency direction allows specific business implementations to depend on `
 - [Development long-term specification (Chinese)](../specs/agent-repository-workflow-development/spec.md): Source Checkout layout, Workflow Distribution, platform projections, and shared Modules.
 - [Installation long-term specification (Chinese)](../specs/agent-repository-workflow-installation/spec.md): bootstrap, installation, global configuration, PATH, and uninstall.
 - [Upstream Sync long-term specification (Chinese)](../specs/agent-repository-workflow-upstream-sync/spec.md): behavior contract for adopting external sources.
-- [Release long-term specification (Chinese)](../specs/agent-repository-workflow-release/spec.md): release candidates, Reviewer capabilities, VMs, archives, tags, and external writes.
+- [Release long-term specification (Chinese)](../specs/agent-repository-workflow-release/spec.md): release candidates, Reviewer capabilities, VM validation, tags, and external writes.
 - [Reader documentation specification (Chinese)](../specs/arw-reader-documentation/spec.md): README and manual responsibilities and boundaries.
 - [Validation rules (Chinese)](../../.agents/skills/validation/SKILL.md): current Agent validation responsibilities and documentation checks.
 - [Source Checkout deterministic validation rules (Chinese)](../agents/source-checkout-validation.md): current complete validation entry points and coverage routes.

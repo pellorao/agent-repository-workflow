@@ -88,7 +88,7 @@ ARW Artifact 操作使用最近的 Git 仓库中的 `.scratch`.
 
 # Source Checkout Validation
 
-- 测试命令: `pnpm test`, `pnpm typecheck`, `node scripts/check-workflow-distribution.mjs`. 确定性覆盖和完整验证命令见 `docs/agents/source-checkout-validation.md`; 定向或发布 Reviewer Capability Conformance 见 `docs/agents/reviewer-capability-validation.md`; 发布流程或共享虚拟机交接见 `docs/agents/source-checkout-release-validation.md`.
+- 测试命令: `pnpm test`, `pnpm typecheck`, `node scripts/check-workflow-distribution.mjs`. 确定性覆盖和完整验证命令见 `docs/agents/source-checkout-validation.md`; 定向或发布 Reviewer Capability Conformance 见 `docs/agents/reviewer-capability-validation.md`; 发布验证和发布只在维护者显式调用 `$release` Skill 时进行.
 - 单个测试回调耗时阈值为 100 毫秒.
 - 非发布流程不判断 `distribution/**` 中分发副本的语言结果; 发布流程仍检查候选分发文档.
 - 不对本仓库运行 `arw workflow init|update|verify|remove`; 它是 Workflow Distribution 的创作源. Source Checkout 验证使用 Workflow Distribution 的生产检查, Repository Workflow 验证使用隔离的目标仓库.
@@ -96,8 +96,8 @@ ARW Artifact 操作使用最近的 Git 仓库中的 `.scratch`.
 
 # Source Checkout Workflow Triggers
 
-- 处理 Source Checkout 治理引用迁移例外, 迁移规则或发布验证生命周期时, 读取 `docs/agents/source-checkout-issue-workflow.md`.
-- 进行定向 Reviewer 优化, 发布验证修复, 修改 `tests/fixtures/reviewer-capability/**` 或在发布验证中执行 Post-init Handoff 前, 读取 `docs/agents/source-checkout-exceptions.md`.
+- 处理 Source Checkout 治理引用迁移例外或迁移规则时, 读取 `docs/agents/source-checkout-issue-workflow.md`.
+- 进行定向 Reviewer 优化或修改 `tests/fixtures/reviewer-capability/**` 前, 读取 `docs/agents/source-checkout-exceptions.md`.
 - 在 ARW 源码仓库中准备, 审查, 批准, 最终写入, 恢复或中止 Upstream Sync 前, 读取 `docs/agents/upstream-sync.md`, 并遵循其中只适用于源码仓库的交接规则.
 - 研究, 更改或批准受支持的 Agent 平台标准, Skill Package Grammar, Projection Definition, 运行时绑定, 保留身份, 优先级规则或精确输出基准前, 读取 `docs/agents/platform-standards.md`.
 <!-- arw:repository-owned:end -->

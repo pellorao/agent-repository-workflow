@@ -448,7 +448,7 @@ flowchart TD
 
 | 权威来源或状态 | 责任方 | 转换和使用方 | 失败, 恢复和最终写入点 |
 | --- | --- | --- | --- |
-| 根 `release-validation.json` 中的规范 HTTPS 远端 | 发布长期规格和 Release Validation Module | `Bootstrap Artifact Module` 投影到单文件生成物, Bootstrap Module 用它取得准确发布 | 配置无效时在网络访问前失败; 修复受 Git 管理的配置后重试; 普通 Git 提交是配置更新点, 生成物不是第二权威来源 |
+| 根 `release-validation.json` 中的规范 HTTPS 远端 | 发布长期规格 | `Bootstrap Artifact Module` 投影到单文件生成物, Bootstrap Module 用它取得准确发布 | 配置无效时在网络访问前失败; 修复受 Git 管理的配置后重试; 普通 Git 提交是配置更新点, 生成物不是第二权威来源 |
 | 本地源码树或稳定标签解析出的准确检出提交 | Local Source Adapter 或 Release Source Adapter, Identity Module 验证产品身份 | Installation Payload Module 从同一个固定来源读取清单, Workflow Distribution 和载荷字节 | 身份, Git 树或检出不匹配时在安装写入前阻断; 临时检出失败后清理并重新取得; 安装事务只消费验证成功的固定来源 |
 | `release-manifest.json` 和已验证的 Workflow Distribution | Installation Payload Module | 完整结果通过 Installation Payload Seam 交给 Engine Installation Module, 再用于平台启动器选择和有序安装载荷 | 清单, 路径或字节无效时零安装写入; 修复来源后重新构建完整载荷; 载荷只在安装事务中写入 ARW 安装目录 |
 | 当前 `config.json` 字节和全局配置规则对象 | Installation 拥有规则对象, Configuration Conversion Module 拥有公共转换语义 | Engine Installation Module 生成完整替换字节与用户可见净变更 | 解析, 版本, 验证器或结构冲突时阻断, 未知路径报告给用户; 失败后保留原字节并重新安装; File Transaction Module 是配置替换点 |
@@ -495,7 +495,7 @@ Runtime Compatibility Module 与 Bootstrap 和 Installer 生命周期分离, 因
 
 ### ADR Evaluation
 
-[ADR-0020](../../adr/0020-use-external-nodejs-source-delivery.md) 继续拥有外部 Node.js, 稳定发布检出目录和复制式安装. [ADR-0031](../../adr/0031-use-github-and-local-validation-sources.md) 拥有公开 HTTPS 来源和本地验证目标的边界. 当前规范远端值由[发布长期规格](../agent-repository-workflow-release/spec.md#release-validation-configuration)和根 `release-validation.json` 拥有. [ADR-0022](../../adr/0022-place-source-checkout-scripts-under-scripts.md) 继续拥有引导安装脚本, 根目录安装程序和内部 Module 布局. [ADR-0005](../../adr/0005-use-arw-version-and-distribution-digest.md) 继续拥有 ARW 版本的产品身份责任. [ADR-0026](../../adr/0026-use-source-checkout-workflow-files-as-distribution-authority.md) 说明安装消费派生后的完整 Workflow Distribution, 不让安装取得编写责任.
+[ADR-0020](../../adr/0020-use-external-nodejs-source-delivery.md) 继续拥有外部 Node.js, 稳定发布检出目录和复制式安装. [ADR-0031](../../adr/0031-use-github-and-local-validation-sources.md) 拥有公开 HTTPS 来源的边界. 当前规范远端值由[发布长期规格](../agent-repository-workflow-release/spec.md#release-validation-configuration)和根 `release-validation.json` 拥有. [ADR-0022](../../adr/0022-place-source-checkout-scripts-under-scripts.md) 继续拥有引导安装脚本, 根目录安装程序和内部 Module 布局. [ADR-0005](../../adr/0005-use-arw-version-and-distribution-digest.md) 继续拥有 ARW 版本的产品身份责任. [ADR-0026](../../adr/0026-use-source-checkout-workflow-files-as-distribution-authority.md) 说明安装消费派生后的完整 Workflow Distribution, 不让安装取得编写责任.
 
 [ADR-0017](../../adr/0017-use-operation-specific-recovery-baselines.md) 继续拥有 Engine Installation 的完整写入前检查, 移除当前受管运行时后全新安装, 不保留旧运行时回滚, 最后提交清单, 以及有效清单能够证明残留时的失败后向前重试. 本规格的 `partial | unknown`, 残留报告, 未证明残留的人工清理和清单最后处理把该恢复基线具体化, 不建立第二套恢复权威. [ADR-0018](../../adr/0018-use-bounded-mechanical-trust-for-initial-arw-security.md) 继续拥有固定来源的有界机械信任, 以及 Bootstrap 可以先选择稳定标签, 但必须解析完整提交, 验证检出 `HEAD` 和准确来源字节后才能交给 Installer 的有限例外. 当前来源验证不声称证明标签历史, 作者或托管身份.
 
