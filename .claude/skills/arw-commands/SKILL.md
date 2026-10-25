@@ -28,16 +28,15 @@ arw print <canonical-id>
 arw open <canonical-id>
 arw migrate artifacts
 arw spec-readiness prepare --issue issue:<NNNN>:<NN> [--input <temp-json-path>]
-arw spec-readiness generate --issue issue:<NNNN>:<NN> --input <temp-json-path>
+arw spec-readiness generate --issue issue:<NNNN>:<NN> --input <draft-path>
 arw spec-readiness promote --input <generated-path>
 arw spec-readiness verify --issue issue:<NNNN>:<NN>
 arw commit-audit prepare --input <absolute-input-path>
-arw commit-audit generate --request <absolute-request-path>
 arw commit-audit verify
 arw --version
 ```
 
-会写入的命令是 `arw workflow init`, `arw workflow update` (不带 `--dry-run`), `arw workflow remove`, `arw text fix`, `arw migrate artifacts`, `arw spec-readiness generate`, `arw spec-readiness promote`, `arw commit-audit prepare` 和 `arw commit-audit generate`; 只在相应的独立授权工作流中运行它们. 其余命令只读. `arw migrate artifacts` 只迁移旧版 ARW Artifact 格式. 领取和解决是 Artifact 工作流规则, 不是命令.
+会写入的命令是 `arw workflow init`, `arw workflow update` (不带 `--dry-run`), `arw workflow remove`, `arw text fix`, `arw migrate artifacts`, `arw spec-readiness generate`, `arw spec-readiness promote` 和 `arw commit-audit prepare`; 只在相应的独立授权工作流中运行它们. 其余命令只读. `arw migrate artifacts` 只迁移旧版 ARW Artifact 格式. 领取和解决是 Artifact 工作流规则, 不是命令.
 
 供用户使用的短别名是 `li`, `lm`, `ls` 和 `lba`; Agent 编写的指令使用上面的规范形式.
 

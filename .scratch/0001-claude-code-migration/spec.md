@@ -120,8 +120,8 @@ ARW 由 Codex 开发和维护, 现在改由 Claude Code 维护, 并且今后 ARW
   - 规则面向默认 Reviewer 配置 (luna xhigh, haiku high) 编写, 先采用较轻的格式: 要求清单由程序生成, Reviewer 为每条填写结论和证据定位, 只有 `gap` 和 `uncertain` 写说明; 程序机械检查每项都有结论, 证据定位真实存在.
   - 格式放到多低由 Reviewer 能力测试决定: 用已知缺陷的测试场景比较轻格式下各默认模型的检出率, 检出率下降的模型恢复必要的复述要求. 测试至少包含最轻的一档: 不要求格式化输出, Reviewer 只把找到的问题用自然语言逐条写进一个 txt 文件. 若最终采用这一档, 提交门禁改为 "Reviewer 正常结束且问题都已处理", 不再由程序生成逐条要求记录.
   - 实测结论 (ticket 10): luna xhigh 和 haiku high 在最轻一档下检出率不低于清单格式, 采用最轻一档, 两个模型都不需要复述要求. 场景较易, 证据偏弱, 后续实际审核中继续观察.
-- Main Agent 每轮从 `satisfied` 项中抽查一到两项的证据; 发现证据不支持结论时, 该轮结果作废并重审.
-  - 代码质量审核保持现有的 "只列问题" Markdown 格式.
+- Main Agent 每轮从 Reviewer 声称已检查的内容中抽查一两处; 发现漏检时, 该轮结果作废并重审.
+  - 三个 Reviewer (要求符合, 代码质量, Spec Readiness) 都使用 txt 报告, 无问题时写 `No problems.` (ticket 14).
 - Haiku Gate 2 观察: Main Agent 发现某个问题本应在已通过的 Gate 2 中被发现时, 在该 effort 的 spec 末尾记录一行. 累计记录作为调整 Reviewer 模型的依据, 不建立额外机制.
 
 ### Code reduction

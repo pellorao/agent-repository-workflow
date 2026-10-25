@@ -550,45 +550,18 @@ test('unknown final Reviewer idle facts keep the cleared root occupied until rec
     assert.equal((await f.host.manager.prepareMaintenance({stopBackgroundAgents: false})).status, 'ready');
 });
 
-test('an incomplete Reviewer paused at its threshold ends through user interruption without fabricating a report', async t => {
-    const f = await fixture(t,undefined,undefined,{backgroundAgent:{earlyExitNotificationThreshold:1}});
+test('an explicit incomplete Reviewer status ends the round without continuation', async t => {
+    const f = await fixture(t);
     const started = succeeded(await f.dispatch('spawn_agent', f.handoff));
     await f.host.manager.owned(String(started.runId), 'main-session', 'main-session').work;
     const active = succeeded(await f.dispatch('list_agents', {runId: started.runId}));
     const threadId = String(active.threadId);
-    f.scripted.backgroundTerminals.set(threadId, new Set(['notification-client']));
+    const before = succeeded(await f.dispatch('messages', {runId: started.runId,direction:'main-to-agent'}));
     f.scripted.finish(threadId, '{"status":"incomplete","reason":"The required input is absent."}');
-    const paused = succeeded(await f.dispatch('list_agents', {runId: started.runId}));
-    assert.equal(paused.completion,null);
-    const notices = succeeded(await f.dispatch('messages', {runId: started.runId,direction:'agent-to-main'}));
-    assert.ok(Array.isArray(notices.messages));
-    assert.equal(notices.messages.length,1);
-    assert.ok(isJsonObject(notices.messages[0]));
-    assert.match(String(notices.messages[0].preview),/Reviewer runtime paused/u);
-    const noticeIds = notices.messages.map(message => isJsonObject(message) ? message.messageId : null);
-    const instructions = succeeded(await f.dispatch('messages', {runId: started.runId,direction:'main-to-agent'}));
-    assert.ok(Array.isArray(instructions.messages));
-    const instructionIds = instructions.messages.map(message => isJsonObject(message) ? message.messageId : null);
-    succeeded(await f.dispatch('interrupt_agent', {runId: started.runId,turnId:paused.turnId}));
-    const completed = succeeded(await f.dispatch('list_agents', {runId:started.runId}));
-    assert.ok(isJsonObject(completed.completion));
-    assert.equal(completed.completion?.status, 'incomplete');
-    assert.match(String(completed.completion.reason),/interrupted/u);
-    f.scripted.finish(threadId);
-    await f.host.manager.serial(async () => {});
-    const late = succeeded(await f.dispatch('list_agents', {runId:started.runId}));
-    assert.deepEqual([late.runId,late.threadId,late.turnId],[started.runId,threadId,paused.turnId]);
-    assert.equal(late.taskState,'ended');
-    assert.deepEqual(late.completion,completed.completion);
-    const after = succeeded(await f.dispatch('messages', {runId: started.runId,direction:'agent-to-main'}));
-    assert.ok(Array.isArray(after.messages));
-    assert.deepEqual(after.messages.map(message => isJsonObject(message) ? message.messageId : null),noticeIds);
-    const afterInstructions = succeeded(await f.dispatch('messages', {runId: started.runId,direction:'main-to-agent'}));
-    assert.ok(Array.isArray(afterInstructions.messages));
-    assert.deepEqual(afterInstructions.messages.map(message => isJsonObject(message) ? message.messageId : null),instructionIds);
-    assert.equal(await readFile(f.reportPath, 'utf8'), '');
-    assert.equal(f.scripted.backgroundTerminals.get(threadId)?.size ?? 0, 0);
-    assert.equal((await f.host.manager.prepareMaintenance({stopBackgroundAgents: false})).status, 'ready');
+    const ended = succeeded(await f.dispatch('list_agents', {runId: started.runId}));
+    assert.equal(ended.turnId,active.turnId);
+    assert.deepEqual(ended.completion,{status:'incomplete',reason:'The required input is absent.',reportPath:f.reportPath});
+    assert.deepEqual(succeeded(await f.dispatch('messages', {runId: started.runId,direction:'main-to-agent'})).messages,before.messages);
 });
 
 test('safe maintenance waits between Reviewer terminal exit and durable completion', async t => {
@@ -834,7 +807,7 @@ test('a non-Strata Reviewer resumes its original task through ordinary messages 
         &&String(item.preview).includes('filesystem-text-decoding-failed')));
     assert.equal((await pauseNotices(f)).length,0);
     await writeFile(f.reportPath,'');
-    const first=await finishEarly(f,t,'{"status":"incomplete","reason":"The original review remains unfinished."}');assert.notEqual(first.current.turnId,first.previous);
+    const first=await finishEarly(f,t);assert.notEqual(first.current.turnId,first.previous);
     assert.equal((await pauseNotices(f)).length,0);
     const second=await finishEarly(f,t);assert.equal(second.current.turnId,second.previous);
     const firstNotices=await pauseNotices(f);assert.equal(firstNotices.length,1);

@@ -299,7 +299,7 @@ The Main Agent enters the commit workflow only after an explicit user request to
 Review and commit the implementation for issue:<NNNN>:<NN>. Include only changes authorized by this issue and preserve other worktree content.
 ```
 
-The Main Agent first confirms completion evidence and the exact staged candidate, then runs `arw commit-audit prepare`. ARW builds a line-by-line requirements checklist from the issue and applicable specs. Two Reviewers then run in parallel: `requirements-reviewer` fills in a verdict and one evidence locator for every checklist item, and `code-standards-reviewer` checks repository standards and points out removable code. When both finish, the Main Agent runs `arw commit-audit generate` to check the checklist, promotes only the formal records in the returned mapping, then runs `arw commit-audit verify` and the other mechanical checks. A re-review after fixes receives only the changes and their impact; unaffected conclusions stay.
+The Main Agent first confirms completion evidence and the exact staged candidate, then runs `arw commit-audit prepare`. ARW derives the review scope from the issue and applicable specs and creates an empty txt report. Two Reviewers then run in parallel: `requirements-reviewer` writes each requirement problem it finds, and `code-standards-reviewer` checks repository standards and points out removable code; each writes `No problems.` when it finds none. The commit gate is that both Reviewers end normally and every reported problem is handled; the Main Agent then runs `arw commit-audit verify` and the other mechanical checks. A re-review after fixes receives only the changes and their impact; unaffected conclusions stay.
 
 A candidate containing only investigation, design, or other closed non-implementation content may use the lighter commit path. Once a candidate includes implementation deliverables for the current repository, use the complete implementation commit workflow. The target repository's `code-review` and `commit` Skills own exact comparison preparation, result reuse, and recovery rules; this README does not copy their full protocols.
 
@@ -353,12 +353,11 @@ Users usually need to specify only the issue and goal. The Main Agent organizes 
 | Command | Responsibility |
 | --- | --- |
 | `arw spec-readiness prepare --issue issue:<NNNN>:<NN> [--input <temp-json-path>]` | Freeze current governance inputs, review subject, and Reviewer Role into a Reviewer Request. |
-| `arw spec-readiness generate --issue issue:<NNNN>:<NN> --input <temp-json-path>` | Validate the independent Reviewer's final draft and generate a temporary readiness result. |
+| `arw spec-readiness generate --issue issue:<NNNN>:<NN> --input <draft-path>` | Validate the independent Reviewer's final draft and generate a temporary readiness result. |
 | `arw spec-readiness promote --input <generated-path>` | Revalidate unchanged bindings and promote the exact generated issue result. |
 | `arw spec-readiness verify --issue issue:<NNNN>:<NN>` | Read-only check that implementation authorization for the issue is still valid. |
 | `arw commit-audit prepare --input <absolute-input-path>` | Prepare an independent Commit Audit Request from the frozen staged candidate. |
-| `arw commit-audit generate --request <absolute-request-path>` | Generate the formal pre-commit review file from the Reviewer's bound JSONL. |
-| `arw commit-audit verify` | Read-only check that the final staged candidate matches the promoted review. |
+| `arw commit-audit verify` | Read-only check that the final staged candidate keeps every committed ARW Artifact identity. |
 
 ### What to check when a command fails
 

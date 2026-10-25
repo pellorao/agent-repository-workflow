@@ -78,7 +78,7 @@ Reviewer Request 为响应绑定精确的绝对 `draftPath`.
 
 ## Output
 
-ARW Engine 已经把精确的 `draftPath` 创建为空草稿, Reviewer 必须亲自将完整审核报告写入该文件, 并在审核过程中更新其中的当前结论. 如果完整审查没有发现问题, 在该路径写入唯一的非空 JSONL 行 `{"status":"no-findings"}`, 不添加其他字段或问题记录. 如果存在任何问题, 写入 [问题记录](spec-readiness-reviewer/findings.md) 定义的仅包含问题的完整 JSONL, 不混入无问题标记. 完成审查并写入最终草稿后, 在最终响应中只返回 `{"status":"ready"}`. 逐项文件写入, 非空结果接收和最终交接遵循 `docs/agents/reviewer.md` 的共同规则.
+ARW Engine 已经把精确的 `draftPath` 创建为空 txt 草稿, Reviewer 必须亲自将完整审核报告写入该文件, 并在审核过程中更新其中的当前结论. 报告按 `docs/agents/reviewer.md#report` 编写: 有问题时按 [问题记录](spec-readiness-reviewer/findings.md) 逐条写出, 没有问题时内容精确为 `No problems.`. Engine 把 `No problems.` 记为 `satisfied`, 其他非空报告记为 `gap`. 完成审查并写入最终草稿后, 在最终响应中只返回 `{"status":"ready"}`.
 
 如果请求无法读取或格式错误, 或完整草稿无法写入其绑定路径, 则在最终响应中只返回包含简明理由的 `{"status":"incomplete","reason":"..."}`. 不得搜索替代内容, 编造其他路径或创建替代记录.
 

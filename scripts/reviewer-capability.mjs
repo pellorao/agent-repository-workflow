@@ -3,7 +3,7 @@
 // 用法: node scripts/reviewer-capability.mjs <scenario-directory> <new-target-directory>
 
 import {execFileSync} from 'node:child_process';
-import {cp, mkdir, readFile, readdir, rename, writeFile} from 'node:fs/promises';
+import {cp, mkdir, readFile, readdir, writeFile} from 'node:fs/promises';
 import {basename, dirname, join, resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 
@@ -51,21 +51,17 @@ const issueIds = files.flatMap(path => {
     return match ? [`issue:${match[1]}:${match[2]}`] : [];
 }).sort();
 const review = join(target, '.tmp', 'review');
-let reportPath = join(review, 'reports', 'findings.md');
+let reportPath = join(review, 'reports', 'report.txt');
 let task = `Review the staged comparison: \`git diff --cached HEAD\`; read staged bytes with \`git show :<path>\`. Write the complete review to \`${reportPath}\`.`;
 if (role === 'requirements-reviewer') {
     await mkdir(review, {recursive: true});
     await writeFile(join(review, 'input.json'), JSON.stringify({authorizingIssueIds: issueIds}));
     const {requestPath} = await prepareCommitAudit({inputPath: join(review, 'input.json'), repositoryRoot: target});
-    reportPath = join(review, 'reports', 'review.md');
-    // 运行时要求新审核的绑定报告为空, 而 prepare 预写了清单 (ticket 10 记录的缺陷); 先把清单移到报告目录外.
-    const template = join(review, 'checklist.md');
-    await rename(reportPath, template);
-    await writeFile(reportPath, '');
-    task = `Commit review. The Request is \`${requestPath}\`. The bound checklist \`${reportPath}\` starts empty: copy \`${template}\` into it unchanged, then fill every item.`;
+    reportPath = JSON.parse(await readFile(requestPath, 'utf8')).reviewPath;
+    task = `Commit review. The Request is \`${requestPath}\`; write the review to its \`reviewPath\`.`;
 } else if (role === 'spec-readiness-reviewer') {
     const workspace = resolveTemporaryWorkspace({agentIdentity: IDENTITY, issueId: issueIds[0], purpose: 'spec-readiness', repositoryRoot: target});
-    reportPath = join(workspace, 'reviewer-drafts', 'reports', 'draft.jsonl');
+    reportPath = join(workspace, 'reviewer-drafts', 'reports', 'draft.txt');
     const inputs = files.flatMap(filePath => {
         const prefix = Object.keys(SPEC_READINESS_INPUT_ROLES).find(entry => filePath.startsWith(entry));
         return prefix ? [{filePath, role: SPEC_READINESS_INPUT_ROLES[/** @type {keyof typeof SPEC_READINESS_INPUT_ROLES} */ (prefix)]}] : [];

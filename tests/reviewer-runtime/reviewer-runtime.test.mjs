@@ -939,10 +939,8 @@ test('Reviewer rejects mixed report-directory input at admission, continuation a
     assert.equal((await opened.scopedFilesystem.write({path: inputPath, bytes: Buffer.from('{}'), mode: 'create'})).status, 'succeeded');
     const managed = await managedBinding(fixture, active, 'running');
     await assert.rejects(runtime.restorePausedTask({runId: receipt.runId, managed}), /report directory must contain only/);
-    fixture.native.finish(/** @type {string} */ (active.threadId), '{"status":"incomplete","reason":"Review remains unfinished."}');
-    const rejected = succeeded(await runtime.inspect({runId: receipt.runId}));
-    assert.equal(rejected.completion?.status, 'incomplete');
-    assert.match(rejected.completion?.status === 'incomplete' ? rejected.completion.reason : '', /report directory must contain only/);
+    await fixture.writeReport('No problems.\n');fixture.native.finish(/** @type {string} */ (active.threadId));
+    failed(await runtime.inspect({runId: receipt.runId}), 'report-binding-invalid');
     assert.equal(continuations, 0);
     assert.equal(fixture.native.calls.filter(call => call.operation === 'startTurn').length, 1);
     assert.equal((await opened.scopedFilesystem.read({path: inputPath})).status, 'succeeded');

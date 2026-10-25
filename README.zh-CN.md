@@ -297,7 +297,7 @@ arw agent start <name> [agent-arguments...]
 审核并提交 issue:<NNNN>:<NN> 的实现. 只包含这张 issue 授权的修改, 保留其他工作树内容.
 ```
 
-Main Agent 先确认完成证据和准确 staged candidate, 再运行 `arw commit-audit prepare`. ARW 从 issue 和适用 spec 逐行生成要求清单. 随后并行启动两个 Reviewer: `requirements-reviewer` 为清单每项填写结论和一个证据定位, `code-standards-reviewer` 检查仓库标准并指出可删除的代码. 两者完成后, Main Agent 调用 `arw commit-audit generate` 检查清单完整性, 只按返回映射提升正式记录, 再运行 `arw commit-audit verify` 和其余机械检查. 修复后的复审只交付变化及影响范围, 未受影响的结论保留.
+Main Agent 先确认完成证据和准确 staged candidate, 再运行 `arw commit-audit prepare`. ARW 从 issue 和适用 spec 推导审核范围, 并创建空的 txt 报告. 随后并行启动两个 Reviewer: `requirements-reviewer` 逐条写入发现的要求问题, `code-standards-reviewer` 检查仓库标准并指出可删除的代码; 没有问题时写 `No problems.`. 提交门槛是两个 Reviewer 正常结束且问题都已处理, 然后 Main Agent 运行 `arw commit-audit verify` 和其余机械检查. 修复后的复审只交付变化及影响范围, 未受影响的结论保留.
 
 只有调查, 设计或其他封闭的非实施内容组成的候选可以使用较轻的提交路线. 候选一旦包含当前仓库实施产物, 就使用完整实施提交流程. 具体比较准备, 结果复用和恢复规则由目标仓库的 `code-review` 与 `commit` Skill 拥有, README 不复制它们的完整协议.
 
@@ -351,12 +351,11 @@ arw agent start <name> [agent-arguments...]
 | 命令 | 责任 |
 | --- | --- |
 | `arw spec-readiness prepare --issue issue:<NNNN>:<NN> [--input <temp-json-path>]` | 冻结当前治理输入, 审核对象和 Reviewer Role, 形成 Reviewer Request. |
-| `arw spec-readiness generate --issue issue:<NNNN>:<NN> --input <temp-json-path>` | 验证独立 Reviewer 的最终草稿并生成临时规范结果. |
+| `arw spec-readiness generate --issue issue:<NNNN>:<NN> --input <draft-path>` | 验证独立 Reviewer 的最终草稿并生成临时规范结果. |
 | `arw spec-readiness promote --input <generated-path>` | 重验绑定未变化后提升准确生成的 issue 结果. |
 | `arw spec-readiness verify --issue issue:<NNNN>:<NN>` | 只读确认该 issue 的实施前授权仍然有效. |
 | `arw commit-audit prepare --input <absolute-input-path>` | 从冻结的已暂存候选准备独立 Commit Audit Request. |
-| `arw commit-audit generate --request <absolute-request-path>` | 根据 Reviewer 完成的绑定 JSONL 生成当前候选的正式提交前审核文件. |
-| `arw commit-audit verify` | 只读确认最终 staged candidate 与已提升审核一致. |
+| `arw commit-audit verify` | 只读确认最终 staged candidate 保留每个已提交 ARW Artifact 身份. |
 
 ### 命令失败时先看什么
 

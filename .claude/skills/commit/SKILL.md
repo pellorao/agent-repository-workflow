@@ -1,5 +1,5 @@
 ---
-description: 用户要求 Git 提交后使用: 对已暂存候选分类, 执行实施 issue 提交 (要求符合审核与 Code Standards 两个并行 Reviewer, Gate 1 和 Gate 2 记录) 或非实施机械提交, 并编写提交说明. 完成或解决 issue 本身不触发.
+description: 用户要求 Git 提交后使用: 对已暂存候选分类, 执行实施 issue 提交 (要求符合审核与 Code Standards 两个并行 Reviewer, Gate 1 和 Gate 2 范围) 或非实施机械提交, 并编写提交说明. 完成或解决 issue 本身不触发.
 name: commit
 ---
 
@@ -15,17 +15,17 @@ name: commit
 
 ## Fixed review version
 
-从 `arw commit-audit prepare` 到本轮两个 Reviewer 完整结束或 Main Agent 明确终止期间, 不改变索引, HEAD 和本轮输入, 也不进行另一次提交. 工作树中的修复可以继续, 本轮结束后才暂存. 违反此边界的变化使本轮作废; `generate` 发现 Request 与当前候选不符时报告 `candidate-invalid`. 提升记录后到 `verify` 完成期间保持索引稳定.
+从 `arw commit-audit prepare` 到本轮两个 Reviewer 完整结束或 Main Agent 明确终止期间, 不改变索引, HEAD 和本轮输入, 也不进行另一次提交. 工作树中的修复可以继续, 本轮结束后才暂存. 违反此边界的变化使本轮作废.
 
 ## Implementation issue commit workflow
 
-1. 确定完整排序的 `authorizingIssueIds`, 按 `code-review` 的 [完成记录](../code-review/result-reuse.md#completion-records) 规则更新真实的 Status 和验收勾选, 暂存完整实施候选 (不含本次 Gate 1 或 Gate 2 输出). 必要实施验证按 `validation` Skill, 可以与审核并行; 未完成的检查不提供通过事实.
+1. 确定完整排序的 `authorizingIssueIds`, 按 `code-review` 的 [完成记录](../code-review/result-reuse.md#completion-records) 规则更新真实的 Status 和验收勾选, 暂存完整实施候选. 必要实施验证按 `validation` Skill, 可以与审核并行; 未完成的检查不提供通过事实.
 2. 按 [Run](#run) 准备 Request, 并行启动两个 Reviewer: `requirements-reviewer` (要求符合审核) 和 `code-review` Skill 的 Code Standards 轴. 一次提交最多这两个并行 Reviewer.
-3. 两个 Reviewer 返回 `ready` 后运行 `generate`, 按 `docs/agents/subagent-findings.md` 独立核对清单的 `gap`, `uncertain` 项和 Code Standards 问题. 每轮从清单 `satisfied` 项中抽查一到两项的证据定位; 证据不支持结论时, 该轮清单作废并重审.
+3. 两个 Reviewer 正常结束 (`ready`) 后, 按 `docs/agents/subagent-findings.md` 独立核对报告中的每个问题. 每轮从 Reviewer 声称已检查的内容中抽查一两处; 发现漏检时该轮结果作废并重审. Reviewer 返回 `incomplete` 时本轮结束, Main Agent 处理其原因后重新 `prepare`.
 4. 修复后重新暂存并在新目录 `prepare`. 复审只交付相邻版本的变化及影响范围和该 Reviewer 的前轮报告 ([复审规则](../../../docs/agents/reviewer.md#re-review)); 某个 Reviewer 的输入没有受影响时保留其结果.
 5. 按 [记录章节](../issue-tracking/SKILL.md#issue-record-sections) 规则统一暂存收尾记录, 机械核对它相对受审候选的差异. 只有记录差异不需要复审.
-6. 存在终态转换时, 只有 `generate` 成功且 `open` 中没有 `blocking: true` 项, 才原样提升映射字节, 暂存目标并运行 `arw commit-audit verify`. 未完成 issue 的非阻断 `gap` 只在确属计划中尚未完成的工作时保留, 否则按问题处理.
-7. 对每个授权 issue 运行 `arw spec-readiness verify --issue issue:<NNNN>:<NN>` 并取得 `0`, 再核对最终候选只包含已审核版本, 获准记录差异和映射目标, 然后提交.
+6. 提交门槛是两个 Reviewer 正常结束且报告中的问题都已处理 (修正, 或按质疑规则证明无效). 未完成 issue 的问题只在确属计划中尚未完成的工作时保留. 运行 `arw commit-audit verify` 并取得空错误列表.
+7. 对每个授权 issue 运行 `arw spec-readiness verify --issue issue:<NNNN>:<NN>` 并取得 `0`, 再核对最终候选只包含已审核版本, 和获准记录差异, 然后提交.
 
 Main Agent 发现某个问题本应在已通过的 Gate 2 中被发现时, 在该 effort 的 spec 末尾记录一行 (问题, 对应提交和 Gate 2 Reviewer 模型), 作为调整 Reviewer 模型的依据.
 
@@ -33,25 +33,17 @@ Main Agent 发现某个问题本应在已通过的 Gate 2 中被发现时, 在�
 
 ### Scope
 
-- `authorizingIssueIds` 是已暂存实施的完整授权范围, 属于同一 effort. 尚未完成的 issue 可以授权中间提交; 它的要求也进入清单, 但不产生 Gate 1 记录.
-- 清单由 Engine 生成: 每个授权 issue 的 `## What to build` 正文行和每条验收标准各为一项; Gate 2 适用时, 治理文档的每个正文行 (非空, 非标题, 不在围栏代码块内) 各为一项. Reviewer 只填写结论和证据定位.
+- `authorizingIssueIds` 是已暂存实施的完整授权范围, 属于同一 effort. 尚未完成的 issue 可以授权中间提交.
 - Gate 1 覆盖本次每个新进入 `completed` 或 `wontfix` 的 issue, 它必须在授权范围内. Engine 拒绝遗漏授权和跨 effort 的变化.
 - Gate 2 是 effort 级 Spec Audit, 在当前 effort 的每个实施 issue 都处于终态时适用. 文档是授权 issue 有效 `## Spec Requirement` 引用的 spec, PRD 和 ADR 的并集, 审核范围是整份文档.
-- 适用 Gate 2 的文档并集为空时, 停止并取得用户明确确认. 只有包含具体 `reason` 和 UTC 秒级 `confirmedAt` 的 `gate2Exception` 才产生 `not-applicable` 记录.
+- 适用 Gate 2 的文档并集为空时, 停止并取得用户明确确认, 在输入中写入包含具体 `reason` 和 UTC 秒级 `confirmedAt` 的 `gate2Exception`.
 
 ### Run
 
-1. 在仓库 `.tmp/` 下建立新目录, 写入 `input.json`, 只含完整排序的 `authorizingIssueIds` 和适用时的 `gate2Exception`. 运行 `arw commit-audit prepare --input <absolute-input-path>`; 它创建 `request.json` 和 `reports/review.md` (要求清单), 只打印 Request 绝对路径, 已有文件不覆盖.
-2. 按 `reviewer-launch` Skill 启动 `requirements-reviewer`. 线程身份是该角色加完整排序的 `authorizingIssueIds`; `handoff` 提供 Request 路径; `reportPath` 是 `reports/review.md`.
-3. Reviewer 返回 `ready` 后运行 `arw commit-audit generate --request <absolute-request-path>`. `review-incomplete` 表示清单有项缺少结论, 定位无效或缺少说明, 把诊断完整转交同一 Reviewer 修正; `request-invalid` 和 `candidate-invalid` 由 Main Agent 处理.
-4. 成功时 Engine 在 Request 目录写入 `<NN>.audit.json` 或 `spec-audit.json`, 返回按 `targetPath` 排序的 `files` 映射和未满足项 `open`. Main Agent 只提升映射指定的准确字节.
+1. 在仓库 `.tmp/` 下建立新目录, 写入 `input.json`, 只含完整排序的 `authorizingIssueIds` 和适用时的 `gate2Exception`. 运行 `arw commit-audit prepare --input <absolute-input-path>`; 它创建 `request.json` (含 `gate1`, `gate2` 范围和 `reviewPath`) 和空的 `reports/review.txt`, 只打印 Request 绝对路径, 已有文件不覆盖.
+2. 按 `reviewer-launch` Skill 启动 `requirements-reviewer`. 线程身份是该角色加完整排序的 `authorizingIssueIds`; `handoff` 提供 Request 路径; `reportPath` 是 `reports/review.txt`. Reviewer 按 [报告格式](../../../docs/agents/reviewer.md#report) 逐条写入问题, 或写 `No problems.`.
 
-Main Agent 负责暂存, Request, Engine 调用, 审核协调和提升, 不代写语义判断. Reviewer 不调用 Engine, 不修改索引.
-
-### Audit records
-
-- Gate 1 记录是 `.scratch/<NNNN>-<effort-slug>/issues/<NN>.audit.json`, Gate 2 记录是 `.scratch/<NNNN>-<effort-slug>/spec-audit.json`. 每项记录 `source`, `result`, 定位 `evidence` 和说明 `note`.
-- 正式记录只对当时通过验证的候选有效, 之后只作为历史文件保留. `arw commit-audit verify` 只读取当前暂存终态变化所需的记录, 检查每个要求行都有 `satisfied` 或 `n/a` 结论且定位存在.
+Main Agent 负责暂存, Request, 审核协调和处理问题, 不代写语义判断. Reviewer 只运行只读 git 命令读取索引, 不调用 Engine, 不修改索引.
 
 ## Non-implementation commit workflow
 
@@ -79,4 +71,4 @@ Main Agent 负责暂存, Request, Engine 调用, 审核协调和提升, 不代�
 
 ## Failure
 
-任何关卡失败, 必要 Input 不可用, 存在阻断的 `gap` 或 `uncertain` 或 Code Standards 问题未处理, 或 `code-review` 返回 `incomplete` 时, 在提交前停止, 不提升不完整的审计批次.
+任何关卡失败, 必要 Input 不可用, Reviewer 报告的问题未处理, 或 Reviewer 返回 `incomplete` 时, 在提交前停止.
