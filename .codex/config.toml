@@ -1,0 +1,7 @@
+# 关闭 Default/Plan 模式提示词注入, 让本仓库沿用 AGENTS.md 和技能中的规则, 组织讨论与实施.
+# 这不会关闭 CLI 内部模式机制, 原生提问倒计时或其他指令与权限限制.
+# 改为 true 会恢复模式提示词: Default 倾向自主推进, Plan 限制为调查和规划.
+# 在 Codex 0.153.4 中, Default 模板还限制文本多选提问, 并要求空答案后自行判断继续.
+# 这些规则和我们的 grilling 规则冲突, 因此必须阻止这些提示词注入.
+# 项目配置需在仓库受信任时加载; 修改后重启 Codex, 建议用新会话避免历史指令干扰.
+include_collaboration_mode_instructions = false

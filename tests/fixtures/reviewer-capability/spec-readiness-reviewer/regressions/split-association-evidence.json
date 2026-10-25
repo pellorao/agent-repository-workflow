@@ -1,0 +1,20 @@
+{
+  "findings": [
+    {
+      "check": "SPEC-READINESS-REQUIREMENTS",
+      "evidence": [
+        {"filePath": "specs/runtime-migration.md", "line": 23}
+      ],
+      "finding": "Runtime Migration omits summary from the successful result required by Result Summary.",
+      "result": "gap"
+    },
+    {
+      "check": "SPEC-READINESS-REQUIREMENTS",
+      "evidence": [
+        {"filePath": "specs/result-summary.md", "line": 11}
+      ],
+      "finding": "Runtime Migration omits summary from the successful result required by Result Summary.",
+      "result": "gap"
+    }
+  ]
+}

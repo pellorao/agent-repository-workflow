@@ -1,0 +1,19 @@
+{
+  "name": "agent-repository-workflow",
+  "version": "0.4.0",
+  "description": "Repository workflow manager for coding agents with no third-party runtime dependencies.",
+  "type": "module",
+  "engines": {
+    "node": ">=24",
+    "pnpm": ">=11 <12"
+  },
+  "scripts": {
+    "typecheck": "tsc --project tsconfig.json",
+    "test": "node --test --test-reporter=./tests/helpers/test-reporter.mjs",
+    "test:verbose": "node --test --test-reporter=spec"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^7.0.2"
+  }
+}

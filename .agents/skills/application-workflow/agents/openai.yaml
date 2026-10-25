@@ -1,0 +1,6 @@
+interface:
+  display_name: "Application Workflow"
+  short_description: "协调 Application 类型仓库, Module 类型仓库和 JIRA 中的任务"
+  default_prompt: "使用 $application-workflow 列出 JIRA 中的候选任务, 逐个和我分析讨论, 然后把选中的任务转为本地 effort 和 spec."
+policy:
+  allow_implicit_invocation: false

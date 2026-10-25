@@ -1,0 +1,33 @@
+{
+  "source": "codex",
+  "skills": {
+    "root": "skills/",
+    "additionalSkillReferences": [],
+    "skillReferenceNormalizations": []
+  },
+  "platforms": {
+    "codex": {
+      "supportedVersionRange": "*",
+      "format": {
+        "skillReference": "${name}",
+        "excludedSkillPaths": []
+      },
+      "targets": {
+        "skills": ".agents/skills/",
+        "configuration": ".codex/config.toml"
+      }
+    },
+    "claude-code": {
+      "supportedVersionRange": "*",
+      "format": {
+        "skillReference": "/{name}",
+        "excludedSkillPaths": [
+          "agents/openai.yaml"
+        ]
+      },
+      "targets": {
+        "skills": ".claude/skills/"
+      }
+    }
+  }
+}

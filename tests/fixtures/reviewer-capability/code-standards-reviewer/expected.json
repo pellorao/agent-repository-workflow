@@ -1,0 +1,2006 @@
+{
+  "scopes": [
+    {
+      "scope": "CODE-STANDARDS-FINDINGS",
+      "problemCases": [
+        {
+          "expectation": "The Repository export-prefix rule is violated by formatCarrierReference.",
+          "result": "gap",
+          "associationEvidence": [
+            {
+              "filePath": "src/delivery/dispatch-service.mjs",
+              "line": 8
+            }
+          ],
+          "evidence": [
+            {
+              "filePath": "src/delivery/dispatch-service.mjs",
+              "line": 8
+            }
+          ],
+          "findingTerms": [
+            "formatCarrierReference",
+            [
+              "prefix",
+              "reviewerCapability"
+            ]
+          ]
+        },
+        {
+          "expectation": "The Repository named-export rule is violated by the default service-level export used by dispatch creation.",
+          "result": "gap",
+          "associationEvidence": [
+            {
+              "filePath": "src/delivery/service-levels.mjs",
+              "line": 1
+            }
+          ],
+          "evidence": [
+            {
+              "filePath": "src/delivery/service-levels.mjs",
+              "line": 1
+            },
+            {
+              "filePath": "src/delivery/dispatch-service.mjs",
+              "line": 2
+            }
+          ],
+          "findingTerms": [
+            [
+              "default export",
+              "default-export"
+            ],
+            [
+              "named export",
+              "named-export"
+            ]
+          ]
+        },
+        {
+          "expectation": "The Repository built-in import rule is violated because fs/promises omits the node: prefix.",
+          "result": "gap",
+          "associationEvidence": [
+            {
+              "filePath": "src/config/policy-loader.mjs",
+              "line": 1
+            }
+          ],
+          "evidence": [
+            {
+              "filePath": "src/config/policy-loader.mjs",
+              "line": 1
+            }
+          ],
+          "findingTerms": [
+            [
+              "fs/promises",
+              "filesystem promises"
+            ],
+            [
+              "node:",
+              "built-in prefix",
+              "builtin prefix"
+            ]
+          ]
+        },
+        {
+          "expectation": "The Repository immutable-export rule is violated by the mutable reviewerCapabilityDeliveryStages array.",
+          "result": "gap",
+          "associationEvidence": [
+            {
+              "filePath": "src/orders/order-state.mjs",
+              "line": 3
+            }
+          ],
+          "evidence": [
+            {
+              "filePath": "src/orders/order-state.mjs",
+              "line": 3
+            }
+          ],
+          "findingTerms": [
+            "reviewerCapabilityDeliveryStages",
+            [
+              "mutable",
+              "freeze",
+              "frozen"
+            ]
+          ]
+        },
+        {
+          "expectation": "The Repository boolean-naming rule is violated by reviewerCapabilityOrderReady.",
+          "result": "gap",
+          "associationEvidence": [
+            {
+              "filePath": "src/orders/order-state.mjs",
+              "line": 5
+            }
+          ],
+          "evidence": [
+            {
+              "filePath": "src/orders/order-state.mjs",
+              "line": 5
+            }
+          ],
+          "findingTerms": [
+            "reviewerCapabilityOrderReady",
+            [
+              "boolean",
+              "reviewerCapabilityIs",
+              "reviewerCapabilityHas",
+              "reviewerCapabilityCan"
+            ]
+          ]
+        },
+        {
+          "expectation": "The Repository error-cause rule is violated when loading a carrier policy replaces the caught error without preserving cause.",
+          "result": "gap",
+          "associationEvidence": [
+            {
+              "filePath": "src/config/policy-loader.mjs",
+              "line": 7
+            }
+          ],
+          "evidence": [
+            {
+              "filePath": "src/config/policy-loader.mjs",
+              "line": 6
+            },
+            {
+              "filePath": "src/config/policy-loader.mjs",
+              "line": 7
+            }
+          ],
+          "findingTerms": [
+            "reviewerCapabilityLoadCarrierPolicy",
+            [
+              "cause",
+              "caught error",
+              "original error"
+            ]
+          ]
+        },
+        {
+          "expectation": "Courier assignment mutates the caller-supplied dispatch; prepared dispatches are frozen, so the fulfillment dispatch entry throws TypeError instead of returning the dispatched order.",
+          "result": "gap",
+          "placements": [
+            {
+              "associationEvidence": [
+                {
+                  "filePath": "src/delivery/dispatch-service.mjs",
+                  "line": 11
+                }
+              ],
+              "check": "CODE-STANDARDS-FINDINGS",
+              "evidence": [
+                {
+                  "filePath": "src/delivery/dispatch-service.mjs",
+                  "line": 28
+                },
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 34
+                },
+                {
+                  "filePath": "src/delivery/dispatch-service.mjs",
+                  "line": 11
+                },
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 46
+                },
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 90
+                }
+              ]
+            },
+            {
+              "associationEvidence": [
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 90
+                }
+              ],
+              "check": "CODE-STANDARDS-FINDINGS",
+              "evidence": [
+                {
+                  "filePath": "src/delivery/dispatch-service.mjs",
+                  "line": 28
+                },
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 34
+                },
+                {
+                  "filePath": "src/delivery/dispatch-service.mjs",
+                  "line": 11
+                },
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 46
+                },
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 90
+                }
+              ]
+            },
+            {
+              "associationEvidence": [
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 46
+                }
+              ],
+              "check": "CODE-STANDARDS-FINDINGS",
+              "evidence": [
+                {
+                  "filePath": "src/delivery/dispatch-service.mjs",
+                  "line": 28
+                },
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 34
+                },
+                {
+                  "filePath": "src/delivery/dispatch-service.mjs",
+                  "line": 11
+                },
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 46
+                },
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 90
+                }
+              ]
+            }
+          ],
+          "findingTerms": [
+            [
+              "reviewerCapabilityAssignCourier",
+              "reviewerCapabilityMarkDispatched",
+              "reviewerCapabilityDispatchPreparedOrder"
+            ],
+            [
+              "mutate",
+              "mutation",
+              "input",
+              "supplied dispatch",
+              "frozen",
+              "Object.freeze",
+              "TypeError",
+              "cannot assign",
+              "read-only"
+            ]
+          ]
+        },
+        {
+          "expectation": "The Repository clock-injection rule is violated when dispatch marking reads Date.now directly.",
+          "result": "gap",
+          "associationEvidence": [
+            {
+              "filePath": "src/orders/order-service.mjs",
+              "line": 47
+            }
+          ],
+          "evidence": [
+            {
+              "filePath": "src/orders/order-service.mjs",
+              "line": 47
+            }
+          ],
+          "findingTerms": [
+            "reviewerCapabilityMarkDispatched",
+            [
+              "Date.now",
+              "injected",
+              "clock",
+              "now"
+            ]
+          ]
+        },
+        {
+          "expectation": "Stock quantity adjustment inside reservation preparation uses opaque r and v parameter names, obscuring how the requested quantity changes the reservation record.",
+          "result": "gap",
+          "associationEvidence": [
+            {
+              "filePath": "src/inventory/reservations.mjs",
+              "line": 4
+            }
+          ],
+          "evidence": [
+            {
+              "filePath": "src/inventory/reservations.mjs",
+              "line": 4
+            },
+            {
+              "filePath": "src/inventory/reservations.mjs",
+              "line": 5
+            }
+          ],
+          "findingTerms": [
+            [
+              "parameters r and v",
+              "parameter r and parameter v",
+              "r and v",
+              "r/v",
+              "r parameter and v parameter"
+            ],
+            [
+              "mysterious",
+              "opaque",
+              "unclear",
+              "non-descriptive"
+            ],
+            [
+              "quantity",
+              "inventory",
+              "reservation"
+            ]
+          ]
+        },
+        {
+          "expectation": "Customer and recipient normalization duplicate the same pipeline across order preparation and notification delivery.",
+          "result": "gap",
+          "placements": [
+            {
+              "associationEvidence": [
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 23
+                }
+              ],
+              "check": "CODE-STANDARDS-FINDINGS",
+              "evidence": [
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 23
+                },
+                {
+                  "filePath": "src/notifications/delivery-notifications.mjs",
+                  "line": 3
+                }
+              ]
+            },
+            {
+              "associationEvidence": [
+                {
+                  "filePath": "src/notifications/delivery-notifications.mjs",
+                  "line": 3
+                }
+              ],
+              "check": "CODE-STANDARDS-FINDINGS",
+              "evidence": [
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 23
+                },
+                {
+                  "filePath": "src/notifications/delivery-notifications.mjs",
+                  "line": 3
+                }
+              ]
+            }
+          ],
+          "findingTerms": [
+            [
+              "normalization",
+              "normalize"
+            ],
+            [
+              "duplicate",
+              "duplicated",
+              "repeated"
+            ]
+          ]
+        },
+        {
+          "expectation": "Order preparation keeps the incoming carrierId for stock reservation and later release while dispatch independently selects a carrier by service level, so one fulfillment can reserve and release inventory for a different carrier than it dispatches.",
+          "result": "gap",
+          "placements": [
+            {
+              "associationEvidence": [
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 28
+                },
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 34
+                }
+              ],
+              "check": "CODE-STANDARDS-FINDINGS",
+              "evidence": [
+                {
+                  "filePath": "src/delivery/carrier-policy.mjs",
+                  "line": 1
+                },
+                {
+                  "filePath": "src/delivery/carrier-policy.mjs",
+                  "line": 5
+                },
+                {
+                  "filePath": "src/delivery/carrier-policy.mjs",
+                  "line": 6
+                },
+                {
+                  "filePath": "src/delivery/dispatch-service.mjs",
+                  "line": 29
+                },
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 28
+                },
+                {
+                  "filePath": "src/inventory/reservations.mjs",
+                  "line": 9
+                },
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 34
+                },
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 35
+                },
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 50
+                },
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 53
+                },
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 98
+                }
+              ]
+            },
+            {
+              "associationEvidence": [
+                {
+                  "filePath": "src/inventory/reservations.mjs",
+                  "line": 9
+                },
+                {
+                  "filePath": "src/delivery/dispatch-service.mjs",
+                  "line": 29
+                }
+              ],
+              "check": "CODE-STANDARDS-FINDINGS",
+              "evidence": [
+                {
+                  "filePath": "src/delivery/carrier-policy.mjs",
+                  "line": 1
+                },
+                {
+                  "filePath": "src/delivery/carrier-policy.mjs",
+                  "line": 5
+                },
+                {
+                  "filePath": "src/delivery/carrier-policy.mjs",
+                  "line": 6
+                },
+                {
+                  "filePath": "src/delivery/dispatch-service.mjs",
+                  "line": 29
+                },
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 28
+                },
+                {
+                  "filePath": "src/inventory/reservations.mjs",
+                  "line": 9
+                },
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 34
+                },
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 35
+                },
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 50
+                },
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 53
+                },
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 98
+                }
+              ]
+            },
+            {
+              "associationEvidence": [
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 53
+                },
+                {
+                  "filePath": "src/delivery/dispatch-service.mjs",
+                  "line": 29
+                }
+              ],
+              "check": "CODE-STANDARDS-FINDINGS",
+              "evidence": [
+                {
+                  "filePath": "src/delivery/carrier-policy.mjs",
+                  "line": 1
+                },
+                {
+                  "filePath": "src/delivery/carrier-policy.mjs",
+                  "line": 5
+                },
+                {
+                  "filePath": "src/delivery/carrier-policy.mjs",
+                  "line": 6
+                },
+                {
+                  "filePath": "src/delivery/dispatch-service.mjs",
+                  "line": 29
+                },
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 28
+                },
+                {
+                  "filePath": "src/inventory/reservations.mjs",
+                  "line": 9
+                },
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 34
+                },
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 35
+                },
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 50
+                },
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 53
+                },
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 98
+                }
+              ]
+            },
+            {
+              "associationEvidence": [
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 28
+                },
+                {
+                  "filePath": "src/delivery/dispatch-service.mjs",
+                  "line": 29
+                }
+              ],
+              "check": "CODE-STANDARDS-FINDINGS",
+              "evidence": [
+                {
+                  "filePath": "src/delivery/carrier-policy.mjs",
+                  "line": 1
+                },
+                {
+                  "filePath": "src/delivery/carrier-policy.mjs",
+                  "line": 5
+                },
+                {
+                  "filePath": "src/delivery/carrier-policy.mjs",
+                  "line": 6
+                },
+                {
+                  "filePath": "src/delivery/dispatch-service.mjs",
+                  "line": 29
+                },
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 28
+                },
+                {
+                  "filePath": "src/inventory/reservations.mjs",
+                  "line": 9
+                },
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 34
+                },
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 35
+                },
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 50
+                },
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 53
+                },
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 98
+                }
+              ]
+            }
+          ],
+          "findingTerms": [
+            [
+              "carrierId",
+              "carrier id",
+              "carrier identity"
+            ],
+            [
+              "reservation",
+              "reserve",
+              "release",
+              "inventory"
+            ],
+            [
+              "dispatch",
+              "selected carrier"
+            ],
+            [
+              "different",
+              "mismatch",
+              "inconsistent",
+              "split",
+              "not aligned",
+              "wrong carrier"
+            ]
+          ]
+        },
+        {
+          "expectation": "Warehouse, order, and carrier identifiers travel together through both stock reservation and release operations.",
+          "result": "gap",
+          "placements": [
+            {
+              "associationEvidence": [
+                {
+                  "filePath": "src/inventory/reservations.mjs",
+                  "line": 3
+                }
+              ],
+              "check": "CODE-STANDARDS-FINDINGS",
+              "evidence": [
+                {
+                  "filePath": "src/inventory/reservations.mjs",
+                  "line": 3
+                },
+                {
+                  "filePath": "src/inventory/reservations.mjs",
+                  "line": 16
+                }
+              ]
+            },
+            {
+              "associationEvidence": [
+                {
+                  "filePath": "src/inventory/reservations.mjs",
+                  "line": 16
+                }
+              ],
+              "check": "CODE-STANDARDS-FINDINGS",
+              "evidence": [
+                {
+                  "filePath": "src/inventory/reservations.mjs",
+                  "line": 3
+                },
+                {
+                  "filePath": "src/inventory/reservations.mjs",
+                  "line": 16
+                }
+              ]
+            }
+          ],
+          "findingTerms": [
+            [
+              "data clump",
+              "data clumps",
+              "parameter group",
+              "repeated parameters",
+              "travel together",
+              "passed together",
+              "same identifiers"
+            ],
+            [
+              "warehouseId",
+              "warehouse identifier"
+            ],
+            [
+              "orderId",
+              "order identifier"
+            ],
+            [
+              "carrierId",
+              "carrier identifier"
+            ]
+          ]
+        },
+        {
+          "expectation": "Dispatch approval and carrier trust are encoded together in one colon-delimited decisionCode primitive.",
+          "result": "gap",
+          "associationEvidence": [
+            {
+              "filePath": "src/delivery/carrier-policy.mjs",
+              "line": 3
+            }
+          ],
+          "evidence": [
+            {
+              "filePath": "src/delivery/carrier-policy.mjs",
+              "line": 3
+            },
+            {
+              "filePath": "src/orders/order-service.mjs",
+              "line": 67
+            },
+            {
+              "filePath": "src/orders/order-service.mjs",
+              "line": 92
+            }
+          ],
+          "findingTerms": [
+            [
+              "primitive obsession",
+              "encoded string",
+              "colon-delimited"
+            ],
+            [
+              "approval",
+              "approved"
+            ],
+            [
+              "trust",
+              "trusted"
+            ]
+          ]
+        },
+        {
+          "expectation": "Order state labels and cancellation policy repeat switches over the same state variants.",
+          "result": "gap",
+          "placements": [
+            {
+              "associationEvidence": [
+                {
+                  "filePath": "src/orders/order-state.mjs",
+                  "line": 7
+                }
+              ],
+              "check": "CODE-STANDARDS-FINDINGS",
+              "evidence": [
+                {
+                  "filePath": "src/orders/order-state.mjs",
+                  "line": 7
+                },
+                {
+                  "filePath": "src/orders/order-state.mjs",
+                  "line": 8
+                },
+                {
+                  "filePath": "src/orders/order-state.mjs",
+                  "line": 9
+                },
+                {
+                  "filePath": "src/orders/order-state.mjs",
+                  "line": 10
+                },
+                {
+                  "filePath": "src/orders/order-state.mjs",
+                  "line": 11
+                },
+                {
+                  "filePath": "src/orders/order-state.mjs",
+                  "line": 16
+                },
+                {
+                  "filePath": "src/orders/order-state.mjs",
+                  "line": 17
+                },
+                {
+                  "filePath": "src/orders/order-state.mjs",
+                  "line": 18
+                },
+                {
+                  "filePath": "src/orders/order-state.mjs",
+                  "line": 19
+                },
+                {
+                  "filePath": "src/orders/order-state.mjs",
+                  "line": 20
+                }
+              ]
+            },
+            {
+              "associationEvidence": [
+                {
+                  "filePath": "src/orders/order-state.mjs",
+                  "line": 16
+                }
+              ],
+              "check": "CODE-STANDARDS-FINDINGS",
+              "evidence": [
+                {
+                  "filePath": "src/orders/order-state.mjs",
+                  "line": 7
+                },
+                {
+                  "filePath": "src/orders/order-state.mjs",
+                  "line": 8
+                },
+                {
+                  "filePath": "src/orders/order-state.mjs",
+                  "line": 9
+                },
+                {
+                  "filePath": "src/orders/order-state.mjs",
+                  "line": 10
+                },
+                {
+                  "filePath": "src/orders/order-state.mjs",
+                  "line": 11
+                },
+                {
+                  "filePath": "src/orders/order-state.mjs",
+                  "line": 16
+                },
+                {
+                  "filePath": "src/orders/order-state.mjs",
+                  "line": 17
+                },
+                {
+                  "filePath": "src/orders/order-state.mjs",
+                  "line": 18
+                },
+                {
+                  "filePath": "src/orders/order-state.mjs",
+                  "line": 19
+                },
+                {
+                  "filePath": "src/orders/order-state.mjs",
+                  "line": 20
+                }
+              ]
+            },
+            {
+              "associationEvidence": [
+                {
+                  "filePath": "src/orders/order-state.mjs",
+                  "line": 7
+                },
+                {
+                  "filePath": "src/orders/order-state.mjs",
+                  "line": 16
+                },
+                {
+                  "filePath": "src/orders/transition-policy.mjs",
+                  "line": 4
+                }
+              ],
+              "check": "CODE-STANDARDS-FINDINGS",
+              "evidence": [
+                {
+                  "filePath": "src/orders/order-state.mjs",
+                  "line": 7
+                },
+                {
+                  "filePath": "src/orders/order-state.mjs",
+                  "line": 8
+                },
+                {
+                  "filePath": "src/orders/order-state.mjs",
+                  "line": 9
+                },
+                {
+                  "filePath": "src/orders/order-state.mjs",
+                  "line": 10
+                },
+                {
+                  "filePath": "src/orders/order-state.mjs",
+                  "line": 11
+                },
+                {
+                  "filePath": "src/orders/order-state.mjs",
+                  "line": 16
+                },
+                {
+                  "filePath": "src/orders/order-state.mjs",
+                  "line": 17
+                },
+                {
+                  "filePath": "src/orders/order-state.mjs",
+                  "line": 18
+                },
+                {
+                  "filePath": "src/orders/order-state.mjs",
+                  "line": 19
+                },
+                {
+                  "filePath": "src/orders/order-state.mjs",
+                  "line": 20
+                },
+                {
+                  "filePath": "src/orders/transition-policy.mjs",
+                  "line": 4
+                },
+                {
+                  "filePath": "src/orders/transition-policy.mjs",
+                  "line": 5
+                },
+                {
+                  "filePath": "src/orders/transition-policy.mjs",
+                  "line": 6
+                },
+                {
+                  "filePath": "src/orders/transition-policy.mjs",
+                  "line": 7
+                },
+                {
+                  "filePath": "src/orders/transition-policy.mjs",
+                  "line": 8
+                },
+                {
+                  "filePath": "src/orders/transition-policy.mjs",
+                  "line": 9
+                },
+                {
+                  "filePath": "src/orders/transition-policy.mjs",
+                  "line": 11
+                }
+              ]
+            }
+          ],
+          "findingTerms": [
+            [
+              "repeated switch",
+              "repeated switches",
+              "duplicate branching"
+            ],
+            [
+              "state label",
+              "labels"
+            ],
+            [
+              "cancel",
+              "cancellation"
+            ]
+          ]
+        },
+        {
+          "expectation": "Adding a delivery service level requires coordinated edits to delivery-day, fee, and notification-label switches in three Modules.",
+          "result": "gap",
+          "placements": [
+            {
+              "associationEvidence": [
+                {
+                  "filePath": "src/delivery/service-levels.mjs",
+                  "line": 1
+                }
+              ],
+              "check": "CODE-STANDARDS-FINDINGS",
+              "evidence": [
+                {
+                  "filePath": "src/delivery/service-levels.mjs",
+                  "line": 1
+                },
+                {
+                  "filePath": "src/delivery/service-levels.mjs",
+                  "line": 2
+                },
+                {
+                  "filePath": "src/delivery/dispatch-service.mjs",
+                  "line": 20
+                },
+                {
+                  "filePath": "src/delivery/dispatch-service.mjs",
+                  "line": 22
+                },
+                {
+                  "filePath": "src/notifications/delivery-notifications.mjs",
+                  "line": 5
+                },
+                {
+                  "filePath": "src/notifications/delivery-notifications.mjs",
+                  "line": 7
+                }
+              ]
+            },
+            {
+              "associationEvidence": [
+                {
+                  "filePath": "src/delivery/dispatch-service.mjs",
+                  "line": 20
+                }
+              ],
+              "check": "CODE-STANDARDS-FINDINGS",
+              "evidence": [
+                {
+                  "filePath": "src/delivery/service-levels.mjs",
+                  "line": 1
+                },
+                {
+                  "filePath": "src/delivery/service-levels.mjs",
+                  "line": 2
+                },
+                {
+                  "filePath": "src/delivery/dispatch-service.mjs",
+                  "line": 20
+                },
+                {
+                  "filePath": "src/delivery/dispatch-service.mjs",
+                  "line": 22
+                },
+                {
+                  "filePath": "src/notifications/delivery-notifications.mjs",
+                  "line": 5
+                },
+                {
+                  "filePath": "src/notifications/delivery-notifications.mjs",
+                  "line": 7
+                }
+              ]
+            },
+            {
+              "associationEvidence": [
+                {
+                  "filePath": "src/notifications/delivery-notifications.mjs",
+                  "line": 5
+                }
+              ],
+              "check": "CODE-STANDARDS-FINDINGS",
+              "evidence": [
+                {
+                  "filePath": "src/delivery/service-levels.mjs",
+                  "line": 1
+                },
+                {
+                  "filePath": "src/delivery/service-levels.mjs",
+                  "line": 2
+                },
+                {
+                  "filePath": "src/delivery/dispatch-service.mjs",
+                  "line": 20
+                },
+                {
+                  "filePath": "src/delivery/dispatch-service.mjs",
+                  "line": 22
+                },
+                {
+                  "filePath": "src/notifications/delivery-notifications.mjs",
+                  "line": 5
+                },
+                {
+                  "filePath": "src/notifications/delivery-notifications.mjs",
+                  "line": 7
+                }
+              ]
+            }
+          ],
+          "findingTerms": [
+            [
+              "shotgun surgery",
+              "coordinated edits",
+              "multiple modules"
+            ],
+            [
+              "service level",
+              "delivery level"
+            ],
+            [
+              "days",
+              "delivery-day",
+              "delivery estimate"
+            ],
+            [
+              "fee",
+              "price",
+              "cost"
+            ],
+            [
+              "label",
+              "notification",
+              "notification text"
+            ]
+          ]
+        },
+        {
+          "expectation": "reviewerCapabilityDescribeDeliveryHandling combines invoice formatting, retry timing, and locale direction policies that evolve for unrelated reasons.",
+          "result": "gap",
+          "associationEvidence": [
+            {
+              "filePath": "src/reporting/fulfillment-report.mjs",
+              "line": 18
+            }
+          ],
+          "evidence": [
+            {
+              "filePath": "src/reporting/fulfillment-report.mjs",
+              "line": 18
+            },
+            {
+              "filePath": "src/reporting/fulfillment-report.mjs",
+              "line": 19
+            },
+            {
+              "filePath": "src/reporting/fulfillment-report.mjs",
+              "line": 20
+            },
+            {
+              "filePath": "src/reporting/fulfillment-report.mjs",
+              "line": 21
+            }
+          ],
+          "findingTerms": [
+            [
+              "divergent change",
+              "unrelated reasons",
+              "unrelated responsibilities"
+            ],
+            [
+              "delivery handling",
+              "reviewerCapabilityDescribeDeliveryHandling"
+            ],
+            [
+              "invoice",
+              "billing"
+            ],
+            [
+              "retry"
+            ],
+            [
+              "address direction",
+              "locale"
+            ]
+          ]
+        },
+        {
+          "expectation": "Stock reservation preparation accepts an optional reservationMapper although the current order flow has no reservation mapping need.",
+          "result": "gap",
+          "associationEvidence": [
+            {
+              "filePath": "src/inventory/reservations.mjs",
+              "line": 3
+            }
+          ],
+          "evidence": [
+            {
+              "filePath": "src/inventory/reservations.mjs",
+              "line": 3
+            },
+            {
+              "filePath": "src/inventory/reservations.mjs",
+              "line": 13
+            },
+            {
+              "filePath": "src/orders/order-service.mjs",
+              "line": 27
+            },
+            {
+              "filePath": "src/orders/order-service.mjs",
+              "line": 28
+            },
+            {
+              "filePath": "src/orders/order-service.mjs",
+              "line": 29
+            },
+            {
+              "filePath": "src/orders/order-service.mjs",
+              "line": 30
+            },
+            {
+              "filePath": "src/orders/order-service.mjs",
+              "line": 31
+            },
+            {
+              "filePath": "src/orders/order-service.mjs",
+              "line": 32
+            },
+            {
+              "filePath": "src/orders/order-service.mjs",
+              "line": 33
+            }
+          ],
+          "findingTerms": [
+            [
+              "speculative generality",
+              "unused extension",
+              "unused callback",
+              "unneeded abstraction"
+            ],
+            [
+              "reservationMapper",
+              "reservation mapper",
+              "mapping callback",
+              "optional mapper"
+            ],
+            [
+              "reservation",
+              "stock"
+            ]
+          ]
+        },
+        {
+          "expectation": "Dispatch request construction reaches through checkout, order, customer, profile, and address to obtain a region.",
+          "result": "gap",
+          "associationEvidence": [
+            {
+              "filePath": "src/delivery/dispatch-service.mjs",
+              "line": 17
+            }
+          ],
+          "evidence": [
+            {
+              "filePath": "src/delivery/dispatch-service.mjs",
+              "line": 17
+            }
+          ],
+          "findingTerms": [
+            [
+              "message chain",
+              "message chains",
+              "deep navigation"
+            ],
+            [
+              "checkout",
+              "customer profile",
+              "address region",
+              "region"
+            ]
+          ]
+        },
+        {
+          "expectation": "The order-store wrapper only forwards load, save, and remove while order preparation depends on that indirection.",
+          "result": "gap",
+          "associationEvidence": [
+            {
+              "filePath": "src/persistence/order-store.mjs",
+              "line": 37
+            }
+          ],
+          "evidence": [
+            {
+              "filePath": "src/persistence/order-store.mjs",
+              "line": 37
+            },
+            {
+              "filePath": "src/persistence/order-store.mjs",
+              "line": 39
+            },
+            {
+              "filePath": "src/persistence/order-store.mjs",
+              "line": 41
+            },
+            {
+              "filePath": "src/persistence/order-store.mjs",
+              "line": 43
+            },
+            {
+              "filePath": "src/orders/order-service.mjs",
+              "line": 36
+            }
+          ],
+          "findingTerms": [
+            [
+              "middle man",
+              "middleman",
+              "only forwards",
+              "only delegates"
+            ],
+            [
+              "load",
+              "save",
+              "remove"
+            ]
+          ]
+        },
+        {
+          "expectation": "ReadOnlyOrderStore inherits save and remove but rejects both inherited operations when the order service constructs its read-only view.",
+          "result": "gap",
+          "placements": [
+            {
+              "associationEvidence": [
+                {
+                  "filePath": "src/persistence/order-store.mjs",
+                  "line": 24
+                }
+              ],
+              "check": "CODE-STANDARDS-FINDINGS",
+              "evidence": [
+                {
+                  "filePath": "src/persistence/order-store.mjs",
+                  "line": 24
+                },
+                {
+                  "filePath": "src/persistence/order-store.mjs",
+                  "line": 26
+                },
+                {
+                  "filePath": "src/persistence/order-store.mjs",
+                  "line": 31
+                },
+                {
+                  "filePath": "src/persistence/order-store.mjs",
+                  "line": 35
+                },
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 78
+                },
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 106
+                },
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 109
+                }
+              ]
+            },
+            {
+              "associationEvidence": [
+                {
+                  "filePath": "src/persistence/order-store.mjs",
+                  "line": 35
+                },
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 106
+                }
+              ],
+              "check": "CODE-STANDARDS-FINDINGS",
+              "evidence": [
+                {
+                  "filePath": "src/persistence/order-store.mjs",
+                  "line": 24
+                },
+                {
+                  "filePath": "src/persistence/order-store.mjs",
+                  "line": 26
+                },
+                {
+                  "filePath": "src/persistence/order-store.mjs",
+                  "line": 31
+                },
+                {
+                  "filePath": "src/persistence/order-store.mjs",
+                  "line": 35
+                },
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 78
+                },
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 106
+                },
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 109
+                }
+              ]
+            }
+          ],
+          "findingTerms": [
+            [
+              "refused bequest",
+              "rejects inherited",
+              "inheritance"
+            ],
+            [
+              "save"
+            ],
+            [
+              "remove"
+            ]
+          ]
+        },
+        {
+          "expectation": "Dispatch authorization is independently implemented in reviewerCapabilityCanDispatch and reviewerCapabilityCreateDispatchDecision().canDispatch, so approval or trust policy changes can drift between the two implementations.",
+          "result": "gap",
+          "associationEvidence": [
+            {
+              "filePath": "src/delivery/carrier-policy.mjs",
+              "line": 3
+            },
+            {
+              "filePath": "src/delivery/dispatch-service.mjs",
+              "line": 40
+            }
+          ],
+          "evidence": [
+            {
+              "filePath": "src/delivery/carrier-policy.mjs",
+              "line": 3
+            },
+            {
+              "filePath": "src/delivery/dispatch-service.mjs",
+              "line": 37
+            },
+            {
+              "filePath": "src/delivery/dispatch-service.mjs",
+              "line": 40
+            },
+            {
+              "filePath": "src/orders/order-service.mjs",
+              "line": 67
+            }
+          ],
+          "findingTerms": [
+            [
+              "duplicate",
+              "duplicated",
+              "multiple sources of truth",
+              "policy drift",
+              "independent copies"
+            ],
+            [
+              "dispatch",
+              "authorization",
+              "canDispatch"
+            ],
+            [
+              "status",
+              "approval",
+              "approved"
+            ],
+            [
+              "trust",
+              "trusted"
+            ]
+          ]
+        },
+        {
+          "expectation": "Dispatch creation and resolved dispatch separately construct and freeze the same orderId and region request, requiring coordinated changes to the request shape or construction policy.",
+          "result": "gap",
+          "placements": [
+            {
+              "associationEvidence": [
+                {
+                  "filePath": "src/delivery/dispatch-service.mjs",
+                  "line": 15
+                }
+              ],
+              "check": "CODE-STANDARDS-FINDINGS",
+              "evidence": [
+                {
+                  "filePath": "src/delivery/dispatch-service.mjs",
+                  "line": 15
+                },
+                {
+                  "filePath": "src/delivery/dispatch-service.mjs",
+                  "line": 16
+                },
+                {
+                  "filePath": "src/delivery/dispatch-service.mjs",
+                  "line": 17
+                },
+                {
+                  "filePath": "src/delivery/dispatch-service.mjs",
+                  "line": 18
+                },
+                {
+                  "filePath": "src/delivery/dispatch-service.mjs",
+                  "line": 32
+                },
+                {
+                  "filePath": "src/delivery/dispatch-request.mjs",
+                  "line": 1
+                },
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 82
+                }
+              ]
+            },
+            {
+              "associationEvidence": [
+                {
+                  "filePath": "src/delivery/dispatch-request.mjs",
+                  "line": 1
+                }
+              ],
+              "check": "CODE-STANDARDS-FINDINGS",
+              "evidence": [
+                {
+                  "filePath": "src/delivery/dispatch-service.mjs",
+                  "line": 15
+                },
+                {
+                  "filePath": "src/delivery/dispatch-service.mjs",
+                  "line": 16
+                },
+                {
+                  "filePath": "src/delivery/dispatch-service.mjs",
+                  "line": 17
+                },
+                {
+                  "filePath": "src/delivery/dispatch-service.mjs",
+                  "line": 18
+                },
+                {
+                  "filePath": "src/delivery/dispatch-service.mjs",
+                  "line": 32
+                },
+                {
+                  "filePath": "src/delivery/dispatch-request.mjs",
+                  "line": 1
+                },
+                {
+                  "filePath": "src/orders/order-service.mjs",
+                  "line": 82
+                }
+              ]
+            }
+          ],
+          "findingTerms": [
+            [
+              "dispatch request",
+              "request construction",
+              "request creator"
+            ],
+            [
+              "duplicate",
+              "duplicated",
+              "duplication",
+              "same frozen"
+            ],
+            [
+              "orderId",
+              "order identifier"
+            ],
+            [
+              "region"
+            ]
+          ]
+        }
+      ],
+      "cleanCases": [
+        {
+          "expectation": "reviewerCapabilityDescribeDeliveryWindow follows the required export prefix.",
+          "evidence": [
+            {
+              "filePath": "src/notifications/delivery-notifications.mjs",
+              "line": 19
+            }
+          ],
+          "findingTerms": [
+            "reviewerCapabilityDescribeDeliveryWindow",
+            [
+              "prefix",
+              "export name"
+            ]
+          ]
+        },
+        {
+          "expectation": "reviewerCapabilitySelectCarrier is a named export.",
+          "evidence": [
+            {
+              "filePath": "src/delivery/carrier-policy.mjs",
+              "line": 5
+            }
+          ],
+          "findingTerms": [
+            "reviewerCapabilitySelectCarrier",
+            [
+              "named export",
+              "default export"
+            ]
+          ]
+        },
+        {
+          "expectation": "The shared path helper directly re-exports reviewerCapabilityBasename from node:path.",
+          "evidence": [
+            {
+              "filePath": "src/shared/path.mjs",
+              "line": 1
+            }
+          ],
+          "findingTerms": [
+            "reviewerCapabilityBasename",
+            [
+              "node:path",
+              "path"
+            ],
+            [
+              "built-in",
+              "builtin",
+              "prefix"
+            ]
+          ]
+        },
+        {
+          "expectation": "reviewerCapabilityTerminalStates is frozen before export.",
+          "evidence": [
+            {
+              "filePath": "src/orders/order-closure.mjs",
+              "line": 1
+            }
+          ],
+          "findingTerms": [
+            "reviewerCapabilityTerminalStates",
+            [
+              "frozen",
+              "immutable",
+              "freeze"
+            ]
+          ]
+        },
+        {
+          "expectation": "reviewerCapabilityHasReservedInventory follows the boolean-return naming rule.",
+          "evidence": [
+            {
+              "filePath": "src/inventory/reservations.mjs",
+              "line": 29
+            }
+          ],
+          "findingTerms": [
+            "reviewerCapabilityHasReservedInventory",
+            [
+              "boolean",
+              "name",
+              "prefix"
+            ]
+          ]
+        },
+        {
+          "expectation": "reviewerCapabilityParseRoutePolicy preserves the caught error as cause.",
+          "evidence": [
+            {
+              "filePath": "src/config/route-policy.mjs",
+              "line": 5
+            }
+          ],
+          "findingTerms": [
+            "reviewerCapabilityParseRoutePolicy",
+            [
+              "cause",
+              "caught error"
+            ]
+          ]
+        },
+        {
+          "expectation": "reviewerCapabilityRescheduleDelivery returns a copy instead of mutating its dispatch Input.",
+          "evidence": [
+            {
+              "filePath": "src/delivery/delivery-schedule.mjs",
+              "line": 2
+            }
+          ],
+          "findingTerms": [
+            "reviewerCapabilityRescheduleDelivery",
+            [
+              "mutate",
+              "copy",
+              "input"
+            ]
+          ]
+        },
+        {
+          "expectation": "reviewerCapabilityElapsedTime receives current time through the injected now function.",
+          "evidence": [
+            {
+              "filePath": "src/shared/elapsed-time.mjs",
+              "line": 3
+            }
+          ],
+          "findingTerms": [
+            "reviewerCapabilityElapsedTime",
+            [
+              "injected",
+              "now",
+              "clock"
+            ]
+          ]
+        },
+        {
+          "expectation": "reviewerCapabilityDescribeDeliveryWindow clearly names the window it describes.",
+          "evidence": [
+            {
+              "filePath": "src/notifications/delivery-notifications.mjs",
+              "line": 19
+            }
+          ],
+          "findingTerms": [
+            "reviewerCapabilityDescribeDeliveryWindow",
+            [
+              "mysterious",
+              "unclear",
+              "non-descriptive"
+            ]
+          ]
+        },
+        {
+          "expectation": "reviewerCapabilityBuildReservationKey performs one distinct reservation-key operation.",
+          "evidence": [
+            {
+              "filePath": "src/inventory/reservations.mjs",
+              "line": 23
+            }
+          ],
+          "findingTerms": [
+            "reviewerCapabilityBuildReservationKey",
+            [
+              "duplicate",
+              "duplicated",
+              "normalization"
+            ]
+          ]
+        },
+        {
+          "expectation": "The fulfillment report summary uses the report title captured by its report object.",
+          "evidence": [
+            {
+              "filePath": "src/reporting/fulfillment-report.mjs",
+              "line": 6
+            },
+            {
+              "filePath": "src/reporting/fulfillment-report.mjs",
+              "line": 8
+            },
+            {
+              "filePath": "src/orders/order-service.mjs",
+              "line": 57
+            },
+            {
+              "filePath": "src/orders/order-service.mjs",
+              "line": 61
+            }
+          ],
+          "findingTerms": [
+            [
+              "reviewerCapabilityDescribeOrder",
+              "report summary",
+              "summarize"
+            ],
+            [
+              "feature envy",
+              "envy"
+            ]
+          ]
+        },
+        {
+          "expectation": "reviewerCapabilityArchiveFulfillment receives the related run identity in one runContext value.",
+          "evidence": [
+            {
+              "filePath": "src/reporting/fulfillment-report.mjs",
+              "line": 12
+            },
+            {
+              "filePath": "src/orders/order-service.mjs",
+              "line": 100
+            }
+          ],
+          "findingTerms": [
+            "reviewerCapabilityArchiveFulfillment",
+            [
+              "data clump",
+              "data clumps"
+            ],
+            [
+              "runContext",
+              "run context"
+            ]
+          ]
+        },
+        {
+          "expectation": "reviewerCapabilityCreateDispatchDecision keeps dispatch status and trust as separate properties with their behavior.",
+          "evidence": [
+            {
+              "filePath": "src/delivery/dispatch-service.mjs",
+              "line": 37
+            }
+          ],
+          "findingTerms": [
+            "reviewerCapabilityCreateDispatchDecision",
+            [
+              "primitive obsession",
+              "encoded string"
+            ],
+            [
+              "status"
+            ],
+            [
+              "trust"
+            ]
+          ]
+        },
+        {
+          "expectation": "reviewerCapabilityTransitionPolicy centralizes the current state-specific label and cancellation behavior.",
+          "evidence": [
+            {
+              "filePath": "src/orders/transition-policy.mjs",
+              "line": 4
+            },
+            {
+              "filePath": "src/orders/transition-policy.mjs",
+              "line": 5
+            },
+            {
+              "filePath": "src/orders/transition-policy.mjs",
+              "line": 6
+            },
+            {
+              "filePath": "src/orders/transition-policy.mjs",
+              "line": 7
+            },
+            {
+              "filePath": "src/orders/transition-policy.mjs",
+              "line": 9
+            },
+            {
+              "filePath": "src/orders/transition-policy.mjs",
+              "line": 11
+            }
+          ],
+          "findingTerms": [
+            "reviewerCapabilityTransitionPolicy",
+            [
+              "repeated switch",
+              "repeated switches"
+            ]
+          ]
+        },
+        {
+          "expectation": "reviewerCapabilityRiskPolicies centralizes every current risk-level attribute in one table.",
+          "evidence": [
+            {
+              "filePath": "src/delivery/service-levels.mjs",
+              "line": 5
+            },
+            {
+              "filePath": "src/delivery/service-levels.mjs",
+              "line": 6
+            },
+            {
+              "filePath": "src/delivery/service-levels.mjs",
+              "line": 7
+            }
+          ],
+          "findingTerms": [
+            "reviewerCapabilityRiskPolicies",
+            [
+              "shotgun surgery",
+              "scattered"
+            ]
+          ]
+        },
+        {
+          "expectation": "The inventory reservations Module contains cohesive stock-reservation behavior used by order preparation.",
+          "evidence": [
+            {
+              "filePath": "src/inventory/reservations.mjs",
+              "line": 3
+            },
+            {
+              "filePath": "src/orders/order-service.mjs",
+              "line": 27
+            }
+          ],
+          "findingTerms": [
+            [
+              "inventory reservation",
+              "stock reservation"
+            ],
+            [
+              "divergent change",
+              "unrelated responsibility"
+            ]
+          ]
+        },
+        {
+          "expectation": "reviewerCapabilitySelectObjectFields uses both parameters for its current field-selection operation.",
+          "evidence": [
+            {
+              "filePath": "src/shared/object-fields.mjs",
+              "line": 1
+            },
+            {
+              "filePath": "src/shared/object-fields.mjs",
+              "line": 2
+            }
+          ],
+          "findingTerms": [
+            "reviewerCapabilitySelectObjectFields",
+            [
+              "speculative generality",
+              "unused"
+            ]
+          ]
+        },
+        {
+          "expectation": "reviewerCapabilityCreateResolvedDispatchRequest receives the resolved order and region values directly.",
+          "evidence": [
+            {
+              "filePath": "src/delivery/dispatch-request.mjs",
+              "line": 1
+            }
+          ],
+          "findingTerms": [
+            "reviewerCapabilityCreateResolvedDispatchRequest",
+            [
+              "message chain",
+              "deep navigation"
+            ],
+            [
+              "orderId",
+              "order identifier"
+            ],
+            [
+              "region"
+            ]
+          ]
+        },
+        {
+          "expectation": "reviewerCapabilityCreateCachedReader adds caching policy around reader access.",
+          "evidence": [
+            {
+              "filePath": "src/shared/cached-reader.mjs",
+              "line": 11
+            },
+            {
+              "filePath": "src/shared/cached-reader.mjs",
+              "line": 13
+            },
+            {
+              "filePath": "src/shared/cached-reader.mjs",
+              "line": 16
+            },
+            {
+              "filePath": "src/shared/cached-reader.mjs",
+              "line": 17
+            },
+            {
+              "filePath": "src/shared/cached-reader.mjs",
+              "line": 18
+            }
+          ],
+          "findingTerms": [
+            "reviewerCapabilityCreateCachedReader",
+            [
+              "middle man",
+              "middleman",
+              "only delegates"
+            ]
+          ]
+        },
+        {
+          "expectation": "reviewerCapabilityCreateOrderReader uses composition and adds order-identifier validation.",
+          "evidence": [
+            {
+              "filePath": "src/persistence/order-readers.mjs",
+              "line": 4
+            },
+            {
+              "filePath": "src/persistence/order-readers.mjs",
+              "line": 7
+            }
+          ],
+          "findingTerms": [
+            "reviewerCapabilityCreateOrderReader",
+            [
+              "refused bequest",
+              "inheritance"
+            ]
+          ]
+        },
+        {
+          "noOtherSupportedFinding": true
+        }
+      ]
+    }
+  ]
+}

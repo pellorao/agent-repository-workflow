@@ -1,0 +1,17 @@
+# Node.js
+node_modules/
+dist/
+coverage/
+*.log
+
+# Environment
+.env
+.env.*
+!.env.example
+/config.json
+
+# Local agent files
+.tmp/
+
+# 仅来源的 Upstream Sync 工作区
+upstream/.workspaces/

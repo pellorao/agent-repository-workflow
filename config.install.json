@@ -1,0 +1,27 @@
+{
+  "configVersion": 3,
+  "agents": {},
+  "editor": {
+    "command": "code",
+    "args": ["{file}"]
+  },
+  "reviewEditor": {
+    "command": "code",
+    "args": ["--new-window", "--wait", "{file}"]
+  },
+  "jira": {
+    "listLimit": 50
+  },
+  "reviewers": {
+    "code-spec-reviewer": {"model": "gpt-6-luna", "modelProvider": "openai", "reasoningEffort": "xhigh", "serviceTier": "default"},
+    "code-standards-reviewer": {"model": "gpt-6-luna", "modelProvider": "openai", "reasoningEffort": "xhigh", "serviceTier": "default"},
+    "commit-audit-reviewer": {"model": "gpt-6-luna", "modelProvider": "openai", "reasoningEffort": "xhigh", "serviceTier": "default"},
+    "spec-readiness-reviewer": {"model": "gpt-6-luna", "modelProvider": "openai", "reasoningEffort": "xhigh", "serviceTier": "default"}
+  },
+  "backgroundAgent": {
+    "maxInstances": 16,
+    "messageTimeoutMs": 5000,
+    "persistenceIntervalMs": 1000,
+    "earlyExitNotificationThreshold": 10
+  }
+}

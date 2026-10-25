@@ -1,0 +1,262 @@
+# ARW Development Manual
+
+[English](development.md) | [简体中文](development.zh-CN.md)
+
+This manual is for maintainers who have cloned the ARW source repository and are preparing to change its implementation, documentation, Workflow Distribution payload, or release candidate. If you use ARW to manage another Git repository, start with the [project README](../../README.md). This manual helps you choose a source-maintenance route, find validation entry points, and navigate code by responsibility. Stable product behavior belongs to the [long-term specification (Chinese)](../specs/agent-repository-workflow/spec.md) and the specialized specifications it cites. Agent operating requirements belong to the root [AGENTS.md (Chinese)](../../AGENTS.md) and the [docs/agents rules (Chinese)](../agents/).
+
+## Choose a source-maintenance route
+
+Choose a route based on the authoritative source and the final result you need to change. Do not start from a familiar script and work backward to decide whether it fits the task.
+
+An ARW Artifact is a registered issue, map, or specification work record under `.scratch`. Spec Readiness is the governance-preparation review before implementation. Commit Audit is the final requirements check on a frozen commit candidate. These names retain their precise meaning throughout this manual.
+
+| Goal | Route | Main authoritative sources |
+| --- | --- | --- |
+| Change public commands, installation, repository workflows, ARW Artifacts, or other production behavior | [Change product implementation](#change-product-implementation) | Applicable long-term specifications, ADRs, and implementation issue |
+| Change reader documentation, Agent documentation, or terminology | [Check documentation and terminology](#check-documentation-and-terminology) | Target document, writing rules, and applicable governance sources |
+| Change the bootstrap script or installation payload | [Bootstrap scripts and Installation](#bootstrap-scripts-and-installation) | Installation long-term specification and manifest |
+| Change shared background Agent execution, App Server capacity, or recovery across repositories | [Change product implementation](#change-product-implementation) | Product background Agent rules and installation management rules |
+| Change a shared workflow or platform projection | [Workflow Distribution and Platform Projection](#workflow-distribution-and-platform-projection) | Actual workflow files, distribution configuration, and development long-term specification |
+| Adopt an external Skill Package update | [Upstream Sync](#upstream-sync) | Source configuration, Base/Ours/Theirs, and Upstream Sync rules |
+| Change a Reviewer Role, independent execution, or Reviewer capability validation | [Reviewer configuration and capability validation](#reviewer-configuration-and-capability-validation) | Canonical Role, user configuration, and Reviewer capability rules |
+| Validate cross-operating-system installation or maintain the test environment | [Cross-operating-system validation environment](#cross-operating-system-validation-environment) | Active issue, VM rules, and release registry |
+| Prepare the initial GitHub source migration | [Initial GitHub migration](#initial-github-migration) | Approved migration instructions and the latest source file snapshot |
+| Validate or publish a stable release | [Stable release](#stable-release) | Release long-term specification and Source Checkout release rules |
+
+An Agent starts from the root `AGENTS.md` and follows the applicable rules. This manual helps maintainers choose a content route; it does not describe the Agent workflow. If a task spans multiple routes, find the authoritative source and entry point for each route first.
+
+## Change product implementation
+
+Use the product implementation route for JavaScript production behavior. Find the Module and public Interface that own the behavior in the applicable long-term specification, then go to the corresponding source and test responsibilities.
+
+### Prepare the development environment
+
+The project uses native JavaScript, ES Modules, Node.js built-in Modules, `node:test`, and `node:sqlite`. Node.js 24 is the minimum runtime version. The product has no third-party runtime dependencies. The source repository uses pnpm 11 to manage its two development dependencies: TypeScript and the Node.js 24 type declarations.
+
+Prepare and check the development baseline from the repository root:
+
+~~~text
+node --version
+npx get-pnpm
+pnpm install --frozen-lockfile
+pnpm typecheck
+pnpm test
+~~~
+
+`pnpm typecheck` performs a complete strict check of Git-managed `.mjs` files and generates no files. `pnpm test` runs the Node.js built-in test suite. To show each case in the same test set, use `pnpm test:verbose`; there is no need to run both modes.
+
+### Find implementation responsibility
+
+Find the Module or Interface that owns the behavior in the applicable long-term specification before entering its directory. Root entry points parse and connect commands; specific business rules usually live under `lib/<responsibility>/` named for their lasting responsibility.
+
+| Change | First navigation points |
+| --- | --- |
+| Public CLI routing and nearest Git repository discovery | Root `arw.mjs`, `lib/arw.mjs`, `lib/common/repository.mjs`, and `lib/arw-common/repository.mjs` |
+| ARW Artifacts, issue documents, and migrations | `lib/arw-common/` and `lib/artifact-migration/` |
+| Spec Readiness or Commit Audit | `lib/spec-readiness/` and `lib/commit-audit/` |
+| Background Agent control across callers and shared App Server capacity | `lib/background-agent/`, `tests/background-agent/`, [product background Agent rules (Chinese)](../specs/agent-repository-workflow/spec.md#background-agent-control), and [installation management rules (Chinese)](../specs/agent-repository-workflow-installation/spec.md#background-agent-management) |
+| Reviewer-specific roles, review, and report execution | `lib/reviewer-runtime/` and [Reviewer workflow (Chinese)](../specs/agent-repository-workflow/spec.md#reviewer-workflow) |
+| Repository workflows and Workflow Distribution payloads | `lib/repository-workflow/` and `lib/workflow-distribution/` |
+| Installation, bootstrap script, and uninstall | Root `install.mjs`, `uninstall.mjs`, and `lib/installation/` |
+| Platform projections and platform environments | `lib/arw-common/platform-adapter.mjs` and `lib/arw-common/platform-environment.mjs` |
+| Source Checkout releases, Reviewer capabilities, and Upstream Sync | `lib/release/` and `lib/upstream-sync/` |
+| Text, terminology, and language analysis | The relevant shared capabilities in `lib/document-terms/`, `lib/common/`, and `lib/arw-common/` |
+
+Tests are organized under `tests/` by the same lasting responsibilities. Choose the closest test boundary that observes a public result. Do not define lasting behavior through a one-time issue name or a private helper's structure.
+
+### Enter the validation workflow
+
+The [validation rules (Chinese)](../agents/validation.md) and [Source Checkout deterministic validation rules (Chinese)](../agents/source-checkout-validation.md) own the Source Checkout validation entry points. Common command names include:
+
+~~~text
+pnpm typecheck
+pnpm test
+node scripts/check-workflow-distribution.mjs
+node --check <changed-javascript-file>
+node arw.mjs text check
+node arw.mjs terms check --include .scratch/<NNNN>-<effort-slug>/
+git diff --check
+~~~
+
+The linked validation rules determine when each command applies and how to interpret its result. To analyze additional explicit document paths, use `node arw.mjs language inspect <repository-relative-path>...`.
+
+## Maintain Source Checkout content
+
+This route covers documentation owned by the Source Checkout, workflow sources, platform projections, external-source adoption, and release preparation. Each subsection identifies when to use the route, its owner, and where to start. The linked long-term specifications and Agent rules own the full operating procedures.
+
+### Check documentation and terminology
+
+Use this route to maintain reader documentation, Agent documents, long-term specifications, or terminology. The target document and applicable governance sources own the content. Start with the [writing rules (Chinese)](../agents/writing.md) and [validation rules (Chinese)](../agents/validation.md). The [reader documentation specification (Chinese)](../specs/arw-reader-documentation/spec.md) also assigns responsibilities among reader documents.
+
+Common check command names are:
+
+~~~text
+node arw.mjs text check
+node arw.mjs terms check --include .scratch/<NNNN>-<effort-slug>/
+node arw.mjs language inspect <repository-relative-path>...
+git diff --check -- <changed-path>...
+~~~
+
+The validation rules own the exact check scope and interpretation.
+
+### Bootstrap scripts and Installation
+
+Use this route to maintain the separately downloadable bootstrap script, installation payload, global configuration, or uninstall entry point. The [installation long-term specification (Chinese)](../specs/agent-repository-workflow-installation/spec.md) owns behavior and payload responsibility. The [development long-term specification (Chinese)](../specs/agent-repository-workflow-development/spec.md) owns the relationship between source and generated files.
+
+Generate and check the bootstrap script with:
+
+~~~text
+node scripts/generate-install-arw.mjs
+node scripts/generate-install-arw.mjs --check
+~~~
+
+Run the installation entry point from a cloned Source Checkout with `node install.mjs`. Run `node uninstall.mjs` from the ARW installation directory to uninstall.
+
+The public GitHub repository is [pellorao/agent-repository-workflow](https://github.com/pellorao/agent-repository-workflow). The current source-installation route is to clone its `main` branch and run `node install.mjs` from the checkout root. This route requires external Node.js and Git and uses local-source mode with a `<version>-pre` identity. There is no stable tag at the initial publication state. The separately downloaded Bootstrap requires a stable tag and fails when none is available; it does not fall back to `main`. Do not describe a Bootstrap installation as currently available until a stable release exists.
+
+### Workflow Distribution and Platform Projection
+
+Use this route to change actual shared workflow content, distribution configuration, platform projections, or platform-native seeds. The source repository's `.agents/skills/`, managed Agent document regions, canonical Roles, and fixed license files are content sources. `distribution/` is the installation payload produced by synchronization before a release. The [development long-term specification (Chinese)](../specs/agent-repository-workflow-development/spec.md) owns the full responsibility relationship, and the [platform standards (Chinese)](../agents/platform-standards.md) describe platform formats and target entry points.
+
+Before-release synchronization and production checks use these command names:
+
+~~~text
+node scripts/sync-workflow-distribution.mjs review
+node scripts/sync-workflow-distribution.mjs review --confirm <additional-skill-references-hash> <skill-reference-normalizations-hash>
+node scripts/sync-workflow-distribution.mjs prepare
+node scripts/sync-workflow-distribution.mjs apply --plan-digest <plan-digest>
+node scripts/check-workflow-distribution.mjs
+~~~
+
+The development specification and platform standards define how these commands relate and what inputs they use.
+
+### Upstream Sync
+
+Use this route to adopt an update to a fixed external Skill Package. The current `.agents/skills/` content is the local source of truth. The [Upstream Sync long-term specification (Chinese)](../specs/agent-repository-workflow-upstream-sync/spec.md) owns external-source configuration and synchronization artifacts. The [Upstream Sync rules (Chinese)](../agents/upstream-sync.md) describe the entry point and current workflow.
+
+Maintenance command names are:
+
+~~~text
+node scripts/upstream-sync.mjs status
+node scripts/upstream-sync.mjs prepare --source <source> --to <full-commit-id>
+node scripts/upstream-sync.mjs review
+node scripts/upstream-sync.mjs review --confirm <additional-skill-references-hash> <skill-reference-normalizations-hash>
+node scripts/upstream-sync.mjs approve
+node scripts/upstream-sync.mjs finalize
+node scripts/upstream-sync.mjs abort
+~~~
+
+The Upstream Sync rules define the relationship between commands and their inputs. Workflow Distribution payloads use a separate pre-release synchronization route.
+
+### Reviewer configuration and capability validation
+
+Use this route to change canonical Reviewer Roles, Reviewer-specific execution, or Reviewer capability scenarios. Roles are in `docs/agents/roles/`. Shared execution and communication rules are in [Reviewer responsibilities (Chinese)](../agents/reviewer.md). The [product background Agent rules (Chinese)](../specs/agent-repository-workflow/spec.md#background-agent-control) and [installation management rules (Chinese)](../specs/agent-repository-workflow-installation/spec.md#background-agent-management) own cross-repository background Agent capacity, connection, and recovery. User model and tier settings are stored in the ARW program directory's `config.json` and the repository's `arw.config.json`. Their format and defaults are in the [Reviewer configuration specification (Chinese)](../specs/agent-repository-workflow-installation/spec.md#reviewer-configuration). The [Reviewer capability validation rules (Chinese)](../agents/reviewer-capability-validation.md) own the capability-scenario maintenance entry point.
+
+Focused preparation, result verification, and release preparation for Reviewer capabilities use these command names:
+
+~~~text
+node scripts/reviewer-capability-conformance.mjs prepare --reviewer <identity>
+node scripts/reviewer-capability-conformance.mjs verify --prepared <prepared-path> --input <artifacts-path>
+node scripts/reviewer-capability-conformance.mjs prepare
+~~~
+
+The staged Reviewer capability validation documents define the command modes and inputs.
+
+### Cross-operating-system validation environment
+
+Use this route to validate installation behavior across operating systems or maintain the test environment. The [cross-platform VM validation rules (Chinese)](../agents/cross-platform-vm-validation.md) describe the current environment requirements, commands, scenarios, and maintenance. The Source Checkout orchestration entry point is `scripts/release-vm-validation.mjs`.
+
+Two validation targets are supplied as extracted source directories outside the repository: `agentAssisted` and `plain`. They need no original Git history or fixed original commit ID. An external sources JSON file, kept separate from the VM JSON, supplies their absolute directory paths:
+
+~~~json
+{
+  "agentAssisted": {"directory": "<absolute-agent-assisted-directory>"},
+  "plain": {"directory": "<absolute-plain-directory>"}
+}
+~~~
+
+Prepare bundles with an explicit path to that sources file:
+
+~~~text
+node scripts/release-vm-validation.mjs prepare-bundles --candidate <full-object-id> --workspace <absolute-session-workspace> --sources <absolute-json-path>
+~~~
+
+Preparation copies the current source into a per-run working area, initializes a temporary Git repository there, creates one local commit, and builds a bundle for each target. It does not change the original directories or access GitLab. The VM JSON retains schema version 2; these local source paths do not go into that file.
+
+Every VM in one validation run uses the same prepared bundles. To validate changed source directories, prepare a new run.
+
+### Initial GitHub migration
+
+The initial migration transfers the latest `master` file snapshot and approved local changes into a new GitHub `main` with no old commit ancestors. It does not upload old branches, tags, or Git history. The user performs the final snapshot export, creates the new root commit, configures the GitHub `origin`, pushes only `main`, sets it as the default branch, and verifies the remote file tree. The local preparation and instructions do not mean the push has happened. Follow the specific one-time migration instructions for the actual commands, and stop to inspect unexpected remote content rather than overwriting it.
+
+This migration is separate from a version release. It does not create a tag or GitHub Release. The [GitHub migration target](https://github.com/pellorao/agent-repository-workflow) is public, but the initial source migration remains a user-performed operation.
+
+### Stable release
+
+Use this route to validate or publish a stable version. The [release long-term specification (Chinese)](../specs/agent-repository-workflow-release/spec.md) owns candidate and external publication responsibility. Start with the [Source Checkout release validation rules (Chinese)](../agents/source-checkout-release-validation.md).
+
+Related maintenance entry points are `scripts/release-vm-validation.mjs`, `scripts/release-conformance.mjs`, `scripts/create-release-evidence-archive.mjs`, and `scripts/verify-post-tag-bootstrap.mjs`. The Source Checkout release rules define how these entry points relate and which parameters they use.
+
+There is currently no stable release. The existing full release validation requires a prior stable release, while the VM matrix also includes installation and conversion from an older release. Although a candidate can use an empty-tree baseline when no older stable tag exists, bundle preparation still requires `priorRelease`. This does not establish that the complete first-release matrix is supported. Do not skip the older-release scenarios, invent a prior release, select a version number, or claim first-release readiness without a separately agreed design and implementation.
+
+For a later authorized release, maintainers use the external `gh` CLI. After release conformance passes and the user approves the exact title and notes, the process may create a GitHub Release only when the target is absent, then reads the remote object back and checks it. It does not update an existing Release or create one without authorization. The initial source migration itself does not perform a version release.
+
+## Navigate code by responsibility
+
+Choose the root entry point, a `scripts/` maintenance entry point, or a `lib/` Module by responsibility, then follow imports and tests for that responsibility. Directories are navigation aids, not replacements for Module and Interface contracts in the long-term specifications.
+
+### Root entry points
+
+- `arw.mjs`, `arw`, and `arw.cmd` are product entry points run directly from the source repository.
+- `install.mjs` and `uninstall.mjs` are installation entry points run from a cloned checkout.
+- `package.json`, `pnpm-lock.yaml`, and `tsconfig.json` respectively hold the product version and development commands, the actual development dependency tree, and strict JavaScript check configuration.
+- `config.install.json`, `release-manifest.json`, and `release-validation.json` respectively serve initial global configuration, installation payload, and release validation.
+- `AGENTS.md` and `CONTEXT.md` respectively provide the repository's Agent entry rules and durable domain vocabulary.
+
+### scripts
+
+Direct children of `scripts/` are entry points for Source Checkout maintainers or a separately downloadable bootstrap script. They do not become public `arw` subcommands.
+
+| Entry point | Responsibility |
+| --- | --- |
+| `scripts/check-workflow-distribution.mjs` | Validate production Workflow Distribution payloads and platform projections |
+| `scripts/create-release-evidence-archive.mjs` | Create or validate the evidence archive required by the release workflow |
+| `scripts/generate-install-arw.mjs` | Generate or check the separately downloadable bootstrap script |
+| `scripts/install-arw.mjs` | Separately downloadable bootstrap script that starts installation from a fixed release source |
+| `scripts/prepare-release-version-fixtures.mjs` | Prepare isolated fixtures for version lifecycles in the release matrix |
+| `scripts/release-conformance.mjs` | Validate a release candidate with bound `pre-tag` or `post-tag` evidence |
+| `scripts/release-guest-step.mjs` | Run one product scenario assigned by the release registry in a test system |
+| `scripts/release-vm-validation.mjs` | Prepare release bundles and orchestrate test-system validation |
+| `scripts/reviewer-capability-conformance.mjs` | Prepare or verify Reviewer capability scenarios |
+| `scripts/sync-workflow-distribution.mjs` | Review, prepare, and apply pre-release Workflow Distribution synchronization |
+| `scripts/upstream-sync.mjs` | Run the fixed external-source Upstream Sync lifecycle |
+| `scripts/verify-post-tag-bootstrap.mjs` | Get the bootstrap script from a published tag and verify the call chain |
+
+### lib
+
+`lib/` contains production implementation and maintenance Modules used only by the Source Checkout. `lib/common/` contains shared capabilities that have no ARW semantics. `lib/arw-common/` contains shared capabilities that depend on ARW semantics and are reused across business areas. Other `lib/<responsibility>/` directories own specific business responsibilities.
+
+The dependency direction allows specific business implementations to depend on `lib/arw-common/` and `lib/common/`. `lib/arw-common/` may depend on `lib/common/`, while `lib/common/` does not depend on ARW semantics or other `lib/` implementations. Root-level files under `lib/` connect multiple responsibilities. Do not automatically add an `index.mjs`, forwarding layer, or new Module Interface for each directory.
+
+### Main directories
+
+- `.agents/skills/` contains the Skill Packages used and maintained by the Source Checkout.
+- `distribution/` contains reviewed workflow-distribution installation payloads produced before release.
+- `docs/specs/` contains long-term product behavior, `docs/adr/` contains hard-to-reverse decisions, `docs/agents/` contains Agent operating rules, and `docs/manuals/` contains human-reader guides.
+- `tests/` is organized by the long-term responsibilities in `lib/`. Root-level tests cover root wiring and cross-responsibility invariants; `tests/helpers/` and `tests/fixtures/` contain shared test infrastructure.
+- `.scratch/` contains ARW Artifacts and completion evidence; it is not the Engine's temporary directory.
+- `.tmp/` contains short-lived Engine state for the current platform and session, not authoritative Git-managed data.
+- `upstream/` contains external-source configuration, snapshots, and completed synchronization records. Active disposable work areas stay ignored.
+
+## Further reading
+
+- [Project README](../../README.md): project fit, first success, and the main route for users.
+- [Agent Repository Workflow long-term specification (Chinese)](../specs/agent-repository-workflow/spec.md): public commands, ARW Artifacts, Agent CLI, Repository Workflow, and product Modules.
+- [Development long-term specification (Chinese)](../specs/agent-repository-workflow-development/spec.md): Source Checkout layout, Workflow Distribution, platform projections, and shared Modules.
+- [Installation long-term specification (Chinese)](../specs/agent-repository-workflow-installation/spec.md): bootstrap, installation, global configuration, PATH, and uninstall.
+- [Upstream Sync long-term specification (Chinese)](../specs/agent-repository-workflow-upstream-sync/spec.md): behavior contract for adopting external sources.
+- [Release long-term specification (Chinese)](../specs/agent-repository-workflow-release/spec.md): release candidates, Reviewer capabilities, VMs, archives, tags, and external writes.
+- [Reader documentation specification (Chinese)](../specs/arw-reader-documentation/spec.md): README and manual responsibilities and boundaries.
+- [Validation rules (Chinese)](../agents/validation.md): current Agent validation responsibilities and documentation checks.
+- [Source Checkout deterministic validation rules (Chinese)](../agents/source-checkout-validation.md): current complete validation entry points and coverage routes.
+- [Commit rules (Chinese)](../agents/commits.md): scope, reviews, and Commit Audit when the user requests a commit.

@@ -1,0 +1,4 @@
+# Paths matched here are outside the Repository's agent-managed scope.
+# Git-ignored paths are always outside that scope; `!` cannot include them again.
+# Patterns use ordered `.gitignore`-style matching; `!` only reverses an earlier match in this file.
+# This policy does not change ARW ownership or integrity checks for `arw-lock.json` and Managed Content.

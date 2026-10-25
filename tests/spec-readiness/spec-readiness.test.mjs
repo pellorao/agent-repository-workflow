@@ -1,0 +1,1322 @@
+import assert from 'node:assert/strict';
+import {createHash, randomUUID} from 'node:crypto';
+import {access, mkdir, readFile, readdir, symlink, writeFile} from 'node:fs/promises';
+import {dirname, join} from 'node:path';
+import test from 'node:test';
+
+import {createRepository as createGitRepository} from '../helpers/repository-fixture.mjs';
+import {
+    SPEC_READINESS_DRAFT_FORMAT_SUBTYPES,
+    SpecReadinessReviewerDraftFormatError,
+    generateSpecReadiness,
+    prepareSpecReadiness,
+    promoteSpecReadiness,
+    readCompleteSpecReadinessCapabilityDraft,
+    readCompleteSpecReadinessReviewerDraft,
+    readSpecReadinessEvidenceSources,
+    verifySpecReadiness,
+} from '../../lib/spec-readiness/spec-readiness.mjs';
+
+const adapter = {getCurrentAgentIdentity: () => ({platform: 'codex', sessionId: 'readiness-test'})};
+const digest = (/** @type {import("crypto").BinaryLike} */ value) => createHash('sha256').update(value).digest('hex');
+const readinessPath = (/** @type {string} */ repositoryRoot, issueNumber = '01') => join(
+    repositoryRoot,
+    '.scratch',
+    '0001-workflow',
+    'issues',
+    `${issueNumber}.spec-readiness.json`,
+);
+const checks = [
+    'SPEC-READINESS-INPUTS',
+    'SPEC-READINESS-REQUIREMENTS',
+    'SPEC-READINESS-RATIONALE',
+    'SPEC-READINESS-ADR-EVALUATION',
+    'MODULE-DESIGN-APPLICABILITY',
+    'MODULE-DESIGN-MODULES',
+    'MODULE-DESIGN-INTERFACES',
+    'MODULE-DESIGN-SEAMS-ADAPTERS',
+    'MODULE-DESIGN-DEPENDENCIES-DATA-FLOW',
+    'MODULE-DESIGN-RATIONALE',
+];
+const fullSpec = '# Test spec\n\n## Module Design\n\n### Modules\n\nOwn behavior.\n\n### Interfaces\n\nInput and output.\n\n### Seams and Adapters\n\nVariation.\n\n### Dependencies and Data Flow\n\nFlow.\n\n### Module Design Rationale\n\nTradeoff.\n\n### ADR Evaluation\n\nNone.\n';
+const normalInputs = [{filePath: '.scratch/0001-workflow/spec.md', role: 'governing-spec'}];
+const selectedRequirements = 'Governing requirements:\n\n- `.scratch/0001-workflow/spec.md#module-design`';
+const readinessSubject = (/** @type {string} */ requirements) => `## What to build
+
+Implement.
+
+## Spec Requirement
+
+${requirements}
+
+## Acceptance criteria
+
+- [ ] Complete.
+
+`;
+const issue = (/** @type {string} */ requirements) => `# Implement workflow
+
+Status: ready-for-agent
+
+${readinessSubject(requirements)}## Validation
+
+- Not run.
+
+## Blocked by
+
+- None
+
+## Comments
+
+- No comments.
+`;
+
+const createRepository = async (/** @type {test.TestContext} */ t) => {
+    const root = await createGitRepository(t, {prefix: 'arw-readiness-json-'});
+    await mkdir(join(root, '.scratch', '0001-workflow', 'issues'), {recursive: true});
+    await mkdir(join(root, 'docs', 'agents', 'roles'), {recursive: true});
+    await writeFile(join(root, '.scratch', '0001-workflow', 'spec.md'), fullSpec, 'utf8');
+    await writeFile(join(root, 'docs', 'agents', 'roles', 'spec-readiness-reviewer.md'), '# Reviewer\n', 'utf8');
+    await writeFile(join(root, '.scratch', '0001-workflow', 'issues', '01-implement.md'), issue(selectedRequirements), 'utf8');
+    return root;
+};
+
+const requirementScopeFindings = (/** @type {string} */ result) => ([{
+        check: 'SPEC-READINESS-REQUIREMENTS',
+        evidence: [{anchor: 'spec-requirement', filePath: '.scratch/0001-workflow/issues/01-implement.md'}],
+        finding: result === 'gap'
+            ? 'One selected governing reference is unrelated to this issue.'
+            : 'One selected governing reference cannot be classified from the supplied scope.',
+        result,
+    }]);
+
+/** @param {unknown[]} findings */
+const jsonl = findings => findings.length === 0
+    ? `${JSON.stringify({status: 'no-findings'})}\n`
+    : `${findings.map(finding => JSON.stringify(finding)).join('\n')}\n`;
+
+const subjectSource = (/** @type {string} */ source) => {
+    const lines = source.split(/\r?\n/);
+    const start = lines.findIndex(line => line === '## What to build');
+    const acceptance = lines.findIndex((line, index) => index > start && line === '## Acceptance criteria');
+    const end = lines.findIndex((line, index) => index > acceptance && /^## /u.test(line));
+    return lines.slice(start, end === -1 ? lines.length : end).join('\n');
+};
+
+const testAnchor = (/** @type {string} */ heading) => heading.trim().toLowerCase()
+    .replace(/[^a-z0-9 -]/gu, '')
+    .replace(/\s+/gu, '-')
+    .replace(/-+/gu, '-');
+
+const compactTestEvidence = async (/** @type {string} */ repositoryRoot, /** @type {unknown[]} */ evidence) => Promise.all(evidence.map(async locator => {
+    if (typeof locator === 'string') return locator;
+    if (locator === null || typeof locator !== 'object' || Array.isArray(locator)
+        || !('filePath' in locator) || typeof locator.filePath !== 'string') return locator;
+    const source = await readFile(join(repositoryRoot, ...locator.filePath.split('/')), 'utf8');
+    const selected = locator.filePath.includes('/issues/') ? subjectSource(source) : source;
+    if ('line' in locator && typeof locator.line === 'number') return `${locator.filePath}:${locator.line}`;
+    if ('anchor' in locator && typeof locator.anchor === 'string') {
+        const lines = selected.split(/\r?\n/);
+        const heading = lines.findIndex(line => /^#{1,6} /u.test(line)
+            && testAnchor(line.replace(/^#{1,6} /u, '')) === locator.anchor);
+        const body = lines.findIndex((line, index) => index > heading && line.trim().length > 0 && !/^#{1,6} /u.test(line));
+        if (heading !== -1 && body !== -1) return `${locator.filePath}:${heading + 1}-${body + 1}`;
+    }
+    if (!('anchor' in locator) && !('line' in locator)) return `${locator.filePath}:1-${selected.split(/\r?\n/).length}`;
+    return locator;
+}));
+
+/** @param {string} repositoryRoot @param {{draftPath?: string, inputs: {filePath: string, role: string}[]}} [input] */
+const prepare = async (repositoryRoot, input = {inputs: normalInputs}) => {
+    const draftPath = join(repositoryRoot, '.tmp', 'codex', 'readiness-test', '0001_01', 'spec-readiness', 'reviewer-drafts', `draft-${randomUUID()}.jsonl`);
+    const prepared = await prepareSpecReadiness({
+        input: {draftPath, ...input},
+        issueId: 'issue:0001:01',
+        platformAdapter: adapter,
+        repositoryRoot,
+    });
+    return {...prepared, draftPath};
+};
+
+/** @param {string} repositoryRoot @param {string} draftPath @param {unknown[]} [findings] */
+const generate = async (repositoryRoot, draftPath, findings = []) => {
+    const compact = await Promise.all(findings.map(async finding => {
+        if (finding === null || typeof finding !== 'object' || Array.isArray(finding)) return finding;
+        const row = /** @type {Record<string, unknown>} */ (finding);
+        return {
+            ...row,
+            evidence: Array.isArray(row.evidence)
+                ? await compactTestEvidence(repositoryRoot, row.evidence)
+                : row.evidence,
+        };
+    }));
+    await writeFile(draftPath, jsonl(compact), 'utf8');
+    return generateSpecReadiness({
+        inputPath: draftPath,
+        issueId: 'issue:0001:01',
+        platformAdapter: adapter,
+        repositoryRoot,
+    });
+};
+
+const generateException = async (/** @type {string} */ repositoryRoot, /** @type {{ exception: { confirmedAt: string; reason: string; }; inferred?: undefined; } | { exception: { confirmedAt: string; reason: string; }; inferred: boolean; }} */ draft) => {
+    const inputPath = join(
+        repositoryRoot,
+        '.tmp',
+        'codex',
+        'readiness-test',
+        '0001_01',
+        'spec-readiness',
+        'exception-drafts',
+        `draft-${randomUUID()}.json`,
+    );
+    await mkdir(dirname(inputPath), {recursive: true});
+    await writeFile(inputPath, `${JSON.stringify(draft, null, 2)}\n`, 'utf8');
+    return generateSpecReadiness({
+        inputPath,
+        issueId: 'issue:0001:01',
+        platformAdapter: adapter,
+        repositoryRoot,
+    });
+};
+
+const complete = async (/** @type {string} */ repositoryRoot) => {
+    const prepared = await prepare(repositoryRoot);
+    const generated = await generate(repositoryRoot, prepared.draftPath);
+    const promoted = await promoteSpecReadiness({inputPath: generated.path, platformAdapter: adapter, repositoryRoot});
+    return {generated, prepared, promoted};
+};
+
+test('complete lifecycle preserves Reviewer checkbox content while checkbox state does not change subject identity', async t => {
+    const repositoryRoot = await createRepository(t);
+    const issuePath = join(repositoryRoot, '.scratch', '0001-workflow', 'issues', '01-implement.md');
+    const checked = issue(selectedRequirements).replace('- [ ] Complete.', '- [X] Complete.');
+    await writeFile(issuePath, checked, 'utf8');
+    const prepared = await prepare(repositoryRoot);
+    const request = JSON.parse(await readFile(prepared.path, 'utf8'));
+
+    assert.equal(request.subject.content, readinessSubject(selectedRequirements).replace('- [ ] Complete.', '- [X] Complete.'));
+    assert.equal(request.subject.sha256, digest(readinessSubject(selectedRequirements)));
+    assert.notEqual(request.subject.sha256, digest(request.subject.content));
+
+    const generated = await generate(repositoryRoot, prepared.draftPath);
+    await writeFile(issuePath, checked.replace('- [X] Complete.', '- [ ] Complete.'), 'utf8');
+    await promoteSpecReadiness({inputPath: generated.path, platformAdapter: adapter, repositoryRoot});
+    await writeFile(issuePath, checked.replace('- [X] Complete.', '- [x] Complete.'), 'utf8');
+    assert.deepEqual(await verifySpecReadiness({issueId: 'issue:0001:01', repositoryRoot}), {
+        authorized: true,
+        findings: [],
+    });
+
+    await writeFile(issuePath, checked.replace('Complete.', 'Changed criterion.'), 'utf8');
+    assert.deepEqual(await verifySpecReadiness({issueId: 'issue:0001:01', repositoryRoot}), {
+        authorized: false,
+        findings: ['Stale Spec Readiness subject: .scratch/0001-workflow/issues/01-implement.md.'],
+    });
+});
+
+test('each implementation issue owns an independent Spec Readiness sidecar', async t => {
+    const repositoryRoot = await createRepository(t);
+    const first = await complete(repositoryRoot);
+    await writeFile(
+        join(repositoryRoot, '.scratch', '0001-workflow', 'issues', '02-another.md'),
+        issue('Governing requirements:\n\n- `.scratch/0001-workflow/spec.md#module-design`'),
+        'utf8',
+    );
+    const draftPath = join(repositoryRoot, '.tmp', 'codex', 'readiness-test', '0001_02', 'spec-readiness', 'reviewer-drafts', `draft-${randomUUID()}.jsonl`);
+    await prepareSpecReadiness({
+        input: {draftPath, inputs: normalInputs},
+        issueId: 'issue:0001:02',
+        platformAdapter: adapter,
+        repositoryRoot,
+    });
+    await writeFile(draftPath, jsonl([]), 'utf8');
+    const generated = await generateSpecReadiness({
+        inputPath: draftPath,
+        issueId: 'issue:0001:02',
+        platformAdapter: adapter,
+        repositoryRoot,
+    });
+    const second = await promoteSpecReadiness({inputPath: generated.path, platformAdapter: adapter, repositoryRoot});
+
+    assert.equal(first.promoted.path, readinessPath(repositoryRoot));
+    assert.equal(second.path, readinessPath(repositoryRoot, '02'));
+    assert.notEqual(first.promoted.path, second.path);
+    assert.deepEqual(await verifySpecReadiness({issueId: 'issue:0001:01', repositoryRoot}), {authorized: true, findings: []});
+    assert.deepEqual(await verifySpecReadiness({issueId: 'issue:0001:02', repositoryRoot}), {authorized: true, findings: []});
+});
+
+test('verify ignores an effort-root historical readiness file', async t => {
+    const repositoryRoot = await createRepository(t);
+    await writeFile(
+        join(repositoryRoot, '.scratch', '0001-workflow', 'spec-readiness.json'),
+        `${JSON.stringify({schemaVersion: 5, result: 'satisfied'}, null, 2)}\n`,
+        'utf8',
+    );
+
+    const result = await verifySpecReadiness({issueId: 'issue:0001:01', repositoryRoot});
+    assert.equal(result.authorized, false);
+    assert.equal(result.findings.length, 1);
+    assert.match(result.findings[0], /01\.spec-readiness\.json/);
+});
+
+test('prepare creates a new immutable complete Reviewer Request path', async t => {
+    const repositoryRoot = await createRepository(t);
+    const first = await prepare(repositoryRoot);
+    const firstBytes = await readFile(first.path, 'utf8');
+    const second = await prepare(repositoryRoot);
+    const request = JSON.parse(firstBytes);
+
+    assert.notEqual(first.path, second.path);
+    assert.match(first.path, /[\\/]requests[\\/]request-[0-9a-f-]+\.json$/);
+    assert.equal(Object.hasOwn(request, 'schemaVersion'), false);
+    assert.equal(request.issueId, 'issue:0001:01');
+    assert.equal(request.draftPath, first.draftPath);
+    assert.match(request.requestId, /^[0-9a-f-]{36}$/);
+    assert.match(request.requestDigest, /^[0-9a-f]{64}$/);
+    assert.deepEqual(request.inputs.map((/** @type {{filePath: string, role: string}} */ {filePath, role}) => ({filePath, role})), [
+        {filePath: '.scratch/0001-workflow/spec.md', role: 'governing-spec'},
+    ]);
+    assert.deepEqual(request.reviewerRole, {
+        filePath: 'docs/agents/roles/spec-readiness-reviewer.md',
+        id: 'spec-readiness-reviewer',
+        sha256: digest('# Reviewer\n'),
+    });
+    assert.deepEqual(request.subject, {
+        content: readinessSubject(selectedRequirements),
+        filePath: '.scratch/0001-workflow/issues/01-implement.md',
+        sha256: digest(readinessSubject(selectedRequirements)),
+    });
+    assert.equal(request.inputs[0].content, fullSpec);
+    assert.ok(request.inputs.every((/** @type {{ sha256: string; }} */ entry) => /^[0-9a-f]{64}$/.test(entry.sha256)));
+    assert.equal(await readFile(first.path, 'utf8'), firstBytes);
+    assert.equal(Object.hasOwn(request, 'changes'), false);
+});
+
+test('frozen evidence sources bind the exact request and never read current Input bytes', async t => {
+    const repositoryRoot = await createRepository(t);
+    const prepared = await prepare(repositoryRoot);
+    await writeFile(join(repositoryRoot, '.scratch', '0001-workflow', 'spec.md'), '# Changed after preparation\n', 'utf8');
+
+    const evidence = await readSpecReadinessEvidenceSources({
+        issueId: 'issue:0001:01',
+        repositoryRoot,
+        requestPath: prepared.path,
+    });
+    assert.equal(evidence.sources.get('.scratch/0001-workflow/spec.md'), fullSpec);
+    assert.equal(evidence.sources.get('.scratch/0001-workflow/issues/01-implement.md'), readinessSubject(selectedRequirements));
+    assert.deepEqual(evidence.request, {
+        digest: JSON.parse(await readFile(prepared.path, 'utf8')).requestDigest,
+        filePath: prepared.path.slice(repositoryRoot.length + 1).replaceAll('\\', '/'),
+        id: JSON.parse(await readFile(prepared.path, 'utf8')).requestId,
+    });
+    await assert.rejects(
+        readSpecReadinessEvidenceSources({
+            issueId: 'issue:0001:01',
+            repositoryRoot,
+            requestPath: join(repositoryRoot, 'outside-request.json'),
+        }),
+        /request path is outside the allowed temporary workspace/i,
+    );
+});
+
+test('Capability report parsing preserves invalid evidence and judgments without authorizing formal generation', async t => {
+    const repositoryRoot = await createRepository(t);
+    const prepared = await prepare(repositoryRoot);
+    const finding = {
+        check: 'SPEC-READINESS-INPUTS',
+        evidence: ['.scratch/0001-workflow/spec.md:1'],
+        finding: 'The governing Input set has a problem.',
+        result: 'gap',
+    };
+    await writeFile(prepared.draftPath, `${JSON.stringify(finding)}\n`, 'utf8');
+    const request = {inputPath: prepared.draftPath, issueId: 'issue:0001:01', repositoryRoot, requestPath: prepared.path};
+
+    await assert.rejects(readCompleteSpecReadinessReviewerDraft(request), /requires evidence/i);
+    const parsed = await readCompleteSpecReadinessCapabilityDraft(request);
+    const parsedFinding = parsed.checks[0]?.findings?.[0];
+    assert.ok(parsedFinding);
+    assert.deepEqual(parsedFinding.evidence, finding.evidence);
+    assert.ok('reportDiagnostics' in parsed);
+    assert.equal(parsed.reportDiagnostics[0]?.code, 'review-evidence-invalid');
+
+    await writeFile(prepared.draftPath, `${JSON.stringify({...finding, evidence: []})}\n`, 'utf8');
+    const missingEvidence = await readCompleteSpecReadinessCapabilityDraft(request);
+    assert.equal(missingEvidence.checks[0]?.findings?.[0]?.finding, finding.finding);
+    assert.deepEqual(missingEvidence.checks[0]?.findings?.[0]?.evidence, []);
+    assert.ok('reportDiagnostics' in missingEvidence);
+    assert.equal(missingEvidence.reportDiagnostics[0]?.code, 'review-evidence-invalid');
+});
+
+test('prepare activation failure removes the new request and preserves the prior active request', async t => {
+    const repositoryRoot = await createRepository(t);
+    const initial = await prepare(repositoryRoot);
+    const workspaceDirectory = dirname(dirname(initial.path));
+    const activePath = join(workspaceDirectory, 'active-request.json');
+    const requestsDirectory = dirname(initial.path);
+    const activeBefore = await readFile(activePath, 'utf8');
+    const requestsBefore = await readdir(requestsDirectory);
+    const draftPath = join(workspaceDirectory, 'reviewer-drafts', `draft-${randomUUID()}.jsonl`);
+
+    await assert.rejects(prepareSpecReadiness({
+        atomicWriteFile: async (path, text) => {
+            if (path === activePath) throw new Error('Injected request activation failure.');
+            await writeFile(path, text, {encoding: 'utf8', flag: 'wx'});
+        },
+        input: {draftPath, inputs: normalInputs},
+        issueId: 'issue:0001:01',
+        platformAdapter: adapter,
+        repositoryRoot,
+    }), /Injected request activation failure/);
+
+    assert.equal(await readFile(activePath, 'utf8'), activeBefore);
+    assert.deepEqual(await readdir(requestsDirectory), requestsBefore);
+    await assert.rejects(access(draftPath), {code: 'ENOENT'});
+});
+
+test('prepare rejects draft targets outside the issue workspace, at existing files, or through linked parents', async t => {
+    const repositoryRoot = await createRepository(t);
+    const outsidePath = join(repositoryRoot, '.tmp', 'codex', 'readiness-test', 'other_01', 'spec-readiness', 'draft.jsonl');
+    await assert.rejects(
+        prepare(repositoryRoot, {draftPath: outsidePath, inputs: normalInputs}),
+        /outside the current issue temporary workspace/i,
+    );
+
+    const wrongExtensionPath = join(repositoryRoot, '.tmp', 'codex', 'readiness-test', '0001_01', 'spec-readiness', 'reviewer-drafts', 'draft.json');
+    await assert.rejects(
+        prepare(repositoryRoot, {draftPath: wrongExtensionPath, inputs: normalInputs}),
+        /not a JSONL file/i,
+    );
+
+    const existingPath = join(repositoryRoot, '.tmp', 'codex', 'readiness-test', '0001_01', 'spec-readiness', 'reviewer-drafts', 'existing.jsonl');
+    await mkdir(dirname(existingPath), {recursive: true});
+    await writeFile(existingPath, '{}\n', 'utf8');
+    await assert.rejects(
+        prepare(repositoryRoot, {draftPath: existingPath, inputs: normalInputs}),
+        /must not already exist/i,
+    );
+
+    const redirected = join(repositoryRoot, 'redirected-drafts');
+    const linkedParent = join(repositoryRoot, '.tmp', 'codex', 'readiness-test', '0001_01', 'spec-readiness', 'linked-drafts');
+    await mkdir(redirected, {recursive: true});
+    try {
+        await symlink(redirected, linkedParent, process.platform === 'win32' ? 'junction' : 'dir');
+    } catch (error) {
+        if (process.platform === 'win32' && error !== null && typeof error === 'object' && 'code' in error
+            && (error.code === 'EPERM' || error.code === 'EACCES')) {
+            t.skip('The current environment does not allow directory symbolic links.');
+            return;
+        }
+        throw error;
+    }
+    await assert.rejects(
+        prepare(repositoryRoot, {draftPath: join(linkedParent, 'draft.jsonl'), inputs: normalInputs}),
+        /linked path segment/i,
+    );
+});
+
+test('module design form selects the conditional check set', async t => {
+    const repositoryRoot = await createRepository(t);
+    const specPath = join(repositoryRoot, '.scratch', '0001-workflow', 'spec.md');
+    const common = checks.slice(0, 5);
+    const forms = [
+        {expected: common, text: '# Test spec\n\n## Solution\n\nDocument-only work.\n'},
+        {expected: [...common, 'MODULE-DESIGN-EXEMPTION'], text: '# Test spec\n\n## Module Design\n\nNot required: Runtime modules are unchanged.\n'},
+        {expected: checks, text: fullSpec},
+        {expected: checks, text: fullSpec.replace('### Module Design Rationale', '### Design Rationale')},
+    ];
+
+    for (const form of forms) {
+        await writeFile(specPath, form.text, 'utf8');
+        const prepared = await prepare(repositoryRoot);
+        const generated = await generate(repositoryRoot, prepared.draftPath);
+        const artifact = JSON.parse(await readFile(generated.path, 'utf8'));
+        assert.deepEqual(artifact.checks.map(/** @param {{check: string}} entry */ entry => entry.check), form.expected);
+    }
+});
+
+test('generate rejects empty, malformed, repeated, or mixed no-findings JSONL drafts', async t => {
+    const repositoryRoot = await createRepository(t);
+    const finding = requirementScopeFindings('gap')[0];
+    const invalidDrafts = [
+        '',
+        ' \n\t\n',
+        `${JSON.stringify({status: 'no-findings'})}\n${JSON.stringify({status: 'no-findings'})}\n`,
+        `${JSON.stringify({status: 'no-findings'})}\n${JSON.stringify(finding)}\n`,
+        `${JSON.stringify(finding)}\n${JSON.stringify({status: 'no-findings'})}\n`,
+        `${JSON.stringify({status: 'ready'})}\n`,
+        `${JSON.stringify({status: 'no-findings', result: 'satisfied'})}\n`,
+        `${JSON.stringify(['no-findings'])}\n`,
+        `${JSON.stringify(finding)}\\n${JSON.stringify(finding)}`,
+    ];
+    for (const text of invalidDrafts) {
+        const prepared = await prepare(repositoryRoot);
+        await writeFile(prepared.draftPath, text, 'utf8');
+        await assert.rejects(
+            generateSpecReadiness({
+                inputPath: prepared.draftPath,
+                issueId: 'issue:0001:01',
+                platformAdapter: adapter,
+                repositoryRoot,
+            }),
+            /Reviewer Response JSONL|no-findings|status|JSON object|compact evidence/i,
+        );
+    }
+});
+
+test('generate rejects an empty bound draft when a different file contains no-findings and writes no artifact', async t => {
+    const repositoryRoot = await createRepository(t);
+    const prepared = await prepare(repositoryRoot);
+    const wrongDraftPath = join(dirname(prepared.draftPath), 'wrong-draft.jsonl');
+    const artifactsDirectory = join(dirname(dirname(prepared.draftPath)), 'artifacts');
+    await writeFile(wrongDraftPath, jsonl([]), 'utf8');
+
+    await assert.rejects(
+        generateSpecReadiness({
+            inputPath: prepared.draftPath,
+            issueId: 'issue:0001:01',
+            platformAdapter: adapter,
+            repositoryRoot,
+        }),
+        /must contain a finding or the no-findings status/i,
+    );
+    assert.equal(await readFile(prepared.draftPath, 'utf8'), '');
+    await assert.rejects(readdir(artifactsDirectory), {code: 'ENOENT'});
+});
+
+test('generate groups JSONL problems and derives the requirement-scope result', async t => {
+    const repositoryRoot = await createRepository(t);
+    const prepared = await prepare(repositoryRoot);
+    const subjectEvidence = {anchor: 'spec-requirement', filePath: '.scratch/0001-workflow/issues/01-implement.md'};
+    const inputEvidence = {anchor: 'module-design', filePath: '.scratch/0001-workflow/spec.md'};
+    const rows = [
+        {
+            check: 'SPEC-READINESS-REQUIREMENTS',
+            result: 'uncertain',
+            evidence: [subjectEvidence],
+            finding: 'One selected requirement cannot be classified from the supplied scope.',
+        },
+        {
+            check: 'SPEC-READINESS-INPUTS',
+            result: 'gap',
+            evidence: [subjectEvidence, inputEvidence],
+            finding: 'The selected requirement is absent from the governing input.',
+        },
+        {
+            check: 'SPEC-READINESS-REQUIREMENTS',
+            result: 'gap',
+            evidence: [subjectEvidence],
+            finding: 'One selected requirement is unrelated to this delivery.',
+        },
+    ];
+    const generated = await generate(repositoryRoot, prepared.draftPath, rows);
+    const artifact = JSON.parse(await readFile(generated.path, 'utf8'));
+
+    assert.equal(artifact.result, 'gap');
+    assert.deepEqual(artifact.checks.map((/** @type {{check: string, result: string}} */ check) => ({check: check.check, result: check.result})), [
+        {check: 'SPEC-READINESS-INPUTS', result: 'gap'},
+        {check: 'SPEC-READINESS-REQUIREMENTS', result: 'gap'},
+    ]);
+    assert.deepEqual(
+        artifact.checks.flatMap((/** @type {{findings?: Array<{finding: string}>}} */ check) => check.findings ?? []).map((/** @type {{finding: string}} */ finding) => finding.finding).sort(),
+        rows.map(row => row.finding).sort(),
+    );
+    assert.equal(artifact.checks.flatMap((/** @type {{findings?: Array<{evidence: Array<object>}>}} */ check) => check.findings ?? []).every((/** @type {{evidence: Array<object>}} */ finding) => (
+        finding.evidence.every((/** @type {object} */ locator) => Object.keys(locator).sort().join(',') === 'filePath,line')
+    )), true);
+});
+
+test('generate writes a request-bound canonical artifact only to the Reviewer workspace', async t => {
+    const repositoryRoot = await createRepository(t);
+    const prepared = await prepare(repositoryRoot);
+    const generated = await generate(repositoryRoot, prepared.draftPath);
+    const artifact = JSON.parse(await readFile(generated.path, 'utf8'));
+
+    assert.match(generated.path, /[\\/]artifacts[\\/]artifact-[0-9a-f-]+\.json$/);
+    assert.equal(artifact.schemaVersion, 6);
+    assert.equal(artifact.issueId, 'issue:0001:01');
+    assert.match(artifact.request.id, /^[0-9a-f-]{36}$/);
+    assert.match(artifact.request.digest, /^[0-9a-f]{64}$/);
+    assert.deepEqual(artifact.subject, {
+        filePath: '.scratch/0001-workflow/issues/01-implement.md',
+        sha256: digest(readinessSubject(selectedRequirements)),
+    });
+    assert.deepEqual(artifact.reviewerRole, {
+        filePath: 'docs/agents/roles/spec-readiness-reviewer.md',
+        id: 'spec-readiness-reviewer',
+        sha256: digest('# Reviewer\n'),
+    });
+    assert.ok(artifact.inputs.every((/** @type {object} */ entry) => !Object.hasOwn(entry, 'content')));
+    await assert.rejects(readFile(readinessPath(repositoryRoot), 'utf8'), {code: 'ENOENT'});
+});
+
+test('generate expands compact evidence across reviewed Input file types into canonical body lines', async t => {
+    const repositoryRoot = await createRepository(t);
+    const declaredInputs = [
+        {filePath: '.scratch/0001-workflow/spec.md', role: 'governing-spec'},
+        {filePath: 'CONTEXT.md', role: 'domain-context'},
+        {filePath: 'docs/adr/example.md', role: 'adr'},
+        {filePath: 'docs/architecture.md', role: 'architecture-evidence'},
+        {filePath: 'docs/product.md', role: 'governing-prd'},
+    ];
+    const contents = new Map([
+        ['CONTEXT.md', '# Context\n'],
+        ['docs/adr/example.md', '# Decision\n'],
+        ['docs/architecture.md', '# Architecture\n'],
+        ['docs/product.md', '# Product\n\n## Solution\n\nDocument-only requirements.\n'],
+    ]);
+    for (const [filePath, content] of contents) {
+        await mkdir(dirname(join(repositoryRoot, filePath)), {recursive: true});
+        await writeFile(join(repositoryRoot, filePath), content, 'utf8');
+    }
+    const prepared = await prepare(repositoryRoot, {inputs: declaredInputs});
+    const request = JSON.parse(await readFile(prepared.path, 'utf8'));
+    const findings = [{
+        check: 'SPEC-READINESS-INPUTS',
+        evidence: request.inputs.map((/** @type {{filePath: string}} */ input) => ({filePath: input.filePath})),
+        finding: 'The governing Input set has a problem.',
+        result: 'gap',
+    }];
+    const generated = await generate(repositoryRoot, prepared.draftPath, findings);
+    const artifact = JSON.parse(await readFile(generated.path, 'utf8'));
+
+    assert.equal(artifact.checks[0].findings[0].evidence.every((/** @type {object} */ locator) => (
+        Object.keys(locator).sort().join(',') === 'filePath,line'
+    )), true);
+    assert.deepEqual(
+        new Set(artifact.checks[0].findings[0].evidence.map((/** @type {{filePath: string}} */ locator) => locator.filePath)),
+        new Set(['.scratch/0001-workflow/spec.md', 'docs/product.md']),
+    );
+});
+
+test('generate canonicalizes compact body evidence and rejects non-body or invalid compact evidence', async t => {
+    const repositoryRoot = await createRepository(t);
+    const prepared = await prepare(repositoryRoot);
+    const findings = [{
+        check: 'SPEC-READINESS-INPUTS',
+        evidence: [
+            '.scratch/0001-workflow/spec.md:5-11',
+            '.scratch/0001-workflow/spec.md:8-11',
+        ],
+        finding: 'The governing Input set has a problem.',
+        result: 'gap',
+    }];
+    const generated = await generate(repositoryRoot, prepared.draftPath, findings);
+    const artifact = JSON.parse(await readFile(generated.path, 'utf8'));
+    assert.deepEqual(artifact.checks[0].findings[0].evidence, [
+        {filePath: '.scratch/0001-workflow/spec.md', line: 7},
+        {filePath: '.scratch/0001-workflow/spec.md', line: 8},
+        {filePath: '.scratch/0001-workflow/spec.md', line: 10},
+        {filePath: '.scratch/0001-workflow/spec.md', line: 11},
+    ]);
+
+    for (const evidence of [
+        ['docs/missing.md:1'],
+        ['.scratch/0001-workflow/spec.md:0'],
+        ['.scratch/0001-workflow/spec.md:2-1'],
+        ['.scratch/0001-workflow/spec.md:1'],
+    ]) {
+        const next = await prepare(repositoryRoot);
+        const invalid = [{
+            check: 'SPEC-READINESS-INPUTS',
+            evidence,
+            finding: 'The governing Input set has a problem.',
+            result: 'gap',
+        }];
+        await assert.rejects(generate(repositoryRoot, next.draftPath, invalid), /not an Input|Compact evidence locator|requires evidence/i);
+    }
+});
+
+test('promote and verify reject title or blank line evidence in fresh line-only artifacts', async t => {
+    const repositoryRoot = await createRepository(t);
+    const prepared = await prepare(repositoryRoot);
+    const generated = await generate(repositoryRoot, prepared.draftPath, [{
+        check: 'SPEC-READINESS-INPUTS',
+        evidence: ['.scratch/0001-workflow/spec.md:7'],
+        finding: 'The governing Input set has a problem.',
+        result: 'gap',
+    }]);
+    const canonical = await readFile(generated.path, 'utf8');
+    for (const line of [5, 6]) {
+        const altered = JSON.parse(canonical);
+        altered.checks[0].findings[0].evidence = [{filePath: '.scratch/0001-workflow/spec.md', line}];
+        await writeFile(generated.path, `${JSON.stringify(altered, null, 2)}\n`, 'utf8');
+        await assert.rejects(
+            promoteSpecReadiness({inputPath: generated.path, platformAdapter: adapter, repositoryRoot}),
+            /Review Evidence lines are not canonical body evidence/i,
+        );
+    }
+    const range = JSON.parse(canonical);
+    range.checks[0].findings[0].evidence = [{
+        filePath: '.scratch/0001-workflow/spec.md',
+        lineEnd: 7,
+        lineStart: 7,
+    }];
+    await writeFile(generated.path, `${JSON.stringify(range, null, 2)}\n`, 'utf8');
+    await assert.rejects(
+        promoteSpecReadiness({inputPath: generated.path, platformAdapter: adapter, repositoryRoot}),
+        /Review Evidence locator has unknown or missing fields/i,
+    );
+    await writeFile(generated.path, canonical, 'utf8');
+    await promoteSpecReadiness({inputPath: generated.path, platformAdapter: adapter, repositoryRoot});
+    const tracked = JSON.parse(await readFile(readinessPath(repositoryRoot), 'utf8'));
+    tracked.checks[0].findings[0].evidence = [{filePath: '.scratch/0001-workflow/spec.md', line: 6}];
+    await writeFile(readinessPath(repositoryRoot), `${JSON.stringify(tracked, null, 2)}\n`, 'utf8');
+    assert.deepEqual(await verifySpecReadiness({issueId: 'issue:0001:01', repositoryRoot}), {
+        authorized: false,
+        findings: [
+            'Review Evidence lines are not canonical body evidence.',
+            'Spec Readiness result does not authorize implementation: gap.',
+        ],
+    });
+});
+
+test('generate stops after requirement-scope findings and otherwise derives the complete check set', async t => {
+    const repositoryRoot = await createRepository(t);
+
+    const satisfiedPreparation = await prepare(repositoryRoot);
+    const satisfied = await generate(repositoryRoot, satisfiedPreparation.draftPath);
+    assert.deepEqual(
+        JSON.parse(await readFile(satisfied.path, 'utf8')).checks.map((/** @type {{check: string}} */ check) => check.check),
+        checks,
+    );
+
+    for (const result of ['gap', 'uncertain']) {
+        const completePreparation = await prepare(repositoryRoot);
+        await assert.rejects(
+            generate(repositoryRoot, completePreparation.draftPath, [
+                ...requirementScopeFindings(result),
+                {
+                    check: 'SPEC-READINESS-RATIONALE',
+                    evidence: [{filePath: '.scratch/0001-workflow/spec.md'}],
+                    finding: 'A later check must not run after a requirement-scope problem.',
+                    result: 'gap',
+                },
+            ]),
+            error => {
+                assert.ok(error instanceof SpecReadinessReviewerDraftFormatError);
+                assert.match(error.message, /stop after.*requirement/i);
+                assert.equal(error.subtype, SPEC_READINESS_DRAFT_FORMAT_SUBTYPES.requirementScopeContinuation);
+                return true;
+            },
+        );
+
+        const earlyPreparation = await prepare(repositoryRoot);
+        const generated = await generate(repositoryRoot, earlyPreparation.draftPath, requirementScopeFindings(result));
+        const promoted = await promoteSpecReadiness({inputPath: generated.path, platformAdapter: adapter, repositoryRoot});
+        const record = JSON.parse(await readFile(promoted.path, 'utf8'));
+        assert.deepEqual(record.checks.map((/** @type {{check: string}} */ check) => check.check), checks.slice(0, 2));
+        assert.deepEqual(await verifySpecReadiness({issueId: 'issue:0001:01', repositoryRoot}), {
+            authorized: false,
+            findings: [`Spec Readiness result does not authorize implementation: ${result}.`],
+        });
+    }
+});
+
+
+
+
+
+test('promotion and verification bind the Reviewer Role separately from governing Inputs', async t => {
+    const promotionRoot = await createRepository(t);
+    const prepared = await prepare(promotionRoot);
+    const generated = await generate(promotionRoot, prepared.draftPath);
+    await writeFile(join(promotionRoot, 'docs', 'agents', 'roles', 'spec-readiness-reviewer.md'), '# Changed Reviewer\n', 'utf8');
+    await assert.rejects(
+        promoteSpecReadiness({inputPath: generated.path, platformAdapter: adapter, repositoryRoot: promotionRoot}),
+        /Stale Spec Readiness Reviewer Role/i,
+    );
+
+    const verificationRoot = await createRepository(t);
+    await complete(verificationRoot);
+    await writeFile(join(verificationRoot, 'docs', 'agents', 'roles', 'spec-readiness-reviewer.md'), '# Changed Reviewer\n', 'utf8');
+    assert.deepEqual(await verifySpecReadiness({issueId: 'issue:0001:01', repositoryRoot: verificationRoot}), {
+        authorized: false,
+        findings: ['Stale Spec Readiness Reviewer Role: docs/agents/roles/spec-readiness-reviewer.md.'],
+    });
+});
+
+test('generate allows subject evidence only for requirement-scope checks', async t => {
+    const repositoryRoot = await createRepository(t);
+    const subjectEvidence = [{anchor: 'spec-requirement', filePath: '.scratch/0001-workflow/issues/01-implement.md'}];
+    const prepared = await prepare(repositoryRoot);
+    const generated = await generate(repositoryRoot, prepared.draftPath, [{
+        check: 'SPEC-READINESS-INPUTS',
+        evidence: subjectEvidence,
+        finding: 'The selected Input has a problem.',
+        result: 'gap',
+    }]);
+    const artifact = JSON.parse(await readFile(generated.path, 'utf8'));
+    assert.deepEqual(artifact.checks[0].findings[0].evidence, [{
+        filePath: '.scratch/0001-workflow/issues/01-implement.md',
+        line: 7,
+    }]);
+
+    const second = await prepare(repositoryRoot);
+    await assert.rejects(
+        generate(repositoryRoot, second.draftPath, [{
+            check: 'SPEC-READINESS-RATIONALE',
+            evidence: subjectEvidence,
+            finding: 'The rationale has a problem.',
+            result: 'gap',
+        }]),
+        /subject evidence is not allowed for SPEC-READINESS-RATIONALE/i,
+    );
+});
+
+test('generate rejects malformed subject content and a subject digest mismatch', async t => {
+    for (const variant of ['malformed-content', 'request-digest']) {
+        const repositoryRoot = await createRepository(t);
+        const prepared = await prepare(repositoryRoot);
+        const request = JSON.parse(await readFile(prepared.path, 'utf8'));
+        if (variant === 'malformed-content') {
+            request.subject.content = '## Wrong Requirement\n\nNot required\n\n';
+            request.subject.sha256 = digest(request.subject.content);
+            request.requestDigest = digest(JSON.stringify({
+                requestId: request.requestId,
+                issueId: request.issueId,
+                draftPath: request.draftPath,
+                reviewerRole: request.reviewerRole,
+                inputs: request.inputs,
+                subject: request.subject,
+            }));
+            const activePath = join(dirname(dirname(prepared.path)), 'active-request.json');
+            const active = JSON.parse(await readFile(activePath, 'utf8'));
+            active.requestDigest = request.requestDigest;
+            await writeFile(activePath, `${JSON.stringify(active, null, 2)}\n`, 'utf8');
+        } else {
+            request.subject.content = request.subject.content.replace('#module-design', '#interfaces');
+            request.subject.sha256 = digest(request.subject.content);
+        }
+        await writeFile(prepared.path, `${JSON.stringify(request, null, 2)}\n`, 'utf8');
+        await assert.rejects(
+            generate(repositoryRoot, prepared.draftPath),
+            variant === 'malformed-content' ? /subject content is invalid/i : /Request digest is invalid/i,
+        );
+    }
+});
+
+test('promote writes exact artifact bytes and verify authorizes only satisfied', async t => {
+    const repositoryRoot = await createRepository(t);
+    const {generated, prepared, promoted} = await complete(repositoryRoot);
+    const artifactBytes = await readFile(generated.path, 'utf8');
+    const baselinePath = join(repositoryRoot, '.tmp', 'codex', 'readiness-test', '0001_01', 'spec-readiness', 'baseline.json');
+    const baseline = JSON.parse(await readFile(baselinePath, 'utf8'));
+    const record = JSON.parse(artifactBytes);
+
+    assert.equal(await readFile(promoted.path, 'utf8'), artifactBytes);
+    assert.equal(record.schemaVersion, 6);
+    assert.deepEqual(record.subject, {
+        filePath: '.scratch/0001-workflow/issues/01-implement.md',
+        sha256: digest(readinessSubject(selectedRequirements)),
+    });
+    assert.equal(baseline.requestId, JSON.parse(await readFile(prepared.path, 'utf8')).requestId);
+    assert.deepEqual(await verifySpecReadiness({issueId: 'issue:0001:01', repositoryRoot}), {authorized: true, findings: []});
+});
+
+test('gap and uncertain artifacts persist but do not authorize implementation', async t => {
+    const repositoryRoot = await createRepository(t);
+    for (const result of ['uncertain', 'gap']) {
+        const prepared = await prepare(repositoryRoot);
+        const findings = [{
+            check: 'SPEC-READINESS-INPUTS',
+            evidence: [{filePath: '.scratch/0001-workflow/spec.md'}],
+            finding: `The review has a ${result} finding.`,
+            result,
+        }];
+        const generated = await generate(repositoryRoot, prepared.draftPath, findings);
+        await promoteSpecReadiness({inputPath: generated.path, platformAdapter: adapter, repositoryRoot});
+        assert.deepEqual(await verifySpecReadiness({issueId: 'issue:0001:01', repositoryRoot}), {
+            authorized: false,
+            findings: [`Spec Readiness result does not authorize implementation: ${result}.`],
+        });
+    }
+});
+
+test('generation rejects an obsolete request even when Input bytes are unchanged', async t => {
+    const repositoryRoot = await createRepository(t);
+    const first = await prepare(repositoryRoot);
+    await prepare(repositoryRoot);
+
+    await assert.rejects(
+        generate(repositoryRoot, first.draftPath),
+        /does not match the active Reviewer Request draftPath/i,
+    );
+    await assert.rejects(readFile(readinessPath(repositoryRoot), 'utf8'), {code: 'ENOENT'});
+});
+
+test('promotion rejects Input drift without replacing the prior record', async t => {
+    const repositoryRoot = await createRepository(t);
+    const initial = await complete(repositoryRoot);
+    const before = await readFile(initial.promoted.path, 'utf8');
+    const prepared = await prepare(repositoryRoot);
+    const generated = await generate(repositoryRoot, prepared.draftPath);
+    await writeFile(join(repositoryRoot, '.scratch', '0001-workflow', 'spec.md'), `${fullSpec}\nChanged after review.\n`, 'utf8');
+
+    await assert.rejects(
+        promoteSpecReadiness({inputPath: generated.path, platformAdapter: adapter, repositoryRoot}),
+        /Stale Spec Readiness Input/i,
+    );
+    assert.equal(await readFile(initial.promoted.path, 'utf8'), before);
+});
+
+test('promotion rejects subject drift without replacing the prior record', async t => {
+    const repositoryRoot = await createRepository(t);
+    const initial = await complete(repositoryRoot);
+    const before = await readFile(initial.promoted.path, 'utf8');
+    const prepared = await prepare(repositoryRoot);
+    const generated = await generate(repositoryRoot, prepared.draftPath);
+    const issuePath = join(repositoryRoot, '.scratch', '0001-workflow', 'issues', '01-implement.md');
+    const issueBytes = await readFile(issuePath, 'utf8');
+    await writeFile(issuePath, issueBytes.replace('.scratch/0001-workflow/spec.md#module-design', '.scratch/0001-workflow/spec.md#interfaces'), 'utf8');
+
+    await assert.rejects(
+        promoteSpecReadiness({inputPath: generated.path, platformAdapter: adapter, repositoryRoot}),
+        /Stale Spec Readiness subject/i,
+    );
+    assert.equal(await readFile(initial.promoted.path, 'utf8'), before);
+});
+
+test('verify binds What to build, Spec Requirement, and Acceptance criteria but ignores other issue bytes', async t => {
+    const repositoryRoot = await createRepository(t);
+    await complete(repositoryRoot);
+    const issuePath = join(repositoryRoot, '.scratch', '0001-workflow', 'issues', '01-implement.md');
+    const initial = await readFile(issuePath, 'utf8');
+
+    await writeFile(issuePath, initial.replace('Status: ready-for-agent', 'Status: completed'), 'utf8');
+    assert.deepEqual(await verifySpecReadiness({issueId: 'issue:0001:01', repositoryRoot}), {authorized: true, findings: []});
+
+    await writeFile(issuePath, initial.replace('- Not run.', '- Passed.'), 'utf8');
+    assert.deepEqual(await verifySpecReadiness({issueId: 'issue:0001:01', repositoryRoot}), {authorized: true, findings: []});
+
+    await writeFile(issuePath, initial.replace('- None', '- issue:0001:02'), 'utf8');
+    assert.deepEqual(await verifySpecReadiness({issueId: 'issue:0001:01', repositoryRoot}), {authorized: true, findings: []});
+
+    await writeFile(issuePath, initial.replace('- No comments.', '- Later comment.'), 'utf8');
+    assert.deepEqual(await verifySpecReadiness({issueId: 'issue:0001:01', repositoryRoot}), {authorized: true, findings: []});
+
+    await writeFile(issuePath, initial.replace('Implement.', 'Implement a changed outcome.'), 'utf8');
+    assert.deepEqual(await verifySpecReadiness({issueId: 'issue:0001:01', repositoryRoot}), {
+        authorized: false,
+        findings: ['Stale Spec Readiness subject: .scratch/0001-workflow/issues/01-implement.md.'],
+    });
+
+    await writeFile(issuePath, initial.replace('- [ ] Complete.', '- [x] Complete.'), 'utf8');
+    assert.deepEqual(await verifySpecReadiness({issueId: 'issue:0001:01', repositoryRoot}), {authorized: true, findings: []});
+
+    await writeFile(issuePath, initial.replace('Complete.', 'Changed criterion.'), 'utf8');
+    assert.deepEqual(await verifySpecReadiness({issueId: 'issue:0001:01', repositoryRoot}), {
+        authorized: false,
+        findings: ['Stale Spec Readiness subject: .scratch/0001-workflow/issues/01-implement.md.'],
+    });
+
+    await writeFile(issuePath, initial.replace('.scratch/0001-workflow/spec.md#module-design', '.scratch/0001-workflow/spec.md#interfaces'), 'utf8');
+    assert.deepEqual(await verifySpecReadiness({issueId: 'issue:0001:01', repositoryRoot}), {
+        authorized: false,
+        findings: ['Stale Spec Readiness subject: .scratch/0001-workflow/issues/01-implement.md.'],
+    });
+
+    await writeFile(issuePath, initial.replace('\n\n## Acceptance criteria', '\n\n\n## Acceptance criteria'), 'utf8');
+    assert.deepEqual(await verifySpecReadiness({issueId: 'issue:0001:01', repositoryRoot}), {
+        authorized: false,
+        findings: ['Stale Spec Readiness subject: .scratch/0001-workflow/issues/01-implement.md.'],
+    });
+});
+
+test('subject identity is stable across line-ending representation', async t => {
+    const repositoryRoot = await createRepository(t);
+    const prepared = await prepare(repositoryRoot);
+    const generated = await generate(repositoryRoot, prepared.draftPath);
+    const issuePath = join(repositoryRoot, '.scratch', '0001-workflow', 'issues', '01-implement.md');
+    const initial = await readFile(issuePath, 'utf8');
+    await writeFile(issuePath, initial.replaceAll('\n', '\r\n'), 'utf8');
+
+    await promoteSpecReadiness({inputPath: generated.path, platformAdapter: adapter, repositoryRoot});
+    assert.deepEqual(await verifySpecReadiness({issueId: 'issue:0001:01', repositoryRoot}), {
+        authorized: true,
+        findings: [],
+    });
+});
+
+test('subject freshness includes content after fenced level-two headings', async t => {
+    const repositoryRoot = await createRepository(t);
+    const issuePath = join(repositoryRoot, '.scratch', '0001-workflow', 'issues', '01-implement.md');
+    const initial = await readFile(issuePath, 'utf8');
+    const withExample = initial.replace(
+        '- [ ] Complete.',
+        '- [ ] Complete.\n\n```md\n## Validation\n\n- Example only.\n```\n\n- [ ] Preserve content after the example.',
+    );
+    await writeFile(issuePath, withExample, 'utf8');
+    await complete(repositoryRoot);
+    await writeFile(issuePath, withExample.replace('Preserve content after the example.', 'Changed content after the example.'), 'utf8');
+
+    assert.deepEqual(await verifySpecReadiness({issueId: 'issue:0001:01', repositoryRoot}), {
+        authorized: false,
+        findings: ['Stale Spec Readiness subject: .scratch/0001-workflow/issues/01-implement.md.'],
+    });
+});
+
+test('promotion rejects identity, schema, and generated-path mutations', async t => {
+    for (const variant of ['identity', 'schema', 'path']) {
+        const repositoryRoot = await createRepository(t);
+        const prepared = await prepare(repositoryRoot);
+        const generated = await generate(repositoryRoot, prepared.draftPath);
+        if (variant === 'path') {
+            await assert.rejects(
+                promoteSpecReadiness({inputPath: prepared.path, platformAdapter: adapter, repositoryRoot}),
+                /generated artifact path/i,
+            );
+            continue;
+        }
+        const artifact = JSON.parse(await readFile(generated.path, 'utf8'));
+        if (variant === 'identity') artifact.request.id = '00000000-0000-4000-8000-000000000000';
+        if (variant === 'schema') artifact.schemaVersion = 5;
+        await writeFile(generated.path, `${JSON.stringify(artifact, null, 2)}\n`, 'utf8');
+        await assert.rejects(
+            promoteSpecReadiness({inputPath: generated.path, platformAdapter: adapter, repositoryRoot}),
+            variant === 'identity' ? /request identity/i : /Malformed normal/i,
+        );
+    }
+});
+
+test('promotion rejects a canonical check set that does not match the request Input forms', async t => {
+    const repositoryRoot = await createRepository(t);
+    const prepared = await prepare(repositoryRoot);
+    const generated = await generate(repositoryRoot, prepared.draftPath);
+    const artifact = JSON.parse(await readFile(generated.path, 'utf8'));
+    artifact.checks.splice(5, 0, {
+        check: 'MODULE-DESIGN-EXEMPTION',
+        result: 'satisfied',
+    });
+    await writeFile(generated.path, `${JSON.stringify(artifact, null, 2)}\n`, 'utf8');
+
+    await assert.rejects(
+        promoteSpecReadiness({inputPath: generated.path, platformAdapter: adapter, repositoryRoot}),
+        /check set does not match the Reviewer Request Inputs/i,
+    );
+    await assert.rejects(
+        readFile(readinessPath(repositoryRoot), 'utf8'),
+        {code: 'ENOENT'},
+    );
+});
+
+test('promotion failure leaves the prior tracked record unchanged', async t => {
+    const repositoryRoot = await createRepository(t);
+    const initial = await complete(repositoryRoot);
+    const before = await readFile(initial.promoted.path, 'utf8');
+    const baselinePath = join(repositoryRoot, '.tmp', 'codex', 'readiness-test', '0001_01', 'spec-readiness', 'baseline.json');
+    const baselineBefore = await readFile(baselinePath, 'utf8');
+    const prepared = await prepare(repositoryRoot);
+    const generated = await generate(repositoryRoot, prepared.draftPath);
+
+    await assert.rejects(promoteSpecReadiness({
+        atomicWriteFile: async (path, text) => {
+            if (path === initial.promoted.path) throw new Error('Injected promotion failure.');
+            await writeFile(path, text, 'utf8');
+        },
+        inputPath: generated.path,
+        platformAdapter: adapter,
+        repositoryRoot,
+    }), /Injected promotion failure/);
+    assert.equal(await readFile(initial.promoted.path, 'utf8'), before);
+    assert.equal(await readFile(baselinePath, 'utf8'), baselineBefore);
+});
+
+test('exception uses the same generate promote verify boundary', async t => {
+    const repositoryRoot = await createRepository(t);
+    await writeFile(join(repositoryRoot, '.scratch', '0001-workflow', 'issues', '01-implement.md'), issue('Not required'), 'utf8');
+    const draft = {exception: {confirmedAt: '2026-08-04T12:34:56Z', reason: 'No governing design is required.'}};
+    const generated = await generateException(repositoryRoot, draft);
+    await assert.rejects(readFile(readinessPath(repositoryRoot), 'utf8'), {code: 'ENOENT'});
+    const promoted = await promoteSpecReadiness({inputPath: generated.path, platformAdapter: adapter, repositoryRoot});
+    const record = JSON.parse(await readFile(promoted.path, 'utf8'));
+
+    assert.deepEqual(record, {
+        schemaVersion: 6,
+        issueId: 'issue:0001:01',
+        exception: draft.exception,
+        subject: {
+            filePath: '.scratch/0001-workflow/issues/01-implement.md',
+            sha256: digest(readinessSubject('Not required')),
+        },
+        result: 'not-applicable',
+    });
+    assert.deepEqual(await verifySpecReadiness({issueId: 'issue:0001:01', repositoryRoot}), {authorized: true, findings: []});
+});
+
+test('exception promotion and verification bind the current issue subject', async t => {
+    const repositoryRoot = await createRepository(t);
+    const issuePath = join(repositoryRoot, '.scratch', '0001-workflow', 'issues', '01-implement.md');
+    const initial = issue('Not required');
+    await writeFile(issuePath, initial, 'utf8');
+    const draft = {exception: {confirmedAt: '2026-08-04T12:34:56Z', reason: 'No governing design is required.'}};
+    const generated = await generateException(repositoryRoot, draft);
+    await writeFile(issuePath, initial.replace('Implement.', 'Implement a changed outcome.'), 'utf8');
+
+    await assert.rejects(
+        promoteSpecReadiness({inputPath: generated.path, platformAdapter: adapter, repositoryRoot}),
+        /Stale Spec Readiness subject/i,
+    );
+
+    await writeFile(issuePath, initial.replace('- [ ] Complete.', '- [X] Complete.'), 'utf8');
+    await promoteSpecReadiness({inputPath: generated.path, platformAdapter: adapter, repositoryRoot});
+    await writeFile(issuePath, initial.replace('- [ ] Complete.', '- [x] Complete.'), 'utf8');
+    assert.deepEqual(await verifySpecReadiness({issueId: 'issue:0001:01', repositoryRoot}), {authorized: true, findings: []});
+
+    await writeFile(issuePath, initial.replace('Complete.', 'Changed criterion.'), 'utf8');
+    assert.deepEqual(await verifySpecReadiness({issueId: 'issue:0001:01', repositoryRoot}), {
+        authorized: false,
+        findings: ['Stale Spec Readiness subject: .scratch/0001-workflow/issues/01-implement.md.'],
+    });
+});
+
+test('exception is invalidated when the effort gains a second implementation issue', async t => {
+    const draft = {exception: {confirmedAt: '2026-08-04T12:34:56Z', reason: 'No governing design is required.'}};
+
+    const generationRoot = await createRepository(t);
+    await writeFile(join(generationRoot, '.scratch', '0001-workflow', 'issues', '01-implement.md'), issue('Not required'), 'utf8');
+    await writeFile(join(generationRoot, '.scratch', '0001-workflow', 'issues', '02-another.md'), issue('Not required'), 'utf8');
+    await assert.rejects(
+        generateException(generationRoot, draft),
+        /exactly one implementation issue/i,
+    );
+
+    const promotionRoot = await createRepository(t);
+    await writeFile(join(promotionRoot, '.scratch', '0001-workflow', 'issues', '01-implement.md'), issue('Not required'), 'utf8');
+    const generated = await generateException(promotionRoot, draft);
+    await writeFile(join(promotionRoot, '.scratch', '0001-workflow', 'issues', '02-another.md'), issue('Not required'), 'utf8');
+    await assert.rejects(
+        promoteSpecReadiness({inputPath: generated.path, platformAdapter: adapter, repositoryRoot: promotionRoot}),
+        /exactly one implementation issue/i,
+    );
+
+    const verificationRoot = await createRepository(t);
+    await writeFile(join(verificationRoot, '.scratch', '0001-workflow', 'issues', '01-implement.md'), issue('Not required'), 'utf8');
+    const verificationArtifact = await generateException(verificationRoot, draft);
+    await promoteSpecReadiness({inputPath: verificationArtifact.path, platformAdapter: adapter, repositoryRoot: verificationRoot});
+    await writeFile(join(verificationRoot, '.scratch', '0001-workflow', 'issues', '02-another.md'), issue('Not required'), 'utf8');
+    assert.deepEqual(await verifySpecReadiness({issueId: 'issue:0001:01', repositoryRoot: verificationRoot}), {
+        authorized: false,
+        findings: ['Spec Readiness exception requires exactly one implementation issue in the effort.'],
+    });
+});
+
+test('exception generation requires exact Human confirmation data', async t => {
+    const repositoryRoot = await createRepository(t);
+    await writeFile(join(repositoryRoot, '.scratch', '0001-workflow', 'issues', '01-implement.md'), issue('Not required'), 'utf8');
+    for (const input of [
+        {exception: {confirmedAt: '2026-02-31T12:34:56Z', reason: 'No governing design is required.'}},
+        {exception: {confirmedAt: '2026-08-04T12:34:56Z', reason: ''}},
+        {exception: {confirmedAt: '2026-08-04T12:34:56Z', reason: 'Confirmed.'}, inferred: true},
+    ]) {
+        await assert.rejects(
+            generateException(repositoryRoot, input),
+            /malformed|unknown or missing/i,
+        );
+    }
+});
+
+test('verify recognizes every earlier schema as stale at the issue sidecar', async t => {
+    const repositoryRoot = await createRepository(t);
+    for (const schemaVersion of [1, 2, 3, 4, 5]) {
+        await writeFile(readinessPath(repositoryRoot), `${JSON.stringify({schemaVersion, inputs: [], checks: [], result: 'satisfied'}, null, 2)}\n`, 'utf8');
+        assert.deepEqual(await verifySpecReadiness({issueId: 'issue:0001:01', repositoryRoot}), {
+            authorized: false,
+            findings: [`Stale Spec Readiness schemaVersion: ${schemaVersion}.`],
+        });
+    }
+});
+
+test('verify checks locators and rejects another issue within the reviewed Input subset', async t => {
+    const repositoryRoot = await createRepository(t);
+    const {promoted} = await complete(repositoryRoot);
+    await writeFile(join(repositoryRoot, '.scratch', '0001-workflow', 'issues', '02-another.md'), issue('Governing requirements:\n\n- `.scratch/0001-workflow/spec.md#interfaces`'), 'utf8');
+    await writeFile(readinessPath(repositoryRoot, '02'), await readFile(promoted.path, 'utf8'), 'utf8');
+    assert.deepEqual(await verifySpecReadiness({issueId: 'issue:0001:02', repositoryRoot}), {
+        authorized: false,
+        findings: ['Spec Readiness record does not match the issue.'],
+    });
+
+    const prepared = await prepare(repositoryRoot);
+    const generated = await generate(repositoryRoot, prepared.draftPath, [{
+        check: 'SPEC-READINESS-INPUTS',
+        evidence: [{anchor: 'module-design', filePath: '.scratch/0001-workflow/spec.md'}],
+        finding: 'The governing Input set has a problem.',
+        result: 'gap',
+    }]);
+    const replacement = await promoteSpecReadiness({inputPath: generated.path, platformAdapter: adapter, repositoryRoot});
+    const record = JSON.parse(await readFile(replacement.path, 'utf8'));
+    record.checks[0].findings[0].evidence = [{anchor: 'missing', filePath: '.scratch/0001-workflow/spec.md'}];
+    await writeFile(replacement.path, `${JSON.stringify(record, null, 2)}\n`, 'utf8');
+    assert.deepEqual(await verifySpecReadiness({issueId: 'issue:0001:01', repositoryRoot}), {
+        authorized: false,
+        findings: [
+            'Review Evidence anchor does not exist: .scratch/0001-workflow/spec.md#missing.',
+            'Spec Readiness result does not authorize implementation: gap.',
+        ],
+    });
+});
+
+test('verify enforces requirement Markdown and path-only heading rules', async t => {
+    const repositoryRoot = await createRepository(t);
+    await complete(repositoryRoot);
+    const issuePath = join(repositoryRoot, '.scratch', '0001-workflow', 'issues', '01-implement.md');
+
+    await writeFile(issuePath, issue('Governing requirements:\n\n- `.scratch/0001-workflow/spec.md`'), 'utf8');
+    assert.deepEqual(await verifySpecReadiness({issueId: 'issue:0001:01', repositoryRoot}), {
+        authorized: false,
+        findings: [
+            'Issue path-only governing requirement has ineligible heading structure: .scratch/0001-workflow/spec.md.',
+            'Stale Spec Readiness subject: .scratch/0001-workflow/issues/01-implement.md.',
+        ],
+    });
+
+    await mkdir(join(repositoryRoot, 'docs'), {recursive: true});
+    await writeFile(join(repositoryRoot, 'docs', 'rules.txt'), '# Rules\n', 'utf8');
+    await writeFile(issuePath, issue('Governing requirements:\n\n- `docs/rules.txt#rules`'), 'utf8');
+    assert.deepEqual(await verifySpecReadiness({issueId: 'issue:0001:01', repositoryRoot}), {
+        authorized: false,
+        findings: [
+            'Issue governing requirement is not a reviewed governing Input: docs/rules.txt#rules.',
+            'Issue governing requirement must reference a Markdown file: docs/rules.txt.',
+            'Stale Spec Readiness subject: .scratch/0001-workflow/issues/01-implement.md.',
+        ],
+    });
+});
+
+test('verify rejects a governing requirement anchor that does not exist', async t => {
+    const repositoryRoot = await createRepository(t);
+    await writeFile(
+        join(repositoryRoot, '.scratch', '0001-workflow', 'issues', '01-implement.md'),
+        issue('Governing requirements:\n\n- `.scratch/0001-workflow/spec.md#missing-section`'),
+        'utf8',
+    );
+    await complete(repositoryRoot);
+
+    assert.deepEqual(await verifySpecReadiness({issueId: 'issue:0001:01', repositoryRoot}), {
+        authorized: false,
+        findings: ['Issue governing requirement anchor does not exist: .scratch/0001-workflow/spec.md#missing-section.'],
+    });
+});
+
+test('verify rejects non-canonical checks and Input ordering in a tracked record', async t => {
+    for (const variant of ['check-order', 'conditional-checks', 'input-order']) {
+        const repositoryRoot = await createRepository(t);
+        let promoted;
+        if (variant === 'input-order') {
+            await mkdir(join(repositoryRoot, 'docs', 'adr'), {recursive: true});
+            await writeFile(join(repositoryRoot, 'docs', 'adr', 'example.md'), '# Decision\n', 'utf8');
+            const prepared = await prepare(repositoryRoot, {inputs: [
+                {filePath: '.scratch/0001-workflow/spec.md', role: 'governing-spec'},
+                {filePath: 'docs/adr/example.md', role: 'adr'},
+            ]});
+            const generated = await generate(repositoryRoot, prepared.draftPath);
+            promoted = await promoteSpecReadiness({inputPath: generated.path, platformAdapter: adapter, repositoryRoot});
+        } else {
+            ({promoted} = await complete(repositoryRoot));
+        }
+        const record = JSON.parse(await readFile(promoted.path, 'utf8'));
+        if (variant === 'check-order') [record.checks[0], record.checks[1]] = [record.checks[1], record.checks[0]];
+        if (variant === 'conditional-checks') record.checks.splice(5, 0, {
+            check: 'MODULE-DESIGN-EXEMPTION',
+            result: 'satisfied',
+        });
+        if (variant === 'input-order') record.inputs.reverse();
+        await writeFile(promoted.path, `${JSON.stringify(record, null, 2)}\n`, 'utf8');
+
+        const result = await verifySpecReadiness({issueId: 'issue:0001:01', repositoryRoot});
+        assert.equal(result.authorized, false);
+        assert.match(result.findings.join('\n'), variant === 'check-order'
+            ? /invalid check set/i
+            : variant === 'conditional-checks'
+                ? /check set does not match the Reviewer Request Inputs/i
+                : /Inputs are not sorted/i);
+    }
+});
+
+test('verify aggregates stale Inputs with other independently determinable findings', async t => {
+    const repositoryRoot = await createRepository(t);
+    await complete(repositoryRoot);
+    await writeFile(join(repositoryRoot, '.scratch', '0001-workflow', 'spec.md'), `${fullSpec}\nChanged after review.\n`, 'utf8');
+    await mkdir(join(repositoryRoot, 'docs'), {recursive: true});
+    await writeFile(join(repositoryRoot, 'docs', 'rules.txt'), '# Rules\n', 'utf8');
+    await writeFile(
+        join(repositoryRoot, '.scratch', '0001-workflow', 'issues', '01-implement.md'),
+        issue('Governing requirements:\n\n- `docs/rules.txt#rules`'),
+        'utf8',
+    );
+
+    assert.deepEqual(await verifySpecReadiness({issueId: 'issue:0001:01', repositoryRoot}), {
+        authorized: false,
+        findings: [
+            'Issue governing requirement is not a reviewed governing Input: docs/rules.txt#rules.',
+            'Issue governing requirement must reference a Markdown file: docs/rules.txt.',
+            'Stale Spec Readiness Input: .scratch/0001-workflow/spec.md.',
+            'Stale Spec Readiness subject: .scratch/0001-workflow/issues/01-implement.md.',
+        ],
+    });
+});
+
+test('prepare and generate reject conflicting roles, issue Inputs, invalid evidence, and invalid finding rows', async t => {
+    const repositoryRoot = await createRepository(t);
+    await assert.rejects(prepare(repositoryRoot, {inputs: [
+        {filePath: '.scratch/0001-workflow/spec.md', role: 'governing-spec'},
+        {filePath: '.scratch/0001-workflow/spec.md', role: 'adr'},
+    ]}), /conflicting roles/i);
+    await assert.rejects(prepare(repositoryRoot, {inputs: [
+        {filePath: '.scratch/0001-workflow/spec.md', role: 'governing-spec'},
+        {filePath: '.scratch/0001-workflow/issues/01-implement.md', role: 'domain-context'},
+    ]}), /cannot be a local tracker issue/i);
+    await assert.rejects(prepare(repositoryRoot, {inputs: [
+        {filePath: '.scratch/0001-workflow/spec.md', role: 'governing-spec'},
+        {filePath: 'docs/agents/example.md', role: 'repository-rule'},
+    ]}), /Unknown readiness input role: repository-rule/i);
+
+    const prepared = await prepare(repositoryRoot);
+    const invalidAnchor = [{
+        check: 'SPEC-READINESS-INPUTS',
+        evidence: [{anchor: '## Module Design', filePath: '.scratch/0001-workflow/spec.md'}],
+        finding: 'The governing Input set has a problem.',
+        result: 'gap',
+    }];
+    await assert.rejects(generate(repositoryRoot, prepared.draftPath, invalidAnchor), /compact evidence strings/i);
+
+    const invalidResult = [{
+        check: 'SPEC-READINESS-INPUTS',
+        evidence: [{filePath: '.scratch/0001-workflow/spec.md'}],
+        finding: 'The governing Input set has a problem.',
+        result: 'satisfied',
+    }];
+    await assert.rejects(generate(repositoryRoot, prepared.draftPath, invalidResult), /result must be gap or uncertain/i);
+
+    const extra = [{
+        check: 'SPEC-READINESS-INPUTS',
+        evidence: [{filePath: '.scratch/0001-workflow/spec.md'}],
+        finding: 'The governing Input set has a problem.',
+        result: 'gap',
+        summary: 'Extra field.',
+    }];
+    await assert.rejects(generate(repositoryRoot, prepared.draftPath, extra), /unknown or missing fields/i);
+});
+
+test('prepare rejects Agent instructions and platform Agent configurations under allowed Input roles', async t => {
+    const repositoryRoot = await createRepository(t);
+    const paths = [
+        'AGENTS.md',
+        'nested/AGENTS.md',
+        'CLAUDE.md',
+        'nested/CLAUDE.md',
+        'docs/agents/domain.md',
+        '.agents/skills/example/SKILL.md',
+        '.claude/skills/example/SKILL.md',
+        '.codex/agents/spec-readiness-reviewer.toml',
+        '.claude/agents/spec-readiness-reviewer.md',
+    ];
+
+    for (const filePath of paths) {
+        await assert.rejects(prepare(repositoryRoot, {inputs: [
+            ...normalInputs,
+            {filePath, role: 'domain-context'},
+        ]}), /cannot be an Agent instruction or platform Agent configuration/i);
+    }
+});

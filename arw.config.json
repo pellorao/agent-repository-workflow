@@ -1,0 +1,98 @@
+{
+  "configVersion": 2,
+  "languageChecks": {
+    "default": {
+      "language": "chinese",
+      "minPercentage": 80,
+      "include": [
+        "**/*.md"
+      ],
+      "exclude": [
+        ".agents/skills/**",
+        "docs/licenses/**",
+        "distribution/skills/**",
+        "distribution/baseline/docs/licenses/**",
+        "README.md",
+        "README.zh-CN.md",
+        "docs/manuals/**"
+      ]
+    },
+    "skills-chinese": {
+      "language": "chinese",
+      "minPercentage": 80,
+      "include": [
+        ".agents/skills/application-workflow/**/*.md",
+        "distribution/skills/application-workflow/**/*.md",
+        ".agents/skills/research/SKILL.md",
+        ".agents/skills/prototype/SKILL.md",
+        ".agents/skills/implement/SKILL.md",
+        ".agents/skills/to-spec/SKILL.md",
+        ".agents/skills/to-tickets/SKILL.md",
+        ".agents/skills/grilling/SKILL.md",
+        ".agents/skills/grill-with-docs/SKILL.md",
+        ".agents/skills/domain-modeling/**/*.md",
+        ".agents/skills/code-review/**/*.md",
+        ".agents/skills/reviewer-benchmark/**/*.md",
+        "distribution/skills/code-review/**/*.md",
+        "distribution/skills/research/SKILL.md",
+        "distribution/skills/prototype/SKILL.md",
+        "distribution/skills/implement/SKILL.md",
+        "distribution/skills/to-spec/SKILL.md",
+        "distribution/skills/to-tickets/SKILL.md",
+        "distribution/skills/grilling/SKILL.md",
+        "distribution/skills/grill-with-docs/SKILL.md",
+        "distribution/skills/domain-modeling/**/*.md"
+      ]
+    },
+    "skills-english": {
+      "language": "english",
+      "minPercentage": 100,
+      "include": [
+        ".agents/skills/**/*.md",
+        "distribution/skills/**/*.md"
+      ],
+      "exclude": [
+        ".agents/skills/application-workflow/**",
+        "distribution/skills/application-workflow/**",
+        ".agents/skills/research/SKILL.md",
+        ".agents/skills/prototype/SKILL.md",
+        ".agents/skills/implement/SKILL.md",
+        ".agents/skills/to-spec/SKILL.md",
+        ".agents/skills/to-tickets/SKILL.md",
+        ".agents/skills/grilling/SKILL.md",
+        ".agents/skills/grill-with-docs/SKILL.md",
+        ".agents/skills/domain-modeling/**/*.md",
+        ".agents/skills/code-review/**",
+        ".agents/skills/reviewer-benchmark/**",
+        "distribution/skills/code-review/**",
+        "distribution/skills/research/SKILL.md",
+        "distribution/skills/prototype/SKILL.md",
+        "distribution/skills/implement/SKILL.md",
+        "distribution/skills/to-spec/SKILL.md",
+        "distribution/skills/to-tickets/SKILL.md",
+        "distribution/skills/grilling/SKILL.md",
+        "distribution/skills/grill-with-docs/SKILL.md",
+        "distribution/skills/domain-modeling/**/*.md"
+      ]
+    },
+    "user-docs-english": {
+      "language": "english",
+      "minPercentage": 80,
+      "include": [
+        "README.md",
+        "docs/manuals/**/*.md"
+      ],
+      "exclude": [
+        "docs/manuals/**/*.zh-CN.md"
+      ]
+    },
+    "user-docs-chinese": {
+      "language": "chinese",
+      "minPercentage": 80,
+      "include": [
+        "README.zh-CN.md",
+        "docs/manuals/**/*.zh-CN.md"
+      ]
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "url": "https://github.com/mattpocock/skills.git",
+  "commit": "6acc160e4e0cd062dbbbd7a1b26ae92855edf07e",
+  "platform": "claude-code",
+  "scope": {
+    "include": [
+      "LICENSE",
+      "skills/engineering/*/**",
+      "skills/productivity/*/**"
+    ],
+    "exclude": [
+      "skills/engineering/ask-matt/**",
+      "skills/engineering/setup-matt-pocock-skills/**"
+    ]
+  },
+  "additionalSkillReferences": [],
+  "skillReferenceNormalizations": []
+}
