@@ -17,7 +17,7 @@ An ARW Artifact is a registered issue, map, or specification work record under `
 | Change the bootstrap script or installation payload | [Bootstrap scripts and Installation](#bootstrap-scripts-and-installation) | Installation long-term specification and manifest |
 | Change shared background Agent execution, App Server capacity, or recovery across repositories | [Change product implementation](#change-product-implementation) | Product background Agent rules and installation management rules |
 | Change a shared workflow or platform projection | [Workflow Distribution and Platform Projection](#workflow-distribution-and-platform-projection) | Actual workflow files, distribution configuration, and development long-term specification |
-| Adopt an external Skill Package update | [Upstream Sync](#upstream-sync) | Source configuration, Base/Ours/Theirs, and Upstream Sync rules |
+| Adopt an external Skill Package update | [Upstream Sync](#upstream-sync) | Source configuration and the `$upstream-sync` Skill |
 | Change a Reviewer Role, independent execution, or Reviewer capability validation | [Reviewer configuration and capability validation](#reviewer-configuration-and-capability-validation) | Canonical Role, user configuration, and Reviewer capability rules |
 | Validate cross-operating-system installation or maintain the test environment | [Cross-operating-system validation environment](#cross-operating-system-validation-environment) | Active issue and the `$release` Skill |
 | Prepare the initial GitHub source migration | [Initial GitHub migration](#initial-github-migration) | Approved migration instructions and the latest source file snapshot |
@@ -59,7 +59,7 @@ Find the Module or Interface that owns the behavior in the applicable long-term 
 | Repository workflows and Workflow Distribution payloads | `lib/repository-workflow/` and `lib/workflow-distribution/` |
 | Installation, bootstrap script, and uninstall | Root `install.mjs`, `uninstall.mjs`, and `lib/installation/` |
 | Platform projections and platform environments | `lib/arw-common/platform-adapter.mjs` and `lib/arw-common/platform-environment.mjs` |
-| Source Checkout releases, Reviewer capabilities, and Upstream Sync | `lib/release/` and `lib/upstream-sync/` |
+| Source Checkout releases and Reviewer capabilities | `lib/release/` |
 | Text, terminology, and language analysis | The relevant shared capabilities in `lib/document-terms/`, `lib/common/`, and `lib/arw-common/` |
 
 Tests are organized under `tests/` by the same lasting responsibilities. Choose the closest test boundary that observes a public result. Do not define lasting behavior through a one-time issue name or a private helper's structure.
@@ -116,7 +116,7 @@ The public GitHub repository is [pellorao/agent-repository-workflow](https://git
 
 ### Workflow Distribution and Platform Projection
 
-Use this route to change actual shared workflow content, distribution configuration, platform projections, or platform-native seeds. The source repository's `.agents/skills/`, managed Agent document regions, canonical Roles, and fixed license files are content sources. `distribution/` is the installation payload produced by synchronization before a release. The [development long-term specification (Chinese)](../specs/agent-repository-workflow-development/spec.md) owns the full responsibility relationship, and the [platform standards (Chinese)](../agents/platform-standards.md) describe platform formats and target entry points.
+Use this route to change actual shared workflow content, distribution configuration, platform projections, or platform-native seeds. The source repository's `.agents/skills/`, managed Agent document regions, canonical Roles, and fixed license files are content sources. `distribution/` is the installation payload produced by synchronization before a release. The [development long-term specification (Chinese)](../specs/agent-repository-workflow-development/spec.md) owns the full responsibility relationship, and the [platform standards (Chinese)](../../.agents/skills/platform-standards/SKILL.md) describe platform formats and target entry points.
 
 Before-release synchronization and production checks use these command names:
 
@@ -132,21 +132,7 @@ The development specification and platform standards define how these commands r
 
 ### Upstream Sync
 
-Use this route to adopt an update to a fixed external Skill Package. The current `.agents/skills/` content is the local source of truth. The [Upstream Sync long-term specification (Chinese)](../specs/agent-repository-workflow-upstream-sync/spec.md) owns external-source configuration and synchronization artifacts. The [Upstream Sync rules (Chinese)](../agents/upstream-sync.md) describe the entry point and current workflow.
-
-Maintenance command names are:
-
-~~~text
-node scripts/upstream-sync.mjs status
-node scripts/upstream-sync.mjs prepare --source <source> --to <full-commit-id>
-node scripts/upstream-sync.mjs review
-node scripts/upstream-sync.mjs review --confirm <additional-skill-references-hash> <skill-reference-normalizations-hash>
-node scripts/upstream-sync.mjs approve
-node scripts/upstream-sync.mjs finalize
-node scripts/upstream-sync.mjs abort
-~~~
-
-The Upstream Sync rules define the relationship between commands and their inputs. Workflow Distribution payloads use a separate pre-release synchronization route.
+To adopt an update to a fixed external Skill Package, the maintainer explicitly invokes the [`$upstream-sync` Skill (Chinese)](../../.agents/skills/upstream-sync/SKILL.md). The Agent runs `node scripts/upstream-sync.mjs <source> <full-commit-id>` to build a three-way view of the old upstream snapshot, the new upstream version, and the current `.agents/skills/`; the maintainer approves the changes to adopt batch by batch, and the result is recorded in `upstream/sources/<source>/adoptions.md`. Workflow Distribution payloads use a separate pre-release synchronization route.
 
 ### Reviewer configuration and capability validation
 
@@ -201,7 +187,7 @@ Direct children of `scripts/` are entry points for Source Checkout maintainers o
 | `scripts/release-vm.mjs` | Run the guest check in a VMware VM and restore its snapshot |
 | `scripts/reviewer-capability-conformance.mjs` | Prepare or verify Reviewer capability scenarios |
 | `scripts/sync-workflow-distribution.mjs` | Review, prepare, and apply pre-release Workflow Distribution synchronization |
-| `scripts/upstream-sync.mjs` | Run the fixed external-source Upstream Sync lifecycle |
+| `scripts/upstream-sync.mjs` | Build the upstream three-way view for the `$upstream-sync` Skill |
 
 ### lib
 
@@ -217,7 +203,7 @@ The dependency direction allows specific business implementations to depend on `
 - `tests/` is organized by the long-term responsibilities in `lib/`. Root-level tests cover root wiring and cross-responsibility invariants; `tests/helpers/` and `tests/fixtures/` contain shared test infrastructure.
 - `.scratch/` contains ARW Artifacts and completion evidence; it is not the Engine's temporary directory.
 - `.tmp/` contains short-lived Engine state for the current platform and session, not authoritative Git-managed data.
-- `upstream/` contains external-source configuration, snapshots, and completed synchronization records. Active disposable work areas stay ignored.
+- `upstream/` contains external-source configuration and adoption records. The three-way view is written to the ignored `.tmp/upstream-sync/`.
 
 ## Further reading
 
@@ -225,7 +211,6 @@ The dependency direction allows specific business implementations to depend on `
 - [Agent Repository Workflow long-term specification (Chinese)](../specs/agent-repository-workflow/spec.md): public commands, ARW Artifacts, Agent CLI, Repository Workflow, and product Modules.
 - [Development long-term specification (Chinese)](../specs/agent-repository-workflow-development/spec.md): Source Checkout layout, Workflow Distribution, platform projections, and shared Modules.
 - [Installation long-term specification (Chinese)](../specs/agent-repository-workflow-installation/spec.md): bootstrap, installation, global configuration, PATH, and uninstall.
-- [Upstream Sync long-term specification (Chinese)](../specs/agent-repository-workflow-upstream-sync/spec.md): behavior contract for adopting external sources.
 - [Release long-term specification (Chinese)](../specs/agent-repository-workflow-release/spec.md): release candidates, Reviewer capabilities, VM validation, tags, and external writes.
 - [Reader documentation specification (Chinese)](../specs/arw-reader-documentation/spec.md): README and manual responsibilities and boundaries.
 - [Validation rules (Chinese)](../../.agents/skills/validation/SKILL.md): current Agent validation responsibilities and documentation checks.

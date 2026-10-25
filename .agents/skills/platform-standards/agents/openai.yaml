@@ -1,0 +1,5 @@
+interface:
+  display_name: "Platform Standards"
+  short_description: "Research or change supported Agent platform standards"
+policy:
+  allow_implicit_invocation: false

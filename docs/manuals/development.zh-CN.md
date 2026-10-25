@@ -17,7 +17,7 @@ ARW Artifact 指 `.scratch` 中登记的 issue, map 和 spec 工作记录. Spec 
 | 修改引导脚本或安装载荷 | [引导脚本和 Installation](#引导脚本和-installation) | 安装长期规格和清单 |
 | 修改跨仓库共用的后台 Agent 运行, App Server 容量或恢复 | [修改产品实现](#修改产品实现) | 产品后台 Agent 规则与安装管理规则 |
 | 修改共享工作流或平台投射 | [Workflow Distribution 和 Platform Projection](#workflow-distribution-和-platform-projection) | 实际工作流文件, 分发配置和开发长期规格 |
-| 采用外部 Skill Package 更新 | [Upstream Sync](#upstream-sync) | 来源配置, Base/Ours/Theirs 和 Upstream Sync 规则 |
+| 采用外部 Skill Package 更新 | [Upstream Sync](#upstream-sync) | 来源配置和 `$upstream-sync` Skill |
 | 修改 Reviewer Role, 独立运行或验证 Reviewer 能力 | [Reviewer 配置和能力验证](#reviewer-配置和能力验证) | 规范 Role, 用户配置和 Reviewer 能力规则 |
 | 验证跨操作系统安装或维护受验环境 | [跨操作系统验证环境](#跨操作系统验证环境) | 活动 issue 和 `$release` Skill |
 | 准备首次 GitHub 源码迁移 | [首次 GitHub 迁移](#首次-github-源码迁移) | 已批准的迁移说明和最新源码文件快照 |
@@ -59,7 +59,7 @@ pnpm test
 | 仓库工作流和工作流分发载荷 | `lib/repository-workflow/`, `lib/workflow-distribution/` |
 | 安装, 引导脚本和卸载 | 根 `install.mjs`, `uninstall.mjs`, `lib/installation/` |
 | 平台投射和平台环境 | `lib/arw-common/platform-adapter.mjs`, `lib/arw-common/platform-environment.mjs` |
-| 源码仓库发布, Reviewer 能力和 Upstream Sync | `lib/release/`, `lib/upstream-sync/` |
+| 源码仓库发布和 Reviewer 能力 | `lib/release/` |
 | 文本, 术语和语言分析 | `lib/document-terms/`, `lib/common/`, `lib/arw-common/` 中对应公共能力 |
 
 测试按同一长期责任在 `tests/` 下组织. 先选择能够观察公开结果的最近测试边界, 不依赖一次性 issue 名称或私有辅助程序结构来定义长期行为.
@@ -116,7 +116,7 @@ node scripts/generate-install-arw.mjs --check
 
 ### Workflow Distribution 和 Platform Projection
 
-修改实际共享工作流内容, 分发配置, 平台投射或平台原生种子时使用这条路线. 源码仓库实际使用的 `.agents/skills/`, 受管理的 Agent 文档区域, 规范 Role 和固定许可证文件是内容来源. `distribution/` 是发布前同步形成的安装载荷. 完整责任关系由 [开发长期规格](../specs/agent-repository-workflow-development/spec.md) 拥有, 平台格式与目标入口由 [平台标准](../agents/platform-standards.md) 说明.
+修改实际共享工作流内容, 分发配置, 平台投射或平台原生种子时使用这条路线. 源码仓库实际使用的 `.agents/skills/`, 受管理的 Agent 文档区域, 规范 Role 和固定许可证文件是内容来源. `distribution/` 是发布前同步形成的安装载荷. 完整责任关系由 [开发长期规格](../specs/agent-repository-workflow-development/spec.md) 拥有, 平台格式与目标入口由 [平台标准](../../.agents/skills/platform-standards/SKILL.md) 说明.
 
 发布前同步和生产检查使用这些命令名称:
 
@@ -132,21 +132,7 @@ node scripts/check-workflow-distribution.mjs
 
 ### Upstream Sync
 
-采用固定外部 Skill Package 更新时使用这条路线. 当前 `.agents/skills/` 是本地实际内容, 外部来源配置和同步产物由 [Upstream Sync 长期规格](../specs/agent-repository-workflow-upstream-sync/spec.md) 拥有. 操作入口及当前流程由 [Upstream Sync 规则](../agents/upstream-sync.md) 说明.
-
-维护命令名称是:
-
-```text
-node scripts/upstream-sync.mjs status
-node scripts/upstream-sync.mjs prepare --source <source> --to <full-commit-id>
-node scripts/upstream-sync.mjs review
-node scripts/upstream-sync.mjs review --confirm <additional-skill-references-hash> <skill-reference-normalizations-hash>
-node scripts/upstream-sync.mjs approve
-node scripts/upstream-sync.mjs finalize
-node scripts/upstream-sync.mjs abort
-```
-
-各命令之间的关系和输入以 Upstream Sync 规则为准. 工作流分发载荷由独立的发布前同步路线维护.
+采用固定外部 Skill Package 更新时, 由维护者显式调用 [`$upstream-sync` Skill](../../.agents/skills/upstream-sync/SKILL.md). Agent 运行 `node scripts/upstream-sync.mjs <source> <full-commit-id>` 生成上游旧快照, 上游新版本和当前 `.agents/skills/` 的三方视图, 维护者逐批批准要采用的变化, 结果记录在 `upstream/sources/<source>/adoptions.md`. 工作流分发载荷由独立的发布前同步路线维护.
 
 ### Reviewer 配置和能力验证
 
@@ -201,7 +187,7 @@ node scripts/reviewer-capability-conformance.mjs prepare
 | `scripts/release-vm.mjs` | 在 VMware VM 中运行 guest 检查并还原快照 |
 | `scripts/reviewer-capability-conformance.mjs` | 准备或验证 Reviewer 能力场景 |
 | `scripts/sync-workflow-distribution.mjs` | 审核, 准备并应用发布前工作流分发同步 |
-| `scripts/upstream-sync.mjs` | 执行固定外部来源的 Upstream Sync 生命周期 |
+| `scripts/upstream-sync.mjs` | 为 `$upstream-sync` Skill 生成上游三方视图 |
 
 ### lib
 
@@ -217,7 +203,7 @@ node scripts/reviewer-capability-conformance.mjs prepare
 - `tests/` 按 `lib/` 的长期责任组织, 根级测试只覆盖根连接和跨责任不变量, `tests/helpers/` 与 `tests/fixtures/` 保存共享测试基础设施.
 - `.scratch/` 保存 ARW Artifact 和完成证据, 不是 Engine 临时目录.
 - `.tmp/` 保存当前平台和会话的短期 Engine 状态, 不保存受 Git 管理的权威数据.
-- `upstream/` 保存外部来源配置, 快照和已完成同步记录. 活动可丢弃工作区保持忽略状态.
+- `upstream/` 保存外部来源配置和采用记录. 三方视图写在被忽略的 `.tmp/upstream-sync/`.
 
 ## 进一步阅读
 
@@ -225,7 +211,6 @@ node scripts/reviewer-capability-conformance.mjs prepare
 - [Agent Repository Workflow 长期规格](../specs/agent-repository-workflow/spec.md): 公开命令, ARW Artifact, Agent CLI, Repository Workflow 和产品 Module.
 - [开发长期规格](../specs/agent-repository-workflow-development/spec.md): 源码仓库布局, 工作流分发, 平台投射和公共 Module.
 - [安装长期规格](../specs/agent-repository-workflow-installation/spec.md): 引导脚本, 安装, 全局配置, PATH 和卸载.
-- [Upstream Sync 长期规格](../specs/agent-repository-workflow-upstream-sync/spec.md): 外部来源采用的行为合同.
 - [发布长期规格](../specs/agent-repository-workflow-release/spec.md): 发布候选, Reviewer 能力, VM 验证, 标签和外部写入.
 - [读者文档规范](../specs/arw-reader-documentation/spec.md): README 与全部手册的读者目标和责任边界.
 - [验证规则](../../.agents/skills/validation/SKILL.md): 当前 Agent 验证责任和文档检查.

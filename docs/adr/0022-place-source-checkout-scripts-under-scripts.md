@@ -12,7 +12,7 @@ ARW 源码仓库曾将产品入口, 安装入口和仅供维护者直接执行�
 
 `scripts/install-arw.mjs` 在源码仓库中是确定性生成和检查的单文件引导脚本, 用户从规范原始文件 URL 下载后可以在任意目录运行, 不依赖旁边的源码仓库文件. 根 `install.mjs` 保持不动, 因为克隆源码仓库的用户与引导安装脚本创建的准确发布检出目录都从根目录调用它. 新布局不保留旧根路径副本, 包装脚本或转发入口; 当前没有已发布 tag, 所以规范下载路径可以直接切换而不建立兼容分支.
 
-本决定只取代 ADR 0011 把 `upstream-sync.mjs` 固定在源码仓库根目录的路径选择. ADR 0011 中仅供源码仓库运行的范围, 用户审核, 批准, 恢复, 同步工作区, 同步记录和不进入安装载荷等决定保持有效. ADR 0012 的公开 `arw` Interface 和 ADR 0020 的单文件引导安装脚本与根 Installer 交接也保持不变. [ADR 0026](0026-use-source-checkout-workflow-files-as-distribution-authority.md#decision) 已经取代 ADR 0021 的带类型 Workflow Distribution 清单权威来源, 并把新的发布前同步入口放在本文规定的 `scripts/` 维护入口层.
+本决定只取代 ADR 0011 把 `upstream-sync.mjs` 固定在源码仓库根目录的路径选择. ADR 0011 中仅供源码仓库运行的范围, 用户审核, 批准, 恢复, 同步工作区, 同步记录和不进入安装载荷等决定保持有效 (其中恢复, 同步工作区和同步记录后来已被 [ADR 0011](0011-use-source-only-human-reviewed-upstream-sync.md) 的状态说明取代). ADR 0012 的公开 `arw` Interface 和 ADR 0020 的单文件引导安装脚本与根 Installer 交接也保持不变. [ADR 0026](0026-use-source-checkout-workflow-files-as-distribution-authority.md#decision) 已经取代 ADR 0021 的带类型 Workflow Distribution 清单权威来源, 并把新的发布前同步入口放在本文规定的 `scripts/` 维护入口层.
 
 ## Consequences
 

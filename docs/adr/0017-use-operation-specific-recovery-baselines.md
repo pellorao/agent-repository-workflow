@@ -14,8 +14,8 @@ Engine 的相同版本修复和受管理升级遵循 `complete preflight -> remo
 
 前一次方案把已装订 DMG, 原生进程租约和自解除链接用于 macOS 安装; [ADR 0020](0020-use-external-nodejs-source-delivery.md#decision) 已以外部 Node.js 和复制式 Installation 取代这些机制. 不同生命周期分别使用适合其归属域的恢复基线这一决定继续有效.
 
-Upstream Sync 使用单一 Sync Workspace 与 Git 索引限定范围恢复, 因为它需要保存审核, 批准和完成后的提交检查点. 实时完成失败时可以只恢复由同步拥有的精确路径; 崩溃恢复只有在索引仍匹配准备证据且工作字节可证明为前映像或后映像时继续, 否则要求人工恢复. 完成后的检查点比较 HEAD 树与已审核的规范字节, 而不保存提交 ID, 因为目标是证明字节已经进入历史并允许不改变它们的 amend 或 rebase.
+(已由 [ADR 0011](0011-use-source-only-human-reviewed-upstream-sync.md) 的状态说明取代: Upstream Sync 不再有工作区和专用恢复, 中途放弃时用 Git 还原.) Upstream Sync 使用单一 Sync Workspace 与 Git 索引限定范围恢复, 因为它需要保存审核, 批准和完成后的提交检查点. 实时完成失败时可以只恢复由同步拥有的精确路径; 崩溃恢复只有在索引仍匹配准备证据且工作字节可证明为前映像或后映像时继续, 否则要求人工恢复. 完成后的检查点比较 HEAD 树与已审核的规范字节, 而不保存提交 ID, 因为目标是证明字节已经进入历史并允许不改变它们的 amend 或 rebase.
 
 ## Consequences
 
-每个生命周期只承担其归属领域真正需要的恢复复杂度. 仓库操作依赖用户熟悉的 Git 恢复, 代价是部分应用后不能直接续写旧事务. Engine 升级可能暂时不可用, 但重新安装路径简单. Upstream Sync 保留更强的限定范围恢复, 因为其跨审核与提交的长期状态无法由一次仓库操作方案替代.
+每个生命周期只承担其归属领域真正需要的恢复复杂度. 仓库操作依赖用户熟悉的 Git 恢复, 代价是部分应用后不能直接续写旧事务. Engine 升级可能暂时不可用, 但重新安装路径简单. Upstream Sync 保留更强的限定范围恢复, 因为其跨审核与提交的长期状态无法由一次仓库操作方案替代 (Upstream Sync 部分已由 [ADR 0011](0011-use-source-only-human-reviewed-upstream-sync.md) 的状态说明取代).

@@ -6,7 +6,7 @@
 
 ## Decision
 
-当前统一 Skill 来源使用 Codex 引用形式. [开发长期规格](../specs/agent-repository-workflow-development/spec.md#projection-configuration) 负责平台投影配置与 [Skill 引用分析和转换](../specs/agent-repository-workflow-development/spec.md#analysis-and-conversion): 配置说明支持平台的引用写法和目标位置, 投影只转换经过解析和必要审核的 Markdown Skill 引用. Upstream Sync 按来源配置选择上游平台语法, 在合并前把 Base 和 Theirs 分别转换为统一来源形式.
+当前统一 Skill 来源使用 Codex 引用形式. [开发长期规格](../specs/agent-repository-workflow-development/spec.md#projection-configuration) 负责平台投影配置与 [Skill 引用分析和转换](../specs/agent-repository-workflow-development/spec.md#analysis-and-conversion): 配置说明支持平台的引用写法和目标位置, 投影只转换经过解析和必要审核的 Markdown Skill 引用. Upstream Sync 中由 Agent 把采用的上游引用改写为统一来源形式 (见 [ADR 0011](0011-use-source-only-human-reviewed-upstream-sync.md) 的状态说明).
 
 实际 Skill 中的 `agents/openai.yaml` 是 Codex 调用数据的唯一内容权威. Codex 投影保留它, Claude Code 投影排除它; 投影不依据 frontmatter 过滤 Skill, 也不从表面语法推断调用政策. 固定输入的转换应产生可复现的目标字节, 无法确定的引用由用户审核, 不能用整个 Markdown 范围的搜索替换代替结构化分析.
 

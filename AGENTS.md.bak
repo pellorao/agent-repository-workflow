@@ -98,6 +98,6 @@ ARW Artifact 操作使用最近的 Git 仓库中的 `.scratch`.
 
 - 处理 Source Checkout 治理引用迁移例外或迁移规则时, 读取 `docs/agents/source-checkout-issue-workflow.md`.
 - 进行定向 Reviewer 优化或修改 `tests/fixtures/reviewer-capability/**` 前, 读取 `docs/agents/source-checkout-exceptions.md`.
-- 在 ARW 源码仓库中准备, 审查, 批准, 最终写入, 恢复或中止 Upstream Sync 前, 读取 `docs/agents/upstream-sync.md`, 并遵循其中只适用于源码仓库的交接规则.
-- 研究, 更改或批准受支持的 Agent 平台标准, Skill Package Grammar, Projection Definition, 运行时绑定, 保留身份, 优先级规则或精确输出基准前, 读取 `docs/agents/platform-standards.md`.
+- Upstream Sync (采用上游 Skill 新版本) 只在维护者显式调用 `$upstream-sync` Skill 时进行.
+- 研究或修改受支持的 Agent 平台标准, Projection 配置, Skill 引用规则或目标路径前, 读取 `.agents/skills/platform-standards/SKILL.md`.
 <!-- arw:repository-owned:end -->

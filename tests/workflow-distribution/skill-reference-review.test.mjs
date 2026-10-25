@@ -9,7 +9,6 @@ import {
     ADDITIONAL_SKILL_REFERENCES_FILE,
     SKILL_REFERENCE_NORMALIZATIONS_FILE,
     reviewSkillReferences,
-    skillReferenceReviewHashes,
 } from '../../lib/workflow-distribution/skill-reference-review.mjs';
 
 const candidates = {
@@ -25,16 +24,12 @@ const createWorkspace = async (/** @type {test.TestContext} */ t) => {
     return join(parent, 'review');
 };
 
-test('reference review hashes use the exact shared review file bytes', () => {
-    assert.deepEqual(skillReferenceReviewHashes(candidates), {
-        additionalSkillReferencesHash: createHash('sha256').update('alpha\nbeta\n').digest('hex'),
-        skillReferenceNormalizationsHash: createHash('sha256').update([
-            '{"path":"skills/alpha/SKILL.md","line":1,"column":1,"identity":"alpha","context":"$alpha,"}',
-            '{"path":"skills/beta/SKILL.md","line":2,"column":3,"identity":"beta","context":"$beta."}',
-            '',
-        ].join('\n')).digest('hex'),
-    });
-});
+const sha256Hex = (/** @type {string} */ text) => createHash('sha256').update(text).digest('hex');
+const NORMALIZATIONS_FILE_TEXT = [
+    '{"path":"skills/alpha/SKILL.md","line":1,"column":1,"identity":"alpha","context":"$alpha,"}',
+    '{"path":"skills/beta/SKILL.md","line":2,"column":3,"identity":"beta","context":"$beta."}',
+    '',
+].join('\n');
 
 test('reference review rejects normalization paths outside canonical Skill Markdown', async t => {
     const workspaceDirectory = await createWorkspace(t);
@@ -181,10 +176,10 @@ test('confirmation blocks normalizations for additional Skills removed from the 
     await writeFile(join(workspaceDirectory, ADDITIONAL_SKILL_REFERENCES_FILE), '');
     const result = await reviewSkillReferences({
         ...candidates,
-        confirmHashes: skillReferenceReviewHashes({
-            additionalSkillReferences: [],
-            skillReferenceNormalizations: candidates.skillReferenceNormalizations,
-        }),
+        confirmHashes: {
+            additionalSkillReferencesHash: sha256Hex(''),
+            skillReferenceNormalizationsHash: sha256Hex(NORMALIZATIONS_FILE_TEXT),
+        },
         workspaceDirectory,
     });
 

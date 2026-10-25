@@ -1,5 +1,7 @@
 # 从 Base 和 Ours 计算 Upstream Sync 本地差异
 
+状态: 每轮从 Base 与 Ours 重新计算本地差异, 不保存差异清单, 按语义分批审核的决定继续有效, 现由 [`upstream-sync` Skill](../../.agents/skills/upstream-sync/SKILL.md) 执行. `agent-merge-notes.md`, Review Revision 绑定和 Sync Record 已随旧引擎删除, 见 [ADR 0011](0011-use-source-only-human-reviewed-upstream-sync.md) 的状态说明.
+
 ## Context
 
 Upstream Sync 的 `prepare` 已取得准确 Base, 并从源码仓库实际 `.agents/skills/` 取得准确 Ours. 比较两者的路径, mode 和字节, 就能完整重建当前本地差异. 旧设计还要求以 `semantic-deltas.json` 持久保存当前差异说明, 并在工作区用 `active-deltas.json` 和 `delta-lifecycle.json` 重复表示本轮差异关系. 这些记录既不能替代治理文档对定制理由的解释, 也会产生缺失, 重复和过期状态.
@@ -14,7 +16,7 @@ Main Agent 按语义选择用户审核批次, 覆盖 Ours 到 Candidate 的全�
 
 每批批准后的自然语言说明累积到工作区 `agent-merge-notes.md`. 全部批次完成后, 用户使用该文件和已经完成的批次审核批准准确 Candidate. Module 只验证说明文件存在, 是安全普通文件且非空, 把准确字节与 Candidate 绑定到审核修订版本, 不解析, 分类, 评分或判断内容. 该文件只服务本轮审核, 不复制到 Sync Record. Sync Record 保存本轮已批准候选的差异路径, 冲突以及审核与批准身份, 但不保存语义说明, 也不成为下一轮当前差异的权威来源. 下一轮仍从新的准确 Base 与当时实际 Ours 重新计算.
 
-本决定取代 [ADR 0011](0011-use-source-only-human-reviewed-upstream-sync.md) 中持久保存语义差异, 稳定差异身份, 双向覆盖检查和差异生命周期的决定. ADR 0011 的源码仓库限定, 用户审核三方同步, 固定提交, 来源范围, 批准, 同步记录, `HEAD` 检查点和操作特定恢复继续有效.
+本决定取代 [ADR 0011](0011-use-source-only-human-reviewed-upstream-sync.md) 中持久保存语义差异, 稳定差异身份, 双向覆盖检查和差异生命周期的决定. ADR 0011 的源码仓库限定, 用户审核三方同步, 固定提交, 来源范围, 批准, 同步记录, `HEAD` 检查点和操作特定恢复继续有效 (其中同步记录, `HEAD` 检查点和操作特定恢复后来已被 ADR 0011 的状态说明取代).
 
 ## Rejected alternatives
 

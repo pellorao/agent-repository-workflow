@@ -16,7 +16,7 @@
 
 - [开发长期规格](../agent-repository-workflow-development/spec.md) 定义源码仓库实际工作流文件, Workflow Distribution, 平台投影, Skill 引用审核, 发布前同步和开发公共 Module;
 - [安装长期规格](../agent-repository-workflow-installation/spec.md) 定义引导安装脚本, 安装载荷, ARW 安装目录, 更新, 卸载, 配置升级和 PATH 或配置文件归属;
-- [Upstream Sync 长期规格](../agent-repository-workflow-upstream-sync/spec.md) 定义固定上游来源, Base/Ours/Theirs, 审核修订版本, 用户批准, 语义差异, 同步记录和恢复;
+- 源码仓库专用的 [`upstream-sync` Skill](../../../.agents/skills/upstream-sync/SKILL.md) 定义固定上游来源, Base/Ours/Theirs 三方审核, 维护者批准和采用记录;
 - [Application 与 JIRA 长期规格](../agent-repository-workflow-application-jira/spec.md) 定义 Application Repository 与 Module Repository 的角色, JIRA Story 接收, issue 分发, Module 状态同步, Application 验证和 JIRA 完成同步;
 - [源码仓库发布长期规格](../agent-repository-workflow-release/spec.md) 定义发布候选, 归档, VM, 标签, 外部写入授权和发布恢复.
 
@@ -208,7 +208,7 @@ arw workflow remove [--non-interactive --arwignore <retain|delete> --code-maps <
 arw --version
 ```
 
-只在源码仓库中使用的维护命令不是公开的 `arw` 操作. 开发, 安装, Upstream Sync 和发布规格分别列出这些命令的入口与生命周期归属.
+只在源码仓库中使用的维护命令不是公开的 `arw` 操作. 开发, 安装和发布规格以及 `upstream-sync` Skill 分别列出这些命令的入口与生命周期归属.
 
 `print` 是机器可读原文读取 Interface. `open` 是用户便捷 Interface. 两者只接受一个本地 Canonical ID, 从类型前缀选择 ARW Artifact, 并拒绝有名称限定的 issue ID. 不保留类型化 `open` 或 `print`, `oi`, `om`, `os`, `tracker` 启动器, 顶层 `update` 或隐式帮助. 无参数和未知命令都是退出码 `2` 的用法错误.
 
@@ -895,7 +895,7 @@ Document Repository Interface 不改变 ADR-0013 的 Agent 写入分工, 因为�
 - `ARW-DIAG-001` 至 `ARW-DIAG-003`;
 - `ARW-TEST-001` 至 `ARW-TEST-007`, 以及 `ARW-TEST-009` 至 `ARW-TEST-012` 中属于用户行为的部分.
 
-开发规格拥有 `ARW-DIST-*` 和 `ARW-PROJECTION-*`. 安装规格拥有 `ARW-ENGINE-*`. Upstream Sync 规格拥有 `ARW-SYNC-*`. 每个生命周期规格分别拥有自己的验证细节, 因而 `ARW-TEST-*` 不建立重复规则来源.
+开发规格拥有 `ARW-DIST-*` 和 `ARW-PROJECTION-*`. 安装规格拥有 `ARW-ENGINE-*`. 每个生命周期规格分别拥有自己的验证细节, 因而 `ARW-TEST-*` 不建立重复规则来源.
 
 ## Validation strategy
 

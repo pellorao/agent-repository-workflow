@@ -7,7 +7,7 @@
 
 ## Scope
 
-本文定义 ARW 源码仓库的开发布局, 共享工作流内容的唯一编写来源, Workflow Distribution 与平台投影, Skill 引用审核, 发布前同步, 以及这些行为共同使用的公共 Module. 用户在目标仓库中使用 ARW 的行为由 [Agent Repository Workflow 长期规格](../agent-repository-workflow/spec.md) 拥有. ARW 安装目录与 Upstream Sync 分别由 [安装长期规格](../agent-repository-workflow-installation/spec.md) 和 [Upstream Sync 长期规格](../agent-repository-workflow-upstream-sync/spec.md) 拥有. 发布候选, 归档, VM, 标签, 外部写入授权和发布恢复由 [源码仓库发布长期规格](../agent-repository-workflow-release/spec.md) 拥有.
+本文定义 ARW 源码仓库的开发布局, 共享工作流内容的唯一编写来源, Workflow Distribution 与平台投影, Skill 引用审核, 发布前同步, 以及这些行为共同使用的公共 Module. 用户在目标仓库中使用 ARW 的行为由 [Agent Repository Workflow 长期规格](../agent-repository-workflow/spec.md) 拥有. ARW 安装目录由 [安装长期规格](../agent-repository-workflow-installation/spec.md) 拥有. Upstream Sync 是维护者显式调用的源码仓库专用 [`upstream-sync` Skill](../../../.agents/skills/upstream-sync/SKILL.md). 发布候选, 归档, VM, 标签, 外部写入授权和发布恢复由 [源码仓库发布长期规格](../agent-repository-workflow-release/spec.md) 拥有.
 
 本文不要求日常开发中的 `distribution/` 与实际工作流文件实时一致. 源码仓库发布只消费已经完成发布前同步并经过审核的候选, 不重新决定共享工作流内容.
 
@@ -37,7 +37,7 @@ ARW 源码仓库不作为自身 Workflow Distribution 的目标仓库. Repositor
 - `docs/agents/roles/<role-name>.md`, 以及由该规范 Role 拥有并按需引用的 `docs/agents/roles/<role-name>/<document-name>.md`;
 - 与每个上游来源身份准确对应的 `docs/licenses/arw/LICENSE.<source-id>`.
 
-普通开发直接修改这些位置. `distribution/` 是发布前同步派生并由用户审核的安装载荷, 不是日常编写来源. `docs/licenses/arw/` 中不匹配 `LICENSE.<source-id>` 的其他直接文件不是 Workflow Distribution 的实际许可证来源, 也不因位于该目录而自动进入载荷. Upstream Sync 只更新 `.agents/skills/`, 固定许可证目标和自己的来源状态. 每次采用 Skill 及其许可证时都把固定许可证目标纳入更新. 安装, 仓库工作流和源码仓库发布都不反向修改实际来源.
+普通开发直接修改这些位置. `distribution/` 是发布前同步派生并由用户审核的安装载荷, 不是日常编写来源. `docs/licenses/arw/` 中不匹配 `LICENSE.<source-id>` 的其他直接文件不是 Workflow Distribution 的实际许可证来源, 也不因位于该目录而自动进入载荷. Upstream Sync 只更新 `.agents/skills/`, 映射的许可证目标和自己的来源配置与采用记录. 安装, 仓库工作流和源码仓库发布都不反向修改实际来源.
 
 仅供 Source Checkout 使用的 `$reviewer-benchmark` Skill 不属于共享工作流载荷, 发布前同步不把它写入 Workflow Distribution, 安装和平台投射不把它带入目标仓库. 它的操作规则由该 Skill 单独拥有, 本文只拥有源码限定的分发边界, 不复制基准操作流程.
 
@@ -100,7 +100,7 @@ JSON 对象键顺序和空白排版不参与语义比较或摘要. 用户可读�
 
 Skill Package 中只有 `.md` 文件参与引用分析和语法投影, 包括 `SKILL.md` 与任意嵌套 Markdown 支持文档. 其他安全普通文件按准确字节复制.
 
-统一来源采用 Codex 写法. 采用其他平台的上游内容时, Upstream Sync 根据来源配置选择的来源平台规则, 先把引用投影为 Codex 写法, 再进入语义三方合并. 转换由配置选择源平台, 代码不写死 Claude Code 到 Codex 的专用分支.
+统一来源采用 Codex 写法. 采用其他平台的上游内容时, Agent 在 Upstream Sync 审核中把采用的引用改写为 Codex 写法.
 
 Skill 身份只使用小写 ASCII 字母组成的非空段, 相邻段之间使用单个连字符.
 
@@ -116,7 +116,7 @@ Skill 身份后必须立即出现一个封闭终止符: ASCII 空格, 水平制�
 
 ### Human review
 
-发布前同步和 Upstream Sync 共用 Skill 引用分析和以下完整审核流程, 但各自提供并消费独立结果. 发布前同步的候选覆盖全部实际 Skill. Upstream Sync 的 Base 与 Theirs 各自从准确快照生成候选, 两者完全隔离, Theirs 不继承 Base.
+发布前同步使用 Skill 引用分析和以下完整审核流程, 候选覆盖全部实际 Skill.
 
 1. 调用方把当前准确输入产生的两个完整且有序的候选集合交给引用审核 `prepare`. `additional-skill-references.txt` 每行保存一个额外 Skill 身份. `skill-reference-normalizations.jsonl` 每行保存一个需要确认的引用位置. `prepare` 在当前 `.tmp` 工作区处理这些临时文件, 并在本轮临时结果中保留原始完整候选集合.
 2. 启动编辑器前, 调用 Agent 必须分别解释两个文件的内容, 保留或删除一行表示的决定, 以及该决定对平台投影的直接影响. 在第一份文件中保留一行, 表示确认该身份是当前范围外提供的真实 Skill, 并转换它的有效源码标记. 删除一行, 表示该身份不是 Skill, 它的标记保持原文. 在第二份文件中保留一行, 表示确认该位置是真实 Skill 引用. 投影会先补入一个终止空格, 再转换引用写法.
@@ -326,7 +326,7 @@ Repository Module 的单一只读 Interface 接受起始目录. 成功返回规�
 
 #### Reference review and distribution sync
 
-源码仓库引用审核 Interface 只实现前述完整审核流程. 发布前同步和 Upstream Sync 共用这个 Interface, 但分别提供自己的准确输入并消费自己的完成审核结果, 不共享临时文件, 哈希或候选配置目标.
+源码仓库引用审核 Interface 只实现前述完整审核流程. 发布前同步提供准确输入并消费完成审核结果.
 
 引用审核成功结果准确包含 `status`, `additionalSkillReferences`, `skillReferenceNormalizations`, `additionalSkillReferencesHash`, `skillReferenceNormalizationsHash` 和空 `diagnostics`. 格式错误的 JSONL, 非删除式编辑, 重排, 未取得必需的无变化确认或审核输入已变化返回 `blocked` 与完整 `diagnostics`, 不返回哈希, 不修改持久配置. 编辑器启动失败, 非零或信号退出, 临时审核文件读取或写入失败返回 `failed`, `stage` 和 `diagnostics`. 失败可以留下用户已编辑的临时文件, 但不产生业务持久写入; 调用工作流程重新执行完整审核.
 
@@ -460,7 +460,7 @@ flowchart TD
 
 目录枚举替代完整清单, 因为可投影内容已经拥有固定安全树和少量例外. 配置只保留无法从树或代码推导, 且用户可能调整的数据. 目录布局成为公开合同, 换取删除重复清单, 证据和 Role 元数据.
 
-Platform Adapter 同时拥有 Skill 引用分析和平台语法转换, 因为它们解释同一个平台格式差异. 发布前同步与 Upstream Sync 调用同一转换, 避免各自复制规则. Adapter 不取得持久写入责任.
+Platform Adapter 同时拥有 Skill 引用分析和平台语法转换, 因为它们解释同一个平台格式差异. 发布前同步与仓库工作流调用同一转换, 避免各自复制规则. Adapter 不取得持久写入责任.
 
 把静态平台投射和真实 Reviewer 运行分开, 可以保留双平台 Skill 与 Agent 文档安装而准确表达原生执行支持范围. 让投射验证负责实际模型, 会话或能力判断会使确定性安装依赖模型执行, 又复制产品运行权威; 当前选择保留静态格式与准确字节验证, 接受原生运行与能力另行核对的成本.
 
@@ -511,7 +511,7 @@ Markdown Visible Text Module 与 Document Language Analysis Module 保持独立,
 
 现有要求标识符 `ARW-DIST-001` 到 `ARW-DIST-018`, 以及 `ARW-PROJECTION-001` 到 `ARW-PROJECTION-008`, 由本文上述行为, Module Design 和 Validation `strategy` 定义.
 
-总长期规格只说明用户行为如何消费已安装 Workflow Distribution. 安装规格只说明如何复制载荷. Upstream Sync 规格只说明如何更新实际 Skill, 固定许可证目标和来源自身状态. 发布规格只说明如何验证和发布已经同步的候选内容.
+总长期规格只说明用户行为如何消费已安装 Workflow Distribution. 安装规格只说明如何复制载荷. Upstream Sync Skill 只说明如何更新实际 Skill, 许可证目标和来源自身状态. 发布规格只说明如何验证和发布已经同步的候选内容.
 
 ## Validation strategy
 

@@ -26,7 +26,7 @@ Workflow Distribution 不再使用完整的带类型清单, 也不再分别保�
 
 Upstream Sync 的 Ours 是源码仓库实际使用的 `.agents/skills/`. Base 与 Theirs 仍来自固定上游提交, 并继续经过用户审核的语义三方合并.
 
-`finalize` 只更新实际 Skill, 固定许可证目标和来源自身的同步状态. Workflow Distribution 在后续独立的发布前同步中派生, 不进入 Upstream Sync 的批准或恢复状态.
+Upstream Sync 只更新实际 Skill, 许可证目标和来源自身的配置与采用记录 (原 `finalize` 已随旧引擎删除, 见 [ADR 0011](0011-use-source-only-human-reviewed-upstream-sync.md)). Workflow Distribution 在后续独立的发布前同步中派生, 不进入 Upstream Sync 的批准或恢复状态.
 
 ## Rejected alternatives
 

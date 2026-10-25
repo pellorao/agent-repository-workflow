@@ -1,5 +1,7 @@
 # 使用仅供源码仓库运行且由用户审核的 Upstream Sync
 
+状态: 本决定中的 Upstream Sync 引擎 (同步工作区状态机, Review Revision, Approval Attestation, `finalize`/`abort`, 恢复授权, Sync Record 和 `HEAD` 检查点) 已由迁移 spec [`.scratch/0001-claude-code-migration/spec.md`](../../.scratch/0001-claude-code-migration/spec.md#rule-structure-and-context-budget) 取代: Upstream Sync 改为维护者显式调用的源码仓库专用 [`upstream-sync` Skill](../../.agents/skills/upstream-sync/SKILL.md), Agent 用 `scripts/upstream-sync.mjs` 生成 Base/Theirs/Ours 三方视图, 维护者逐批批准, 结果以 `source.json` 的固定提交, `adoptions.md` 和普通 Git 提交记录. 仅源码仓库运行, 不进入安装载荷, 维护者审核三方差异, 固定提交和来源范围继续有效.
+
 ## Decision
 
 Upstream Sync 只在 ARW 源码仓库运行, 不进入安装载荷或目标仓库的 `arw workflow update`. 它通过 `scripts/upstream-sync.mjs` 和一个外部 Upstream Sync Module, 对已配置来源执行用户审核的 Base/Ours/Theirs 语义三方合并. `docs/agents/upstream-sync.md` 固定 Agent 编排要求. [Upstream Sync 长期规格](../specs/agent-repository-workflow-upstream-sync/spec.md) 负责当前来源配置, 状态和公开操作的完整合同; [ADR 0022](0022-place-source-checkout-scripts-under-scripts.md#decision) 负责维护入口位置.
