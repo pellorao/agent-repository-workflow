@@ -42,9 +42,9 @@ ARW 是本地仓库工作流管理器. 它不自主发起 Agent 编码工作, �
 
 Spec Readiness 使用 `prepare -> independent review -> generate -> promote -> verify`. Engine 冻结完整治理输入, issue 中连续的交付结果, 要求选择与验收条件, 以及 Main Agent 选择的草稿路径, 并把 Reviewer Role 身份与哈希独立绑定到请求. 独立 Reviewer 在绑定路径写入语义问题, 完整审核没有问题时写入明确的无问题标记. Engine 从最终草稿推导完整的临时规范结果, Main Agent 只提升准确生成字节. issue 特定的 `verify` 核对当前设计的有效就绪结果. 首次就绪审核可以与已授权实施并行, 有效结果的完成, 审计与提交检查时点由[设计就绪工作流](../../../.agents/skills/spec-readiness/SKILL.md#authorization-timing)拥有.
 
-Spec Readiness 的结果生成与验证不判断开放语义, 原生会话控制和线程身份由共享 Reviewer 运行责任管理. 会话延续不等于准备度结果仍然有效: 任一治理输入, 审核对象, Reviewer Role 或结果绑定变化都会使旧记录失效. 审核对象是连续的 `## What to build`, `## Spec Requirement` 和 `## Acceptance criteria`. `Status:`, `## Blocked by`, `## Validation` 和 `## Comments` 不进入审核对象. 完整 issue 格式与阻断问题图由 ARW Artifact 清单和 Issue Gate 独立验证.
+Spec Readiness 的结果生成与验证不判断开放语义, 原生会话控制和线程身份由共享 Reviewer 运行责任管理. 会话延续不等于准备度结果仍然有效: 任一治理输入, 审核对象, Reviewer Role 或结果绑定变化都会使旧记录失效. `architecture-evidence` 是 issue 本身会修改的实现事实, 不属于这种绑定, 实施改动它不使记录失效. 审核对象是连续的 `## What to build`, `## Spec Requirement` 和 `## Acceptance criteria`. `Status:`, `## Blocked by`, `## Validation` 和 `## Comments` 不进入审核对象. 完整 issue 格式与阻断问题图由 ARW Artifact 清单和 Issue Gate 独立验证.
 
-Commit Audit 的准确调用条件只由通用提交工作流拥有. Commit Audit 适用时, Gate 1 和 Gate 2 由独立 `requirements-reviewer` (要求符合审核) 逐项审核冻结的完整已暂存候选内容, `code-standards-reviewer` 同时并行审核实施质量; 一次提交最多这两个并行 Reviewer. 每个提交只包含一个 effort, Main Agent 只暂存该 effort 的内容. `authorizingIssueIds` 可以包含该 effort 的多个 issue, 表示完整实施授权范围; Request 中的 Gate 1 范围只包含实际适用的终态转换子集. Gate 2 使用本次接受 issue 的有效 `## Spec Requirement` 并集. Reviewer 只填写 Engine 生成的要求清单并返回状态, Main Agent 调用 Engine 生成正式审核字节, 再按明确映射原样提升.
+Commit Audit 的准确调用条件只由通用提交工作流拥有. Commit Audit 适用时, Gate 1 和 Gate 2 由独立 `requirements-reviewer` (要求符合审核) 逐项审核冻结的完整已暂存候选内容, `code-standards-reviewer` 同时并行审核实施质量; 一次提交最多这两个并行 Reviewer. 每个提交只包含一个 effort, Main Agent 只暂存该 effort 的内容. `authorizingIssueIds` 可以包含该 effort 的多个 issue, 表示完整实施授权范围; Request 中的 Gate 1 范围只包含实际适用的终态转换子集. Gate 2 使用本次接受 issue 的有效 `## Spec Requirement` 并集. Reviewer 把发现的问题逐条写入 `prepare` 创建的 txt 报告, 没有问题时写 `No problems.`, 并返回状态; ARW 不生成或提升审核记录, 详见 [Commit Audit](#commit-audit).
 
 Gate 3 由 `code-review` Skill Package 拥有 Standards 与 Requirements 两个独立审核轴; 提交时 Requirements 轴由 Commit Audit 承担. Main Agent 优先使用各轴完整有效的已有结果; 需要新审查时, 只解析一次比较基线与完整变更路径集合, 执行一次过滤, 再把相同的不可变比较对象, 完整代码上下文, 纳入范围的路径和适用验证事实交给 Code Standards 与适用的 `requirements-reviewer`. Requirements 轴还取得明确的完整治理要求. 各轴按自己的实际完整输入判断有效性, 不因为另一轴的输入变化就自动失效, 具体版本与复审边界见 [Review versions and result validity](#review-versions-and-result-validity).
 
@@ -291,7 +291,7 @@ Reviewer 运行层完成报告与原生事实核对, 终端收尾和结果保存
 
 多个客户端同时进入时只能有一个管理进程取得该用户的所有权; 无法确认唯一所有者时不启动 App Server. 运行标识持续绑定原任务和原生线程, 使新连接不会把相同标识解释为另一任务.
 
-控制客户端的标准输入结束, 连接断开或工具进程退出只结束该连接, 已接受的后台任务继续执行. 保留期内的消息, 待处理请求和状态可从新连接查询, 原运行标识和原生线程身份不因客户端断开而失效. 管理进程按后台 Agent 创建时已绑定的角色策略处理 Codex 原生用户输入和审批请求, 通用控制层不解释四个 Reviewer 角色的审核业务规则. 允许人工交互的普通角色由管理进程将准确请求转给所属 Main; Main 取得真实决定后才通过 `respond` 提供原生合法响应, 管理进程不自动批准. Reviewer 专属层提供拒绝人工交互的策略, 管理进程对用户输入, 权限或 MCP 等原生请求给出该请求类型合法的拒绝响应, 让 Reviewer 在原生输入或结果中实际看到具体原因并继续当前回合; 对命令或文件审批使用继续回合的 `decline`, 不使用中断回合的 `cancel`, 不转交 Main 或用户代答, 也不允许通过公开 `respond` 绕过. 拒绝一项请求本身不停止审核或预先决定最终状态; 只有必要检查或报告确实无法完成时才按 Reviewer 合同返回说明具体不足的 `incomplete`. 原生运行环境或管理进程实际故障时, 返回可证实的状态与明确的不完整原因, 不把未完成工具或回合伪装为已恢复. 正常机器客户端退出返回 `0`, 不可恢复的启动或输入输出故障返回 `1`, 命令用法无效返回 `2`; 单条请求失败通过对应 JSON 响应表示, 不自动关闭其他运行.
+控制客户端的标准输入结束时, 机器会话先等全部未返回的请求 (含 `wait_agent`) 写出响应再关闭连接, 这样调用方可以用 "写入请求后关闭标准输入" 的一次性调用取得等待结果; `SIGINT` 或 `SIGTERM` 取消未完成的等待. 连接断开或工具进程退出只结束该连接, 已接受的后台任务继续执行. 保留期内的消息, 待处理请求和状态可从新连接查询, 原运行标识和原生线程身份不因客户端断开而失效. 管理进程按后台 Agent 创建时已绑定的角色策略处理 Codex 原生用户输入和审批请求, 通用控制层不解释四个 Reviewer 角色的审核业务规则. 允许人工交互的普通角色由管理进程将准确请求转给所属 Main; Main 取得真实决定后才通过 `respond` 提供原生合法响应, 管理进程不自动批准. Reviewer 专属层提供拒绝人工交互的策略, 管理进程对用户输入, 权限或 MCP 等原生请求给出该请求类型合法的拒绝响应, 让 Reviewer 在原生输入或结果中实际看到具体原因并继续当前回合; 对命令或文件审批使用继续回合的 `decline`, 不使用中断回合的 `cancel`, 不转交 Main 或用户代答, 也不允许通过公开 `respond` 绕过. 拒绝一项请求本身不停止审核或预先决定最终状态; 只有必要检查或报告确实无法完成时才按 Reviewer 合同返回说明具体不足的 `incomplete`. 原生运行环境或管理进程实际故障时, 返回可证实的状态与明确的不完整原因, 不把未完成工具或回合伪装为已恢复. 正常机器客户端退出返回 `0`, 不可恢复的启动或输入输出故障返回 `1`, 命令用法无效返回 `2`; 单条请求失败通过对应 JSON 响应表示, 不自动关闭其他运行.
 
 ### Background Agent Communication
 
@@ -479,7 +479,7 @@ Claude Code 原生 Reviewer 执行暂停, 静态 Skill 与 CLAUDE.md 投射, 安
 
 `prepare --issue` 从 `stdin` 或 `--input <temp-json-path>` 接受草稿路径与显式治理输入. 治理输入至少包含一个 `governing-spec` 或 `governing-prd`, 也可以包含适用的 ADR, 领域上下文或架构证据. Agent 指令与 Reviewer Role 正文不属于治理输入. 输入路径必须是安全的仓库相对普通文件, 且不能指向本地跟踪器 issue.
 
-`draftPath` 必须是当前 Main Agent 会话与 issue 的 `spec-readiness` 用途工作区内安全且尚不存在的绝对 `.txt` 路径. Engine 创建零字节草稿, 从 Canonical ID 定位准确 issue, 然后把以下内容绑定到不可变 Reviewer Request, 只返回请求路径:
+`draftPath` 必须是当前 Main Agent 会话与 issue 的 `spec-readiness` 用途工作区内安全且尚不存在的绝对 `.txt` 路径. 草稿也是 Reviewer 的绑定报告, 所在目录须满足 [Reviewer 运行规则](#reviewer-runtime) 的独立报告目录要求, 否则 `spawn_agent` 返回 `report-binding-invalid`. Engine 创建零字节草稿, 从 Canonical ID 定位准确 issue, 然后把以下内容绑定到不可变 Reviewer Request, 只返回请求路径:
 
 - 审核对象: 连续的 `## What to build`, `## Spec Requirement` 和 `## Acceptance criteria`.
 - 完整治理输入.
@@ -500,9 +500,9 @@ Reviewer 在完成全部适用检查和绑定文件写入后单独返回完成�
 
 审核后的结果按生成, 提升, 验证的顺序交接. 生成临时结果不等于把它写入工作记录, 写入工作记录也不等于已经取得实施授权.
 
-`generate --issue --input <draft-path>` 要求路径与活动请求完全相同. 普通审核中, 零字节或仅含空白的草稿失败, 不生成规范结果文件; 去除首尾空白后精确为 `No problems.` 时结果为 `satisfied`, 否则为 `gap`. Engine 不解析问题条目, 问题的有效性由 Main Agent 独立核对, Main Agent 每轮从 Reviewer 声称已检查的内容中抽查一两处. 正式结果使用模式版本 7, 不含检查项. 例外草稿必须包含明确理由和用户确认时间, issue 必须准确使用 `Not required`, 且用户确认不能推断. 普通结果与例外结果都绑定当前审核对象的规范化身份. 有效结果只在 Engine 管理的临时工作区生成规范结果文件并返回路径. `generate` 不写 `.scratch` 或基线.
+`generate --issue --input <draft-path>` 要求路径与活动请求完全相同. 普通审核中, 零字节或仅含空白的草稿失败, 不生成规范结果文件; 去除首尾空白后精确为 `No problems.` 时结果为 `satisfied`, 否则为 `gap`. Engine 不解析问题条目, 问题的有效性由 Main Agent 独立核对, Main Agent 每轮自选一两处 Reviewer 应当检查的要求或代码位置抽查. 正式结果使用模式版本 7, 不含检查项. 例外草稿必须包含明确理由和用户确认时间, issue 必须准确使用 `Not required`, 且用户确认不能推断. 普通结果与例外结果都绑定当前审核对象的规范化身份. 有效结果只在 Engine 管理的临时工作区生成规范结果文件并返回路径. `generate` 不写 `.scratch` 或基线.
 
-`promote --input <generated-path>` 在任何写入前重验 issue, 请求, 当前治理输入字节, 当前审核对象内容身份, 当前 Reviewer Role 字节, 结构, 路径归属和派生结果. 它是写 `.scratch/<NNNN>-<effort-slug>/issues/<NN>.spec-readiness.json` 和更新已完成基线的唯一边界. 有效的 `gap` 可以保存, 但不能满足最终就绪授权. 旧结构不能授权.
+`promote --input <generated-path>` 在任何写入前重验 issue, 请求, 当前治理输入字节 (`architecture-evidence` 除外, `verify` 同此), 当前审核对象内容身份, 当前 Reviewer Role 字节, 结构, 路径归属和派生结果. 它是写 `.scratch/<NNNN>-<effort-slug>/issues/<NN>.spec-readiness.json` 和更新已完成基线的唯一边界. 有效的 `gap` 可以保存, 但不能满足最终就绪授权. 旧结构不能授权.
 
 `verify --issue` 只读取该 issue 的伴随文件, 并重新检查当前治理输入, 当前 Reviewer Role 和当前 issue 的完整审核对象身份. 它通过与 `prepare`, `generate` 和 `promote` 相同的任务列表标记规范化规则派生当前身份, 并验证治理要求中仅路径引用的标题适用条件, 以及 issue 要求只引用已审核输入. 模式版本低于 7 的记录视为过期.
 
@@ -514,7 +514,7 @@ Main Agent 在仓库 `.tmp/` 下为每次审核建立独立 Request 目录. 固�
 
 Reviewer 只接收 Request 路径, 用只读 git 命令读取冻结的 Git 索引, 把发现的要求问题逐条写入 `review.txt` (每条写明位置, 影响和修正方向), 没有问题时写 `No problems.`, 然后只返回 `ready | incomplete`. `incomplete` 结束本轮并交回 Main Agent.
 
-提交门槛是两个 Reviewer 正常结束且报告中的问题都已处理. Main Agent 独立核对每个问题, 每轮从 Reviewer 声称已检查的内容中抽查一两处; 发现漏检时该轮结果作废并重审. ARW 不生成或提升审核记录.
+提交门槛是两个 Reviewer 正常结束且报告中的问题都已处理. Main Agent 独立核对每个问题, 每轮自选一两处 Reviewer 应当检查的要求或代码位置抽查; 发现漏检时该轮结果作废并重审. ARW 不生成或提升审核记录.
 
 `authorizingIssueIds` 使用本地数字 Canonical ID. Gate 1 覆盖本次新进入终态的 issue, 它们必须在授权范围内. Gate 2 文档只取已接受 issue 的有效 `## Spec Requirement` 并集, 每个文档必须是已暂存普通文件. 空并集需要用户明确确认具体理由和精确到秒的 UTC `confirmedAt`.
 
@@ -609,7 +609,7 @@ Main Agent 删除或替换与当前 Workflow Distribution 冲突的仓库自有�
 
 `arw terms check [--strict] [--include <repository-relative-directory>]... [--verbose] [--language-threshold <name>=<percentage>]...` 是任意 Git 仓库中可用的只读命令. 不带 `--strict` 时使用 `immediate` 模式; 准确的单个 `--strict` 使用 `release` 模式. `--include` 可以出现任意多次, 每次必须紧跟一个目录, 并且可以与 `--strict` 使用任意顺序. 它不提供短别名, `fix`, 候选树参数或其他公开 `release` 操作, 不要求 Repository Profile, `arw-lock.json`, `.scratch` 或已执行 `workflow init`. CLI 从当前目录发现最近的 Git 仓库根; Git 仓库外返回退出码 `1`, 重复 `--strict`, 缺少纳入目录, 多余参数或未知参数返回完整用法说明和退出码 `2`.
 
-Document Terms 从仓库根目录发现术语表. 根 `CONTEXT-MAP.md` 存在时只使用 map, 不回退到根 `CONTEXT.md`; map 不存在时使用根 `CONTEXT.md`; 两者都不存在时返回顶层 `terms-glossary-missing`, `path` 是 `.`, 不返回上下文, CLI 的标准输出为空并返回退出码 `1`. `CONTEXT-MAP.md` 必须有且只有一个准确 `## Contexts` 章节. 该章节只接受以 `- [<nonempty-label>](<target>)` 开始的列表项, 链接后可以有说明文字. 目标不接受链接标题, 查询参数, 片段, 百分号转义或空白, 可以有一个会被删除的开头 `./`; 其余路径组件必须非空且不能是 `.` 或 `..`. 目标不能是绝对路径, 反斜杠路径, NUL 路径或符号链接, 必须位于仓库内, 使用准确文件名 `CONTEXT.md`, 并在规范化后唯一且存在.
+Document Terms 从仓库根目录发现术语表. 根 `CONTEXT-MAP.md` 存在时只使用 map, 不回退到根 `CONTEXT.md`; map 不存在时使用根 `CONTEXT.md`; 两者都不存在时不返回上下文: `arw.config.json` 没有语言检查时没有可检查内容, 结果通过 (新初始化的仓库就是这种状态); 配置了语言检查时返回顶层 `terms-glossary-missing`, `path` 是 `.`, 退出码 `1`. `CONTEXT-MAP.md` 必须有且只有一个准确 `## Contexts` 章节. 该章节只接受以 `- [<nonempty-label>](<target>)` 开始的列表项, 链接后可以有说明文字. 目标不接受链接标题, 查询参数, 片段, 百分号转义或空白, 可以有一个会被删除的开头 `./`; 其余路径组件必须非空且不能是 `.` 或 `..`. 目标不能是绝对路径, 反斜杠路径, NUL 路径或符号链接, 必须位于仓库内, 使用准确文件名 `CONTEXT.md`, 并在规范化后唯一且存在.
 
 上下文路径的规范形式是使用 `/` 且没有开头 `./` 的仓库相对路径. Map 声明顺序按该规范形式保留, 标准输出, 标准错误和 Module 结果通过 `JSON.stringify` 表达该值. 缺失或重复 `## Contexts`, 空清单或章节内存在非空非列表内容时产生一个无位置 `context-map-invalid`. 非法, 重复, 缺失或不受支持的列表目标在对应行产生 `column=1` 的 `context-map-invalid`. Module 收集全部 map 发现项后结束发现, 不返回部分上下文结果. Map 发现项省略 `context`, 并使用 `path="CONTEXT-MAP.md"` 定位来源.
 
@@ -713,7 +713,7 @@ Profile 规范化返回完整规范 Profile 或验证诊断. 无效结果不包�
 
 Document Repository Interface 只包含 `listPaths() -> Promise<string[]>` 和 `readEntries(paths) -> Promise<DocumentEntry[]>`. `listPaths()` 返回稳定排序且无重复的规范仓库相对路径. `readEntries(paths)` 只接受排序且无重复的路径, 返回数量相同且保持请求顺序的封闭条目. 普通文件条目包含准确 `path`, Git 模式和 `bytes`; 其他条目只把该路径分类为 `missing | symbolic-link | unreadable | unsupported`. Adapter 无法形成完整清单或完整请求结果时抛出异常, Document Terms Module 把它转换为现有关闭式结果, 不从部分条目继续分析.
 
-产品公开的 `checkDocumentTerms(...)` 接受绝对 `repositoryRoot` 和封闭请求. 合法请求使用 `{mode: "immediate", source: {kind: "working-tree"}}`, `{mode: "release", source: {kind: "working-tree"}}` 或 `{mode: "release", source: {candidateTree, kind: "candidate-tree"}}`; 每种请求都可以增加可选 `include` 目录数组和 `languageThresholds` 数组, 后者每项是 `{name, minPercentage}`; 省略与空数组等价. `candidateTree` 是规范完整 Git 树对象 ID. `mode: "immediate"` 与候选树的组合无效. Document Terms Module 对合法请求只打开一个与 `{repositoryRoot, request}` 绑定的完整 Document Repository. 有效结果准确包含 `{contexts, diagnostics, languageComposition, languageChecks, source, status}`, 其中结果 `source` 是已验证请求的独立副本. `languageComposition` 是按 `path` 排序且无重复的行数组, 每行准确包含 `{path, chinese, english, other}`. 三个比例字段是已经舍入到一位小数的数值, 或在没有可统计字符时共同为 `null`. 顶层 `diagnostics` 只保存仓库, `arw.config.json`, `.arwignore`, 术语表发现, map 或纳入目录级发现项. `contexts` 按 map 声明顺序排列, 每项准确包含 `{context, diagnostics, status, summary}`; `context` 是规范仓库相对 `CONTEXT.md` 路径, `summary` 准确包含 `{diagnostics, documents, globalTerms, localTerms, uses}`. 顶层 `status` 只在顶层或任一上下文有发现项时为 `failed`. 根 `CONTEXT-MAP.md` 和 `CONTEXT.md` 同时缺失时返回 `status: "failed"`, 空 `contexts`, 空 `languageComposition` 和准确的 `[{code: "terms-glossary-missing", path: "."}]` 诊断信息. 模式, 来源与纳入目录选择不成为用户配置或持久状态; CLI 只能选择工作树来源.
+产品公开的 `checkDocumentTerms(...)` 接受绝对 `repositoryRoot` 和封闭请求. 合法请求使用 `{mode: "immediate", source: {kind: "working-tree"}}`, `{mode: "release", source: {kind: "working-tree"}}` 或 `{mode: "release", source: {candidateTree, kind: "candidate-tree"}}`; 每种请求都可以增加可选 `include` 目录数组和 `languageThresholds` 数组, 后者每项是 `{name, minPercentage}`; 省略与空数组等价. `candidateTree` 是规范完整 Git 树对象 ID. `mode: "immediate"` 与候选树的组合无效. Document Terms Module 对合法请求只打开一个与 `{repositoryRoot, request}` 绑定的完整 Document Repository. 有效结果准确包含 `{contexts, diagnostics, languageComposition, languageChecks, source, status}`, 其中结果 `source` 是已验证请求的独立副本. `languageComposition` 是按 `path` 排序且无重复的行数组, 每行准确包含 `{path, chinese, english, other}`. 三个比例字段是已经舍入到一位小数的数值, 或在没有可统计字符时共同为 `null`. 顶层 `diagnostics` 只保存仓库, `arw.config.json`, `.arwignore`, 术语表发现, map 或纳入目录级发现项. `contexts` 按 map 声明顺序排列, 每项准确包含 `{context, diagnostics, status, summary}`; `context` 是规范仓库相对 `CONTEXT.md` 路径, `summary` 准确包含 `{diagnostics, documents, globalTerms, localTerms, uses}`. 顶层 `status` 只在顶层或任一上下文有发现项时为 `failed`. 根 `CONTEXT-MAP.md` 和 `CONTEXT.md` 同时缺失时返回空 `contexts` 和空 `languageComposition`: 没有语言检查时 `status: "passed"` 且没有诊断信息; 有语言检查时 `status: "failed"` 和准确的 `[{code: "terms-glossary-missing", path: "."}]` 诊断信息. 模式, 来源与纳入目录选择不成为用户配置或持久状态; CLI 只能选择工作树来源.
 
 `languageChecks` 准确包含 `{checks, status, uncovered}`. `status` 是 `configured` 或 `unconfigured`, `uncovered` 是未覆盖文档的规范路径数组. 每个 `checks` 项完整保存 `{name, language, minPercentage, include, exclude, effectiveMinPercentage, documents, summary}`. `documents` 按路径排序, 每项是 `{path, status}`, 状态为 `passed`, `failed` 或 `indeterminate`; `summary` 是对应的 `{passed, failed, indeterminate}` 计数. 缺省 `exclude` 形成空数组. 实际比例由同一对象的 `languageComposition` 按路径提供, 与是否详细显示无关. 候选树请求从该树同时取得配置和文档, 不回退工作树配置.
 
@@ -826,7 +826,7 @@ Agent CLI Launch Module 隐藏子进程复杂性, 但不成为 Agent 编排器. 
 
 Temporary Workspace Module 独立验证主机身份并构造 `.tmp/` 路径, 优先让所有临时审核和事务材料使用同一仓库与会话范围. 允许调用方任意选择系统临时目录会失去 issue 和会话隔离, 增加锁和自动清理又会建立当前没有的生命周期. 当前选择接受临时内容不自动清理, 调用方必须显式提供已经验证的 Platform Adapter 身份的成本.
 
-Commit Audit Module 独立于实施 Module 和 Reviewer, 优先从实时 Git 暂存区读取准确候选并机械物化完整 Request, 再检查 Reviewer 逐项填写的清单. 清单由程序生成, Reviewer 只填结论和定位, 使机械检查覆盖每项要求且 Reviewer 输出最短. Main Agent 手工拼接每个 Gate 会复制派生规则, Reviewer 生成正式文件会混合语义审核与机械写入, 提交后再审核又失去提交前阻断能力. 固定本轮完整输入而允许源工作树继续已授权写入, 可以利用审核等待而不增加候选来源. 当前选择接受 Main Agent 准确交接, 新版本影响核对及必要替代审核的成本.
+Commit Audit Module 独立于实施 Module 和 Reviewer, 优先从实时 Git 暂存区读取准确候选并机械物化完整 Request, 再由 Reviewer 把发现的问题用自然语言逐条写进 txt 报告, 没有问题时只写 `No problems.`; ARW 不生成或提升审核记录, 提交门禁是 Reviewer 正常结束且问题都已处理. 在已知缺陷场景的对比中, 默认 Reviewer 模型在这种最轻格式下的检出率不低于程序生成的逐项清单, 而输出和核对成本更低; 代价是报告不再证明每项要求都被检查, 漏检只能由 Main Agent 每轮抽查一两处发现; 当前接受这一覆盖证据的损失, 场景较易, 后续实际审核中继续观察. Main Agent 手工拼接每个 Gate 会复制派生规则, Reviewer 生成正式文件会混合语义审核与机械写入, 提交后再审核又失去提交前阻断能力. 固定本轮完整输入而允许源工作树继续已授权写入, 可以利用审核等待而不增加候选来源. 当前选择接受 Main Agent 准确交接, 新版本影响核对及必要替代审核的成本.
 
 差异复审保留原 Reviewer 自己已经完成且未受影响的覆盖, 可以减少重复判断, 同时每轮完整输入和完整报告保持当前结果的可核对性. 把历史覆盖判断留给 Reviewer, 把候选及记录差异比较留给 Main Agent, 可以避免 Engine 伪装成任意代码语义检查器. 明确记录章节的非要求身份使正常收尾不反复触发审核, 但新的真实失败仍削弱相应结论, 不成为降低证据责任的例外. 这些边界复用已有请求, 临时材料及 Git 对象, 不需要调度器, 覆盖登记或新增持久格式.
 

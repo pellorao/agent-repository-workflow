@@ -63,6 +63,7 @@ test('a new Claude session runs one restricted turn and later turns resume it', 
         assert.equal(created.args[created.args.indexOf(flag) + 1], value, flag);
     }
     assert.equal(created.args.at(-1), `Edit(/${join(f.directory, 'reports')}/**)`);
+    assert.ok(created.args.includes('--safe-mode'));
     assert.equal(resumed.args[resumed.args.indexOf('--resume') + 1], threadId);
     assert.ok(!resumed.args.includes('--session-id'));
     assert.equal((await root(session, threadId)).usage.totalTokens, 38);

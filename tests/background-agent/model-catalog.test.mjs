@@ -230,3 +230,10 @@ test('a generated catalog is never overwritten before its prior process exit is 
   await assert.rejects(catalog.prepare(), /already exists/);
   assert.equal(await readFile(generatedPath, 'utf8'), 'prior process catalog');
 });
+
+test('a missing Codex home leaves no providers for Claude Reviewers but still fails the Codex catalog', async t => {
+  const home = await createTemporaryDirectory(t, 'arw-model-no-codex-');
+  const catalog = createSharedModelCatalog({runtimeDirectory: await createPrivateRuntimeDirectory(home), environment: () => ({HOME: home}), platform: 'linux'});
+  assert.deepEqual(await catalog.getProviders(), {});
+  await assert.rejects(catalog.prepare(), /Codex home and model catalog sources are missing/);
+});

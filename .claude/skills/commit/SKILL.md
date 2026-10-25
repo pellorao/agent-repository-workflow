@@ -21,7 +21,7 @@ name: commit
 
 1. 确定完整排序的 `authorizingIssueIds`, 按 `code-review` 的 [完成记录](../code-review/result-reuse.md#completion-records) 规则更新真实的 Status 和验收勾选, 暂存完整实施候选. 必要实施验证按 `validation` Skill, 可以与审核并行; 未完成的检查不提供通过事实.
 2. 按 [Run](#run) 准备 Request, 并行启动两个 Reviewer: `requirements-reviewer` (要求符合审核) 和 `code-review` Skill 的 Code Standards 轴. 一次提交最多这两个并行 Reviewer.
-3. 两个 Reviewer 正常结束 (`ready`) 后, 按 `docs/agents/subagent-findings.md` 独立核对报告中的每个问题. 每轮从 Reviewer 声称已检查的内容中抽查一两处; 发现漏检时该轮结果作废并重审. Reviewer 返回 `incomplete` 时本轮结束, Main Agent 处理其原因后重新 `prepare`.
+3. 两个 Reviewer 正常结束 (`ready`) 后, 按 `docs/agents/subagent-findings.md` 独立核对报告中的每个问题. 每轮自选一两处 Reviewer 应当检查的要求或代码位置抽查; 发现漏检时该轮结果作废并重审. Reviewer 返回 `incomplete` 时本轮结束, Main Agent 处理其原因后重新 `prepare`.
 4. 修复后重新暂存并在新目录 `prepare`. 复审只交付相邻版本的变化及影响范围和该 Reviewer 的前轮报告 ([复审规则](../../../docs/agents/reviewer.md#re-review)); 某个 Reviewer 的输入没有受影响时保留其结果.
 5. 按 [记录章节](../issue-tracking/SKILL.md#issue-record-sections) 规则统一暂存收尾记录, 机械核对它相对受审候选的差异. 只有记录差异不需要复审.
 6. 提交门槛是两个 Reviewer 正常结束且报告中的问题都已处理 (修正, 或按质疑规则证明无效). 未完成 issue 的问题只在确属计划中尚未完成的工作时保留. 运行 `arw commit-audit verify` 并取得空错误列表.

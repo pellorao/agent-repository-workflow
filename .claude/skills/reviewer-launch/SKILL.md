@@ -9,8 +9,9 @@ Reviewer 的审核行为由 [Reviewer 责任](../../../docs/agents/reviewer.md) 
 
 平台差异:
 
-- Codex: 通过命令工具启动无附加参数的 `arw background-agent`, 保留该进程的工具会话, 逐行写入 JSONL 请求并读取响应和通知. 管理进程在共享 Codex App Server 中为每个 Reviewer 创建独立根线程, 不占用 Main Agent 的原生子 Agent 槽位, 不用原生子 Agent 工具代替该入口.
-- Claude Code: Bash 工具不保留可续写的进程会话, 每次操作单独运行一次 `arw background-agent`, 用 heredoc 把本次的 JSONL 请求写入标准输入; 进程在标准输入结束且响应写出后退出, 管理进程和已启动的审核继续运行. 标准输入结束会取消未返回的 `wait_agent`, 因此等待时保持输入打开, 如 `{ printf '%s\n' "$REQUEST"; sleep <timeout_ms 对应秒数>; } | arw background-agent`, 超时后用新 `cursor` 再次等待. 未选择 `anthropic` 的 Reviewer 设置在这里默认用 Claude 后端 `haiku` 和 `high`. 不用 Claude Code 原生 subagent 代替独立 Reviewer.
+- Codex: 通过命令工具启动无附加参数的 `arw background-agent`, 保留该进程的工具会话, 逐行写入 JSONL 请求并读取响应和通知. PTY 规范模式会截断超过约 4 KB 的单行输入, 写入 `spawn_agent` 等长请求前先在该会话运行 `stty -echo -icanon`; 也可以把请求写入临时文件后单独运行 `arw background-agent < <request.jsonl>`. 管理进程在共享 Codex App Server 中为每个 Reviewer 创建独立根线程, 不占用 Main Agent 的原生子 Agent 槽位, 不用原生子 Agent 工具代替该入口.
+- Claude Code: Bash 工具不保留可续写的进程会话, 每次操作单独运行一次 `arw background-agent`, 用 heredoc 或临时文件 (`arw background-agent < <request.jsonl>`) 把本次的 JSONL 请求写入标准输入. 标准输入结束后, 进程先等全部未返回的请求 (含 `wait_agent`) 写出响应再退出, 管理进程和已启动的审核继续运行; 长时间等待可放进后台命令, 超时后用新 `cursor` 再次等待. 未选择 `anthropic` 的 Reviewer 设置在这里默认用 Claude 后端 `haiku` 和 `high`. 不用 Claude Code 原生 subagent 代替独立 Reviewer.
+- 两个平台: `wait_agent` 的 `timeout_ms` 必须在 `10000` 到 `3600000` 之间; 同一个 `arw background-agent` 进程内的请求 `id` 不能重复, 重复时返回 `background-agent-request-duplicate`.
 
 ## Fix the review version
 
@@ -21,9 +22,9 @@ Reviewer 的审核行为由 [Reviewer 责任](../../../docs/agents/reviewer.md) 
 
 ## Machine operations
 
-`arw background-agent` 是共享后台进程的 JSONL 客户端, 使用 UTF-8 JSONL 请求, 响应和通知 ([后台 Agent 控制](../../../docs/specs/agent-repository-workflow/spec.md#background-agent-control)). 连接断开或标准输入结束后, 已启动的审核继续执行, 保留期内的消息可在重新连接后取得.
+`arw background-agent` 是共享后台进程的 JSONL 客户端, 每行一个 `{id, operation, input}` 请求, 使用 UTF-8 JSONL 请求, 响应和通知. 连接断开或标准输入结束后, 已启动的审核继续执行, 保留期内的消息可在重新连接后取得.
 
-1. 按 [Reviewer 运行规则](../../../docs/specs/agent-repository-workflow/spec.md#reviewer-runtime) 为报告分配独立临时目录并创建空报告文件. 审核输入, 冻结请求, 执行规则副本和恢复记录放在该目录之外.
+1. 为报告分配一个独立临时目录, 其中只放本轮的空报告文件; 该目录就是 `writePaths`. 审核输入, 冻结请求, 执行规则副本和恢复记录 (`stateDirectory`) 放在该目录之外. 目录里有其他文件, 或报告不在该目录中时, `spawn_agent` 返回 `report-binding-invalid`.
 2. 调用 `spawn_agent`, `input` 提供:
    - `role`: Canonical Role ID.
    - `identity`: 普通审核为 `{kind: "ordinary", issueIds: [...]}`, `issueIds` 完整排序.
@@ -46,7 +47,7 @@ Reviewer 的审核行为由 [Reviewer 责任](../../../docs/agents/reviewer.md) 
 | `messages` | `runId` 和可选的 `direction`, `limit`, `beforeMessageId`; 回复不确定时据此决定等待, 重发或报告不确定 |
 | `interrupt_agent` | `runId` 与当前 `turnId`; 中断活动工作或结束等待用户的暂停任务, 保留运行环境与原线程 |
 
-- 回执超时或连接失败时, 按 [消息交付规则](../../../docs/specs/agent-repository-workflow/spec.md#background-agent-communication) 查询最近消息, 不自动重发.
+- 回执超时或连接失败时, 不自动重发: 用 `messages` 查询发给该 Reviewer 的最近消息, 再决定等待, 重发或报告结果不确定. 查不到记录不能单独证明发送失败.
 - 工具会话丢失后重新连接, 用 `list_agents` 和 `cursor` 观察, 再按需 `wait_agent`. 原线程或原有路径与设置无法恢复时明确失败, 不静默新建线程.
 - 从 `completion` 取得结果后读取绑定报告. 空报告或残留草稿不是有效结果; 收尾失败时按具体原因处理.
 

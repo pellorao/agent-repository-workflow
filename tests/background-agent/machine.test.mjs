@@ -57,13 +57,13 @@ test('wait returns one update batch while independent instructions remain usable
     await flush();
     assert.equal(peer.responses[1].id,'instruction');
     assert.equal(cancelled,false);
-    input.end();
+    peer.signals.emit('SIGTERM');
     assert.equal(await machine,0);
     assert.equal(cancelled,true);
     assert.deepEqual(operations,['send_message']);
 });
 
-test('machine session accepts later instructions while waits remain active and closes them at EOF', async () => {
+test('machine session accepts later instructions while waits remain active and lets them finish after EOF', async () => {
     const peer = capture();
     const input = new PassThrough();
     /** @type {Array<{operation: string, input: Record<string, unknown>}>} */
@@ -100,9 +100,12 @@ test('machine session accepts later instructions while waits remain active and c
     input.write(request('wait-two', 'wait_agent', {runId: 'run', cursor: 1, timeout_ms: 60000}));
     await flush();
     input.end();
+    await flush();
+    assert.equal(closes, 0);
+    finishWait?.({status: 'succeeded', result: {state: 'completed', cursor: 2, notifications: []}});
     assert.equal(await running, 0);
     assert.equal(closes, 1);
-    assert.deepEqual(peer.responses.at(-1), {id: 'wait-two', ok: false, error: {code: 'runtime-closed', message: 'Runtime closed.'}});
+    assert.deepEqual(peer.responses.at(-1), {id: 'wait-two', ok: true, result: {state: 'completed', cursor: 2, notifications: []}});
     assert.equal(peer.diagnostics(), '');
 });
 

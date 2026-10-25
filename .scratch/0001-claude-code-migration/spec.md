@@ -120,7 +120,7 @@ ARW 由 Codex 开发和维护, 现在改由 Claude Code 维护, 并且今后 ARW
   - 规则面向默认 Reviewer 配置 (luna xhigh, haiku high) 编写, 先采用较轻的格式: 要求清单由程序生成, Reviewer 为每条填写结论和证据定位, 只有 `gap` 和 `uncertain` 写说明; 程序机械检查每项都有结论, 证据定位真实存在.
   - 格式放到多低由 Reviewer 能力测试决定: 用已知缺陷的测试场景比较轻格式下各默认模型的检出率, 检出率下降的模型恢复必要的复述要求. 测试至少包含最轻的一档: 不要求格式化输出, Reviewer 只把找到的问题用自然语言逐条写进一个 txt 文件. 若最终采用这一档, 提交门禁改为 "Reviewer 正常结束且问题都已处理", 不再由程序生成逐条要求记录.
   - 实测结论 (ticket 10): luna xhigh 和 haiku high 在最轻一档下检出率不低于清单格式, 采用最轻一档, 两个模型都不需要复述要求. 场景较易, 证据偏弱, 后续实际审核中继续观察.
-- Main Agent 每轮从 Reviewer 声称已检查的内容中抽查一两处; 发现漏检时, 该轮结果作废并重审.
+- Main Agent 每轮自选一两处 Reviewer 应当检查的要求或代码位置抽查; 发现漏检时, 该轮结果作废并重审.
   - 三个 Reviewer (要求符合, 代码质量, Spec Readiness) 都使用 txt 报告, 无问题时写 `No problems.` (ticket 14).
 - Haiku Gate 2 观察: Main Agent 发现某个问题本应在已通过的 Gate 2 中被发现时, 在该 effort 的 spec 末尾记录一行. 累计记录作为调整 Reviewer 模型的依据, 不建立额外机制.
 
@@ -144,6 +144,55 @@ ARW 由 Codex 开发和维护, 现在改由 Claude Code 维护, 并且今后 ARW
   - 在用户级 `~/.claude/CLAUDE.md` 加一句 "项目规则与本文件冲突时以本文件为准".
   - 删除临时规则.
   - 在真实的 Claude Code 和 Codex 会话中各跑一次 "实现一个 issue 并提交" 的完整流程.
+
+### Smoke follow-ups
+
+ticket 13 冒烟后的日常使用修正, 预期结果如下:
+
+- 分发的 Skill 和 Baseline 规则只链接目标仓库中存在的文件. 原先链接 Source Checkout 长期规格的地方, 把 Agent 需要的规则直接写在原处, 或删除链接.
+- `reviewer-launch` 和 `spec-readiness` Skill 写明报告目录约束: 报告目录只含本轮绑定报告并作为 `writePaths`, Spec Readiness 的 `draftPath` 位于 issue 临时工作区内的这样一个子目录, Request, Input, 规则副本和 `stateDirectory` 放在目录外; 违反时 `spawn_agent` 返回 `report-binding-invalid`. 长期规格 Spec Readiness 准备章节的 `draftPath` 合同同时写明这一要求.
+- `reviewer-launch` 写明 `wait_agent` 的 `timeout_ms` 必须在 `10000` 到 `3600000` 之间, 同一 `arw background-agent` 进程内重复的请求 `id` 被拒绝 (`background-agent-request-duplicate`).
+- `reviewer-launch` 的 Codex 用法写明 PTY 规范模式会截断约 4 KB 以上的单行请求, 写入前运行 `stty -echo -icanon`, 或用文件重定向单独调用.
+- 没有 `CONTEXT.md`, `CONTEXT-MAP.md` 且 `arw.config.json` 未配置语言检查时 (新初始化仓库的默认状态), `arw terms check` 以退出码 `0` 通过并说明没有可检查的术语; 配置了语言检查但没有术语表时仍返回 `terms-glossary-missing`. 长期规格 Document Terms 章节中两处描述这一场景的句子都按此条件写.
+- `arw background-agent` 标准输入结束时, 先等全部未返回的请求 (含 `wait_agent`) 写出响应再退出; `SIGINT` 和 `SIGTERM` 仍取消等待 (用户决定, 2026-10-26). `reviewer-launch` 删除 `sleep` 绕法.
+- Spec Readiness 的新鲜度只绑定设计 Input (`governing-spec`, `governing-prd`, `adr`, `domain-context`), Reviewer Role 和审核对象. `architecture-evidence` 是 issue 本身要修改的实现事实, `promote` 和 `verify` 不检查它的字节, 实施后不需要复审. 实现事实的变化都在提交候选中: 要求符合审核逐项核对 issue 要求, 并把要求范围之外的行为写成问题; Code Standards 审核检查同一候选的实施质量. 未被要求的架构事实变化因此在提交前被拦下. 不需要 ADR: 只缩小新鲜度检查范围, 不新增持久状态, 字段或权威来源, 恢复这项检查即可撤销.
+- 长期规格 Commit Audit Module 设计理由段中 "清单由程序生成, Reviewer 只填结论和定位" 改为: Reviewer 把问题逐条写进 txt 报告, 没有问题时写 `No problems.`, ARW 不生成或提升审核记录, 提交门禁是 Reviewer 正常结束且问题都已处理. 理由直接写在该段: 已知缺陷场景对比中, 默认 Reviewer 模型在最轻格式下检出率不低于逐项清单, 成本更低 (见上文 `Review workflow` 的实测结论). 长期规格不引用本 effort 的记录. Reviewer 不再写已检查内容, 因此长期规格和 `commit`, `spec-readiness` Skill 中的抽查改为 Main Agent 自选一两处 Reviewer 应当检查的要求或代码位置.
+- 本仓库 `docs/agents/subagent-allocation.md` 的仓库自有区域在 Codex 映射外补充 Claude Code 映射: 智力需求低, 中, 高分别用 `haiku`, `sonnet`, `opus`; 低, 中, 高努力对 `haiku` 和 `sonnet` 是 `low`, `medium`, `high`, 对 `opus` 是 `medium`, `high`, `xhigh`.
+- Claude 后端 Reviewer 只使用 ARW 交付的 `instructions` 和 handoff, 不加载任何 `CLAUDE.md` (项目, 祖先目录和用户级), auto memory, hook, plugin, 用户或项目 settings 和 MCP 配置. 先实测当前参数实际加载的上下文, 再在后端启动参数中强制排除.
+- 冒烟后修正: 没有 Codex home 时, Claude 后端 Reviewer 仍可启动; 只有需要 Codex 模型目录的 Codex 后端失败.
+- 修复后在隔离目标仓库, 用一个约 150 到 300 行, 带 spec 和测试的真实 issue, 在 Claude Code 和 Codex 各完整运行一次 "实现并提交", 记录墙钟耗时, Reviewer 会话与轮数, Main 工具调用数和卡住之处, 作为 ticket 16 的对比基线.
+
+## Module Design
+
+### Modules
+
+- **Claude 后端** (`lib/background-agent/claude-sessions.mjs`): 新增. 每个 Reviewer 回合运行一次 headless `claude -p`, 把 stream-json 事件转成后台 Agent 管理 Module 已有的通知. 隐藏会话续接, 启动参数, 权限限制和上下文排除.
+- **后端路由** (`lib/arw-background-agent-host.mjs`): 按解析后的 Reviewer 设置把会话交给 Codex 后端或 Claude 后端. 不负责设置解析, 也不持有会话状态. 共享 App Server 生命周期, 模型目录和 Strata key 租约仍只属于 Codex 后端.
+- **Projection** (`lib/workflow-distribution/` 与 `scripts/project-claude-skills.mjs`): 从 `.agents/skills/` 生成 `.claude/skills/` 和 `CLAUDE.md`.
+- **公共工具** (`lib/common/`): 负责与领域无关, 被两个以上 Module 使用的通用函数 (JSON 与摘要等纯函数, 以及文件系统和 Git 进程的薄封装) 和外部输入的声明式结构校验函数. 不负责任何 ARW 领域规则, 不持有状态; 只被一个 Module 使用的函数留在该 Module 内.
+
+### Interfaces
+
+- Claude 后端实现现有 `NativeSessions` 接口, 不改变它. Claude 后端没有常驻服务, 它自己的 `ensureServer` 是空操作, `observeServer` 返回 `absent`, 两个 Adapter 满足同一接口. 管理 Module 只在打开 Codex 会话前调用 `ensureServer`, 打开 Claude 会话时跳过, 所以 Claude 回合不依赖 Codex 运行环境; `observeServer` 只在关闭共享 App Server 时调用. 共享服务只属于 Codex, 因此路由把这两项转给 Codex 后端, 只把 `open` 按设置分派, `close` 先结束全部 Claude 回合再关闭 Codex 后端. 跟进是续接会话的新回合, 中断是结束进程. 失败结果沿用 `NativeSessions` 已有的回合状态: 回合只在进程以 `0` 退出且取得 `is_error: false` 的最终结果事件时为 `completed`; 其余情况 (`claude` 无法启动, 非零退出, `is_error`, 流截断或进程被外部终止而没有结果事件) 都为 `failed`, 无法解析的输出行被忽略, 不自动重试, 由 Main Agent 按 `reviewer-launch` 决定跟进或重新启动; 运行中追加指令和客户端请求应答直接拒绝.
+- `arw background-agent` JSONL 机器接口和 `arw lba` 输出不变. 唯一行为变化是标准输入结束时先等未返回的请求写出响应 (见 `Smoke follow-ups`).
+- Projection 的输入是 `.agents/skills/` 与平台列表, 输出是平台目录中的文件; `--check` 只比较不写入.
+
+### Seams and Adapters
+
+- `NativeSessions` 是后端 Seam, Codex App Server 和 `claude -p` 是两个 Adapter; 测试用假的 `claude` 可执行文件观察启动参数和事件转换.
+- 平台差异只在 Projection 配置和后端路由两处.
+
+### Dependencies and Data Flow
+
+后台 Agent 管理 Module -> 后端路由 -> Codex 后端或 Claude 后端. Claude 后端只依赖 `claude` 可执行文件, ARW 配置读取 (`lib/arw-common/config.mjs`) 和用量计量 (`usage.mjs`), 不依赖 Codex 后端代码. 后端只由解析后 Reviewer 设置的 `modelProvider` 决定 (`anthropic` 用 Claude 后端), 设置解析包括 ADR-0032 规定的调用平台默认值; 路由不另看调用方平台. Claude 会话标识 (`threadId`) 与其他后端一样写在 `stateDirectory` 的恢复记录中, 由后台 Agent 管理 Module 持有, 重启后从该记录续接; 会话内容由 `claude` 自己保存在 Reviewer HOME 下. 凭据只从用户级配置读取, 每回合注入子进程环境, 不写入持久设置.
+
+### Module Design Rationale
+
+复用 `NativeSessions` 让管理, 恢复和计量逻辑不分平台; 每回合一个 `claude -p` 进程用会话续接代替常驻服务, 换取没有 Claude 专用生命周期代码, 代价是不支持运行中追加指令. Projection 保持单一 Skill 来源, 避免两份规则漂移. 公共工具只收被两个以上 Module 使用的函数: 替代方案是每个 Module 保留自己的副本, 已被 `Code reduction` 拒绝, 因为副本会各自漂移; 接受的成本是使用方与公共函数签名耦合, 公共函数因此只放无领域规则, 签名稳定的通用函数. 路由放在管理进程入口而不是管理 Module 或各后端内: 管理 Module 只认 `NativeSessions`, 后端彼此不知道对方; 代价是入口多一个很小的分派对象. 后端由设置而不是调用平台直接决定, 使同一配置在两个平台得到同一 Reviewer; 平台默认值只影响设置解析, 记录在 ADR-0032.
+
+### ADR Evaluation
+
+Claude Code Reviewer 执行和后台管理范围由 ADR-0032 记录, 它取代 ADR-0016 的暂停决定并修订 ADR-0030 的管理范围. 其余变化不新增持久状态或权威来源, 不需要 ADR.
 
 ## Testing Decisions
 
