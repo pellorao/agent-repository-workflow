@@ -52,6 +52,13 @@ test('Reviewer settings resolve by role and field with explicit Standard and iso
     assert.deepEqual(resolveReviewerSettings({role: 'commit-audit-reviewer', globalConfig, repositoryConfig}), {
         model: 'gpt-6-luna', modelProvider: 'openai', reasoningEffort: 'xhigh', serviceTier: 'default',
     });
+    assert.deepEqual(resolveReviewerSettings({role: 'commit-audit-reviewer', globalConfig, repositoryConfig, platform: 'claude-code'}), {
+        model: 'haiku', modelProvider: 'anthropic', reasoningEffort: 'high', serviceTier: 'default',
+    });
+    const claude = {reviewers: {'commit-audit-reviewer': {model: 'sonnet', modelProvider: 'anthropic'}}};
+    assert.deepEqual(resolveReviewerSettings({role: 'commit-audit-reviewer', globalConfig: claude, repositoryConfig, platform: 'claude-code'}), {
+        model: 'sonnet', modelProvider: 'anthropic', reasoningEffort: 'xhigh', serviceTier: 'default',
+    });
 });
 
 test('Global default completion preserves existing JSON text and rejects malformed known fields', () => {

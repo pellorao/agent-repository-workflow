@@ -1,5 +1,7 @@
 # 使用统一 Reviewer 配置与独立运行入口
 
+状态: 本决定中 "Claude Code 原生 Reviewer 执行暂停" 及只用共享 Codex App Server 运行 Reviewer 的部分已由 [ADR 0032](0032-run-claude-reviewers-through-headless-claude.md) 取代, 其余决定继续有效.
+
 本决定拥有规范 Reviewer Role, 两级用户配置, Reviewer 专属审核规则及其与独立后台运行入口的责任边界. [ADR 0026](0026-use-source-checkout-workflow-files-as-distribution-authority.md#decision) 拥有实际工作流来源与统一 Skill 投影配置; 通用 Repository-owned 初始文件仍由 Workflow Distribution 的配置声明. [ADR 0030](0030-use-user-wide-background-agent-management.md) 记录跨调用方后台 Agent 的架构选择; 准确控制和安装生命周期由 [产品规格](../specs/agent-repository-workflow/spec.md#background-agent-control) 与 [安装规格](../specs/agent-repository-workflow-installation/spec.md#background-agent-management) 拥有, 本决定不复制该通用合同.
 
 ## Context

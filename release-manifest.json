@@ -55,6 +55,7 @@
     "lib/arw-common/temporary-workspace.mjs",
     "lib/arw-common/text-policy.mjs",
     "lib/arw.mjs",
+    "lib/background-agent/claude-sessions.mjs",
     "lib/background-agent/client.mjs",
     "lib/background-agent/codex-app-server.mjs",
     "lib/background-agent/codex-consumption.mjs",
