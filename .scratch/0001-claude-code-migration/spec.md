@@ -114,6 +114,12 @@ ARW 由 Codex 开发和维护, 现在改由 Claude Code 维护, 并且今后 ARW
   - 代码质量审核: 即 Code Standards, 职责中增加 "指出可删除的代码": 未使用的通用性, 对内部数据的校验, 没有现实失败场景的错误处理, 改动行数超出预算.
 - Gate 2 effort 级审计时机不变, 在 effort 的全部实施 issue 进入终态时运行.
 - 任何复审只看改动部分及其影响范围; 未受影响的有效结论保留.
+- Reviewer 输出格式减负, 同时防止 "没查完就说查完":
+  - 要求清单由程序生成: Engine 从 issue 和 spec 中列出每条要求 (带来源行) 写成待填清单, Reviewer 只为每条填写结论 (`satisfied`, `gap`, `uncertain`) 和一个证据定位, 不再自己抄写来源行, 简述要求或编写严格 JSON.
+  - 只有 `gap` 和 `uncertain` 需要写问题说明和修复建议; `satisfied` 只要一个证据定位.
+  - 完整性由程序机械检查: 清单每一项都有结论, 每个证据定位指向受审版本中真实存在的文件和行. 未填或定位无效的项使结果判为不完整, 而不是靠格式严格程度逼 Reviewer 完成.
+  - Main Agent 每轮从 `satisfied` 项中抽查一到两项的证据; 发现证据不支持结论时, 该轮结果作废并重审.
+  - 代码质量审核保持现有的 "只列问题" Markdown 格式.
 - Haiku Gate 2 观察: Main Agent 发现某个问题本应在已通过的 Gate 2 中被发现时, 在该 effort 的 spec 末尾记录一行. 累计记录作为调整 Reviewer 模型的依据, 不建立额外机制.
 
 ### Code reduction

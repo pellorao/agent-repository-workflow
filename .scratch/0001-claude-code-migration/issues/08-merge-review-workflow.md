@@ -4,7 +4,7 @@ Status: ready-for-agent
 
 ## What to build
 
-Code Spec 与 Commit Audit Gate 1 合并为要求符合审核, Code Standards 增加指出可删除代码的职责并重申最高原则, 两者并行. 复审只看改动部分及其影响范围. Spec Readiness 只在 spec 定稿时审核, `verify` 只在提交前运行. Gate 2 时机不变, spec 末尾记录 Haiku Gate 2 漏报. 规则和引擎代码一起修改.
+Code Spec 与 Commit Audit Gate 1 合并为要求符合审核, Code Standards 增加指出可删除代码的职责并重申最高原则, 两者并行. 复审只看改动部分及其影响范围. Spec Readiness 只在 spec 定稿时审核, `verify` 只在提交前运行. Gate 2 时机不变, spec 末尾记录 Haiku Gate 2 漏报. 规则和引擎代码一起修改. 按 spec 简化 Reviewer 输出格式: 程序生成要求清单, Reviewer 只填结论和证据定位, 程序机械检查完整性和定位有效性, Main Agent 抽查 `satisfied` 项.
 
 预估改动: 约 ±400 行.
 
@@ -17,6 +17,7 @@ Governing requirements:
 ## Acceptance criteria
 
 - [ ] 一次提交最多两个并行 Reviewer.
+- [ ] Reviewer 不再编写严格 JSON; 漏填或定位无效的清单项使结果判为不完整.
 - [ ] 复审只交付改动部分, 未受影响的结论保留.
 - [ ] 相关测试通过, 被删流程的代码和测试已删除.
 
