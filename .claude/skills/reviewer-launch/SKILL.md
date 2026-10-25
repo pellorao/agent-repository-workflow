@@ -10,7 +10,7 @@ Reviewer 的审核行为由 [Reviewer 责任](../../../docs/agents/reviewer.md) 
 平台差异:
 
 - Codex: 通过命令工具启动无附加参数的 `arw background-agent`, 保留该进程的工具会话, 逐行写入 JSONL 请求并读取响应和通知. 管理进程在共享 Codex App Server 中为每个 Reviewer 创建独立根线程, 不占用 Main Agent 的原生子 Agent 槽位, 不用原生子 Agent 工具代替该入口.
-- Claude Code: Bash 工具不保留可续写的进程会话, 每次操作单独运行一次 `arw background-agent`, 用 heredoc 把本次的 JSONL 请求写入标准输入, 读完响应后进程随标准输入结束退出, 管理进程和已启动的审核继续运行. 长时间等待用带 `timeout_ms` 的 `wait_agent` 分次调用. 未选择 `anthropic` 的 Reviewer 设置在这里默认用 Claude 后端 `haiku` 和 `high`. 不用 Claude Code 原生 subagent 代替独立 Reviewer.
+- Claude Code: Bash 工具不保留可续写的进程会话, 每次操作单独运行一次 `arw background-agent`, 用 heredoc 把本次的 JSONL 请求写入标准输入; 进程在标准输入结束且响应写出后退出, 管理进程和已启动的审核继续运行. 标准输入结束会取消未返回的 `wait_agent`, 因此等待时保持输入打开, 如 `{ printf '%s\n' "$REQUEST"; sleep <timeout_ms 对应秒数>; } | arw background-agent`, 超时后用新 `cursor` 再次等待. 未选择 `anthropic` 的 Reviewer 设置在这里默认用 Claude 后端 `haiku` 和 `high`. 不用 Claude Code 原生 subagent 代替独立 Reviewer.
 
 ## Fix the review version
 
@@ -31,11 +31,11 @@ Reviewer 的审核行为由 [Reviewer 责任](../../../docs/agents/reviewer.md) 
    - `handoff`: 所属审核工作流要求的全部审查输入.
    - `cwd`: 当前 Git 仓库根目录. 省略 `readPaths`; 如果传入, 只能包含该仓库内的路径.
    - `writePaths`: 只含实际存在的报告目录. `reportPath`: 准确报告文件, 必须属于 `writePaths`. 不放入 `~/.codex` 等仓库外路径.
-   - `stateDirectory`. 只在需要原生附加配置或隔离实例覆盖时提供 `settings`.
+   - `stateDirectory`: 已存在的会话临时目录, 不在 `writePaths` 内. 只在需要原生附加配置或隔离实例覆盖时提供 `settings`.
 
    所有路径都是绝对路径. 普通审核的 `model`, `modelProvider`, `reasoningEffort` 和 `serviceTier` 由用户配置 `config.json` 和仓库 `arw.config.json` 中该角色的字段逐项覆盖形成, Main Agent 不选择或覆盖; 只有 Reviewer Capability 和基准的隔离实例可以在 `settings` 中覆盖. `settings.config` 不保存明文凭据. Agent 协作由运行入口强制禁用.
 3. 回执只证明管理进程已经登记本轮. 保存 `runId`, `recoveryPath`, 首次交接的 `messageId` 和 `accepted`, 再用 `list_agents` 或 `wait_agent` 取得 `threadId`, `turnId` 和运行状态; 不重复发送首次工作指示.
-4. 复审时准备复审输入和新的空报告, 使用同一角色, 同一 issue 身份集合和 `stateDirectory` 调用 `followup_task`, 管理进程按需恢复原线程. 只有 issue 身份集合改变, 原线程不可用或不可恢复, 或用户明确要求时, 才使用 `newThread` 创建替代线程; 字节, 哈希或结论变化不构成理由. 首次启动不继承发起者的对话.
+4. 复审时准备复审输入和新的空报告, 使用 `runId` 加与 `spawn_agent` 相同的完整字段 (含 `instructions`), 同一角色, 同一 issue 身份集合和 `stateDirectory` 调用 `followup_task`, 管理进程按需恢复原线程. 只有 issue 身份集合改变, 原线程不可用或不可恢复, 或用户明确要求时, 才使用 `newThread` 创建替代线程; 字节, 哈希或结论变化不构成理由. 首次启动不继承发起者的对话.
 
 | 操作 | 用法 |
 | --- | --- |
