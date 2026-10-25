@@ -402,6 +402,25 @@ Main Agent
 
 A Reviewer Role is a temporary Agent started by the current workflow, not an external program launched by `arw agent start` from the global `config.json`. The two have no name mapping or shared session. Independent reviews add waiting time and model usage, so they run only at their relevant stages; in return, the judgment comes from someone separate from the implementer.
 
+### Use a third-party model for Claude Reviewers
+
+In Claude Code, a Reviewer whose `modelProvider` is `"anthropic"` runs through headless `claude -p`. To use a third-party model that serves the Anthropic API, add `env` to that role in the `config.json` of the ARW installation directory; these variables are injected into every `claude -p` turn:
+
+```json
+"reviewers": {
+  "code-spec-reviewer": {
+    "model": "my-model",
+    "modelProvider": "anthropic",
+    "env": {
+      "ANTHROPIC_BASE_URL": "https://models.example.com",
+      "ANTHROPIC_AUTH_TOKEN": "<token>"
+    }
+  }
+}
+```
+
+Because `env` may hold credentials, it is accepted only in the user-level `config.json`. If a repository's `arw.config.json` contains `env`, configuration validation fails and the Reviewer does not start.
+
 ## Included Skills
 
 `arw workflow init` installs applicable Skills for the platforms selected by the user. Codex uses `.agents/skills` in the target repository; Claude Code uses `.claude/skills`. A Skill is a set of task-specific operating instructions. You can name one directly in a conversation, for example, `Use $grill-with-docs to confirm the requirements with me`.

@@ -402,6 +402,25 @@ Reviewer 只对绑定的输入独立判断, 不选择工作范围, 不替用户�
 
 这些 Reviewer 是当前平台在同一工作流中启动的临时 Agent, 不是全局 `config.json` 里由 `arw agent start` 启动的外部程序. 两者没有名称映射或共享 session. 独立审核会增加等待时间和模型用量, 因而只在对应阶段运行, 但它换来的是与实现者分离的判断来源.
 
+### 让 Claude Reviewer 使用第三方模型
+
+在 Claude Code 中, Reviewer 设置的 `modelProvider` 为 `"anthropic"` 时由 headless `claude -p` 运行. 要改用兼容 Anthropic API 的第三方模型, 在 ARW 安装目录的 `config.json` 中给对应角色加 `env`, 每轮启动 `claude -p` 时注入这些环境变量:
+
+```json
+"reviewers": {
+  "code-spec-reviewer": {
+    "model": "my-model",
+    "modelProvider": "anthropic",
+    "env": {
+      "ANTHROPIC_BASE_URL": "https://models.example.com",
+      "ANTHROPIC_AUTH_TOKEN": "<token>"
+    }
+  }
+}
+```
+
+`env` 可能含凭据, 只能写在用户级 `config.json` 中. 仓库的 `arw.config.json` 出现 `env` 时配置校验失败并拒绝启动 Reviewer.
+
 ## 附带技能
 
 `arw workflow init` 根据用户选择的平台安装适用 Skills. Codex 使用目标仓库中的 `.agents/skills`, Claude Code 使用 `.claude/skills`. Skill 是 Agent 在特定任务中遵循的操作说明; 用户可以在对话中直接点名, 例如 `使用 $grill-with-docs 和我确认需求`.

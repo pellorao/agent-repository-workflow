@@ -7,7 +7,7 @@ import {join} from 'node:path';
 let prompt = '';
 for await (const chunk of process.stdin) prompt += chunk;
 const args = process.argv.slice(2);
-if (process.env.FAKE_CLAUDE_LOG) appendFileSync(process.env.FAKE_CLAUDE_LOG, `${JSON.stringify({args, cwd: process.cwd(), prompt})}\n`);
+if (process.env.FAKE_CLAUDE_LOG) appendFileSync(process.env.FAKE_CLAUDE_LOG, `${JSON.stringify({args, cwd: process.cwd(), prompt, baseUrl: process.env.ANTHROPIC_BASE_URL})}\n`);
 const sessionId = args[args.indexOf(args.includes('--resume') ? '--resume' : '--session-id') + 1];
 const projects = join(process.env.CLAUDE_CONFIG_DIR ?? '', 'projects', process.cwd().replace(/[^A-Za-z0-9]/g, '-'));
 mkdirSync(projects, {recursive: true});
