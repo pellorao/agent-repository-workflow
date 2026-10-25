@@ -11,9 +11,10 @@ Status: ready-for-agent
 3. `reviewer-launch` 没写 `wait_agent` 超时低于 10000 ms 和重复 request id 会被拒绝.
 4. Codex 中 PTY canonical 模式会截断长 JSONL 请求 (需 `stty -echo -icanon`): 在 Codex 用法中写明, 或让入口不依赖长单行.
 5. 新初始化的仓库上 `arw terms check` 失败 (没有术语表, 语言检查未配置): 初始化后的默认状态应能通过.
+7. 用户决定 (2026-10-26): `arw background-agent` 标准输入结束时, 先等未返回的 `wait_agent` 等响应写出再退出, 不再取消; 删除 `reviewer-launch` 中的 `sleep` 绕法.
 6. ready 记录绑定到实现文件, 实施后必须再复审一轮: 绑定只覆盖设计文档 (spec, issue), 不覆盖实现文件.
 
-预估改动: 约 80 行.
+预估改动: 约 100 行.
 
 ## Spec Requirement
 
@@ -23,7 +24,7 @@ Governing requirements:
 
 ## Acceptance criteria
 
-- [ ] 上述 6 项逐项修复或写明不修的理由.
+- [ ] 上述 7 项逐项修复或写明不修的理由.
 - [ ] 全量测试和分发检查通过.
 
 ## Blocked by
