@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
+    checkShape,
     deleteJsonPath,
     digestJson,
     jsonSemanticallyEqual,
@@ -96,4 +97,14 @@ test('JSON Module preserves default field order while semantic operations ignore
     }, {format: 'compact'});
     assert.equal(written.status, 'succeeded');
     assert.equal(writtenBytes?.toString('utf8'), '{"z":1,"a":{"y":2,"x":3}}');
+});
+
+test('checkShape reports the first missing key, wrong type, or failed predicate', () => {
+    /** @type {import('../../lib/common/json.mjs').Shape} */
+    const shape = {count: 'positive-integer', nested: {name: 'string'}, tag: (/** @type {unknown} */ value) => value === 'x'};
+    assert.equal(checkShape({count: 1, nested: {name: 'a'}, tag: 'x'}, shape), null);
+    assert.equal(checkShape({count: 1, tag: 'x'}, shape, 'input'), 'input must contain exactly: count, nested, tag.');
+    assert.equal(checkShape({count: 0, nested: {name: 'a'}, tag: 'x'}, shape), 'value.count must be a positive-integer.');
+    assert.equal(checkShape({count: 1, nested: {name: 2}, tag: 'x'}, shape), 'value.nested.name must be a string.');
+    assert.equal(checkShape({count: 1, nested: {name: 'a'}, tag: 'y'}, shape), 'value.tag is invalid.');
 });
