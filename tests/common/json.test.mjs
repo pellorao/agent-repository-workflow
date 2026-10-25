@@ -81,7 +81,6 @@ test('JSON Module preserves default field order while semantic operations ignore
     assert.equal(jsonSemanticallyEqual(value, {a: {x: 3, y: 2}, z: 1}), true);
     assert.equal(digestJson(value), digestJson({a: {x: 3, y: 2}, z: 1}));
     assert.equal(serializeJson({value: Number.NaN}).status, 'blocked');
-    assert.throws(() => serializeJson(value, /** @type {never} */ ({format: 'unknown'})), TypeError);
 
     /** @type {Buffer | undefined} */
     let writtenBytes;

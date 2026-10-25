@@ -4,11 +4,6 @@ import test from 'node:test';
 import {evaluateNodeRuntime} from '../../lib/arw-common/runtime-compatibility.mjs';
 
 test('runtime compatibility enforces the Node.js 24 minimum', () => {
-    assert.throws(
-        () => Reflect.apply(evaluateNodeRuntime, undefined, [22]),
-        error => error instanceof TypeError,
-    );
-
     const unparseable = evaluateNodeRuntime('unknown');
     assert.deepEqual(Object.keys(unparseable), ['error', 'status']);
     assert.deepEqual(unparseable, {

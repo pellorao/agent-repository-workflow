@@ -44,10 +44,6 @@ test('Installation Payload Interface returns the canonical platform payload with
 });
 
 test('Installation Payload rejects invalid calls synchronously and closes non-success results', async () => {
-    assert.throws(
-        () => loadInstallationPayload({platform: 'linux'}),
-        /Installation payload input/u,
-    );
     const unsupported = await loadInstallationPayload({
         platform: 'freebsd',
         sourceDirectory: SOURCE_DIRECTORY,

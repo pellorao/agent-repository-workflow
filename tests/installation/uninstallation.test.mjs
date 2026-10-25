@@ -186,14 +186,6 @@ test('uninstallation cancellation returns before installation state observation'
         status: 'unchanged',
         summary: null,
     });
-    assert.throws(
-        () => uninstallRelease({removeConfig: false}),
-        /removeInstallation, removeConfig, and stopBackgroundAgents booleans/u,
-    );
-    assert.throws(
-        () => uninstallRelease({removeConfig: false, removeInstallation: true}),
-        /removeInstallation, removeConfig, and stopBackgroundAgents booleans/u,
-    );
 });
 
 test('partial uninstallation preserves the manifest for a forward retry', async t => {

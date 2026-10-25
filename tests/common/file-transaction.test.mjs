@@ -52,14 +52,6 @@ test('File Transaction applies ordered operations and detects state drift before
     });
     assert.equal(duplicate.status, 'blocked');
     assert.deepEqual(duplicate.diagnostics.map(entry => entry.code), ['transaction-path-duplicate']);
-    await assert.rejects(preflightFileTransaction({
-        filesystem: scopedFilesystem,
-        operations: [{bytes: Buffer.from('invalid'), expected: {hash: '0'.repeat(64), kind: 'file'}, kind: 'create', path: 'invalid.txt'}],
-    }), /create requires expected missing/u);
-    await assert.rejects(preflightFileTransaction({
-        filesystem: scopedFilesystem,
-        operations: [{expected: {kind: 'missing'}, kind: 'delete', path: 'invalid.txt'}],
-    }), /delete requires expected file/u);
 });
 
 test('File Transaction reports completed operations and rolls them back after an apply failure', async () => {

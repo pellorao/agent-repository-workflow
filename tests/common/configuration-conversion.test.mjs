@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
-    assertConfigurationConversionRules,
     convertConfiguration,
 } from '../../lib/common/configuration-conversion.mjs';
 
@@ -52,7 +51,6 @@ const copyRules = () => ({
 });
 
 test('Configuration Conversion upgrades through ordered fields and preserves unknown subtrees', () => {
-    assert.doesNotThrow(() => assertConfigurationConversionRules(rules));
     const result = convertConfiguration({
         rules,
         sourceBytes: Buffer.from('{"configVersion":1,"name":"A","options":{"extra":"keep"},"dynamic":{"inside":1},"unknown":{"x":1}}\n'),

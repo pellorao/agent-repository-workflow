@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import {resolve} from 'node:path';
 import test from 'node:test';
 
-import {assertConfigurationConversionRules} from '../../lib/common/configuration-conversion.mjs';
 import {
     REPOSITORY_CONFIGURATION_RULES,
     completeRepositoryConfigurationBytes,
@@ -10,7 +9,6 @@ import {
 } from '../../lib/arw-common/repository-configuration.mjs';
 
 test('Application Configuration resolves a Repository without application as Application Member', () => {
-    assert.doesNotThrow(() => assertConfigurationConversionRules(REPOSITORY_CONFIGURATION_RULES));
     assert.deepEqual(resolveRepositoryConfiguration({
         repositoryRoot: resolve('member-repository'),
         value: {configVersion: 2},

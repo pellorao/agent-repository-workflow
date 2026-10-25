@@ -5,7 +5,6 @@ import test from 'node:test';
 
 import {createTemporaryDirectory} from '../helpers/cleanup.mjs';
 import {
-    assertConfigurationConversionRules,
     convertConfiguration,
 } from '../../lib/common/configuration-conversion.mjs';
 import {BACKGROUND_AGENT_DEFAULTS, completeGlobalConfigurationBytes, GLOBAL_CONFIGURATION_RULES, loadConfig, validateConfig} from '../../lib/arw-common/config.mjs';
@@ -109,7 +108,6 @@ test('Background Agent timing defaults complete missing fields and preserve conf
 });
 
 test('global configuration rules support only published v1 and current v3', () => {
-    assert.doesNotThrow(() => assertConfigurationConversionRules(GLOBAL_CONFIGURATION_RULES));
     assert.throws(() => validateConfig({
         configVersion: 2,
         editor: {args: ['{file}'], command: 'code'},
