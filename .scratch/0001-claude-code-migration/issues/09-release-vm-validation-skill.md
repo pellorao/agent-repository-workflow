@@ -1,6 +1,6 @@
 # release VM 验证改为不自动触发的 Skill
 
-Status: in-progress
+Status: completed
 
 ## What to build
 
