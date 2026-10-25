@@ -75,7 +75,7 @@ Platform Adapter 与操作无关且只读. 它解释共用 Projection 配置, �
 
 然后运行定向测试, 完整的 `pnpm typecheck` 和 `pnpm test`, 适用的 `node --check`, `node arw.mjs text check`, 使用当前 issue 实际 effort 目录的 `node arw.mjs terms check --include .scratch/<NNNN>-<effort-slug>/`, 以及 `git diff --check`.
 
-除 Codex Reviewer Capability Conformance 外, 实时平台行为只用于可选的回归诊断. 只有当前发布工作流表明候选内容影响规范 Reviewer Role, Reviewer 面向的审计合同或 Codex Reviewer 启动行为, 且用户选择 `run` 时, 才要求发布关卡. Claude Code 支持要求确定性的 Skill 与 `CLAUDE.md` 投射字节, Workflow Distribution 构建, Platform Projection 和变异验证, 不要求实时 Agent 或原生会话测试.
+实时平台行为只用于可选的回归诊断; Reviewer 能力测试由维护者显式调用 `$reviewer-capability` Skill. Claude Code 支持要求确定性的 Skill 与 `CLAUDE.md` 投射字节, Workflow Distribution 构建, Platform Projection 和变异验证, 不要求实时 Agent 或原生会话测试.
 
 ## Release boundary
 

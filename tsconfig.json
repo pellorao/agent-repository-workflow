@@ -11,5 +11,5 @@
     "types": ["node"]
   },
   "include": ["**/*.mjs"],
-  "exclude": ["node_modules", ".tmp"]
+  "exclude": ["node_modules", ".tmp", "tests/fixtures/reviewer-capability"]
 }

@@ -11,8 +11,6 @@ import {
     generateSpecReadiness,
     prepareSpecReadiness,
     promoteSpecReadiness,
-    readCompleteSpecReadinessCapabilityDraft,
-    readCompleteSpecReadinessReviewerDraft,
     readSpecReadinessEvidenceSources,
     verifySpecReadiness,
 } from '../../lib/spec-readiness/spec-readiness.mjs';
@@ -318,34 +316,6 @@ test('frozen evidence sources bind the exact request and never read current Inpu
         }),
         /request path is outside the allowed temporary workspace/i,
     );
-});
-
-test('Capability report parsing preserves invalid evidence and judgments without authorizing formal generation', async t => {
-    const repositoryRoot = await createRepository(t);
-    const prepared = await prepare(repositoryRoot);
-    const finding = {
-        check: 'SPEC-READINESS-INPUTS',
-        evidence: ['.scratch/0001-workflow/spec.md:1'],
-        finding: 'The governing Input set has a problem.',
-        result: 'gap',
-    };
-    await writeFile(prepared.draftPath, `${JSON.stringify(finding)}\n`, 'utf8');
-    const request = {inputPath: prepared.draftPath, issueId: 'issue:0001:01', repositoryRoot, requestPath: prepared.path};
-
-    await assert.rejects(readCompleteSpecReadinessReviewerDraft(request), /requires evidence/i);
-    const parsed = await readCompleteSpecReadinessCapabilityDraft(request);
-    const parsedFinding = parsed.checks[0]?.findings?.[0];
-    assert.ok(parsedFinding);
-    assert.deepEqual(parsedFinding.evidence, finding.evidence);
-    assert.ok('reportDiagnostics' in parsed);
-    assert.equal(parsed.reportDiagnostics[0]?.code, 'review-evidence-invalid');
-
-    await writeFile(prepared.draftPath, `${JSON.stringify({...finding, evidence: []})}\n`, 'utf8');
-    const missingEvidence = await readCompleteSpecReadinessCapabilityDraft(request);
-    assert.equal(missingEvidence.checks[0]?.findings?.[0]?.finding, finding.finding);
-    assert.deepEqual(missingEvidence.checks[0]?.findings?.[0]?.evidence, []);
-    assert.ok('reportDiagnostics' in missingEvidence);
-    assert.equal(missingEvidence.reportDiagnostics[0]?.code, 'review-evidence-invalid');
 });
 
 test('prepare activation failure removes the new request and preserves the prior active request', async t => {

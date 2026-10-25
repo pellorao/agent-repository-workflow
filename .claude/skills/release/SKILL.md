@@ -12,7 +12,6 @@ disable-model-invocation: true
 
 1. 读取 `package.json` 的 `version`, 向维护者提问: `是否确认对 <version> 版本进行发布验证?`. 只有明确肯定才继续. 如果维护者说版本不对, 停止, 由另一个 issue 修改 `package.json`.
 2. 确认 `<version>` 高于 `git tag --merged HEAD` 中的全部稳定版本 tag, 并确认 `<version>` tag 在本地和 `git ls-remote --tags origin <version>` 中都不存在.
-3. 询问本次是否运行 Reviewer Capability Conformance, 只接受 `skip` 或 `run`. 选择 `run` 时按 [Reviewer Capability Validation](../../../docs/agents/reviewer-capability-validation.md) 执行.
 
 ## 2. Check the candidate locally
 

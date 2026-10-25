@@ -1,0 +1,5 @@
+interface:
+  display_name: "Reviewer Capability"
+  short_description: "Test Reviewer roles against seeded scenarios"
+policy:
+  allow_implicit_invocation: false

@@ -39,7 +39,7 @@ ARW 源码仓库不作为自身 Workflow Distribution 的目标仓库. Repositor
 
 普通开发直接修改这些位置. `distribution/` 是发布前同步派生并由用户审核的安装载荷, 不是日常编写来源. `docs/licenses/arw/` 中不匹配 `LICENSE.<source-id>` 的其他直接文件不是 Workflow Distribution 的实际许可证来源, 也不因位于该目录而自动进入载荷. Upstream Sync 只更新 `.agents/skills/`, 固定许可证目标和自己的来源状态. 每次采用 Skill 及其许可证时都把固定许可证目标纳入更新. 安装, 仓库工作流和源码仓库发布都不反向修改实际来源.
 
-仅供 Source Checkout 使用的 `$reviewer-benchmark` Skill 不属于共享工作流载荷, 发布前同步不把它写入 Workflow Distribution, 安装和平台投射不把它带入目标仓库. 它的操作规则由该 Skill 单独拥有, 本文只拥有源码限定的分发边界, 不复制基准操作流程.
+仅供 Source Checkout 使用的 `$reviewer-capability` Skill 不属于共享工作流载荷, 发布前同步不把它写入 Workflow Distribution, 安装和平台投射不把它带入目标仓库. 它的操作规则由该 Skill 单独拥有, 本文只拥有源码限定的分发边界, 不复制能力测试流程.
 
 Code Map 是否适用于目标仓库由 Repository Profile 决定, 不通过是否分发 `code-maps` Skill 来表达.
 

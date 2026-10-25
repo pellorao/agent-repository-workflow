@@ -88,7 +88,7 @@ ARW Artifact 操作使用最近的 Git 仓库中的 `.scratch`.
 
 # Source Checkout Validation
 
-- 测试命令: `pnpm test`, `pnpm typecheck`, `node scripts/check-workflow-distribution.mjs`. 确定性覆盖和完整验证命令见 `docs/agents/source-checkout-validation.md`; 定向或发布 Reviewer Capability Conformance 见 `docs/agents/reviewer-capability-validation.md`; 发布验证和发布只在维护者显式调用 `$release` Skill 时进行.
+- 测试命令: `pnpm test`, `pnpm typecheck`, `node scripts/check-workflow-distribution.mjs`. 确定性覆盖和完整验证命令见 `docs/agents/source-checkout-validation.md`; Reviewer 能力测试只在维护者显式调用 `$reviewer-capability` Skill 时进行; 发布验证和发布只在维护者显式调用 `$release` Skill 时进行.
 - 单个测试回调耗时阈值为 100 毫秒.
 - 非发布流程不判断 `distribution/**` 中分发副本的语言结果; 发布流程仍检查候选分发文档.
 - 不对本仓库运行 `arw workflow init|update|verify|remove`; 它是 Workflow Distribution 的创作源. Source Checkout 验证使用 Workflow Distribution 的生产检查, Repository Workflow 验证使用隔离的目标仓库.

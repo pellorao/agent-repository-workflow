@@ -1,6 +1,6 @@
 # 使用统一 Reviewer 配置与独立运行入口
 
-状态: 本决定中 "Claude Code 原生 Reviewer 执行暂停" 及只用共享 Codex App Server 运行 Reviewer 的部分已由 [ADR 0032](0032-run-claude-reviewers-through-headless-claude.md) 取代, 其余决定继续有效.
+状态: 本决定中 "Claude Code 原生 Reviewer 执行暂停" 及只用共享 Codex App Server 运行 Reviewer 的部分已由 [ADR 0032](0032-run-claude-reviewers-through-headless-claude.md) 取代; 发布 Reviewer Capability Conformance 部分已由[按需能力测试](../specs/agent-repository-workflow-release/spec.md#reviewer-capability-tests)取代. 其余决定继续有效.
 
 本决定拥有规范 Reviewer Role, 两级用户配置, Reviewer 专属审核规则及其与独立后台运行入口的责任边界. [ADR 0026](0026-use-source-checkout-workflow-files-as-distribution-authority.md#decision) 拥有实际工作流来源与统一 Skill 投影配置; 通用 Repository-owned 初始文件仍由 Workflow Distribution 的配置声明. [ADR 0030](0030-use-user-wide-background-agent-management.md) 记录跨调用方后台 Agent 的架构选择; 准确控制和安装生命周期由 [产品规格](../specs/agent-repository-workflow/spec.md#background-agent-control) 与 [安装规格](../specs/agent-repository-workflow-installation/spec.md#background-agent-management) 拥有, 本决定不复制该通用合同.
 
@@ -41,22 +41,6 @@ Reviewer 自己完成审核, 与用户沟通的 Main Agent 只提供工作指示
 四种 Role 的后续复审按[当前版本与结果有效性合同](../specs/agent-repository-workflow/spec.md#review-versions-and-result-validity)默认检查相邻版本差异及关联影响. 自己已经完成的前轮原始报告和准确绑定输入可以证明历史覆盖, 当前语义证据仍取自完整当前输入. Reviewer 保留旧问题及未完成检查, 必要的全盘复审给出具体理由, 每轮亲自写入完整新报告. 可靠原线程与历史材料帮助减少重复审核, 不替代当前有效结果, 也不赋予通用后台管理程序历史语义覆盖或审核顺序的判断责任.
 
 Reviewer 自行读取适用 Agent 指令, 指令不属于治理证据或审核对象. Reviewer 亲自把完整报告写入本轮绑定的文件, 最终平台状态只表示完整交付或不完整及适用理由. 共享 Reviewer 运行 Module 控制原生会话, 在启动模型回合前确认没有仍活动或会参与本轮的子 Agent, 并核对实际运行事实; 已结束且不参与本轮的历史线程不阻断可靠原线程复用. 既有 Engine 从报告机械生成正式结果, 再沿既有边界提升和验证. 两者不代写 Reviewer 的语义结论, 安装或外部 CLI 启动成功不成为运行能力证明.
-
-源码仓库发布的 Reviewer Capability Conformance 使用共享 App Server 中独立的 Reviewer 根线程. 封闭的触发清单把共同 Reviewer 责任, 规范 Reviewer Role, 面向 Reviewer 的审计模式, 以及影响 Codex 的 Reviewer 工作流变化映射到受影响身份. 仅改变 Claude Code 的 Skill 或 `CLAUDE.md` 投射不产生实时移交, 只经过静态格式, 准确字节, 分发构建, 平台投射和变更检测的确定性验证.
-
-一次完整准备冻结发布候选, 为每个受影响 Reviewer 的每个场景生成 3 个准确绑定且相互隔离的交接. 每个能力场景是已经准备的完整独立临时 Git 仓库, 包含场景适用的 Agent 指令, 共同责任与规范 Role, 运行入口不重复克隆或重映射. 每个实例只有 Reviewer 取得场景授权输入与临时写入范围, 不创建子 Agent, 不能读取源码仓库, 测试框架, 隐藏预期, 其他实例结果, 其他场景, 记忆或运行记录等禁止来源. 独立工作目录不等于配置或持久状态隔离.
-
-发布结果绑定共同责任和规范 Role 的准确字节, 测试专属隔离说明由 `prepare` 交付, 不进入普通审核规则. 每个实例通过共享入口启动准确身份的无父对话新会话, Reviewer 亲自把完整报告写入本轮绑定的文件并返回现行状态, 再由维护入口按既有结果生成与验证合同消费完整报告, 根据隐藏预期评分并应用强制门禁. 能力线程不得转用于普通审核, 自动结果和会话证据均不能从摘要补造.
-
-定向能力验证与发布能力验证使用相同的完整 Reviewer, 场景和重复边界, 但定向准备只检验当前优化方案, 不绑定发布候选或形成发布证据. 定向审查线程及结果不得复用为普通真实仓库审核. 发布是否执行实时关卡由该次发布的明确选择决定, 不把定向通过视为发布通过.
-
-运行与验证交接必须保留每个实例中 Reviewer 原生线程的完整原生会话记录, 以准确线程 ID 唯一匹配并通过 `session_meta.payload.id` 验证完整 JSONL, 原生路径依据实际运行环境确定. 自动验证成功后, 与用户沟通的 Main Agent 检查全部受影响实例的 Reviewer 线程, 用严格允许列表核对读取, 写入, 工具调用和结果, 追加消息及最终状态, 只允许场景仓库和交接授权的准确绑定路径. 本轮没有子 Agent 参与及文件权限的事实仍须满足共享运行合同.
-
-与用户沟通的 Main Agent 按[会话检查规则](../agents/reviewer-capability-session-inspection.md#inspection-boundary)核对交接与实际实例绑定. 工具结果或事件截断不自动使会话失败, 全部必需输入的覆盖观察仍仅作为优化证据. 发布报告记录 Reviewer 身份, Reviewer 原生线程 ID, 原生路径, 检查范围, 解析结果, 结论和必要问题; 原始记录保留在原生位置直到检查完成, 不自动清理或复制进已跟踪文件与自动验证器. Claude Code 不定义实时启动, 会话捕获或能力结果要求.
-
-自动验证与全部会话检查都满足后才到达最终提交点. 每个 Reviewer 在当前有效候选上取得 3 次相互独立的完整重复; 每次包含全部适用场景, Spec Readiness 的两个场景按相同重复序号配对. 审核报告的错误处理, 各次重复的折减前与最终分数, 双平均分及最终分数门槛由[发布能力门禁](../specs/agent-repository-workflow-release/spec.md#reviewer-capability-gate)拥有. 每次独立运行的结果完整参与评分, 输入身份, 会话及来源隔离条件独立核对.
-
-漏掉, 重复或增加规定 Reviewer, 重复或实例身份, 运行不可用, 输入绑定不匹配, 原生记录不可用, 无法解析或身份不匹配, 答案泄漏, 禁止来源或准备, 运行及传输故障使必要结果不可取得时, 整轮发布关闭式失败. 模型自身的报告内容错误与无法评分结果按发布能力评分合同处理. 本轮有子 Agent 参与或必要事实无法核对时不交接有效结果. 错误及候选, Role, 场景或评分合同变化后的恢复, 按[发布能力门禁](../specs/agent-repository-workflow-release/spec.md#reviewer-capability-gate)评估实际影响范围, 保留未受影响的有效结果, 并在需要时重新准备或重跑受影响范围. 会话观察不修补报告或进入自动评分, 少量原生试验不替代正式能力验证. 发布能力验证不成为每次普通审核, 提交, 初始化或更新的模型预检, 共享入口仍核对单 Reviewer 运行事实.
 
 ## Rejected alternatives
 

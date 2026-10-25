@@ -20,8 +20,6 @@ Windows PATH 覆盖使用公开责任归属操作实际检验安装写入, 等�
 
 Issue 文档要求覆盖包括相对于仓库根目录的 spec 和仓库文档引用, 可选锚点, `Not required`, 错误位置, `../`, `./`, 绝对路径, 反斜杠, NUL, 路径穿越和无效锚点. Spec Readiness 和 Commit Audit 必须使用相同的归一化结果, 且不得相对于 issue 目录进行解析. 路径规则迁移只能更改非终态 issue 当前的 `## Spec Requirement`. 定向检查保留终态 issue 字节和 `## Comments` 字节.
 
-Reviewer Capability Conformance 覆盖仍由 [Reviewer Capability Validation](reviewer-capability-validation.md) 负责. 不得在此复制这些矩阵.
-
 ### Application and JIRA workflow
 
 纯 Module 覆盖通过确定性的 Git, HTTP 和 Browser Adapter 调用公开 Application 和 JIRA Interface, 并断言完整的成功, 阻断项, 失败阶段, 影响和恢复结果. 公开 CLI 覆盖使用隔离的 Application 仓库, 真实临时 Git 子模块, 裸远程仓库, 本地 JIRA HTTP 服务和记录型 Browser Adapter. 通过生产命令和外部服务边界观察标准输出, 标准错误, 退出代码, 工作树, Git 索引, 引用和 HTTP 请求. 已安装 CLI 集成运行已经安装的入口, 验证 Application 配置发现和命令路由, 把全局 `jira.listLimit` 与仓库 `arw.config.json` 组合, 且不读取 Source Checkout 内部路径.

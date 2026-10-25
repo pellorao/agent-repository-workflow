@@ -2,9 +2,8 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {cloneJsonValue} from '../../lib/common/json.mjs';
 import {estimateNativeSleepInterval, mergeNativeResponseMeasurement} from '../../lib/background-agent/native-measurement.mjs';
-import {renderTablesHtml} from '../../lib/reviewer-benchmark/statistics-presentation.mjs';
 import {
-    checkpointReviewerMeasurement,createReviewerMeasurement, createUsage, observeReviewerMeasurement, reviewerMeasurementResult, reviewerMeasurementRates,
+    checkpointReviewerMeasurement,createReviewerMeasurement, createUsage, observeReviewerMeasurement, reviewerMeasurementResult,
 } from '../../lib/reviewer-runtime/reviewer-measurement.mjs';
 
 /** @typedef {import('../../lib/background-agent/codex-app-server.mjs').NativeMember} NativeMember */
@@ -104,7 +103,6 @@ test('Existing response samples produce paired estimates and retain working tool
     observeReviewerMeasurement(recovered,{members:[root],rootThreadId:'root',measurementFacts:restored,now:11000});
     recovered.finishedAt = 11000;
     const result = reviewerMeasurementResult(recovered,50000);
-    const rates = reviewerMeasurementRates(result);
     assert.equal(result.wallClockMs,10000);
     assert.equal(result.workDuration.durationMs,5000);
     assert.equal(result.workDuration.estimated,true);
@@ -113,30 +111,14 @@ test('Existing response samples produce paired estimates and retain working tool
     assert.equal(result.startedAt,1000);
     assert.equal(result.usage.outputTokens,62);
     assert.equal(result.usage.reasoningOutputTokens,40);
-    assert.equal(rates.average.inputTokensPerSecond,230/5);
-    assert.equal(rates.average.outputTokensPerSecond,62/5);
     assert.equal(result.modelPhases.totalRequests,2);
     assert.equal(result.modelPhases.input[0].tokens,230);
     assert.equal(result.modelPhases.input[0].durationMs,300);
-    assert.equal(rates.model.input.tokensPerSecond,230/0.3);
     assert.equal(result.modelPhases.output[0].tokens,60);
     assert.equal(result.modelPhases.output[0].durationMs,1400);
-    assert.equal(rates.model.output.tokensPerSecond,60/1.4);
     for(const group of [...result.modelPhases.input,...result.modelPhases.output]) {
         assert.equal(group.measuredRequests,2);assert.equal(group.source,'existing-events');
         assert.equal(group.estimated,true);assert.ok(group.basis);
     }
     assert.match(result.modelPhases.output[0].basis??'',/First chunk token count is unknown/);
-    assert.ok(result.usage.inputTokens!==null&&result.usage.cachedInputTokens!==null&&result.usage.outputTokens!==null);
-    const tokenUsage={input:result.usage.inputTokens-result.usage.cachedInputTokens,cachedInput:result.usage.cachedInputTokens,output:result.usage.outputTokens};
-    const configuration={model:'same-model',reasoningEffort:'high'};
-    const rendered=renderTablesHtml([{schemaVersion:4,configuration,
-        roles:[{reviewerId:'code-standards-reviewer',repetitions:[1,2,3].map(repetition=>({repetition,score:1,scoreSource:'formal',
-            diagnosticReason:null,mainAgentCorrectedScoringCopy:false,completedInstances:1,expectedInstances:1,deliveryErrors:[]}))}],
-        observations:[1,2,3].map(repetition=>({reviewerId:'code-standards-reviewer',scenarioId:'default',repetition,completed:true,
-            delivery:{mode:'reviewer-bound-report',errors:[],mainAgentCorrectedScoringCopy:false},runtime:{
-                actualModel:configuration.model,actualReasoningEffort:configuration.reasoningEffort,durationMs:result.wallClockMs,
-                tokenUsage,conditions:{},workDuration:result.workDuration,modelPhases:result.modelPhases}}))}]);
-    assert.match(rendered,/766\.7 \*/);assert.match(rendered,/42\.9 \*/);
-    assert.equal((rendered.match(/覆盖请求: 6\/6/g)??[]).length,4);
 });
