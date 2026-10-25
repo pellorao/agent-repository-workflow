@@ -122,7 +122,7 @@ Installation Payload Module 验证清单的封闭结构, 平台启动器选择, 
 
 ### Reviewer configuration
 
-Reviewer 的全局设置来自调用入口自然所属 Engine 目录中的 `config.json`, 遵循[统一配置来源规则](#global-engine-configuration), 不由共享管理进程的启动位置或 Reviewer 的受审目录决定. 全局 `reviewers` 是独立于 `agents` 外部 CLI 启动条目的对象. 它只接受 `code-spec-reviewer`, `code-standards-reviewer`, `commit-audit-reviewer` 和 `spec-readiness-reviewer` 四个角色键. 每个角色只接受以下字段:
+Reviewer 的全局设置来自调用入口自然所属 Engine 目录中的 `config.json`, 遵循[统一配置来源规则](#global-engine-configuration), 不由共享管理进程的启动位置或 Reviewer 的受审目录决定. 全局 `reviewers` 是独立于 `agents` 外部 CLI 启动条目的对象. 它只接受 `code-standards-reviewer`, `requirements-reviewer` 和 `spec-readiness-reviewer` 三个角色键; 已退役的 `code-spec-reviewer` 和 `commit-audit-reviewer` 键被忽略. 每个角色只接受以下字段:
 
 | 字段 | 值 | 全局默认值 |
 | --- | --- | --- |

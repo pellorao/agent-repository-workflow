@@ -1,5 +1,5 @@
 ---
-description: 沿实施标准和治理要求两个独立审查轴审核一个 Git 比较. 用于分支, 拉取请求, 提交区间和进行中的变更审查, 包括提交前对已暂存变更的审查.
+description: 沿实施标准和要求符合两个独立审查轴审核一个 Git 比较. 用于分支, 拉取请求, 提交区间和进行中的变更审查, 包括提交前对已暂存变更的 Code Standards 审查.
 name: code-review
 ---
 
@@ -8,27 +8,25 @@ name: code-review
 沿两个独立审查轴审核一个完整的 Git 比较:
 
 - **Standards**: 变更是否遵循适用的 Agent 指令和实施质量标准?
-- **Spec**: 变更是否实现已提供的治理要求?
+- **Requirements**: 变更是否实现已提供的治理要求?
 
-使用具名的 `code-standards-reviewer` 和 `code-spec-reviewer`. 对应的规范角色文档拥有审查准则和输出规则.
+使用具名的 `code-standards-reviewer` 和 `requirements-reviewer`. 对应的规范角色文档拥有审查准则和输出规则. 提交时 Requirements 轴由 `commit` Skill 用 Engine 生成的要求清单运行, 本 Skill 只运行 Standards 轴, 两者并行.
 
 ## Process
 
 ### 1. Require explicit governing requirements
 
-要求调用方为 Spec 轴提供适用的治理要求输入. 接受仓库相对路径, 在任一审查轴启动前, 将每份来源路径, SHA-256 和完整内容保存在本轮绑定的临时副本中. 不发现其他 issue, spec, PRD 或 ADR.
+非提交比较中, 要求调用方为 Requirements 轴提供适用的治理要求输入. 接受仓库相对路径, 在任一审查轴启动前, 将每份来源路径, SHA-256 和完整内容保存在本轮绑定的临时副本中. 不发现其他 issue, spec, PRD 或 ADR.
 
-Main Agent 按 [固定审核版本](../reviewer-launch/SKILL.md#fix-the-review-version)固定适用的 Agent 指令. Standards Reviewer 按其规范角色读取这些完整的绑定副本. 它们是执行规则, 不是 Spec 治理输入; Standards 轴不要求调用方选择标准文档路径集合, 也不要求确认没有标准.
+Main Agent 按 [固定审核版本](../reviewer-launch/SKILL.md#fix-the-review-version)固定适用的 Agent 指令. Standards Reviewer 按其规范角色读取这些完整的绑定副本. 它们是执行规则, 不是治理输入; Standards 轴不要求调用方选择标准文档路径集合, 也不要求确认没有标准.
 
 缺少治理要求输入时, 请用户提供, 或明确确认没有治理要求.
 
-只有用户明确确认没有治理要求时, 才跳过 Spec Reviewer 并使用以下精确结果:
+只有用户明确确认没有治理要求时, 才跳过 Requirements Reviewer 并使用以下精确结果:
 
 ```text
 Not reviewed: no governing requirements were supplied.
 ```
-
-Gate 2 与是否跳过 Spec Reviewer 相互独立. 它的适用性, 治理要求并集和例外规则不能证明 Spec 审查没有必要.
 
 调用方应已提供 issue 跟踪规则. 如果缺少 `issue-tracking` Skill, 运行只读的 `arw workflow verify`. 如果验证表明仓库尚未初始化, 告知用户另行运行 `arw workflow init`. 此检查只验证仓库工作流设置, 不发现或提供审查输入.
 
@@ -36,9 +34,7 @@ Gate 2 与是否跳过 Spec Reviewer 相互独立. 它的适用性, 治理要求
 
 ### 2. Verify the prepared review candidate
 
-对于提交 Gate 3, 调用方提供固定的已暂存实施候选, 不包含本次 Gate 1 或 Gate 2 输出. 本技能不运行或要求 `arw commit-audit verify`; 提交工作流可让同候选 Commit Audit 与适用代码轴并行, 最终提交仍等待全部适用结果. 分支, 拉取请求或其他普通比较没有 Commit Audit 前提.
-
-只有预期比较及第 1 步的治理输入或确认已经齐备时才继续. 阅读[结论复用](result-reuse.md)按轴判断已有结果, 更新完成记录前也读取它. 复用有效结果并进入第 5 步; 需要新判断时说明实际变化, 安排受影响的就绪及验证, 只对受影响轴交接完整固定比较, 按公共复审规则取得完整当前结果. Code Review 可与就绪及适用 Commit Audit 并行, 各自开始条件和最终授权时点由所属工作流拥有. 未完成结果不提供通过事实. 本循环不生成, 提升或消费 Gate 1 或 Gate 2 记录.
+只有预期比较及第 1 步的治理输入或确认已经齐备时才继续. 阅读[结论复用](result-reuse.md)按轴判断已有结果; 复用有效结果并进入第 5 步, 否则只对受影响轴交接固定比较. 未完成结果不提供通过事实.
 
 ### 3. Resolve the comparison
 
@@ -68,13 +64,13 @@ Gate 2 与是否跳过 Spec Reviewer 相互独立. 它的适用性, 治理要求
 
 下一条用户可见的范围说明只列纳入的路径. 不列已排除, 未暂存, 未跟踪路径或选择前后的路径集合. 没有纳入路径时, 报告没有可审查变更并停止; 否则让每个适用轴审核纳入的比较.
 
-任何 Git 读取, 比较解析或过滤步骤失败时, 将审查标为不完整, 在创建任一 Reviewer 前停止. 这些 Gate 3 过滤不改变 Agent 管理的范围. 后续 Commit Audit 仍检查已经批准的完整已暂存实施候选, 不被本过滤缩小.
+任何 Git 读取, 比较解析或过滤步骤失败时, 将审查标为不完整, 在创建任一 Reviewer 前停止. 这些过滤不改变 Agent 管理的范围; 提交时的要求清单仍覆盖完整已暂存实施候选, 不被本过滤缩小.
 
 完成条件: 需要新判断的轴收到同一份完整不可变比较, 未受影响的轴已有完整有效结果, 且没有重复比较解析或过滤工作.
 
 ### 4. Run both axes independently
 
-Reviewer 身份由审查轴固定的 `input.role` 值和完整排序的授权 issue ID 集合组成. Standards 使用 `code-standards-reviewer`, Spec 使用 `code-spec-reviewer`. 解析既有身份, 处理报告的问题或准备后续审核前, 阅读 [后续审核与问题处理](reviewer-followup.md).
+Reviewer 身份由审查轴固定的 `input.role` 值和完整排序的授权 issue ID 集合组成. Standards 使用 `code-standards-reviewer`, Requirements 使用 `requirements-reviewer`; Requirements 的身份另含比较区间, 与提交审核的线程分开. 复审和问题处理按[结论复用](result-reuse.md)进行.
 
 每个轴的每轮审查按 [Code Review 结果规则](../../../docs/agents/reviewer.md#code-review-results) 使用新的空 `resultPath`, 不把上一轮报告复用为新草稿.
 
@@ -85,9 +81,9 @@ Reviewer 身份由审查轴固定的 `input.role` 值和完整排序的授权 is
 - 使用具名 Reviewer 时, 对应的规范角色路径.
 - 不可变比较身份, 只读 Git 命令和适用提交区间.
 - 完整的纳入路径集合.
-- 适用验证事实, 准确标识尚未完成的检查.
+- 适用验证事实, 准确标识尚未完成的检查; Standards 轴另收授权 issue 写明的预估改动行数.
 - 完整绑定的适用 Agent 指令及其来源路径和 SHA-256 映射.
-- 仅 Spec 轴接收完整治理要求副本及其来源路径和 SHA-256 记录.
+- 仅 Requirements 轴接收完整治理要求副本及其来源路径和 SHA-256 记录.
 - 准确绑定的 `resultPath` 和只交付结果的指令.
 
 不在 Reviewer 提示中重复规范角色的审查准则.
@@ -98,7 +94,7 @@ Reviewer 身份由审查轴固定的 `input.role` 值和完整排序的授权 is
 
 先呈现已解析的范围. 包含请求的边界和实际起点, 然后只列交给 Reviewer 的路径.
 
-在 `## Standards` 和 `## Spec` 下呈现结果. 从绑定报告文件读取并保留每个成功轴的结果, 不合并, 改写, 跨轴重新排序, 也不让一个轴抵消另一个轴. 报告文件是结果权威, Reviewer 的最终消息只确认完成.
+在 `## Standards` 和 `## Requirements` 下呈现结果. 从绑定报告文件读取并保留每个成功轴的结果, 不合并, 改写, 跨轴重新排序, 也不让一个轴抵消另一个轴. 报告文件是结果权威, Reviewer 的最终消息只确认完成.
 
 Main Agent 可以另附面向用户的通俗解释, 上述原报告与结果格式保持不变.
 
@@ -108,6 +104,6 @@ Main Agent 可以另附面向用户的通俗解释, 上述原报告与结果格�
 Review unavailable: <reason>.
 ```
 
-将整体审查标为 `incomplete`. 失败轴不能显示 `No findings.`. 用户确认没有治理要求时, 使用第 1 步精确规定的未审查结果, 不声称符合 Spec.
+将整体审查标为 `incomplete`. 失败轴不能显示 `No findings.`. 用户确认没有治理要求时, 使用第 1 步精确规定的未审查结果, 不声称符合要求.
 
 完成条件: 报告标识准确比较与 Reviewer 路径集合, 每个适用轴都有独立结果, 并准确说明完整或不完整状态.

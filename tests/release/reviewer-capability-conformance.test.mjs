@@ -9,7 +9,6 @@ import {createTemporaryDirectory} from '../helpers/cleanup.mjs';
 import {runExitedProcess} from '../helpers/process.mjs';
 import {createScriptedReviewerSessions} from '../helpers/reviewer-runtime-adapter.mjs';
 import {
-    auditCleanCoverageAssignments,
     createCandidateContentGitAdapter,
     createCandidateFilesReader,
     deriveAffectedReviewerIds,
@@ -18,7 +17,6 @@ import {
     scoreReviewerCapabilityCompletedRepetitions as scoreReviewerCapabilityCompletedRepetitionsImplementation,
     verifyReviewerCapabilityConformance as verifyReviewerCapabilityConformanceImplementation,
 } from '../../lib/release/reviewer-capability-conformance.mjs';
-import {generateCommitAudit, validateCommitAuditReview} from '../../lib/commit-audit/commit-audit.mjs';
 import {createBackgroundAgentHost} from '../../lib/arw-background-agent-host.mjs';
 import {createNodeGitRunner} from '../../lib/common/git-process.mjs';
 import {REVIEWER_IDS} from '../../lib/release/reviewer-capability-identities.mjs';
@@ -170,7 +168,7 @@ const targetedProjectFiles = {
     'docs/agents/environment.md': '# Environment\n\nCreate temporary files only inside the scenario.\n',
     '.agents/skills/issue-tracking/SKILL.md': '# Issue Tracker Instructions\n\nApply the issue and specification workflow.\n',
     'docs/agents/reviewer.md': '# Reviewer Responsibilities\n\nRead applicable Agent instructions inside this Repository.\n',
-    'docs/agents/roles/code-spec-reviewer.md': '# code-spec-reviewer\n\nCanonical targeted test role.\n',
+    'docs/agents/roles/code-standards-reviewer.md': '# code-standards-reviewer\n\nCanonical targeted test role.\n',
     'docs/agents/writing.md': '# Writing\n\nUse exact paths and deterministic records.\n',
 };
 
@@ -182,8 +180,8 @@ const createTargetedReviewerProjectOnce = async (/** @type {test.TestContext} */
                 target: 'tests/fixtures/reviewer-capability/common-handoff.md',
             },
             {
-                source: join(fixtureSource, 'code-spec-reviewer'),
-                target: 'tests/fixtures/reviewer-capability/code-spec-reviewer',
+                source: join(fixtureSource, 'code-standards-reviewer'),
+                target: 'tests/fixtures/reviewer-capability/code-standards-reviewer',
             },
         ],
         files: targetedProjectFiles,
@@ -193,36 +191,6 @@ const createTargetedReviewerProjectOnce = async (/** @type {test.TestContext} */
     return repositoryRoot;
 };
 
-const createCommitAuditReviewerProjectOnce = async (/** @type {test.TestContext} */ t) => {
-    const {repositoryRoot, runCommand} = await createMockGitRepository(t, {
-        copies: [
-            {
-                source: join(fixtureSource, 'common-handoff.md'),
-                target: 'tests/fixtures/reviewer-capability/common-handoff.md',
-            },
-            {
-                source: join(fixtureSource, 'commit-audit-reviewer'),
-                target: 'tests/fixtures/reviewer-capability/commit-audit-reviewer',
-            },
-        ],
-        files: {
-            'AGENTS.md': targetedProjectFiles['AGENTS.md'],
-            'docs/agents/agent-writes.md': '# Agent Writes\n\nWrite only the bound Reviewer draft.\n',
-            '.agents/skills/arw-commands/SKILL.md': '# ARW Operations\n\nUse the current Commit Audit commands.\n',
-            '.agents/skills/domain-modeling/SKILL.md': '# Domain\n\nInspect unfamiliar domain concepts before judging them.\n',
-            'docs/agents/environment.md': targetedProjectFiles['docs/agents/environment.md'],
-            '.agents/skills/issue-tracking/SKILL.md': targetedProjectFiles['.agents/skills/issue-tracking/SKILL.md'],
-            'docs/agents/reviewer.md': targetedProjectFiles['docs/agents/reviewer.md'],
-            'docs/agents/roles/commit-audit-reviewer.md': '# commit-audit-reviewer\n\nCanonical targeted test role.\n',
-            'docs/agents/roles/commit-audit-reviewer/gate-2.md': '# Gate 2 Requirements\n\nAudit the applicable long-term rules.\n',
-            '.agents/skills/validation/SKILL.md': '# Validation\n\nUse relevant read-only validation when needed.\n',
-            'docs/agents/writing.md': '# Writing\n\nUse exact paths and deterministic records.\n',
-        },
-        prefix: 'arw-reviewer-capability-commit-audit-',
-    });
-    sharedRunCommands.set(repositoryRoot, runCommand);
-    return repositoryRoot;
-};
 
 const createSpecReadinessReviewerProjectOnce = async (/** @type {test.TestContext} */ t) => {
     const {repositoryRoot, runCommand} = await createMockGitRepository(t, {
@@ -251,25 +219,6 @@ const createSpecReadinessReviewerProjectOnce = async (/** @type {test.TestContex
     return repositoryRoot;
 };
 
-const fixtureGitRunner = (/** @type {{repositoryRoot: string, scenarioRoot: string}} */ {repositoryRoot, scenarioRoot}) => {
-    const runCommand = sharedRunCommands.get(repositoryRoot);
-    if (runCommand === undefined) throw new Error('Expected fixture Git command adapter.');
-    return {
-        run: async (/** @type {{argv: string[], input?: Buffer | string}} */ {argv, input = undefined}) => {
-            try {
-                const result = await runCommand('git', argv, {cwd: scenarioRoot, input});
-                return {
-                    code: result.exitCode,
-                    failure: null,
-                    stderr: Buffer.isBuffer(result.stderr) ? result.stderr.toString('utf8') : result.stderr,
-                    stdout: Buffer.isBuffer(result.stdout) ? result.stdout : Buffer.from(result.stdout, 'utf8'),
-                };
-            } catch {
-                return {code: null, failure: /** @type {'process'} */ ('process'), stderr: '', stdout: Buffer.alloc(0)};
-            }
-        },
-    };
-};
 
 /** @type {Array<() => void | Promise<void>>} */
 const sharedCleanupCallbacks = [];
@@ -289,116 +238,24 @@ const completeMarkdownResponse = (/** @type {PreparedExpected} */ expected) => `
     })
 )).join('\n')}\n`;
 
-const commitAuditScopeForPath = (/** @type {string} */ path) => path.includes('/issues/')
-    ? 'COMMIT-AUDIT-GATE-1'
-    : 'COMMIT-AUDIT-GATE-2';
 
-const evidenceKey = (/** @type {EvidenceLocator[]} */ evidence) => JSON.stringify([...evidence].sort((left, right) => (
-    JSON.stringify(left).localeCompare(JSON.stringify(right))
-)));
 
-const createCommitAuditFixtureRecords = (/** @type {PreparedExpected} */ expected) => requireValue(
-    expected.auditRecords,
-    'Expected Commit Audit answer records.',
-).map(expectedRecord => {
-    const scope = requireValue(
-        expected.scopes.find(entry => entry.scope === commitAuditScopeForPath(expectedRecord.pathSuffix)),
-        `Expected Commit Audit scope for ${expectedRecord.pathSuffix}.`,
-    );
-    const requirements = expectedRecord.requirements.map((expectedRequirement, index) => {
-        const problemCase = scope.problemCases.find(entry => (
-            entry.result === expectedRequirement.result
-            && (entry.placements ?? [entry]).some(placement => evidenceKey(placement.evidence ?? []) === evidenceKey(expectedRequirement.evidence))
-        ));
-        const finding = problemCase === undefined ? undefined : fixtureSeed(problemCase);
-        return {
-            evidence: expectedRequirement.evidence,
-            ...(expectedRequirement.result === 'satisfied' ? {} : {finding}),
-            requirement: `Requirement ${index + 1} from ${expectedRecord.pathSuffix}.`,
-            result: expectedRequirement.result,
-            source: expectedRequirement.source,
-        };
-    });
-    return {
-        pathSuffix: expectedRecord.pathSuffix,
-        record: {
-            ...(expectedRecord.documents === undefined ? {} : {documents: expectedRecord.documents}),
-            requirements,
-            result: expectedRecord.result,
-        },
-    };
-});
 
-const createCommitAuditFixtureReviewJsonl = (/** @type {PreparedExpected} */ expected) => `${createCommitAuditFixtureRecords(expected)
-    .flatMap(({record}) => record.requirements)
-    .map(requirement => JSON.stringify({
-        evidence: requirement.evidence.map(locator => {
-            if (locator.line === undefined) throw new Error('Commit Audit fixture evidence must use line locators.');
-            return {filePath: locator.filePath, lines: [locator.line]};
-        }),
-        ...(requirement.finding === undefined ? {} : {finding: requirement.finding}),
-        requirement: requirement.requirement,
-        result: requirement.result,
-        source: requirement.source,
-    }))
-    .join('\n')}\n`;
 
-const prepareCommitAuditCapabilityFixture = async () => {
-    const repositoryRoot = await createCommitAuditReviewerProjectOnce(sharedTestContext);
-    const prepared = await prepareReviewerCapabilityConformance({
-        agentIdentity,
-        repositoryRoot,
-        reviewerId: 'commit-audit-reviewer',
-    });
-    const state = await readPreparedState(prepared.preparedPath);
-    const contract = requireValue(state.contracts[0], 'Expected Commit Audit contract.');
-    const instances = await Promise.all(contract.instances.map(async instance => {
-        const requestPath = requireValue(instance.requestPath, `Expected Request for ${instance.instanceId}.`);
-        /** @type {{draftPath?: unknown}} */
-        const request = JSON.parse(await readFile(requestPath, 'utf8'));
-        if (typeof request.draftPath !== 'string') throw new Error('Expected Request draft path.');
-        await writeFile(request.draftPath, createCommitAuditFixtureReviewJsonl(instance.expected), 'utf8');
-        const generated = await generateCommitAudit({
-            git: fixtureGitRunner({repositoryRoot, scenarioRoot: instance.scenarioRoot}),
-            repositoryRoot: instance.scenarioRoot,
-            requestPath,
-        });
-        if (!('files' in generated)) throw new Error(`Expected Commit Audit generation: ${JSON.stringify(generated)}`);
-        return {
-            artifactPaths: generated.files.map(({sourcePath}) => join(instance.scenarioRoot, ...sourcePath.split('/'))),
-            instanceId: instance.instanceId,
-        };
-    }));
-    const response = {instances, reviewerId: 'commit-audit-reviewer'};
-    const adjudicationFor = async (/** @type {typeof response} */ artifact) => {
-        const input = {
-            agentIdentity,
-            input: {artifacts: [artifact]},
-            preparedPath: prepared.preparedPath,
-            repositoryRoot,
-        };
-        const provisional = await rawVerifyReviewerCapabilityConformance(input);
-        if (provisional.status !== 'needs-adjudication') {
-            throw new Error(`Expected Commit Audit adjudication candidates: ${JSON.stringify(provisional)}`);
-        }
-        return {adjudication: {decisions: await fixtureCandidateDecisions(input, requireValue(provisional.candidates, 'Expected Commit Audit candidates.'))},
-            pending: provisional};
-    };
-    const {adjudication, pending} = await adjudicationFor(response);
-    return {adjudication, contract, pending, prepared, repositoryRoot, response};
-};
 
 const multiRoleLocalRecoveryFixtureWork = (async () => {
     const {repositoryRoot} = await createMockGitRepository(sharedTestContext, {
         copies: [{source: join(fixtureSource, 'common-handoff.md'),
             target: 'tests/fixtures/reviewer-capability/common-handoff.md'},
-        {source: join(fixtureSource, 'code-spec-reviewer'),
-            target: 'tests/fixtures/reviewer-capability/code-spec-reviewer'},
         {source: join(fixtureSource, 'code-standards-reviewer'),
-            target: 'tests/fixtures/reviewer-capability/code-standards-reviewer'}],
+            target: 'tests/fixtures/reviewer-capability/code-standards-reviewer'},
+        {source: join(fixtureSource, 'spec-readiness-reviewer'),
+            target: 'tests/fixtures/reviewer-capability/spec-readiness-reviewer'}],
         files: {...targetedProjectFiles,
             '.gitignore': '.tmp/\n',
-            'docs/agents/roles/code-standards-reviewer.md': '# code-standards-reviewer\n\nInitial Role.\n'},
+            'docs/agents/roles/spec-readiness-reviewer.md': '# spec-readiness-reviewer\n\nInitial Role.\n',
+            'docs/agents/roles/spec-readiness-reviewer/findings.md': '# Findings\n\nUse formal findings.\n',
+            'docs/agents/roles/spec-readiness-reviewer/module-design.md': '# Module Design\n\nCheck applicable design.\n'},
         prefix: 'arw-reviewer-capability-multi-role-',
     });
     /** @type {NonNullable<Parameters<typeof prepareReviewerCapabilityConformanceImplementation>[0]['runCommand']>} */
@@ -420,107 +277,30 @@ const multiRoleLocalRecoveryFixtureWork = (async () => {
     await git(['add', '.']);
     await git(['commit', '-m', 'baseline']);
     await git(['tag', '0.2.0']);
-    await writeFile(join(repositoryRoot, 'docs/agents/roles/code-spec-reviewer.md'),
-        '# code-spec-reviewer\n\nCanonical release test Role.\n', 'utf8');
     await writeFile(join(repositoryRoot, 'docs/agents/roles/code-standards-reviewer.md'),
         '# code-standards-reviewer\n\nCanonical release test Role.\n', 'utf8');
-    await git(['add', 'docs/agents/roles/code-spec-reviewer.md', 'docs/agents/roles/code-standards-reviewer.md']);
+    await writeFile(join(repositoryRoot, 'docs/agents/roles/spec-readiness-reviewer.md'),
+        '# spec-readiness-reviewer\n\nCanonical release test Role.\n', 'utf8');
+    await git(['add', 'docs/agents/roles/code-standards-reviewer.md', 'docs/agents/roles/spec-readiness-reviewer.md']);
     await git(['commit', '-m', 'two reviewer roles']);
     sharedRunCommands.set(repositoryRoot, runCommand);
     const source = await prepareReviewerCapabilityConformance({agentIdentity, repositoryRoot});
     const sourceState = await readPreparedState(source.preparedPath);
-    const codeSpec = requireValue(sourceState.contracts.find(contract => contract.reviewerId === 'code-spec-reviewer'),
-        'Expected release Code Spec contract.');
-    const selected = requireValue(codeSpec.instances[0], 'Expected release Code Spec instance.');
+    const targeted = requireValue(sourceState.contracts.find(contract => contract.reviewerId === 'code-standards-reviewer'),
+        'Expected release Code Standards contract.');
+    const selected = requireValue(targeted.instances[0], 'Expected release Code Standards instance.');
     const prepared = await prepareReviewerCapabilityConformance({
         agentIdentity,
         preparedPath: source.preparedPath,
         repositoryRoot,
-        selection: {instances: [{instanceId: selected.instanceId, reviewerId: codeSpec.reviewerId}]},
+        selection: {instances: [{instanceId: selected.instanceId, reviewerId: targeted.reviewerId}]},
     });
     const state = await readPreparedState(prepared.preparedPath);
     return {prepared, repositoryRoot, selected, source, sourceState, state};
 })();
 
-const commitAuditCapabilityFixtureWork = prepareCommitAuditCapabilityFixture();
 
-const prepareRepeatedSourceCommitAuditCapabilityFixture = async () => {
-    const repositoryRoot = await createCommitAuditReviewerProjectOnce(sharedTestContext);
-    const expectedPath = join(
-        repositoryRoot,
-        'tests',
-        'fixtures',
-        'reviewer-capability',
-        'commit-audit-reviewer',
-        'expected.json',
-    );
-    const expectedFixture = JSON.parse(await readFile(expectedPath, 'utf8'));
-    const firstRecord = requireValue(expectedFixture.auditRecords?.[0], 'Expected first Commit Audit record.');
-    const satisfiedRequirements = firstRecord.requirements.filter((/** @type {{result?: string}} */ requirement) => requirement.result === 'satisfied');
-    const firstRequirement = requireValue(satisfiedRequirements.at(-1), 'Expected final satisfied Commit Audit requirement.');
-    const secondRequirement = requireValue(firstRecord.requirements.find((/** @type {{evidence?: EvidenceLocator[], result?: string}} */ requirement) => (
-        requirement.result !== 'satisfied'
-        && requirement.result !== undefined
-        && evidenceKey(requirement.evidence ?? []) !== evidenceKey(firstRequirement.evidence)
-    )), 'Expected a non-satisfied Commit Audit requirement with distinct evidence.');
-    const gateOne = requireValue(
-        expectedFixture.scopes?.find((/** @type {{scope?: string}} */ scope) => scope.scope === 'COMMIT-AUDIT-GATE-1'),
-        'Expected Commit Audit Gate 1 scope.',
-    );
-    const secondProblemCase = requireValue(gateOne.problemCases.find((/** @type {{evidence?: EvidenceLocator[], placements?: Array<{evidence?: EvidenceLocator[]}>, result?: string}} */ problemCase) => (
-        problemCase.result === secondRequirement.result
-        && (problemCase.placements ?? [problemCase]).some(placement => evidenceKey(placement.evidence ?? []) === evidenceKey(secondRequirement.evidence))
-    )), 'Expected problem case for the repeated-source requirement.');
-    firstRecord.requirements.push({...structuredClone(secondRequirement), source: structuredClone(firstRequirement.source)});
-    gateOne.problemCases.push(structuredClone(secondProblemCase));
-    await writeFile(expectedPath, `${JSON.stringify(expectedFixture)}\n`, 'utf8');
 
-    const prepared = await prepareReviewerCapabilityConformance({
-        agentIdentity,
-        repositoryRoot,
-        reviewerId: 'commit-audit-reviewer',
-    });
-    const state = await readPreparedState(prepared.preparedPath);
-    const contract = requireValue(state.contracts[0], 'Expected repeated-source Commit Audit contract.');
-    const repeatedSource = JSON.stringify(firstRequirement.source);
-    const instances = await Promise.all(contract.instances.map(async instance => {
-        const requestPath = requireValue(instance.requestPath, `Expected Request for ${instance.instanceId}.`);
-        /** @type {{draftPath?: unknown}} */
-        const request = JSON.parse(await readFile(requestPath, 'utf8'));
-        if (typeof request.draftPath !== 'string') throw new Error('Expected repeated-source Request draft path.');
-        let repeatedSourceIndex = 0;
-        const lines = createCommitAuditFixtureReviewJsonl(instance.expected).trimEnd().split('\n').map(line => {
-            const row = JSON.parse(line);
-            if (JSON.stringify(row.source) !== repeatedSource) return JSON.stringify(row);
-            repeatedSourceIndex += 1;
-            return JSON.stringify({
-                ...row,
-                requirement: repeatedSourceIndex === 1
-                    ? 'Zulu wording chosen only by the Reviewer.'
-                    : 'Alpha wording chosen only by the Reviewer.',
-            });
-        });
-        await writeFile(request.draftPath, `${lines.join('\n')}\n`, 'utf8');
-        const generated = await generateCommitAudit({
-            git: fixtureGitRunner({repositoryRoot, scenarioRoot: instance.scenarioRoot}),
-            repositoryRoot: instance.scenarioRoot,
-            requestPath,
-        });
-        if (!('files' in generated)) throw new Error(`Expected repeated-source Commit Audit generation: ${JSON.stringify(generated)}`);
-        return {
-            artifactPaths: generated.files.map(({sourcePath}) => join(instance.scenarioRoot, ...sourcePath.split('/'))),
-            instanceId: instance.instanceId,
-        };
-    }));
-    return {
-        prepared,
-        repeatedSource: firstRequirement.source,
-        repositoryRoot,
-        response: {instances, reviewerId: 'commit-audit-reviewer'},
-    };
-};
-
-const repeatedSourceCommitAuditCapabilityFixtureWork = prepareRepeatedSourceCommitAuditCapabilityFixture();
 
 /**
  * @template T
@@ -545,22 +325,22 @@ const withCapabilityArtifactSnapshots = async (response, callback) => {
 const writeValidResponseBatch = async (/** @type {{prepared: PreparedConformance, repositoryRoot: string}} */ {prepared}) => {
     const state = await readPreparedState(prepared.preparedPath);
     const contract = requireValue(state.contracts[0], 'Expected one prepared contract.');
-    assert.equal(contract.reviewerId, 'code-spec-reviewer');
+    assert.equal(contract.reviewerId, 'code-standards-reviewer');
     const instances = await Promise.all(contract.instances.map(async instance => {
         const handoff = requireValue(prepared.handoffs.find(item => item.instanceId === instance.instanceId), 'Expected prepared handoff.');
         const artifactPath = requireValue(handoff.input.reportPath, 'Expected bound result path.');
         await writeFile(artifactPath, completeMarkdownResponse(instance.expected), 'utf8');
         return {artifactPaths: [artifactPath], instanceId: instance.instanceId};
     }));
-    return [{instances, reviewerId: 'code-spec-reviewer'}];
+    return [{instances, reviewerId: 'code-standards-reviewer'}];
 };
 
-const codeSpecCapabilityFixtureWork = (async () => {
+const targetedCapabilityFixtureWork = (async () => {
     const repositoryRoot = await createTargetedReviewerProjectOnce(sharedTestContext);
     const prepared = await prepareReviewerCapabilityConformance({
         agentIdentity,
         repositoryRoot,
-        reviewerId: 'code-spec-reviewer',
+        reviewerId: 'code-standards-reviewer',
     });
     const responses = await writeValidResponseBatch({prepared, repositoryRoot});
     return {prepared, repositoryRoot, responses};
@@ -648,52 +428,52 @@ const specReadinessCapabilityFixtureWork = (async () => {
     return {adjudication, contract, pending, prepared, repositoryRoot, response};
 })();
 
-const codeSpecAdjudicationForCurrentReports = async (/** @type {Awaited<typeof codeSpecCapabilityFixtureWork>} */ fixture) => {
+const targetedAdjudicationForCurrentReports = async (/** @type {Awaited<typeof targetedCapabilityFixtureWork>} */ fixture) => {
     const {prepared, repositoryRoot, responses} = fixture;
     const input = {agentIdentity, input: {artifacts: responses}, preparedPath: prepared.preparedPath, repositoryRoot};
     const pending = await rawVerifyReviewerCapabilityConformance(input);
-    if (pending.status !== 'needs-adjudication') throw new Error(`Expected Code Spec candidates: ${JSON.stringify(pending)}`);
+    if (pending.status !== 'needs-adjudication') throw new Error(`Expected Code Standards candidates: ${JSON.stringify(pending)}`);
     return {adjudication: {decisions: await fixtureCandidateDecisions(input,
-        requireValue(pending.candidates, 'Expected Code Spec candidates.'))}, pending};
+        requireValue(pending.candidates, 'Expected Code Standards candidates.'))}, pending};
 };
 
-const codeSpecAdjudicationFixtureWork = (async () => {
-    const codeSpecCapabilityFixture = await codeSpecCapabilityFixtureWork;
-    const {adjudication: codeSpecBaselineAdjudication, pending: codeSpecBaselinePending} =
-        await codeSpecAdjudicationForCurrentReports(codeSpecCapabilityFixture);
-    const {adjudication: codeSpecThresholdAdjudication} = await (async () => {
-        const response = requireValue(codeSpecCapabilityFixture.responses[0], 'Expected Code Spec response.');
+const targetedAdjudicationFixtureWork = (async () => {
+    const targetedCapabilityFixture = await targetedCapabilityFixtureWork;
+    const {adjudication: targetedBaselineAdjudication, pending: targetedBaselinePending} =
+        await targetedAdjudicationForCurrentReports(targetedCapabilityFixture);
+    const {adjudication: targetedThresholdAdjudication} = await (async () => {
+        const response = requireValue(targetedCapabilityFixture.responses[0], 'Expected Code Standards response.');
         const third = requireValue(response.instances[2], 'Expected third repetition.');
         return withCapabilityArtifactSnapshots({instances: [third]}, async snapshots => {
             const path = requireValue(third.artifactPaths?.[0], 'Expected third report.');
             const text = requireValue(snapshots[0]?.sources[0], 'Expected full third report.');
             await writeFile(path, `${text.trimEnd().split('\n').slice(0, 6).join('\n')}\n`, 'utf8');
-            return codeSpecAdjudicationForCurrentReports(codeSpecCapabilityFixture);
+            return targetedAdjudicationForCurrentReports(targetedCapabilityFixture);
         });
     })();
 
-    return {codeSpecBaselineAdjudication, codeSpecBaselinePending, codeSpecThresholdAdjudication};
+    return {targetedBaselineAdjudication, targetedBaselinePending, targetedThresholdAdjudication};
 })();
 
-const codeSpecLocalRecoveryFixtureWork = (async () => {
-    await codeSpecAdjudicationFixtureWork;
-    const codeSpecCapabilityFixture = await codeSpecCapabilityFixtureWork;
-    const {prepared: source, repositoryRoot, responses} = codeSpecCapabilityFixture;
+const targetedLocalRecoveryFixtureWork = (async () => {
+    await targetedAdjudicationFixtureWork;
+    const targetedCapabilityFixture = await targetedCapabilityFixtureWork;
+    const {prepared: source, repositoryRoot, responses} = targetedCapabilityFixture;
     const sourceState = await readPreparedState(source.preparedPath);
-    const sourceResponse = requireValue(responses[0], 'Expected original Code Spec batch.');
+    const sourceResponse = requireValue(responses[0], 'Expected original Code Standards batch.');
     const originalPreparedBytes = await readFile(source.preparedPath);
     const originalReportBytes = await Promise.all(sourceResponse.instances.map(instance => readFile(
-        requireValue(instance.artifactPaths?.[0], 'Expected original Code Spec report.'),
+        requireValue(instance.artifactPaths?.[0], 'Expected original Code Standards report.'),
     )));
-    const selected = requireValue(sourceState.contracts[0]?.instances[1], 'Expected second Code Spec repetition.');
+    const selected = requireValue(sourceState.contracts[0]?.instances[1], 'Expected second Code Standards repetition.');
     const prepared = await prepareReviewerCapabilityConformance({
         agentIdentity,
         preparedPath: source.preparedPath,
         repositoryRoot,
-        selection: {instances: [{instanceId: selected.instanceId, reviewerId: 'code-spec-reviewer'}]},
+        selection: {instances: [{instanceId: selected.instanceId, reviewerId: 'code-standards-reviewer'}]},
     });
     const state = await readPreparedState(prepared.preparedPath);
-    const replacement = requireValue(state.contracts[0]?.instances[1], 'Expected replacement Code Spec repetition.');
+    const replacement = requireValue(state.contracts[0]?.instances[1], 'Expected replacement Code Standards repetition.');
     await writeFile(replacement.reportPath, completeMarkdownResponse(replacement.expected), 'utf8');
     const response = {
         ...sourceResponse,
@@ -703,9 +483,9 @@ const codeSpecLocalRecoveryFixtureWork = (async () => {
     };
     const pendingInput = {agentIdentity, input: {artifacts: [response]}, preparedPath: prepared.preparedPath, repositoryRoot};
     const pending = await rawVerifyReviewerCapabilityConformance(pendingInput);
-    if (pending.status !== 'needs-adjudication') throw new Error(`Expected recovered Code Spec candidates: ${JSON.stringify(pending)}`);
+    if (pending.status !== 'needs-adjudication') throw new Error(`Expected recovered Code Standards candidates: ${JSON.stringify(pending)}`);
     const adjudication = {decisions: await fixtureCandidateDecisions(pendingInput,
-        requireValue(pending.candidates, 'Expected recovered Code Spec candidates.'))};
+        requireValue(pending.candidates, 'Expected recovered Code Standards candidates.'))};
     return {adjudication, originalPreparedBytes, originalReportBytes, pending, prepared, repositoryRoot, replacement, response, selected,
         source, sourceResponse, sourceState, state};
 })();
@@ -755,16 +535,16 @@ const specReadinessLocalRecoveryFixtureWork = (async () => {
 const releaseRoleChangeRecoveryFixtureWork = (async () => {
     const multiRoleLocalRecoveryFixture = await multiRoleLocalRecoveryFixtureWork;
     const {repositoryRoot, source, sourceState} = multiRoleLocalRecoveryFixture;
-    const roleBytes = Buffer.from('# code-spec-reviewer\n\nUpdated canonical Role for the recovered candidate.\n');
-    const rolePath = 'docs/agents/roles/code-spec-reviewer.md';
+    const roleBytes = Buffer.from('# code-standards-reviewer\n\nUpdated canonical Role for the recovered candidate.\n');
+    const rolePath = 'docs/agents/roles/code-standards-reviewer.md';
     await writeFile(join(repositoryRoot, rolePath), roleBytes);
     const runCommand = requireValue(sharedRunCommands.get(repositoryRoot), 'Expected release Git runner.');
-    for (const args of [['add', rolePath], ['commit', '-m', 'update code spec reviewer role']]) {
+    for (const args of [['add', rolePath], ['commit', '-m', 'update code standards reviewer role']]) {
         const result = await runCommand('git', args, {cwd: repositoryRoot});
         assert.equal(result.exitCode, 0, `${args.join(' ')}: ${result.stderr}`);
     }
-    const sourceContract = requireValue(sourceState.contracts.find(contract => contract.reviewerId === 'code-spec-reviewer'),
-        'Expected Code Spec source contract.');
+    const sourceContract = requireValue(sourceState.contracts.find(contract => contract.reviewerId === 'code-standards-reviewer'),
+        'Expected Code Standards source contract.');
     const selection = {instances: sourceContract.instances.map(instance => ({instanceId: instance.instanceId,
         reviewerId: sourceContract.reviewerId}))};
     const prepared = await prepareReviewerCapabilityConformance({
@@ -774,19 +554,18 @@ const releaseRoleChangeRecoveryFixtureWork = (async () => {
     return {prepared, repositoryRoot, roleBytes, selection, source, sourceState, state};
 })();
 
-const fixtureWork = [commitAuditCapabilityFixtureWork, repeatedSourceCommitAuditCapabilityFixtureWork,
-    codeSpecCapabilityFixtureWork, codeStandardsCapabilityFixtureWork, specReadinessCapabilityFixtureWork,
-    codeSpecAdjudicationFixtureWork, codeSpecLocalRecoveryFixtureWork, specReadinessLocalRecoveryFixtureWork,
+const fixtureWork = [targetedCapabilityFixtureWork, codeStandardsCapabilityFixtureWork, specReadinessCapabilityFixtureWork,
+    targetedAdjudicationFixtureWork, targetedLocalRecoveryFixtureWork, specReadinessLocalRecoveryFixtureWork,
     multiRoleLocalRecoveryFixtureWork, releaseRoleChangeRecoveryFixtureWork];
 const fixtureResults = await Promise.allSettled(fixtureWork);
 for (const result of fixtureResults) if (result.status === 'rejected') throw result.reason;
-const [commitAuditCapabilityFixture, repeatedSourceCommitAuditCapabilityFixture, codeSpecCapabilityFixture,
+const [targetedCapabilityFixture,
     codeStandardsCapabilityFixture, specReadinessCapabilityFixture,
-    {codeSpecBaselineAdjudication, codeSpecBaselinePending, codeSpecThresholdAdjudication}, codeSpecLocalRecoveryFixture,
+    {targetedBaselineAdjudication, targetedBaselinePending, targetedThresholdAdjudication}, targetedLocalRecoveryFixture,
     specReadinessLocalRecoveryFixture, multiRoleLocalRecoveryFixture, releaseRoleChangeRecoveryFixture] = await Promise.all([
-    commitAuditCapabilityFixtureWork, repeatedSourceCommitAuditCapabilityFixtureWork, codeSpecCapabilityFixtureWork,
-    codeStandardsCapabilityFixtureWork, specReadinessCapabilityFixtureWork, codeSpecAdjudicationFixtureWork,
-    codeSpecLocalRecoveryFixtureWork, specReadinessLocalRecoveryFixtureWork, multiRoleLocalRecoveryFixtureWork,
+    targetedCapabilityFixtureWork,
+    codeStandardsCapabilityFixtureWork, specReadinessCapabilityFixtureWork, targetedAdjudicationFixtureWork,
+    targetedLocalRecoveryFixtureWork, specReadinessLocalRecoveryFixtureWork, multiRoleLocalRecoveryFixtureWork,
     releaseRoleChangeRecoveryFixtureWork,
 ]);
 const codeStandardsPrepared = codeStandardsCapabilityFixture.prepared;
@@ -804,12 +583,10 @@ test('adjudication candidates include the bound finding and frozen expectation f
     const batches = [
         {pending: null, prepared: codeStandardsPrepared, repositoryRoot: codeStandardsCapabilityFixture.repositoryRoot,
             response: {instances: standardsInstances, reviewerId: 'code-standards-reviewer'}},
-        {pending: codeSpecBaselinePending, prepared: codeSpecCapabilityFixture.prepared, repositoryRoot: codeSpecCapabilityFixture.repositoryRoot,
-            response: codeSpecCapabilityFixture.responses[0]},
+        {pending: targetedBaselinePending, prepared: targetedCapabilityFixture.prepared, repositoryRoot: targetedCapabilityFixture.repositoryRoot,
+            response: targetedCapabilityFixture.responses[0]},
         {pending: specReadinessCapabilityFixture.pending, prepared: specReadinessCapabilityFixture.prepared,
             repositoryRoot: specReadinessCapabilityFixture.repositoryRoot, response: specReadinessCapabilityFixture.response},
-        {pending: commitAuditCapabilityFixture.pending, prepared: commitAuditCapabilityFixture.prepared,
-            repositoryRoot: commitAuditCapabilityFixture.repositoryRoot, response: commitAuditCapabilityFixture.response},
     ];
     // 初始报告和角色未变化, 复用准备阶段已经执行的真实验证.
     for (const {pending: preparedPending, prepared, repositoryRoot, response} of batches) {
@@ -915,12 +692,11 @@ test('candidate content batch preserves one-operation ordered bytes and closes i
     for (const reviewerId of REVIEWER_IDS) {
         assert.deepEqual(deriveAffectedReviewerIds([`docs/agents/roles/${reviewerId}.md`]), [reviewerId]);
     }
-    assert.deepEqual(deriveAffectedReviewerIds(['docs/agents/roles/commit-audit-reviewer/gate-2.md']), ['commit-audit-reviewer']);
     assert.deepEqual(deriveAffectedReviewerIds(['docs/agents/roles/unregistered-reviewer.md']), []);
     assert.deepEqual(deriveAffectedReviewerIds([
         'docs/agents/roles/spec-readiness-reviewer.md',
         'lib/release/reviewer-capability-scoring.mjs',
-        'docs/agents/roles/code-spec-reviewer.md',
+        'docs/agents/roles/code-standards-reviewer.md',
         'lib/release/reviewer-capability-scoring.mjs',
         'docs/agents/roles/spec-readiness-reviewer.md',
     ]), REVIEWER_IDS);
@@ -1112,7 +888,7 @@ test('reviewer scoring tables preserve association, placement, evidence, clean t
         evidenceSources,
         expected: sourceBoundExpected,
         instanceId: 'source-bound',
-        reviewerId: 'code-spec-reviewer',
+        reviewerId: 'code-standards-reviewer',
         scenarioRoot: resolve('/reviewer-capability-scenario'),
     });
     const sourceBoundCheck = (/** @type {string} */ requirementSource) => sourceBoundScorer({checks: [{
@@ -1130,7 +906,7 @@ test('reviewer scoring tables preserve association, placement, evidence, clean t
         evidenceSources,
         expected: blankAssociation,
         instanceId: 'blank-association',
-        reviewerId: 'code-spec-reviewer',
+        reviewerId: 'code-standards-reviewer',
         scenarioRoot: resolve('/reviewer-capability-scenario'),
     });
     assert.deepEqual(blankScorer({checks: [{
@@ -1151,7 +927,7 @@ test('reviewer scoring tables preserve association, placement, evidence, clean t
         evidenceSources,
         expected: cleanSourceBoundExpected,
         instanceId: 'clean-source-bound',
-        reviewerId: 'code-spec-reviewer',
+        reviewerId: 'code-standards-reviewer',
         scenarioRoot: resolve('/reviewer-capability-scenario'),
     });
     const cleanSourceFinding = {
@@ -1185,39 +961,39 @@ test('reviewer scoring tables preserve association, placement, evidence, clean t
         evidenceSources: new Map(),
         expected: /** @type {PreparedExpected} */ (/** @type {unknown} */ ({})),
         instanceId: 'invalid',
-        reviewerId: 'code-spec-reviewer',
+        reviewerId: 'code-standards-reviewer',
         scenarioRoot: resolve('/reviewer-capability-scenario'),
     }), TypeError);
 });
 
 test('targeted Reviewer capability lifecycle connects one prepared contract through artifact adjudication and final gates', async () => {
-    const {prepared, repositoryRoot, responses} = codeSpecCapabilityFixture;
+    const {prepared, repositoryRoot, responses} = targetedCapabilityFixture;
     assert.equal(Object.hasOwn(prepared, 'contracts'), false);
     assert.equal(Object.hasOwn(prepared, 'expected'), false);
     assert.equal(Object.hasOwn(prepared, 'candidate'), false);
-    assert.deepEqual(prepared.handoffs.map(handoff => handoff.reviewerId), Array(3).fill('code-spec-reviewer'));
+    assert.deepEqual(prepared.handoffs.map(handoff => handoff.reviewerId), Array(3).fill('code-standards-reviewer'));
     const state = await readPreparedState(prepared.preparedPath);
-    assert.deepEqual(state.reviewerIds, ['code-spec-reviewer']);
+    assert.deepEqual(state.reviewerIds, ['code-standards-reviewer']);
     assert.equal(state.contracts.length, 1);
     assert.equal(state.contracts[0].instances.length, 3);
     assert.equal(state.contracts[0].instances.every(instance => !Object.hasOwn(instance, 'repetition')), true);
     assert.equal(prepared.handoffs.every(handoff => !Object.hasOwn(handoff, 'repetition')), true);
     assert.equal(new Set(state.contracts[0].instances.map(instance => instance.instanceId)).size, 3);
     assert.equal(new Set(state.contracts[0].instances.map(instance => instance.scenarioRoot)).size, 3);
-    assert.deepEqual(responses.map(response => response.reviewerId), ['code-spec-reviewer']);
+    assert.deepEqual(responses.map(response => response.reviewerId), ['code-standards-reviewer']);
     assert.equal(responses.flatMap(response => response.instances).length, 3);
     assert.equal(responses.flatMap(response => response.instances).every(instance => (
         instance.artifactPaths.length === 1
     )), true);
     const result = await rawVerifyReviewerCapabilityConformance({
-        adjudication: codeSpecBaselineAdjudication,
+        adjudication: targetedBaselineAdjudication,
         agentIdentity,
         input: {artifacts: responses},
         preparedPath: prepared.preparedPath,
         repositoryRoot,
     });
     assert.equal(result.status, 'verified');
-    assert.deepEqual(result.reviewerIds, ['code-spec-reviewer']);
+    assert.deepEqual(result.reviewerIds, ['code-standards-reviewer']);
     assert.deepEqual(requireValue(result.results, 'Expected Reviewer score.').map(entry => entry.score), [1]);
     const score = requireValue(result.results?.[0], 'Expected Reviewer score.');
     assert.deepEqual(score.repetitionScores, [1, 1, 1]);
@@ -1231,8 +1007,8 @@ test('targeted Reviewer capability lifecycle connects one prepared contract thro
 });
 
 test('repairing artifact selection without changing review results reuses the complete prepared batch', async () => {
-    const {prepared, repositoryRoot, responses} = codeSpecCapabilityFixture;
-    const response = requireValue(responses[0], 'Expected complete Code Spec response.');
+    const {prepared, repositoryRoot, responses} = targetedCapabilityFixture;
+    const response = requireValue(responses[0], 'Expected complete Code Standards response.');
     const preparedBytes = await readFile(prepared.preparedPath);
     const reportBytes = await Promise.all(response.instances.map(instance => readFile(
         requireValue(instance.artifactPaths?.[0], 'Expected bound report.'),
@@ -1244,7 +1020,7 @@ test('repairing artifact selection without changing review results reuses the co
     assert.equal(rejected.status, 'failed');
     input.artifacts[0].instances.pop();
     const repaired = await rawVerifyReviewerCapabilityConformance({
-        adjudication: codeSpecBaselineAdjudication, agentIdentity, input,
+        adjudication: targetedBaselineAdjudication, agentIdentity, input,
         preparedPath: prepared.preparedPath, repositoryRoot,
     });
     assert.equal(repaired.status, 'verified');
@@ -1257,7 +1033,7 @@ test('repairing artifact selection without changing review results reuses the co
 });
 
 test('local preparation replaces one repetition and formally verifies the retained complete batch', async () => {
-    const fixture = codeSpecLocalRecoveryFixture;
+    const fixture = targetedLocalRecoveryFixture;
     const {adjudication, originalPreparedBytes, originalReportBytes, pending, prepared, replacement, response, repositoryRoot, selected,
         source, sourceResponse, sourceState, state} = fixture;
     assert.deepEqual(state.previousPrepared, {
@@ -1276,7 +1052,7 @@ test('local preparation replaces one repetition and formally verifies the retain
     assert.notEqual(replacement.scenarioRoot, selected.scenarioRoot);
     assert.notEqual(replacement.reportPath, selected.reportPath);
     assert.deepEqual(prepared.handoffs.map(handoff => [handoff.reviewerId, handoff.instanceId]),
-        [['code-spec-reviewer', replacement.instanceId]]);
+        [['code-standards-reviewer', replacement.instanceId]]);
     assert.deepEqual(prepared.generations, []);
     assert.equal(prepared.handoffs[0].input.reportPath, replacement.reportPath);
     assert.equal(prepared.handoffs[0].input.stateDirectory, dirname(prepared.preparedPath));
@@ -1296,7 +1072,7 @@ test('local preparation replaces one repetition and formally verifies the retain
 });
 
 test('local verification rejects old, missing, and foreign replacement results without widening the batch', async () => {
-    const {prepared, repositoryRoot, response, selected, sourceResponse} = codeSpecLocalRecoveryFixture;
+    const {prepared, repositoryRoot, response, selected, sourceResponse} = targetedLocalRecoveryFixture;
     const complete = response.instances;
     const invalidBatches = [
         sourceResponse.instances,
@@ -1308,7 +1084,7 @@ test('local verification rejects old, missing, and foreign replacement results w
     for (const instances of invalidBatches) {
         const result = await rawVerifyReviewerCapabilityConformance({
             agentIdentity,
-            input: {artifacts: [{instances, reviewerId: 'code-spec-reviewer'}]},
+            input: {artifacts: [{instances, reviewerId: 'code-standards-reviewer'}]},
             preparedPath: prepared.preparedPath,
             repositoryRoot,
         });
@@ -1318,13 +1094,13 @@ test('local verification rejects old, missing, and foreign replacement results w
 });
 
 test('local preparation rejects selections that are empty, duplicated, stale, or role mismatched', async () => {
-    const {repositoryRoot, selected, source} = codeSpecLocalRecoveryFixture;
-    const valid = {instanceId: selected.instanceId, reviewerId: 'code-spec-reviewer'};
+    const {repositoryRoot, selected, source} = targetedLocalRecoveryFixture;
+    const valid = {instanceId: selected.instanceId, reviewerId: 'code-standards-reviewer'};
     for (const selection of [
         {instances: []},
         {instances: [valid, valid]},
         {instances: [{...valid, instanceId: 'foreign-instance'}]},
-        {instances: [{...valid, reviewerId: 'code-standards-reviewer'}]},
+        {instances: [{...valid, reviewerId: 'spec-readiness-reviewer'}]},
         {instances: [{...valid, extra: true}]},
         {instances: [valid], extra: true},
     ]) {
@@ -1401,7 +1177,7 @@ test('Spec Readiness local verification still requires every paired scene and re
 
 test('consecutive local preparations preserve the prior replacement and bind a second new repetition', async () => {
     const {prepared: first, repositoryRoot, replacement: firstReplacement, response: firstResponse,
-        state: firstState} = codeSpecLocalRecoveryFixture;
+        state: firstState} = targetedLocalRecoveryFixture;
     const selected = requireValue(firstState.contracts[0]?.instances[2], 'Expected third current repetition.');
     const firstBytes = await readFile(first.preparedPath);
     const firstReportBytes = await readFile(firstReplacement.reportPath);
@@ -1409,7 +1185,7 @@ test('consecutive local preparations preserve the prior replacement and bind a s
         agentIdentity,
         preparedPath: first.preparedPath,
         repositoryRoot,
-        selection: {instances: [{instanceId: selected.instanceId, reviewerId: 'code-spec-reviewer'}]},
+        selection: {instances: [{instanceId: selected.instanceId, reviewerId: 'code-standards-reviewer'}]},
     });
     const secondState = await readPreparedState(second.preparedPath);
     const secondReplacement = requireValue(secondState.contracts[0]?.instances[2], 'Expected second local replacement.');
@@ -1426,7 +1202,7 @@ test('consecutive local preparations preserve the prior replacement and bind a s
         : instance);
     const pending = await rawVerifyReviewerCapabilityConformance({
         agentIdentity,
-        input: {artifacts: [{instances: current, reviewerId: 'code-spec-reviewer'}]},
+        input: {artifacts: [{instances: current, reviewerId: 'code-standards-reviewer'}]},
         preparedPath: second.preparedPath,
         repositoryRoot,
     });
@@ -1436,7 +1212,7 @@ test('consecutive local preparations preserve the prior replacement and bind a s
 });
 
 test('local verification closes a missing or byte-changed source record', async () => {
-    const {prepared, repositoryRoot, response, source} = codeSpecLocalRecoveryFixture;
+    const {prepared, repositoryRoot, response, source} = targetedLocalRecoveryFixture;
     const sourceBytes = await readFile(source.preparedPath);
     const input = {agentIdentity, input: {artifacts: [response]}, preparedPath: prepared.preparedPath, repositoryRoot};
     try {
@@ -1456,12 +1232,12 @@ test('local verification closes a missing or byte-changed source record', async 
 });
 
 test('local verification rejects forged retained and replacement bindings', async () => {
-    const {prepared, repositoryRoot, response, selected, source, sourceState} = codeSpecLocalRecoveryFixture;
+    const {prepared, repositoryRoot, response, selected, source, sourceState} = targetedLocalRecoveryFixture;
     const preparedBytes = await readFile(prepared.preparedPath);
     const input = {agentIdentity, input: {artifacts: [response]}, preparedPath: prepared.preparedPath, repositoryRoot};
     const foreign = await prepareReviewerCapabilityConformance({
         agentIdentity, preparedPath: source.preparedPath, repositoryRoot,
-        selection: {instances: [{instanceId: selected.instanceId, reviewerId: 'code-spec-reviewer'}]},
+        selection: {instances: [{instanceId: selected.instanceId, reviewerId: 'code-standards-reviewer'}]},
     });
     const foreignState = await readPreparedState(foreign.preparedPath);
     try {
@@ -1485,7 +1261,7 @@ test('local verification rejects forged retained and replacement bindings', asyn
 });
 
 test('local preparation rejects drift in an unselected staged scene without adding it to the selection', async () => {
-    const {repositoryRoot, selected, source, sourceState} = codeSpecLocalRecoveryFixture;
+    const {repositoryRoot, selected, source, sourceState} = targetedLocalRecoveryFixture;
     const retained = requireValue(sourceState.contracts[0]?.instances[0], 'Expected retained scene.');
     const runCommand = requireValue(sharedRunCommands.get(repositoryRoot), 'Expected fixture Git runner.');
     const changedPaths = await runCommand('git', ['diff', '--cached', '--name-only'], {cwd: retained.scenarioRoot});
@@ -1501,7 +1277,7 @@ test('local preparation rejects drift in an unselected staged scene without addi
             agentIdentity,
             preparedPath: source.preparedPath,
             repositoryRoot,
-            selection: {instances: [{instanceId: selected.instanceId, reviewerId: 'code-spec-reviewer'}]},
+            selection: {instances: [{instanceId: selected.instanceId, reviewerId: 'code-standards-reviewer'}]},
         }), /drift|digest|changed|binding/u);
     } finally {
         await writeFile(absolutePath, originalBytes);
@@ -1510,40 +1286,22 @@ test('local preparation rejects drift in an unselected staged scene without addi
     }
 });
 
-test('release local selection distinguishes the same instance ID across Reviewer roles', async () => {
-    const {prepared, repositoryRoot, selected, source, sourceState, state} = multiRoleLocalRecoveryFixture;
-    assert.equal(sourceState.mode, 'release');
-    assert.deepEqual(sourceState.reviewerIds, ['code-spec-reviewer', 'code-standards-reviewer']);
-    assert.equal(sourceState.contracts[0].instances[0].instanceId, sourceState.contracts[1].instances[0].instanceId);
-    assert.equal(sourceState.contracts[0].instances[0].instanceId, selected.instanceId);
-    assert.equal(state.previousPrepared?.preparedPath, source.preparedPath);
-    assert.notEqual(state.contracts[0].instances[0].instanceId, selected.instanceId);
-    assert.deepEqual(state.contracts[0].instances.slice(1), sourceState.contracts[0].instances.slice(1));
-    assert.deepEqual(state.contracts[1], sourceState.contracts[1]);
-    assert.deepEqual(prepared.handoffs.map(handoff => [handoff.reviewerId, handoff.instanceId]),
-        [['code-spec-reviewer', state.contracts[0].instances[0].instanceId]]);
-    const identity = {instanceId: selected.instanceId, reviewerId: 'code-spec-reviewer'};
-    await assert.rejects(prepareReviewerCapabilityConformance({
-        agentIdentity, preparedPath: source.preparedPath, repositoryRoot,
-        selection: {instances: [identity, identity]},
-    }));
-});
 
 test('release recovery refreshes changed Role identity only after rebuilding every instance of that Reviewer', async () => {
     const {prepared, roleBytes, selection, source, sourceState, state} = releaseRoleChangeRecoveryFixture;
-    const currentCodeSpec = requireValue(state.contracts.find(contract => contract.reviewerId === 'code-spec-reviewer'),
-        'Expected rebuilt Code Spec contract.');
-    const previousCodeSpec = requireValue(sourceState.contracts.find(contract => contract.reviewerId === 'code-spec-reviewer'),
-        'Expected original Code Spec contract.');
-    assert.notEqual(currentCodeSpec.roleSha256, previousCodeSpec.roleSha256);
-    assert.equal(currentCodeSpec.roleSha256, createHash('sha256').update(roleBytes).digest('hex'));
-    assert.equal(currentCodeSpec.reviewerInstructionsSha256, previousCodeSpec.reviewerInstructionsSha256);
-    assert.equal(currentCodeSpec.scenarioRevision, previousCodeSpec.scenarioRevision);
-    assert.deepEqual(state.contracts.find(contract => contract.reviewerId === 'code-standards-reviewer'),
-        sourceState.contracts.find(contract => contract.reviewerId === 'code-standards-reviewer'));
+    const currentTargeted = requireValue(state.contracts.find(contract => contract.reviewerId === 'code-standards-reviewer'),
+        'Expected rebuilt Code Standards contract.');
+    const previousTargeted = requireValue(sourceState.contracts.find(contract => contract.reviewerId === 'code-standards-reviewer'),
+        'Expected original Code Standards contract.');
+    assert.notEqual(currentTargeted.roleSha256, previousTargeted.roleSha256);
+    assert.equal(currentTargeted.roleSha256, createHash('sha256').update(roleBytes).digest('hex'));
+    assert.equal(currentTargeted.reviewerInstructionsSha256, previousTargeted.reviewerInstructionsSha256);
+    assert.equal(currentTargeted.scenarioRevision, previousTargeted.scenarioRevision);
+    assert.deepEqual(state.contracts.find(contract => contract.reviewerId === 'spec-readiness-reviewer'),
+        sourceState.contracts.find(contract => contract.reviewerId === 'spec-readiness-reviewer'));
     assert.equal(prepared.handoffs.length, 3);
-    assert.deepEqual(prepared.handoffs.map(handoff => handoff.reviewerId), Array(3).fill('code-spec-reviewer'));
-    assert.ok(currentCodeSpec.instances.every((instance, index) => instance.instanceId !== previousCodeSpec.instances[index].instanceId));
+    assert.deepEqual(prepared.handoffs.map(handoff => handoff.reviewerId), Array(3).fill('code-standards-reviewer'));
+    assert.ok(currentTargeted.instances.every((instance, index) => instance.instanceId !== previousTargeted.instances[index].instanceId));
     assert.equal(state.previousPrepared?.preparedPath, source.preparedPath);
     assert.equal(selection.instances.length, 3);
 });
@@ -1559,7 +1317,7 @@ test('release recovery rejects a changed Role when any old instance would be ret
 });
 
 test('historical source revision permits complete rebuild but rejects retained old scenes', async () => {
-    const {repositoryRoot, source, sourceState} = codeSpecLocalRecoveryFixture;
+    const {repositoryRoot, source, sourceState} = targetedLocalRecoveryFixture;
     const sourceBytes = await readFile(source.preparedPath);
     const historical = JSON.parse(sourceBytes.toString('utf8'));
     const currentRevision = sourceState.contracts[0].scenarioRevision;
@@ -1569,7 +1327,7 @@ test('historical source revision permits complete rebuild but rejects retained o
     try {
         const historicalBytes = await readFile(source.preparedPath);
         const selection = sourceState.contracts[0].instances.map(instance => ({
-            instanceId: instance.instanceId, reviewerId: 'code-spec-reviewer',
+            instanceId: instance.instanceId, reviewerId: 'code-standards-reviewer',
         }));
         await assert.rejects(prepareReviewerCapabilityConformance({
             agentIdentity, preparedPath: source.preparedPath, repositoryRoot,
@@ -1599,8 +1357,8 @@ test('historical source revision permits complete rebuild but rejects retained o
 });
 
 test('a complete format correction preserves the original report and discounts only its repetition', async t => {
-    const {prepared, repositoryRoot, responses} = codeSpecCapabilityFixture;
-    const response = requireValue(responses[0], 'Expected Code Spec response.');
+    const {prepared, repositoryRoot, responses} = targetedCapabilityFixture;
+    const response = requireValue(responses[0], 'Expected Code Standards response.');
     await withCapabilityArtifactSnapshots(response, async snapshots => {
         const original = requireValue(response.instances[1], 'Expected second repetition.');
         const originalPath = requireValue(original.artifactPaths?.[0], 'Expected original report.');
@@ -1614,7 +1372,7 @@ test('a complete format correction preserves the original report and discounts o
             corrected.instances[1] = {instanceId: original.instanceId, artifactPaths: null,
                 formatCorrection: {originalReportPath: originalPath, correctedReportPath}};
             const result = await rawVerifyReviewerCapabilityConformance({
-                adjudication: codeSpecBaselineAdjudication, agentIdentity, input: {artifacts: [corrected]},
+                adjudication: targetedBaselineAdjudication, agentIdentity, input: {artifacts: [corrected]},
                 preparedPath: prepared.preparedPath, repositoryRoot,
             });
             assert.equal(result.status, 'verified', JSON.stringify(result));
@@ -1631,8 +1389,8 @@ test('a complete format correction preserves the original report and discounts o
             assert.equal(await readFile(originalPath, 'utf8'), malformedText);
             const configuration = {model:'explicit-model',reasoningEffort:'explicit-effort'};
             const statistics = aggregateConfiguration({configuration,allowPartial:true,
-                verification:{'code-spec-reviewer':result},
-                observations:corrected.instances.map((instance,index) => ({reviewerId:'code-spec-reviewer',scenarioId:'default',
+                verification:{'code-standards-reviewer':result},
+                observations:corrected.instances.map((instance,index) => ({reviewerId:'code-standards-reviewer',scenarioId:'default',
                     repetition:index + 1,sampleKind:'formal',completed:true,
                     runtime:{actualModel:configuration.model,actualReasoningEffort:configuration.reasoningEffort,
                         durationMs:null,tokenUsage:null,conditions:{backend:'explicit-provider',serviceTier:'default'}},
@@ -1655,8 +1413,8 @@ test('a complete format correction preserves the original report and discounts o
 });
 
 test('format correction rejects a valid original, wrong binding, cross-scene copy, and malformed copy', async () => {
-    const {prepared, repositoryRoot, responses} = codeSpecCapabilityFixture;
-    const response = requireValue(responses[0], 'Expected Code Spec response.');
+    const {prepared, repositoryRoot, responses} = targetedCapabilityFixture;
+    const response = requireValue(responses[0], 'Expected Code Standards response.');
     await withCapabilityArtifactSnapshots(response, async snapshots => {
         const original = requireValue(response.instances[0], 'Expected first repetition.');
         const originalPath = requireValue(original.artifactPaths?.[0], 'Expected original report.');
@@ -1688,8 +1446,8 @@ test('format correction rejects a valid original, wrong binding, cross-scene cop
 });
 
 test('the final average fails the score gate when the uncorrected average reaches it', async () => {
-    const {prepared, repositoryRoot, responses} = codeSpecCapabilityFixture;
-    const response = requireValue(responses[0], 'Expected Code Spec response.');
+    const {prepared, repositoryRoot, responses} = targetedCapabilityFixture;
+    const response = requireValue(responses[0], 'Expected Code Standards response.');
     await withCapabilityArtifactSnapshots(response, async snapshots => {
         const corrected = /** @type {CapabilityArtifactBatch} */ (structuredClone(response));
         const copies = [];
@@ -1710,7 +1468,7 @@ test('the final average fails the score gate when the uncorrected average reache
             const fullThird = requireValue(snapshots[2]?.sources[0], 'Expected third complete report.');
             await writeFile(thirdReportPath, `${fullThird.trimEnd().split('\n').slice(0, 6).join('\n')}\n`, 'utf8');
             const result = await rawVerifyReviewerCapabilityConformance({
-                adjudication: codeSpecThresholdAdjudication, agentIdentity, input: {artifacts: [corrected]},
+                adjudication: targetedThresholdAdjudication, agentIdentity, input: {artifacts: [corrected]},
                 preparedPath: prepared.preparedPath, repositoryRoot,
             });
             assert.equal(result.status, 'failed');
@@ -1732,7 +1490,7 @@ test('the final average fails the score gate when the uncorrected average reache
 
 
 test('public verification averages complete repetitions without a per-repetition score gate', async () => {
-    const {prepared, repositoryRoot, responses} = codeSpecCapabilityFixture;
+    const {prepared, repositoryRoot, responses} = targetedCapabilityFixture;
     await withCapabilityArtifactSnapshots(responses[0], async snapshots => {
         const first = requireValue(snapshots[0], 'Expected first Reviewer repetition.');
         const lines = requireValue(first.sources[0], 'Expected Reviewer report.').trimEnd().split('\n');
@@ -1756,8 +1514,8 @@ test('public verification averages complete repetitions without a per-repetition
 });
 
 test('formal report diagnostics retain every failed instance without marking healthy repetitions', async () => {
-    const {prepared, repositoryRoot, responses} = codeSpecCapabilityFixture;
-    const response = requireValue(responses[0], 'Expected Code Spec response.');
+    const {prepared, repositoryRoot, responses} = targetedCapabilityFixture;
+    const response = requireValue(responses[0], 'Expected Code Standards response.');
     await withCapabilityArtifactSnapshots(response, async snapshots => {
         const first = requireValue(snapshots[0], 'Expected first report.');
         const third = requireValue(snapshots[2], 'Expected third report.');
@@ -1778,7 +1536,7 @@ test('formal report diagnostics retain every failed instance without marking hea
 });
 
 test('partial scoring binds complete prepared repetitions and uses the same case scores', async () => {
-    const {prepared, repositoryRoot, responses} = codeSpecCapabilityFixture;
+    const {prepared, repositoryRoot, responses} = targetedCapabilityFixture;
     const fullInput = {artifacts: [{...responses[0], instances: responses[0].instances.map((instance, index) => (
         index === 0 ? {...instance, artifactPaths: null} : instance
     ))}]};
@@ -1797,7 +1555,7 @@ test('partial scoring binds complete prepared repetitions and uses the same case
     const selectedInstances = new Set(input.artifacts[0].instances.map(instance => instance.instanceId));
     const scored = await scoreReviewerCapabilityCompletedRepetitions({
         ...options,
-        adjudication: {decisions: codeSpecBaselineAdjudication.decisions.filter(decision => (
+        adjudication: {decisions: targetedBaselineAdjudication.decisions.filter(decision => (
             [...selectedInstances].some(instanceId => decision.candidateId.includes(`:${instanceId}:`))
         ))},
     });
@@ -1815,7 +1573,7 @@ test('partial scoring binds complete prepared repetitions and uses the same case
 });
 
 test('an explicit model failure scores zero only for an empty bound report', async () => {
-    const {prepared, repositoryRoot, responses} = codeSpecCapabilityFixture;
+    const {prepared, repositoryRoot, responses} = targetedCapabilityFixture;
     await withCapabilityArtifactSnapshots(responses[0], async snapshots => {
         const failure = (/** @type {CapabilityArtifact} */ instance) => ({instanceId: instance.instanceId,
             artifactPaths: null, modelFailure: {reason: 'Reviewer abandoned the bound report without scorable content.'}});
@@ -1846,40 +1604,11 @@ test('an explicit model failure scores zero only for an empty bound report', asy
     });
 });
 
-test('Commit Audit model failure retains missing judgments from an empty original report', async () => {
-    const {contract, prepared, repositoryRoot, response} = commitAuditCapabilityFixture;
-    const original = requireValue(contract.instances[0], 'Expected first Commit Audit instance.');
-    await withCapabilityArtifactSnapshots({instances: [{artifactPaths: [original.reportPath], instanceId: original.instanceId}]}, async () => {
-        await writeFile(original.reportPath, '', 'utf8');
-        const modelFailure = {reason: 'Reviewer left the bound Commit Audit report empty.'};
-        const scored = await scoreReviewerCapabilityCompletedRepetitions({agentIdentity,
-            input: {artifacts: [{reviewerId: response.reviewerId,
-                instances: [{artifactPaths: null, instanceId: original.instanceId, modelFailure}]}]},
-            preparedPath: prepared.preparedPath, repositoryRoot});
-        assert.equal(scored.status, 'diagnostic');
-        const score = reviewerScore(scored);
-        const instance = requireValue(score.instances[0], 'Expected zero-scored instance.');
-        assert.ok(score.reportDiagnostics.some(entry => entry.code === 'requirement-missing' && entry.message.includes('Gate 1')));
-        assert.ok(score.reportDiagnostics.some(entry => entry.code === 'requirement-missing' && entry.message.includes('Gate 2')));
-        assert.ok(score.reportDiagnostics.every(entry => entry.instanceId === original.instanceId));
-        assert.deepEqual(instance.reportDiagnostics, score.reportDiagnostics);
-        assert.deepEqual(score.repetitions[0].reportDiagnostics, score.reportDiagnostics);
-        assert.deepEqual(instance.modelFailure, modelFailure);
-        assert.equal(instance.earnedProblemPoints, 0);
-        assert.equal(instance.earnedCleanPoints, 0);
-        assert.equal(instance.totalProblemCases, original.expected.problemCount);
-        assert.equal(instance.totalCleanCases, original.expected.cleanCount);
-        assert.deepEqual(score.repetitionScores, [0]);
-        assert.deepEqual(score.finalRepetitionScores, [0]);
-        assert.equal(score.score, undefined);
-        assert.equal(await readFile(original.reportPath, 'utf8'), '');
-    });
-});
 
-test('Code Spec model failure retains format errors from a nonempty unparseable original report', async () => {
-    const {prepared, repositoryRoot, responses} = codeSpecCapabilityFixture;
-    const response = requireValue(responses[0], 'Expected Code Spec response.');
-    const original = requireValue(response.instances[0], 'Expected first Code Spec instance.');
+test('Code Standards model failure retains format errors from a nonempty unparseable original report', async () => {
+    const {prepared, repositoryRoot, responses} = targetedCapabilityFixture;
+    const response = requireValue(responses[0], 'Expected Code Standards response.');
+    const original = requireValue(response.instances[0], 'Expected first Code Standards instance.');
     await withCapabilityArtifactSnapshots({instances: [original]}, async snapshots => {
         const originalPath = requireValue(snapshots[0]?.artifactPaths[0], 'Expected original report.');
         const originalText = 'Reviewer abandoned the review without producing finding bullets.\n';
@@ -1960,7 +1689,7 @@ test('Spec Readiness model failure retains every invalid line and the valid pair
 });
 
 test('partial scoring accepts only a bound independent format copy', async () => {
-    const {prepared, repositoryRoot, responses} = codeSpecCapabilityFixture;
+    const {prepared, repositoryRoot, responses} = targetedCapabilityFixture;
     const original = requireValue(responses[0].instances[1], 'Expected second prepared repetition.');
     const originalPath = requireValue(original.artifactPaths?.[0], 'Expected original report.');
     const correctedPath = join(dirname(originalPath), 'partial-format-copy.md');
@@ -1978,7 +1707,7 @@ test('partial scoring accepts only a bound independent format copy', async () =>
                 responses[0].instances[2],
             ]}]};
             const scored = await scoreReviewerCapabilityCompletedRepetitions({...options, input: correctedInput,
-                adjudication: {decisions: codeSpecBaselineAdjudication.decisions.filter(decision =>
+                adjudication: {decisions: targetedBaselineAdjudication.decisions.filter(decision =>
                     correctedInput.artifacts[0].instances.some(instance => decision.candidateId.includes(`:${instance.instanceId}:`)))}});
             assert.deepEqual(reviewerScore(scored).reportDiagnostics.map(entry => entry.instanceId), [original.instanceId]);
             assert.equal(reviewerScore(scored).reportDiagnostics[0]?.code, 'review-format-invalid');
@@ -1995,11 +1724,11 @@ test('partial scoring accepts only a bound independent format copy', async () =>
 });
 
 test('retry prepares and verifies an entirely fresh Reviewer batch', async () => {
-    const {prepared: failedBatch, repositoryRoot, responses: oldResponses} = codeSpecCapabilityFixture;
+    const {prepared: failedBatch, repositoryRoot, responses: oldResponses} = targetedCapabilityFixture;
     const retry = await prepareReviewerCapabilityConformance({
         agentIdentity,
         repositoryRoot,
-        reviewerId: 'code-spec-reviewer',
+        reviewerId: 'code-standards-reviewer',
     });
     const oldState = await readPreparedState(failedBatch.preparedPath);
     const newState = await readPreparedState(retry.preparedPath);
@@ -2287,775 +2016,26 @@ test('runtime-migration scoring retains content and penalizes a stop-rule error'
     }
 });
 
-test('targeted Commit Audit preparation completes with the production Git command runner', async () => {
-    const defaultRunnerAgentIdentity = {
-        platform: 'codex',
-        sessionId: 'reviewer-capability-default-runner-test',
-    };
-    const workspaceRoot = join(process.cwd(), '.tmp', 'codex', defaultRunnerAgentIdentity.sessionId);
-    sharedCleanupCallbacks.push(() => rm(workspaceRoot, {force: true, recursive: true}));
-
-    const prepared = await prepareReviewerCapabilityConformanceImplementation({
-        agentIdentity: defaultRunnerAgentIdentity,
-        repositoryRoot: process.cwd(),
-        reviewerId: 'commit-audit-reviewer',
-    });
-
-    assert.equal('preparedPath' in prepared, true);
-    if (!('preparedPath' in prepared)) return;
-    assert.equal(prepared.handoffs.length, 3);
-    assert.equal(prepared.generations.length, 3);
-    assert.equal(
-        await readFile(join(prepared.handoffs[0].scenarioRoot, 'docs', 'agents', 'roles', 'commit-audit-reviewer', 'gate-2.md'), 'utf8'),
-        await readFile(join(process.cwd(), 'docs', 'agents', 'roles', 'commit-audit-reviewer', 'gate-2.md'), 'utf8'),
-    );
-    assert.equal(
-        await readFile(join(prepared.handoffs[0].scenarioRoot, 'docs', 'agents', 'agent-writes.md'), 'utf8'),
-        await readFile(join(process.cwd(), 'docs', 'agents', 'agent-writes.md'), 'utf8'),
-    );
-    for (const instructionPath of ['.agents/skills/domain-modeling/SKILL.md', '.agents/skills/validation/SKILL.md']) {
-        assert.equal(
-            await readFile(join(prepared.handoffs[0].scenarioRoot, instructionPath), 'utf8'),
-            await readFile(join(process.cwd(), instructionPath), 'utf8'),
-        );
-    }
-});
 
 
 
-test('Commit Audit capability matches distinct requirements that share one source without using Reviewer wording', async () => {
-    const {prepared, repeatedSource, repositoryRoot, response} = repeatedSourceCommitAuditCapabilityFixture;
-    const firstArtifact = requireValue(response.instances[0]?.artifactPaths[0], 'Expected repeated-source Commit Audit artifact.');
-    const record = JSON.parse(await readFile(firstArtifact, 'utf8'));
-    const repeatedRequirements = record.requirements.filter((/** @type {{source?: unknown}} */ requirement) => (
-        JSON.stringify(requirement.source) === JSON.stringify(repeatedSource)
-    ));
-    assert.deepEqual(repeatedRequirements.map((/** @type {{requirement?: unknown}} */ requirement) => requirement.requirement), [
-        'Alpha wording chosen only by the Reviewer.',
-        'Zulu wording chosen only by the Reviewer.',
-    ]);
-    const repeatedSourceResult = await verifyReviewerCapabilityConformance({
-        agentIdentity,
-        input: {artifacts: [response]},
-        preparedPath: prepared.preparedPath,
-        repositoryRoot,
-    });
-    assert.equal(repeatedSourceResult.status, 'verified', JSON.stringify(repeatedSourceResult));
-    assert.equal(repeatedSourceResult.results?.[0]?.score, 1);
-});
 
-test('Commit Audit equal-count shared-source ambiguity requires bindings independent of row order', async () => {
-    const {prepared, repeatedSource, repositoryRoot, response} = repeatedSourceCommitAuditCapabilityFixture;
-    const instance = requireValue(response.instances[0], 'Expected first repeated-source instance.');
-    const expected = requireValue((await readPreparedState(prepared.preparedPath)).contracts[0]?.instances[0]?.expected,
-        'Expected repeated-source fixture.');
-    const requirements = requireValue(expected.auditRecords?.[0]?.requirements, 'Expected first record requirements.');
-    const sharedIndexes = requirements.flatMap((requirement, index) => JSON.stringify(requirement.source) === JSON.stringify(repeatedSource) ? [index] : []);
-    const problemIndex = requireValue(sharedIndexes.find(index => requirements[index].result !== 'satisfied'), 'Expected shared-source problem.');
-    const cleanIndex = requireValue(sharedIndexes.find(index => requirements[index].result === 'satisfied'), 'Expected shared-source clean requirement.');
-    await withCapabilityArtifactSnapshots({instances: [instance]}, async snapshots => {
-        const path = requireValue(snapshots[0]?.artifactPaths[0], 'Expected first record path.');
-        const original = JSON.parse(requireValue(snapshots[0]?.sources[0], 'Expected first record.'));
-        const actualIndexes = original.requirements.flatMap((/** @type {{source: unknown}} */ requirement, /** @type {number} */ index) => (
-            JSON.stringify(requirement.source) === JSON.stringify(repeatedSource) ? [index] : []
-        ));
-        const trueIndex = requireValue(actualIndexes.find((/** @type {number} */ index) => original.requirements[index].result !== 'satisfied'), 'Expected true finding row.');
-        const unrelatedIndex = requireValue(actualIndexes.find((/** @type {number} */ index) => original.requirements[index].result === 'satisfied'), 'Expected clean row.');
-        const trueRow = original.requirements[trueIndex];
-        const unrelatedRow = {...original.requirements[unrelatedIndex], result: trueRow.result,
-            evidence: structuredClone(trueRow.evidence), finding: 'An unrelated assessment gap.'};
-        const options = {agentIdentity, input: {artifacts: [{reviewerId: response.reviewerId, instances: [instance]}]},
-            preparedPath: prepared.preparedPath, repositoryRoot};
-        /** @type {{decisions: Awaited<ReturnType<typeof fixtureCandidateDecisions>>} | undefined} */
-        let adjudication;
-        /** @type {CaseScoreDetails['caseScores'] | undefined} */
-        let firstScores;
-        for (const reversed of [false, true]) {
-            const record = structuredClone(original);
-            record.requirements[trueIndex] = reversed ? unrelatedRow : trueRow;
-            record.requirements[unrelatedIndex] = reversed ? trueRow : unrelatedRow;
-            const report = `${JSON.stringify(record)}\n`;
-            await writeFile(path, report, 'utf8');
-            if (adjudication === undefined) {
-                const unbound = await scoreReviewerCapabilityCompletedRepetitions(options);
-                assert.equal(unbound.status, 'needs-requirement-binding');
-                assert.equal(unbound.results, undefined);
-                assert.deepEqual(unbound.bindingRequests?.map(request => ({instanceId: request.instanceId,
-                    expectedIndexes: request.expectedIndexes, actualIndexes: request.actualIndexes})), [
-                    {instanceId: instance.instanceId, expectedIndexes: sharedIndexes, actualIndexes},
-                ]);
-            }
-            const requirementBindings = {bindings: [
-                {actualIndex: reversed ? unrelatedIndex : trueIndex, expectedIndex: problemIndex, instanceId: instance.instanceId, recordIndex: 0},
-                {actualIndex: reversed ? trueIndex : unrelatedIndex, expectedIndex: cleanIndex, instanceId: instance.instanceId, recordIndex: 0},
-            ]};
-            if (adjudication === undefined) {
-                const pending = await scoreReviewerCapabilityCompletedRepetitions({...options, requirementBindings});
-                assert.equal(pending.status, 'needs-adjudication', JSON.stringify(pending));
-                adjudication = {decisions: await fixtureCandidateDecisions(options,
-                    requireValue(pending.candidates, 'Expected explicitly bound candidates.'))};
-            }
-            const scored = await scoreReviewerCapabilityCompletedRepetitions({...options, requirementBindings, adjudication});
-            assert.equal(scored.status, 'diagnostic', JSON.stringify(scored));
-            const score = reviewerScore(scored);
-            const details = requireValue(score.instances[0], 'Expected scored instance.');
-            assert.equal(details.earnedProblemPoints, expected.problemCount);
-            assert.equal(details.earnedCleanPoints, expected.cleanCount - 2);
-            assert.deepEqual(score.reportDiagnostics, []);
-            const cleanRate = (expected.cleanCount - 2) / expected.cleanCount;
-            assert.ok(Math.abs(score.repetitionScores[0] - 5 * cleanRate / (4 * cleanRate + 1)) < 1e-12);
-            assert.deepEqual(score.finalRepetitionScores, score.repetitionScores);
-            if (firstScores === undefined) firstScores = details.caseScores;
-            else assert.deepEqual(details.caseScores, firstScores);
-            assert.equal(await readFile(path, 'utf8'), report);
-        }
-    });
-});
 
-test('Commit Audit partial scoring zeros one split requirement and scores other sources', async () => {
-    const {prepared, repositoryRoot, response} = commitAuditCapabilityFixture;
-    await withCapabilityArtifactSnapshots({instances: [response.instances[0]]}, async () => {
-        const instance = requireValue(response.instances[0], 'Expected Commit Audit instance.');
-        const path = requireValue(instance.artifactPaths[0], 'Expected Gate 1 audit.');
-        const record = JSON.parse(await readFile(path, 'utf8'));
-        record.requirements.splice(1, 0, {
-            ...structuredClone(record.requirements[0]),
-            requirement: `${record.requirements[0].requirement} separated clause`,
-        });
-        await writeFile(path, `${JSON.stringify(record)}\n`, 'utf8');
-        const input = {artifacts: [{reviewerId: response.reviewerId, instances: [instance]}]};
-        const options = {agentIdentity, input, preparedPath: prepared.preparedPath, repositoryRoot,
-            runCommand: requireValue(sharedRunCommands.get(repositoryRoot), 'Expected Git command adapter.')};
-        const pending = await scoreReviewerCapabilityCompletedRepetitions(options);
-        assert.equal(pending.status, 'needs-adjudication', JSON.stringify(pending));
-        assert.ok('candidates' in pending);
-        const scored = await scoreReviewerCapabilityCompletedRepetitions({
-            ...options,
-            adjudication: {decisions: requireValue(pending.candidates, 'Expected available candidates.').map(candidate => ({
-                candidateId: candidate.candidateId,
-                decision: 'matched',
-                reason: 'The fixture finding describes this expected defect.',
-            }))},
-        });
-        assert.equal(scored.status, 'diagnostic', JSON.stringify(scored));
-        const score = reviewerScore(scored);
-        const problemCount = requireValue((await readPreparedState(prepared.preparedPath)).contracts[0],
-            'Expected Commit Audit contract.').instances[0].expected.problemCount;
-        const recall = (problemCount - 1) / problemCount;
-        assert.ok(Math.abs(reviewerScore(scored).repetitionScores[0] - 5 * recall / (4 + recall)) < 1e-10,
-            JSON.stringify({actual: reviewerScore(scored).repetitionScores[0], expected: 5 * recall / (4 + recall)}));
-        assert.equal(reviewerScore(scored).finalRepetitionScores[0], reviewerScore(scored).repetitionScores[0] * 0.9);
-    });
-});
 
-test('complete Commit Audit scoring requires ordered unique repetitions and averages all three', async () => {
-    const {adjudication, prepared, repositoryRoot, response} = commitAuditCapabilityFixture;
-    const options = {agentIdentity, input: {artifacts: [response]},
-        preparedPath: prepared.preparedPath, repositoryRoot,
-        runCommand: requireValue(sharedRunCommands.get(repositoryRoot), 'Expected Git command adapter.')};
-    const reversed = await scoreReviewerCapabilityCompletedRepetitions({...options,
-        input: {artifacts: [{...response, instances: [...response.instances].reverse()}]},
-    });
-    assert.equal(reversed.status, 'failed');
-    const duplicate = await scoreReviewerCapabilityCompletedRepetitions({...options,
-        input: {artifacts: [{...response, instances: [response.instances[0], response.instances[0],
-            response.instances[2]]}]},
-    });
-    assert.equal(duplicate.status, 'failed');
-    const scored = await scoreReviewerCapabilityCompletedRepetitions({...options, adjudication});
-    assert.equal(scored.status, 'diagnostic', JSON.stringify(scored));
-    const score = reviewerScore(scored);
-    assert.deepEqual(score.repetitionScores, [1, 1, 1]);
-    assert.equal(score.scoreBeforePenalty, 1);
-    assert.equal(score.score, 1);
-    assert.match(score.scoreExplanation, /Final score: 1\.000\. Score before penalty: 1\.000\./u);
-});
 
-test('Commit Audit shared-source scoring requires complete bindings without reusing rows', async () => {
-    const {prepared, repeatedSource, repositoryRoot, response} = repeatedSourceCommitAuditCapabilityFixture;
-    await withCapabilityArtifactSnapshots(response, async () => {
-        const instance = requireValue(response.instances[0], 'Expected shared-source instance.');
-        const path = requireValue(instance.artifactPaths[0], 'Expected shared-source audit.');
-        const record = JSON.parse(await readFile(path, 'utf8'));
-        const shared = /** @type {Array<{index: number, result: string | undefined}>} */ (record.requirements.flatMap((/** @type {{source?: unknown, result?: string}} */ row, /** @type {number} */ index) => (
-            JSON.stringify(row.source) === JSON.stringify(repeatedSource) ? [{index, result: row.result}] : []
-        )));
-        const problem = requireValue(shared.find(row => row.result !== 'satisfied'), 'Expected shared-source problem.');
-        const satisfied = requireValue(shared.find(row => row.result === 'satisfied'), 'Expected shared-source clean requirement.');
-        record.requirements.splice(problem.index + 1, 0, {
-            ...structuredClone(record.requirements[problem.index]),
-            requirement: `${record.requirements[problem.index].requirement} separated clause`,
-        });
-        const satisfiedActualIndex = satisfied.index > problem.index ? satisfied.index + 1 : satisfied.index;
-        const originalSplitReport = `${JSON.stringify(record)}\n`;
-        await writeFile(path, originalSplitReport, 'utf8');
-        const input = {artifacts: [{reviewerId: response.reviewerId, instances: [instance]}]};
-        const options = {agentIdentity, input, preparedPath: prepared.preparedPath, repositoryRoot,
-            runCommand: requireValue(sharedRunCommands.get(repositoryRoot), 'Expected Git command adapter.')};
-        const formal = await verifyReviewerCapabilityConformance({...options, input: {artifacts: [response]}});
-        assert.equal(formal.status, 'needs-requirement-binding');
-        const requestResult = formal;
-        assert.equal(requestResult.status, 'needs-requirement-binding', JSON.stringify(requestResult));
-        assert.ok('bindingRequests' in requestResult);
-        const request = requireValue(requestResult.bindingRequests?.[0], 'Expected shared-source binding request.');
-        assert.equal(request.instanceId, instance.instanceId);
-        assert.equal(request.expectedIndexes.length, 2);
-        assert.equal(request.actualIndexes.length, 3);
-        const expected = /** @type {Array<{result: string}>} */ (requireValue(
-            requireValue(requireValue(requireValue((await readPreparedState(prepared.preparedPath)).contracts[0],
-                'Expected contract.').instances[0], 'Expected first instance.').expected.auditRecords?.[0],
-                'Expected first audit record.').requirements,
-            'Expected requirements.'));
-        const cleanIndex = requireValue(request.expectedIndexes.find(index => expected[index]?.result === 'satisfied'), 'Expected clean index.');
-        const problemIndex = requireValue(request.expectedIndexes.find(index => expected[index]?.result !== 'satisfied'), 'Expected problem index.');
-        const bindings = {bindings: [
-            {actualIndex: satisfiedActualIndex, expectedIndex: cleanIndex, instanceId: instance.instanceId, recordIndex: 0},
-            {actualIndex: null, expectedIndex: problemIndex, instanceId: instance.instanceId, recordIndex: 0},
-        ]};
-        const incomplete = await scoreReviewerCapabilityCompletedRepetitions({
-            ...options, requirementBindings: {bindings: bindings.bindings.slice(0, 1)},
-        });
-        assert.equal(incomplete.status, 'failed');
-        const reused = await scoreReviewerCapabilityCompletedRepetitions({
-            ...options, requirementBindings: {bindings: bindings.bindings.map(entry => ({
-                ...entry, actualIndex: satisfiedActualIndex,
-            }))},
-        });
-        assert.equal(reused.status, 'failed');
-        const otherSourceIndex = record.requirements.findIndex((/** @type {{source?: unknown}} */ row) => (
-            JSON.stringify(row.source) !== JSON.stringify(repeatedSource)
-        ));
-        assert.ok(otherSourceIndex >= 0);
-        const crossed = await scoreReviewerCapabilityCompletedRepetitions({
-            ...options, requirementBindings: {bindings: bindings.bindings.map(entry => (
-                entry.actualIndex === null ? entry : {...entry, actualIndex: otherSourceIndex}
-            ))},
-        });
-        assert.equal(crossed.status, 'failed');
-        const pending = await scoreReviewerCapabilityCompletedRepetitions({
-            ...options, requirementBindings: bindings,
-        });
-        assert.equal(pending.status, 'needs-adjudication', JSON.stringify(pending));
-        assert.ok('candidates' in pending);
-        assert.ok(reviewerScore(pending).reportDiagnostics.some(entry => entry.instanceId === instance.instanceId));
-        const scored = await scoreReviewerCapabilityCompletedRepetitions({
-            ...options, requirementBindings: bindings,
-            adjudication: {decisions: requireValue(pending.candidates, 'Expected available candidates.').map(candidate => ({
-                candidateId: candidate.candidateId,
-                decision: 'matched',
-                reason: 'The fixture finding describes this expected defect.',
-            }))},
-        });
-        assert.equal(scored.status, 'diagnostic', JSON.stringify(scored));
-        assert.deepEqual(reviewerScore(scored).reportDiagnostics, reviewerScore(pending).reportDiagnostics);
-        const problemCount = requireValue((await readPreparedState(prepared.preparedPath)).contracts[0],
-            'Expected Commit Audit contract.').instances[0].expected.problemCount;
-        const recall = (problemCount - 1) / problemCount;
-        assert.ok(Math.abs(reviewerScore(scored).repetitionScores[0] - 5 * recall / (4 + recall)) < 1e-10,
-            JSON.stringify({actual: reviewerScore(scored).repetitionScores[0], expected: 5 * recall / (4 + recall)}));
-        assert.equal(reviewerScore(scored).finalRepetitionScores[0], reviewerScore(scored).repetitionScores[0] * 0.9);
-        assert.equal(await readFile(path, 'utf8'), originalSplitReport);
-    });
-});
 
-test('Commit Audit scoring preserves coverage errors and rejects malformed canonical records', async () => {
-    const {prepared, repositoryRoot, response} = commitAuditCapabilityFixture;
-    await withCapabilityArtifactSnapshots({instances: [response.instances[0]]}, async snapshots => {
-        const path = requireValue(snapshots[0]?.artifactPaths[0], 'Expected first Commit Audit artifact.');
-        const original = JSON.parse(requireValue(snapshots[0]?.sources[0], 'Expected first Commit Audit record.'));
-        const verifyRecord = async (/** @type {unknown} */ record) => {
-            await writeFile(path, `${JSON.stringify(record)}\n`, 'utf8');
-            const input = {artifacts: [{...response, instances: [response.instances[0]]}]};
-            const options = {agentIdentity, input,
-                preparedPath: prepared.preparedPath, repositoryRoot};
-            const pending = await scoreReviewerCapabilityCompletedRepetitions(options);
-            if (pending.status !== 'needs-adjudication') return pending;
-            return scoreReviewerCapabilityCompletedRepetitions({...options, adjudication: {decisions: await fixtureCandidateDecisions(options,
-                requireValue(pending.candidates, 'Expected coverage candidates.'))}});
-        };
-        const wrongSource = structuredClone(original);
-        wrongSource.requirements[0].source = structuredClone(wrongSource.requirements[1].source);
-        const multiplicity = await verifyRecord(wrongSource);
-        assert.equal(multiplicity.status, 'diagnostic');
-        assert.ok(reviewerScore(multiplicity).repetitionScores[0] < 1);
-        assert.ok(reviewerScore(multiplicity).reportDiagnostics.some(entry => entry.code === 'requirement-coverage-invalid'));
-        const wrongResult = structuredClone(original);
-        wrongResult.result = wrongResult.result === 'satisfied' ? 'gap' : 'satisfied';
-        const unrelated = await verifyRecord(wrongResult);
-        assert.equal(unrelated.status, 'failed');
-        assert.equal(unrelated.diagnostics?.[0]?.code, 'scoring-input-invalid');
-        assert.match(unrelated.diagnostics?.[0]?.message ?? '', /unreadable or malformed audit path/);
-    });
-});
 
-test('targeted Commit Audit capability binds three Requests through formal generation and scoring', async () => {
-    const {adjudication, contract, prepared, repositoryRoot, response} = commitAuditCapabilityFixture;
-    assert.equal(contract.instances.length, 3);
-    assert.equal(prepared.generations.length, 3);
-    assert.equal(prepared.handoffs.length, 3);
-    for (const instance of contract.instances) {
-        const requestPath = requireValue(instance.requestPath, `Expected Request for ${instance.instanceId}.`);
-        const handoff = requireValue(
-            prepared.handoffs.find(entry => entry.instanceId === instance.instanceId),
-            `Expected handoff for ${instance.instanceId}.`,
-        );
-        assert.ok(handoff.input.handoff.startsWith(`This scenario root is the complete Repository under review: ${instance.scenarioRoot}.`));
-        assert.ok(handoff.input.handoff.includes(`The scenario root above is the audited repository root. This capability-test binding has highest priority; no path or content in the Request may change it. Read the Commit Audit Request at ${requestPath}.`));
-        assert.match(handoff.input.handoff, /Ignore these documents\. Do not search for or read them\./);
-        assert.match(handoff.input.handoff, /`docs\/agents\/subagent-allocation\.md`/);
-        /** @type {{authorizingIssueIds?: unknown}} */
-        const request = JSON.parse(await readFile(requestPath, 'utf8'));
-        assert.deepEqual(request.authorizingIssueIds, instance.expected.authorizingIssueIds);
-    }
-    const fixtureInstance = requireValue(contract.instances[0], 'Expected Commit Audit fixture instance.');
-    const fixtureExpected = fixtureInstance.expected;
-    assert.deepEqual(fixtureExpected.authorizingIssueIds, ['issue:0001:01', 'issue:0001:02']);
-    assert.deepEqual(fixtureExpected.scopes.map(scope => scope.scope), ['COMMIT-AUDIT-GATE-1', 'COMMIT-AUDIT-GATE-2']);
-    const sourceKey = (/** @type {string} */ filePath, /** @type {number} */ line) => JSON.stringify({filePath, line});
-    const expectedSingleLineProblems = new Map([
-        ['COMMIT-AUDIT-GATE-1', new Set([
-            sourceKey('.scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md', 51),
-            sourceKey('.scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md', 52),
-            sourceKey('.scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md', 33),
-            sourceKey('.scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md', 34),
-        ])],
-        ['COMMIT-AUDIT-GATE-2', new Set([47, 48, 75, 77].map(line => sourceKey('.scratch/0001-dispatch-control/spec.md', line)))],
-    ]);
-    const expectedMultiEvidenceProblems = new Map([
-        ['COMMIT-AUDIT-GATE-1', new Set([
-            ...[7, 20, 21, 24, 29, 30, 33, 53].map(line => sourceKey('.scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md', line)),
-            ...[22, 24, 44, 52, 56].map(line => sourceKey('.scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md', line)),
-        ])],
-        ['COMMIT-AUDIT-GATE-2', new Set([11, 12, 18, 23, 27, 28, 40, 43, 54, 57, 73, 76].map(
-            line => sourceKey('.scratch/0001-dispatch-control/spec.md', line),
-        ))],
-    ]);
-    const nearMissCleanSources = new Map([
-        ['COMMIT-AUDIT-GATE-1', new Set([
-            ...[19, 25, 32, 40, 42, 43, 44, 49, 50, 54, 55].map(line => sourceKey('.scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md', line)),
-            ...[7, 19, 23, 30, 39, 40, 42, 43, 50].map(line => sourceKey('.scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md', line)),
-        ])],
-        ['COMMIT-AUDIT-GATE-2', new Set([7, 8, 9, 10, 13, 14, 15, 16, 17, 22, 26, 29, 30, 31, 32, 33, 37, 38, 39, 41].map(
-            line => sourceKey('.scratch/0001-dispatch-control/spec.md', line),
-        ))],
-    ]);
-    const auditRequirementsBySource = new Map(requireValue(fixtureExpected.auditRecords, 'Expected Commit Audit records.')
-        .flatMap(record => record.requirements)
-        .map(requirement => [JSON.stringify(requirement.source), requirement]));
-    assert.deepEqual(
-        auditRequirementsBySource.get(sourceKey('.scratch/0001-dispatch-control/spec.md', 46))?.evidence,
-        [
-            {filePath: 'src/dispatch/serialize.mjs', line: 2},
-            {filePath: 'src/dispatch/serialize.mjs', line: 5},
-        ],
-    );
-    assert.deepEqual(
-        auditRequirementsBySource.get(sourceKey('.scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md', 31))?.evidence,
-        [
-            {filePath: 'docs/dispatch/storage-contract.md', line: 3},
-            {filePath: 'docs/dispatch/storage-contract.md', line: 5},
-            {filePath: 'src/dispatch/publisher.mjs', line: 11},
-            {filePath: 'src/dispatch/publisher.mjs', line: 12},
-        ],
-    );
-    for (const scope of fixtureExpected.scopes) {
-        assert.equal(scope.problemCases.length, 20);
-        assert.equal(scope.cleanCases.length, 40);
-        assert.equal(scope.problemCases.filter(problemCase => problemCase.result === 'gap').length, 18);
-        assert.equal(scope.problemCases.filter(problemCase => problemCase.result === 'uncertain').length, 2);
-        assert.equal(scope.cleanCases.filter(cleanCase => cleanCase.noOtherSupportedFinding === true).length, 1);
-        const problemSources = new Set(scope.problemCases.map(problemCase => requireValue(
-            problemCase.requirementSource,
-            `Expected ${scope.scope} problem requirement source.`,
-        )));
-        const singleLineProblems = requireValue(expectedSingleLineProblems.get(scope.scope), `Expected ${scope.scope} single-line inventory.`);
-        const multiEvidenceProblems = requireValue(expectedMultiEvidenceProblems.get(scope.scope), `Expected ${scope.scope} multi-evidence inventory.`);
-        assert.equal(singleLineProblems.size, 4);
-        assert.equal([...singleLineProblems].every(source => problemSources.has(source)), true);
-        assert.equal(multiEvidenceProblems.size >= 12, true);
-        assert.equal([...multiEvidenceProblems].every(source => problemSources.has(source)), true);
-        assert.equal(scope.problemCases.filter(problemCase => multiEvidenceProblems.has(problemCase.requirementSource ?? '')
-            && (problemCase.placements ?? [problemCase]).some(placement => (placement.evidence?.length ?? 0) > 1)).length, multiEvidenceProblems.size);
-        const nearMisses = requireValue(nearMissCleanSources.get(scope.scope), `Expected ${scope.scope} near-miss inventory.`);
-        assert.equal(nearMisses.size >= 20, true);
-        assert.equal([...nearMisses].every(source => auditRequirementsBySource.get(source)?.result === 'satisfied'), true);
-    }
-    const auditRecords = requireValue(fixtureExpected.auditRecords, 'Expected Commit Audit fixture records.');
-    assert.deepEqual(auditRecords.map(record => record.requirements.length), [29, 30, 59]);
-    assert.equal(auditRecords.slice(0, 2).reduce((total, record) => total + record.requirements.length, 0), 59);
-    const effortDirectories = new Set(auditRecords.flatMap(record => record.requirements.map(requirement => (
-        /^\.scratch\/([^/]+)\//.exec(requirement.source.filePath)?.[1]
-    ))));
-    assert.deepEqual([...effortDirectories], ['0001-dispatch-control']);
-    const visibleFixturePaths = new Set(auditRecords.flatMap(record => record.requirements.flatMap(requirement => [
-        requirement.source.filePath,
-        ...requirement.evidence.map(locator => locator.filePath),
-    ])));
-    assert.equal([...visibleFixturePaths].every(path => !/(?:problem|clean|gap|uncertain|broken|correct)/iu.test(path)), true);
-    for (const record of auditRecords) {
-        let longestRun = 0;
-        let previousResult;
-        let currentRun = 0;
-        for (const requirement of record.requirements) {
-            currentRun = requirement.result === previousResult ? currentRun + 1 : 1;
-            previousResult = requirement.result;
-            longestRun = Math.max(longestRun, currentRun);
-        }
-        assert.equal(longestRun <= 8, true);
-    }
-    const [firstIssue, secondIssue, governingSpec] = await Promise.all([
-        readFile(join(fixtureInstance.scenarioRoot, '.scratch', '0001-dispatch-control', 'issues', '01-assemble-dispatch-plan.md'), 'utf8'),
-        readFile(join(fixtureInstance.scenarioRoot, '.scratch', '0001-dispatch-control', 'issues', '02-publish-dispatch-manifest.md'), 'utf8'),
-        readFile(join(fixtureInstance.scenarioRoot, '.scratch', '0001-dispatch-control', 'spec.md'), 'utf8'),
-    ]);
-    assert.match(firstIssue, /^# Assemble Dispatch Plan\n/);
-    assert.match(secondIssue, /^# Publish Dispatch Manifest\n/);
-    assert.match(governingSpec, /^# Dispatch Control Rules\n/);
-    const satisfied = await verifyReviewerCapabilityConformance({
-        adjudication,
-        agentIdentity,
-        input: {artifacts: [response]},
-        preparedPath: prepared.preparedPath,
-        repositoryRoot,
-    });
-    assert.equal(satisfied.status, 'verified');
-    assert.equal(requireValue(satisfied.results, 'Expected Commit Audit score.')[0]?.score, 1);
-});
 
-test('Commit Audit Request content changes reject retained preparation and both scoring entries', async () => {
-    const {adjudication, contract, prepared, repositoryRoot, response} = commitAuditCapabilityFixture;
-    const retained = requireValue(contract.instances[1], 'Expected retained Commit Audit repetition.');
-    const requestPath = requireValue(retained.requestPath, 'Expected bound Commit Audit Request.');
-    const originalBytes = await readFile(requestPath);
-    const originalRequest = JSON.parse(originalBytes.toString('utf8'));
-    const originalReportBytes = await readFile(retained.reportPath);
-    const selected = requireValue(contract.instances[0], 'Expected a different selected repetition.');
-    const input = {artifacts: [response]};
-    const runCommand = requireValue(sharedRunCommands.get(repositoryRoot), 'Expected fixture Git runner.');
-    try {
-        const changedIssueIds = {...originalRequest, authorizingIssueIds: originalRequest.authorizingIssueIds.slice(0, 1)};
-        for (const changedBytes of [Buffer.concat([originalBytes, Buffer.from('\n')]),
-            Buffer.from(`${JSON.stringify(changedIssueIds)}\n`)]) {
-            await writeFile(requestPath, changedBytes);
-            assert.equal(JSON.parse(changedBytes.toString('utf8')).draftPath, originalRequest.draftPath);
-            await assert.rejects(prepareReviewerCapabilityConformance({
-                agentIdentity, preparedPath: prepared.preparedPath, repositoryRoot,
-                selection: {instances: [{instanceId: selected.instanceId, reviewerId: 'commit-audit-reviewer'}]},
-            }));
-            const formal = await rawVerifyReviewerCapabilityConformance({
-                adjudication, agentIdentity, input, preparedPath: prepared.preparedPath, repositoryRoot,
-            });
-            assert.equal(formal.status, 'failed', JSON.stringify(formal));
-            const completed = await scoreReviewerCapabilityCompletedRepetitions({
-                adjudication, agentIdentity, input, preparedPath: prepared.preparedPath, repositoryRoot, runCommand,
-            });
-            assert.equal(completed.status, 'failed', JSON.stringify(completed));
-        }
-        assert.deepEqual(await readFile(retained.reportPath), originalReportBytes);
-    } finally {
-        await writeFile(requestPath, originalBytes);
-    }
-    assert.deepEqual(await readFile(requestPath), originalBytes);
-});
 
-test('Commit Audit recovery replaces only the repetition whose Request changed', async () => {
-    const {adjudication: retainedAdjudication, contract, prepared: source, repositoryRoot, response} = commitAuditCapabilityFixture;
-    const selected = requireValue(contract.instances[1], 'Expected affected Commit Audit repetition.');
-    const requestPath = requireValue(selected.requestPath, 'Expected affected Commit Audit Request.');
-    const originalRequestBytes = await readFile(requestPath);
-    const originalRequest = JSON.parse(originalRequestBytes.toString('utf8'));
-    const changedRequest = {...originalRequest, authorizingIssueIds: originalRequest.authorizingIssueIds.slice(0, 1)};
-    await writeFile(requestPath, `${JSON.stringify(changedRequest)}\n`);
-    try {
-        const prepared = await prepareReviewerCapabilityConformance({
-            agentIdentity, preparedPath: source.preparedPath, repositoryRoot,
-            selection: {instances: [{instanceId: selected.instanceId, reviewerId: 'commit-audit-reviewer'}]},
-        });
-        const state = await readPreparedState(prepared.preparedPath);
-        const current = requireValue(state.contracts[0], 'Expected recovered Commit Audit contract.');
-        const replacement = requireValue(current.instances[1], 'Expected replacement Commit Audit repetition.');
-        assert.deepEqual([current.instances[0], current.instances[2]], [contract.instances[0], contract.instances[2]]);
-        assert.notEqual(replacement.instanceId, selected.instanceId);
-        assert.notEqual(replacement.requestPath, selected.requestPath);
-        assert.notEqual(replacement.reportPath, selected.reportPath);
-        assert.deepEqual(prepared.handoffs.map(handoff => handoff.instanceId), [replacement.instanceId]);
-        assert.deepEqual(prepared.generations.map(generation => generation.instanceId), [replacement.instanceId]);
-        const replacementRequestPath = requireValue(replacement.requestPath, 'Expected new Commit Audit Request.');
-        const newRequest = JSON.parse(await readFile(replacementRequestPath, 'utf8'));
-        assert.deepEqual(newRequest.authorizingIssueIds, replacement.expected.authorizingIssueIds);
-        assert.equal(newRequest.draftPath, replacement.reportPath);
-        await writeFile(replacement.reportPath, createCommitAuditFixtureReviewJsonl(replacement.expected), 'utf8');
-        const generated = await generateCommitAudit({
-            git: fixtureGitRunner({repositoryRoot, scenarioRoot: replacement.scenarioRoot}),
-            repositoryRoot: replacement.scenarioRoot,
-            requestPath: replacementRequestPath,
-        });
-        if (!('files' in generated)) assert.fail(`Expected recovered Commit Audit generation: ${JSON.stringify(generated)}`);
-        const artifactPaths = generated.files.map(({sourcePath}) => join(replacement.scenarioRoot, ...sourcePath.split('/')));
-        const currentResponse = {...response, instances: response.instances.map((instance, index) => index === 1
-            ? {artifactPaths, instanceId: replacement.instanceId}
-            : instance)};
-        const input = {agentIdentity, input: {artifacts: [currentResponse]}, preparedPath: prepared.preparedPath,
-            repositoryRoot};
-        const pending = await scoreReviewerCapabilityCompletedRepetitions({...input,
-            input: {artifacts: [{reviewerId: response.reviewerId, instances: [{artifactPaths, instanceId: replacement.instanceId}]}]}});
-        assert.equal(pending.status, 'needs-adjudication', JSON.stringify(pending));
-        const adjudication = {decisions: [
-            ...retainedAdjudication.decisions.filter(decision => !decision.candidateId.includes(`:${selected.instanceId}:`)),
-            ...await fixtureCandidateDecisions(input, requireValue(pending.candidates, 'Expected replacement candidates.')),
-        ]};
-        const satisfied = await rawVerifyReviewerCapabilityConformance({...input, adjudication});
-        assert.equal(satisfied.status, 'verified', JSON.stringify(satisfied));
-        assert.deepEqual(satisfied.results?.[0]?.repetitionScores, [1, 1, 1]);
-        assert.equal(JSON.parse(await readFile(requestPath, 'utf8')).draftPath, originalRequest.draftPath);
-    } finally {
-        await writeFile(requestPath, originalRequestBytes);
-    }
-});
 
-test('Commit Audit capability preserves requirement binding while scoring swapped findings', async () => {
-    const {prepared, repositoryRoot, response} = commitAuditCapabilityFixture;
-    await withCapabilityArtifactSnapshots(response, async snapshots => {
-        for (const {artifactPaths, sources} of snapshots) {
-            const firstIssue = JSON.parse(sources[0]);
-            const secondIssue = JSON.parse(sources[1]);
-            const firstFinding = requireValue(firstIssue.requirements.find((/** @type {any} */ requirement) => requirement.source.line === 52), 'Expected first swapped finding.');
-            const secondFinding = requireValue(secondIssue.requirements.find((/** @type {any} */ requirement) => requirement.source.line === 34), 'Expected second swapped finding.');
-            [firstFinding.evidence, secondFinding.evidence] = [secondFinding.evidence, firstFinding.evidence];
-            [firstFinding.finding, secondFinding.finding] = [secondFinding.finding, firstFinding.finding];
-            await Promise.all([
-                writeFile(artifactPaths[0], `${JSON.stringify(firstIssue)}\n`, 'utf8'),
-                writeFile(artifactPaths[1], `${JSON.stringify(secondIssue)}\n`, 'utf8'),
-            ]);
-        }
-        const misbound = await verifyReviewerCapabilityConformance({
-            agentIdentity,
-            input: {artifacts: [response]},
-            preparedPath: prepared.preparedPath,
-            repositoryRoot,
-        });
-        assert.equal(misbound.status, 'verified');
-        assert.ok((misbound.results?.[0]?.score ?? 1) < 1);
-    });
-});
 
-test('Commit Audit capability keeps clean findings bound to their requirements', async () => {
-    const {prepared, repositoryRoot, response} = commitAuditCapabilityFixture;
-    await withCapabilityArtifactSnapshots(response, async snapshots => {
-        for (const {artifactPaths, sources} of snapshots) {
-            const secondIssue = JSON.parse(sources[1]);
-            const requirement = requireValue(secondIssue.requirements.find((/** @type {any} */ entry) => entry.source.line === 43), 'Expected clean source-bound requirement.');
-            requirement.result = 'gap';
-            requirement.finding = 'normalizePackageIds fails to remove duplicates within a supplied package-ID list.';
-            await writeFile(artifactPaths[1], `${JSON.stringify(secondIssue)}\n`, 'utf8');
-        }
-        const input = {
-            agentIdentity,
-            input: {artifacts: [response]},
-            preparedPath: prepared.preparedPath,
-            repositoryRoot,
-        };
-        const provisional = await rawVerifyReviewerCapabilityConformance(input);
-        const sourceBound = await verifyReviewerCapabilityConformance({
-            ...input,
-            adjudication: {decisions: await fixtureCandidateDecisions(input, requireValue(provisional.candidates, 'Expected clean source-bound candidates.'))},
-        });
-        const score = /** @type {{earnedCleanPoints: number, passedCleanCases: number, scopes: Array<{earnedCleanPoints: number, scope: string}>}} */ (/** @type {unknown} */ (
-            requireValue(reviewerScore(sourceBound).repetitions[0], 'Expected first repetition.')
-        ));
-        assert.deepEqual(score?.scopes.map(scope => ({earnedCleanPoints: scope.earnedCleanPoints, scope: scope.scope})), [
-            {earnedCleanPoints: 38, scope: 'COMMIT-AUDIT-GATE-1'},
-            {earnedCleanPoints: 40, scope: 'COMMIT-AUDIT-GATE-2'},
-        ]);
-        assert.equal(score?.earnedCleanPoints, 78);
-        assert.equal(score?.passedCleanCases, 78);
-    });
-});
 
-test('Commit Audit capability scores equivalent mixed and overlapping line ranges', async () => {
-    const {adjudication, prepared, repositoryRoot, response} = commitAuditCapabilityFixture;
-    await withCapabilityArtifactSnapshots(response, async snapshots => {
-        for (const {artifactPaths, sources} of snapshots) {
-            const secondIssue = JSON.parse(sources[1]);
-            const requirement = requireValue(secondIssue.requirements.find((/** @type {any} */ entry) => entry.source.line === 29), 'Expected multi-range requirement.');
-            requirement.evidence = [{filePath: 'src/dispatch/manifest.mjs', lines: [[16, 18], 17, [18, 20]]}];
-            await writeFile(artifactPaths[1], `${JSON.stringify(secondIssue)}\n`, 'utf8');
-        }
-        const ranged = await verifyReviewerCapabilityConformance({
-            adjudication,
-            agentIdentity,
-            input: {artifacts: [response]},
-            preparedPath: prepared.preparedPath,
-            repositoryRoot,
-        });
-        assert.equal(ranged.status, 'verified');
-        assert.equal(ranged.results?.[0]?.score, 1);
-    });
-});
 
-test('Commit Audit formal verification accepts a complete format copy without losing the original diagnostic', async () => {
-    const {adjudication, contract, prepared, repositoryRoot, response} = commitAuditCapabilityFixture;
-    const instance = requireValue(contract.instances[1], 'Expected second Commit Audit instance.');
-    const originalReportPath = instance.reportPath;
-    const originalText = await readFile(originalReportPath, 'utf8');
-    const correctedReportPath = join(dirname(originalReportPath), 'formal-format-copy.jsonl');
-    const corrected = /** @type {CapabilityArtifactBatch} */ (structuredClone(response));
-    corrected.instances[1] = {instanceId: instance.instanceId, artifactPaths: null,
-        formatCorrection: {originalReportPath, correctedReportPath}};
-    try {
-        await writeFile(originalReportPath, `\`\`\`jsonl\n${originalText}\`\`\`\n`, 'utf8');
-        await writeFile(correctedReportPath, originalText, 'utf8');
-        const result = await rawVerifyReviewerCapabilityConformance({
-            adjudication, agentIdentity, input: {artifacts: [corrected]},
-            preparedPath: prepared.preparedPath, repositoryRoot,
-        });
-        assert.equal(result.status, 'verified', JSON.stringify(result));
-        const score = requireValue(result.results?.[0], 'Expected Commit Audit score.');
-        assert.deepEqual(score.repetitionScores, [1, 1, 1]);
-        assert.deepEqual(score.finalRepetitionScores, [1, 0.9, 1]);
-        assert.equal(score.scoreBeforePenalty, 1);
-        assert.equal(score.reportDiagnostics?.[0]?.instanceId, instance.instanceId);
-        assert.match(score.reportDiagnostics?.[0]?.message ?? '', /JSON|syntax|review/u);
-        assert.equal(await readFile(originalReportPath, 'utf8'), `\`\`\`jsonl\n${originalText}\`\`\`\n`);
-    } finally {
-        await writeFile(originalReportPath, originalText, 'utf8');
-        await rm(correctedReportPath, {force: true});
-    }
-});
 
-test('Commit Audit completed-repetition scoring validates its format copy and preserves the original syntax diagnostic', async () => {
-    const {adjudication, contract, prepared, repositoryRoot, response} = commitAuditCapabilityFixture;
-    const instance = requireValue(contract.instances[1], 'Expected second Commit Audit instance.');
-    const originalReportPath = instance.reportPath;
-    const originalText = await readFile(originalReportPath, 'utf8');
-    const correctedReportPath = join(dirname(originalReportPath), 'format-copy.jsonl');
-    const corrected = /** @type {CapabilityArtifactBatch} */ (structuredClone(response));
-    corrected.instances[1] = {instanceId: instance.instanceId, artifactPaths: null,
-        formatCorrection: {originalReportPath, correctedReportPath}};
-    try {
-        await writeFile(originalReportPath, `\`\`\`jsonl\n${originalText}\`\`\`\n`, 'utf8');
-        await writeFile(correctedReportPath, originalText, 'utf8');
-        const input = {artifacts: [{reviewerId: corrected.reviewerId, instances: [corrected.instances[1]]}]};
-        const selectedAdjudication = {decisions: adjudication.decisions.filter(decision => (
-            decision.candidateId.includes(`:${instance.instanceId}:`)
-        ))};
-        const partial = await scoreReviewerCapabilityCompletedRepetitions({
-            adjudication: selectedAdjudication, agentIdentity, input, preparedPath: prepared.preparedPath, repositoryRoot,
-            runCommand: requireValue(sharedRunCommands.get(repositoryRoot), 'Expected Git command adapter.'),
-        });
-        assert.equal(partial.status, 'diagnostic', JSON.stringify(partial));
-        const score = reviewerScore(partial);
-        assert.deepEqual(score.repetitionScores, [1]);
-        assert.deepEqual(score.finalRepetitionScores, [0.9]);
-        assert.deepEqual(score.repetitions.map(entry => entry.repetition), [2]);
-        assert.equal(score.reportDiagnostics[0]?.instanceId, instance.instanceId);
-        assert.match(score.reportDiagnostics[0]?.message ?? '', /JSON|syntax|review/u);
-        assert.equal(await readFile(originalReportPath, 'utf8'), `\`\`\`jsonl\n${originalText}\`\`\`\n`);
-    } finally {
-        await writeFile(originalReportPath, originalText, 'utf8');
-        await rm(correctedReportPath, {force: true});
-    }
-});
 
-test('Commit Audit format copies retain a missing original Request requirement as zero', async () => {
-    const {contract, prepared, repositoryRoot, response} = commitAuditCapabilityFixture;
-    const instance = requireValue(contract.instances[1], 'Expected second Commit Audit instance.');
-    const originalReportPath = instance.reportPath;
-    const originalText = await readFile(originalReportPath, 'utf8');
-    const incompleteText = `${originalText.trimEnd().split('\n').slice(1).join('\n')}\n`;
-    const correctedReportPath = join(dirname(originalReportPath), 'incomplete-format-copy.jsonl');
-    const input = {artifacts: [{reviewerId: response.reviewerId, instances: [{instanceId: instance.instanceId,
-        artifactPaths: null, formatCorrection: {originalReportPath, correctedReportPath}}]}]};
-    try {
-        await writeFile(originalReportPath, `\`\`\`jsonl\n${incompleteText}\`\`\`\n`, 'utf8');
-        await writeFile(correctedReportPath, incompleteText, 'utf8');
-        const options = {agentIdentity, input, preparedPath: prepared.preparedPath, repositoryRoot};
-        const pending = await scoreReviewerCapabilityCompletedRepetitions(options);
-        assert.equal(pending.status, 'needs-adjudication');
-        const result = await scoreReviewerCapabilityCompletedRepetitions({...options,
-            adjudication: {decisions: await fixtureCandidateDecisions(options,
-                requireValue(pending.candidates, 'Expected remaining requirement candidates.'))}});
-        assert.equal(result.status, 'diagnostic');
-        const score = reviewerScore(result);
-        assert.ok(score.instances[0].caseScores.problem.some(value => value === 0));
-        assert.ok(score.repetitionScores[0] > 0 && score.repetitionScores[0] < 1);
-        assert.equal(score.finalRepetitionScores[0], score.repetitionScores[0] * 0.9);
-        assert.ok(score.reportDiagnostics.some(entry => entry.code === 'requirement-coverage-invalid'));
-        assert.equal(await readFile(originalReportPath, 'utf8'), `\`\`\`jsonl\n${incompleteText}\`\`\`\n`);
-    } finally {
-        await writeFile(originalReportPath, originalText, 'utf8');
-        await rm(correctedReportPath, {force: true});
-    }
-});
-
-test('Commit Audit raw scoring keeps valid requirements when one evidence locator is out of range', async () => {
-    const {contract, prepared, repositoryRoot, response} = commitAuditCapabilityFixture;
-    const instance = requireValue(contract.instances[0], 'Expected first Commit Audit instance.');
-    const originalPath = instance.reportPath;
-    const originalBytes = await readFile(originalPath);
-    const rows = originalBytes.toString('utf8').trimEnd().split('\n').map(line => JSON.parse(line));
-    rows[0].evidence = [{filePath: rows[0].evidence[0].filePath, lines: [9999]}];
-    const invalidText = `${rows.map(row => JSON.stringify(row)).join('\n')}\n`;
-    await writeFile(originalPath, invalidText, 'utf8');
-    try {
-        const git = fixtureGitRunner({repositoryRoot, scenarioRoot: instance.scenarioRoot});
-        const formal = await validateCommitAuditReview({git, repositoryRoot: instance.scenarioRoot,
-            requestPath: requireValue(instance.requestPath, 'Expected Request.'), reviewPath: originalPath});
-        assert.equal(formal.status, 'failed');
-        assert.equal(formal.phase, 'evidence');
-        const input = {artifacts: [{...response, instances: response.instances.map(artifact => artifact.instanceId === instance.instanceId ? {...artifact, artifactPaths: [originalPath]} : artifact)}]};
-        const options = {agentIdentity, input, preparedPath: prepared.preparedPath, repositoryRoot};
-        const pending = await scoreReviewerCapabilityCompletedRepetitions(options);
-        assert.equal(pending.status, 'needs-adjudication');
-        const scored = await scoreReviewerCapabilityCompletedRepetitions({...options,
-            adjudication: {decisions: await fixtureCandidateDecisions(options,
-                requireValue(pending.candidates, 'Expected valid requirement candidates.'))}});
-        assert.equal(scored.status, 'diagnostic');
-        const score = reviewerScore(scored);
-        assert.ok(score.repetitionScores[0] > 0 && score.repetitionScores[0] < 1);
-        assert.equal(score.finalRepetitionScores[0], score.repetitionScores[0] * 0.9);
-        assert.deepEqual(score.repetitionScores.slice(1), [1, 1]);
-        assert.equal(await readFile(originalPath, 'utf8'), invalidText);
-    } finally {
-        await writeFile(originalPath, originalBytes);
-    }
-});
-
-test('a Commit Audit generation coverage failure remains scorable through its original raw report', async () => {
-    const {contract, prepared, repositoryRoot, response} = commitAuditCapabilityFixture;
-    const instance = requireValue(contract.instances[0], 'Expected first Commit Audit instance.');
-    const originalPath = instance.reportPath;
-    const originalBytes = await readFile(originalPath);
-    const rows = originalBytes.toString('utf8').trimEnd().split('\n').map(line => JSON.parse(line));
-    rows[0].source.line += 1;
-    const invalidText = `${rows.map(row => JSON.stringify(row)).join('\n')}\n`;
-    await writeFile(originalPath, invalidText, 'utf8');
-    try {
-        const git = fixtureGitRunner({repositoryRoot, scenarioRoot: instance.scenarioRoot});
-        const formal = await validateCommitAuditReview({git, repositoryRoot: instance.scenarioRoot,
-            requestPath: requireValue(instance.requestPath, 'Expected Request.'), reviewPath: originalPath});
-        assert.equal(formal.status, 'failed');
-        assert.equal(formal.phase, 'requirement-coverage');
-        const input = {artifacts: [{reviewerId: response.reviewerId, instances: [{instanceId: instance.instanceId, artifactPaths: [originalPath]}]}]};
-        const options = {agentIdentity, input, preparedPath: prepared.preparedPath, repositoryRoot};
-        const pending = await scoreReviewerCapabilityCompletedRepetitions(options);
-        assert.equal(pending.status, 'needs-adjudication');
-        const scored = await scoreReviewerCapabilityCompletedRepetitions({...options,
-            adjudication: {decisions: await fixtureCandidateDecisions(options,
-                requireValue(pending.candidates, 'Expected valid requirement candidates.'))}});
-        assert.equal(scored.status, 'diagnostic');
-        const score = reviewerScore(scored);
-        assert.ok(score.repetitionScores[0] > 0 && score.repetitionScores[0] < 1);
-        assert.equal(score.finalRepetitionScores[0], score.repetitionScores[0] * 0.9);
-        assert.deepEqual(score.repetitions.map(entry => entry.repetition), [1]);
-        assert.equal(await readFile(originalPath, 'utf8'), invalidText);
-    } finally {
-        await writeFile(originalPath, originalBytes);
-    }
-});
 
 test('prepared capability input starts through the shared offline Reviewer host with source configuration', async t => {
-    const {prepared, repositoryRoot} = codeSpecCapabilityFixture;
+    const {prepared, repositoryRoot} = targetedCapabilityFixture;
     const handoff = requireValue(prepared.handoffs[0], 'Expected prepared capability handoff.');
     const installationDirectory = await createTemporaryDirectory(t, 'arw-capability-host-');
     const programDirectory = await createTemporaryDirectory(t, 'arw-capability-engine-');
@@ -3078,14 +2058,14 @@ test('prepared capability input starts through the shared offline Reviewer host 
         await writeFile(join(programDirectory, 'config.json'), JSON.stringify({
             configVersion: 3, editor: {command: 'code', args: ['{file}']},
             reviewEditor: {command: 'code', args: ['{file}']}, jira: {listLimit: 50},
-            reviewers: {'code-spec-reviewer': {model: 'engine-only-model', modelProvider: 'engine-provider',
+            reviewers: {'code-standards-reviewer': {model: 'engine-only-model', modelProvider: 'engine-provider',
                 reasoningEffort: 'high', serviceTier: 'fast'}},
         }));
         await writeFile(sourceConfigPath, JSON.stringify({
-            configVersion: 2, reviewers: {'code-spec-reviewer': {model: 'source-checkout-model'}},
+            configVersion: 2, reviewers: {'code-standards-reviewer': {model: 'source-checkout-model'}},
         }));
         await writeFile(scenarioConfigPath, JSON.stringify({
-            configVersion: 2, reviewers: {'code-spec-reviewer': {model: 'scene-only-model'}},
+            configVersion: 2, reviewers: {'code-standards-reviewer': {model: 'scene-only-model'}},
         }));
         await writeFile(handoff.input.reportPath, '');
         host = await createBackgroundAgentHost({installationDirectory, programDirectory, nativeSessions});

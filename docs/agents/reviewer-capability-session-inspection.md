@@ -19,7 +19,7 @@ Codex Platform Host 必须为每个返回的交接保留一份完整的平台原
 
 Reviewer 无法选择的平台注入 `system instruction`, `developer instruction`, 仓库规则, 能力可用性, 以及权限或环境元数据都属于已记录的启动上下文, 不是 Reviewer 选择的审查来源. 单独检查该启动上下文. 如果它包含隐藏的预期合同, 先前的能力响应, 其他实例结果或其他场景特定答案资料, 拒绝该轮次. 已记录的启动上下文不授权 Reviewer 读取其中提到的任何外部文件.
 
-完成初始交接配对后, 检查初始交接后的全部消息, 每次读取和写入, 每项工具调用及结果, 以及最终状态. Reviewer 只能主动观察其生成的交接和完整场景根目录中的文件, 包括适用 Agent 指令和交接提供的准确 Request; 完整 Canonical Reviewer Role 与公共 Reviewer 规则由 `input.instructions` 提供. Commit Audit 和 Spec Readiness Reviewer 只写各自 Request 绑定的 JSONL, 返回 `ready | incomplete`, 不查询模型或平台环境身份, 不读取 Engine 实现或调用审核请求准备, 正式结果生成, 提升与验证入口. 四种 Reviewer 均可按公共通信规则使用运行环境已提供的 `ARW_BACKGROUND_AGENT_RUN_ID` 发送允许的中途消息; 该运行标识及通信回执只用于准确消息交付, 不作为审查证据. 最终结果按 [Reviewer 通信与会话规则](../specs/agent-repository-workflow/spec.md#communication-and-sessions)由运行层核实并通过 `completion` 交付. Code Standards 和 Code Spec 只写绑定的 `resultPath`, 完成后的最终响应只返回相同状态合同. Reviewer 不观察外层 Source Checkout, 隐藏预期, 其他实例或批次结果, 既有能力结果, Engine 实现或模型与平台环境身份. 来源不明的附加消息或允许清单外观察都会使批次失败.
+完成初始交接配对后, 检查初始交接后的全部消息, 每次读取和写入, 每项工具调用及结果, 以及最终状态. Reviewer 只能主动观察其生成的交接和完整场景根目录中的文件, 包括适用 Agent 指令和交接提供的准确 Request; 完整 Canonical Reviewer Role 与公共 Reviewer 规则由 `input.instructions` 提供. Spec Readiness Reviewer 只写 Request 绑定的 JSONL, 返回 `ready | incomplete`, 不查询模型或平台环境身份, 不读取 Engine 实现或调用审核请求准备, 正式结果生成, 提升与验证入口. 两种 Reviewer 均可按公共通信规则使用运行环境已提供的 `ARW_BACKGROUND_AGENT_RUN_ID` 发送允许的中途消息; 该运行标识及通信回执只用于准确消息交付, 不作为审查证据. 最终结果按 [Reviewer 通信与会话规则](../specs/agent-repository-workflow/spec.md#communication-and-sessions)由运行层核实并通过 `completion` 交付. Code Standards 只写绑定的 `resultPath`, 完成后的最终响应只返回相同状态合同. Reviewer 不观察外层 Source Checkout, 隐藏预期, 其他实例或批次结果, 既有能力结果, Engine 实现或模型与平台环境身份. 来源不明的附加消息或允许清单外观察都会使批次失败.
 
 按[能力门禁的内部恢复边界](../specs/agent-repository-workflow-release/spec.md#reviewer-capability-gate)检查同一任务中的自动接续和提供方恢复. 可从现有记录归属于本任务运行程序的工作指示, 以及正常工具调用返回的错误结果, 不属于来源不明的附加输入. 程序来源不扩大允许观察的资料范围; 隐藏预期, 其他实例资料等实际违规仍按上述来源规则处理.
 
@@ -43,7 +43,7 @@ Reviewer 无法选择的平台注入 `system instruction`, `developer instructio
 
 ## Session optimization tracking
 
-Code Standards, Code Spec, Spec Readiness 和 Commit Audit 的定向优化都由 Main Agent 在当前会话的[临时工作区](environment.md#temporary-workspaces)维护一份持续更新的优化清单, 作为后续优化工作的推进依据. 清单只表达当前问题和处理状态, 具体问题和本轮决定不写入长期规则. 文首仅简述当前范围与授权边界, 不重复各章节内容.
+Code Standards 和 Spec Readiness 的定向优化都由 Main Agent 在当前会话的[临时工作区](environment.md#temporary-workspaces)维护一份持续更新的优化清单, 作为后续优化工作的推进依据. 清单只表达当前问题和处理状态, 具体问题和本轮决定不写入长期规则. 文首仅简述当前范围与授权边界, 不重复各章节内容.
 
 清单固定使用以下 5 个中文二级章节, 按表中顺序排列, 不增加其他章节或下级章节. 空章节写 `无`.
 
@@ -77,10 +77,10 @@ Source Checkout 使用 `docs/agents/source-checkout-exceptions.md` 中的定向 
 
 ## Release convergence
 
-Gate 顺序是 `prepare`, 每个新建 Reviewer 实例交接, 一次完整的机械 `verify`, 可选的 Main Agent 裁决和最终 `verify`, Main Agent 对每个实例会话的检查, 最后另行编写发布验证报告. 每个受影响的 Reviewer 必须在当前有效候选上取得 3 次独立的完整重复. Code Standards, Code Spec 和 Commit Audit 的每次重复各有一个实例; Spec Readiness 的每次重复按相同序号配对两个场景实例, 因而一批有 6 个实例. 批次评分与分数门槛按[最终评分规则](reviewer-capability-scoring.md#final-score)判定, 全部批次级与实例级强制关卡和会话检查也必须通过. 任一实例结果缺失或未通过会话检查时, 完整批次失败; 已确认的模型失误记 0 分按评分规则参与完整结果集合. 错误及候选, Role, 场景或评分合同变化后的恢复, 遵循[发布能力门禁](../specs/agent-repository-workflow-release/spec.md#reviewer-capability-gate)的实际影响范围规则; 重跑结果替代受影响结果, 未受影响的场景和重复保留有效结果. 会话观察绝不能修复记录.
+Gate 顺序是 `prepare`, 每个新建 Reviewer 实例交接, 一次完整的机械 `verify`, 可选的 Main Agent 裁决和最终 `verify`, Main Agent 对每个实例会话的检查, 最后另行编写发布验证报告. 每个受影响的 Reviewer 必须在当前有效候选上取得 3 次独立的完整重复. Code Standards 的每次重复有一个实例; Spec Readiness 的每次重复按相同序号配对两个场景实例, 因而一批有 6 个实例. 批次评分与分数门槛按[最终评分规则](reviewer-capability-scoring.md#final-score)判定, 全部批次级与实例级强制关卡和会话检查也必须通过. 任一实例结果缺失或未通过会话检查时, 完整批次失败; 已确认的模型失误记 0 分按评分规则参与完整结果集合. 错误及候选, Role, 场景或评分合同变化后的恢复, 遵循[发布能力门禁](../specs/agent-repository-workflow-release/spec.md#reviewer-capability-gate)的实际影响范围规则; 重跑结果替代受影响结果, 未受影响的场景和重复保留有效结果. 会话观察绝不能修复记录.
 
 ## Targeted convergence
 
-定向收敛要求所选 Reviewer 在当前有效候选上取得 3 次独立的完整重复, 按[最终评分规则](reviewer-capability-scoring.md#final-score)达到分数门槛, 并通过全部强制关卡和全部实例的完整会话检查. Code Standards, Code Spec 和 Commit Audit 的每次重复各使用一个场景实例. Spec Readiness 的每次重复按相同序号配对两个场景实例. 本轮只消费准确绑定的当前有效实例结果, 缺失实例或强制关卡失败仍使该轮失败. 错误及项目变化后的恢复遵循[发布能力门禁](../specs/agent-repository-workflow-release/spec.md#reviewer-capability-gate)的实际影响范围规则, 未受影响的有效准备, 原始报告, 会话证据与评分输入保留; 重跑结果替代受影响结果, Spec Readiness 仍按同序号配对.
+定向收敛要求所选 Reviewer 在当前有效候选上取得 3 次独立的完整重复, 按[最终评分规则](reviewer-capability-scoring.md#final-score)达到分数门槛, 并通过全部强制关卡和全部实例的完整会话检查. Code Standards 的每次重复使用一个场景实例. Spec Readiness 的每次重复按相同序号配对两个场景实例. 本轮只消费准确绑定的当前有效实例结果, 缺失实例或强制关卡失败仍使该轮失败. 错误及项目变化后的恢复遵循[发布能力门禁](../specs/agent-repository-workflow-release/spec.md#reviewer-capability-gate)的实际影响范围规则, 未受影响的有效准备, 原始报告, 会话证据与评分输入保留; 重跑结果替代受影响结果, Spec Readiness 仍按同序号配对.
 
 每个轮次仍然在用户审查边界结束, 包括一次已经成功的完整批次. Main Agent 提供诊断和后续计划并等待用户决定. 达标结果表示当前定向工作已经收敛, 因而不需要为了确认同一结果再运行第二个批次. Workflow Distribution 源文件只在 live 迭代收敛且用户批准同步后更新, 不把本轮 Source Checkout 文档或 Role 修改提前复制到分发内容.

@@ -48,7 +48,7 @@ node scripts/reviewer-benchmark.mjs collect <absolute-collection-input.json>
 node scripts/reviewer-benchmark.mjs score <absolute-scoring-input.json>
 ```
 
-使用相同的采集绑定和临时 `outputDirectory`. 返回 `needs-requirement-binding` 或 `needs-adjudication` 时, 保留返回请求, 根据冻结来源作出决定, 在下一次评分输入中提供完整 `requirementBindings` 或 `adjudication` 对象. 通过 `candidateId` 关联候选, 不使用重复出现的行序号. 已确认由模型自身行为导致的空结果使用受支持的 `modelFailures` 输入; 执行故障或原因未知的情况保持待处理, 不转换为质量 0 分.
+使用相同的采集绑定和临时 `outputDirectory`. 返回 `needs-adjudication` 时, 保留返回请求, 根据冻结来源作出决定, 在下一次评分输入中提供完整 `adjudication` 对象. 通过 `candidateId` 关联候选, 不使用重复出现的行序号. 已确认由模型自身行为导致的空结果使用受支持的 `modelFailures` 输入; 执行故障或原因未知的情况保持待处理, 不转换为质量 0 分.
 
 Main Agent 向两份独立评分任务提供相同的冻结报告, 已准备预期和评分合同. 各评分者的决定及输出保存在各自的临时目录, 不提供另一评分者的决定或先前分数. 保留准备归属和报告路径. Main Agent 在原采集目录中分别使用两份独立决定串行运行评分程序, 每轮结束后先把该轮 `scoring.json` 与 `role-statistics.json` 原字节保存到对应独立目录, 再开始下一轮. 两份结果保持独立, 检查点绑定不变.
 

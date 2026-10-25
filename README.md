@@ -299,9 +299,7 @@ The Main Agent enters the commit workflow only after an explicit user request to
 Review and commit the implementation for issue:<NNNN>:<NN>. Include only changes authorized by this issue and preserve other worktree content.
 ```
 
-The Main Agent first confirms completion evidence and the exact staged candidate. The `code-review` Skill then starts `code-standards-reviewer` and, when applicable, `code-spec-reviewer` against the same Git comparison. The first checks repository standards; the second checks governing requirements. Freeze the final implementation bytes only after both complete results pass and any permitted wrap-up is complete.
-
-After freezing, the Main Agent prepares a Commit Audit Request for the candidate. `commit-audit-reviewer` checks issue requirements and applicable long-term requirements for this batch, and writes its complete result to the bound JSONL. After the Reviewer returns completion, the Main Agent asks ARW to generate the formal record, promotes only the exact bytes from the returned mapping, then runs `arw commit-audit verify` and the other mechanical checks. Any change to frozen implementation bytes after the audit starts invalidates the review and audit.
+The Main Agent first confirms completion evidence and the exact staged candidate, then runs `arw commit-audit prepare`. ARW builds a line-by-line requirements checklist from the issue and applicable specs. Two Reviewers then run in parallel: `requirements-reviewer` fills in a verdict and one evidence locator for every checklist item, and `code-standards-reviewer` checks repository standards and points out removable code. When both finish, the Main Agent runs `arw commit-audit generate` to check the checklist, promotes only the formal records in the returned mapping, then runs `arw commit-audit verify` and the other mechanical checks. A re-review after fixes receives only the changes and their impact; unaffected conclusions stay.
 
 A candidate containing only investigation, design, or other closed non-implementation content may use the lighter commit path. Once a candidate includes implementation deliverables for the current repository, use the complete implementation commit workflow. The target repository's `code-review` and `commit` Skills own exact comparison preparation, result reuse, and recovery rules; this README does not copy their full protocols.
 
@@ -381,12 +379,11 @@ For ordinary commands, exit code `0` means success or an accepted no-op, `1` mea
 
 ## Why independent reviews matter
 
-The Main Agent communicates with the user, selects scope, coordinates implementation, runs validation, and performs all Git writes. An Agent reviewing its own work can retain its original assumptions, so ARW uses four Canonical Reviewer Roles at different stages:
+The Main Agent communicates with the user, selects scope, coordinates implementation, runs validation, and performs all Git writes. An Agent reviewing its own work can retain its original assumptions, so ARW uses three Canonical Reviewer Roles at different stages:
 
-- `spec-readiness-reviewer`: before the first implementation write, checks whether the governance design selected by the issue is current, complete, and sufficient to implement.
-- `code-standards-reviewer`: after the user requests an implementation commit, checks the candidate against repository standards and applicable writing or code rules.
-- `code-spec-reviewer`: at the same stage, checks from another axis whether the candidate meets explicit governing requirements.
-- `commit-audit-reviewer`: after both Code Review axes finish and the final candidate is frozen, checks issue requirements and applicable long-term requirements for the batch.
+- `spec-readiness-reviewer`: reviews once when the design is finalized whether the governance design selected by the issue is current, complete, and sufficient to implement, then re-reviews only changes.
+- `requirements-reviewer`: after the user requests an implementation commit, checks each issue requirement and applicable long-term requirement against the candidate.
+- `code-standards-reviewer`: at the same stage and in parallel, checks the candidate against repository standards and applicable writing or code rules.
 
 A typical relationship is:
 
@@ -396,8 +393,7 @@ Main Agent
 |-- implementation and validation: Main Agent and subagents with assigned write scopes
 `-- after the user explicitly requests an implementation commit
     |-- code-standards-reviewer
-    |-- code-spec-reviewer
-    `-- after the candidate is frozen: commit-audit-reviewer
+    `-- requirements-reviewer
 ```
 
 A Reviewer Role is a temporary Agent started by the current workflow, not an external program launched by `arw agent start` from the global `config.json`. The two have no name mapping or shared session. Independent reviews add waiting time and model usage, so they run only at their relevant stages; in return, the judgment comes from someone separate from the implementer.
@@ -408,7 +404,7 @@ In Claude Code, a Reviewer whose `modelProvider` is `"anthropic"` runs through h
 
 ```json
 "reviewers": {
-  "code-spec-reviewer": {
+  "requirements-reviewer": {
     "model": "my-model",
     "modelProvider": "anthropic",
     "env": {

@@ -76,16 +76,15 @@ test('Repository Reviewer completion creates empty role overrides and preserves 
     const created = completeRepositoryConfigurationBytes(null);
     assert.equal(created.changed, true);
     assert.deepEqual(JSON.parse(created.bytes.toString('utf8')).reviewers, {
-        'code-spec-reviewer': {}, 'code-standards-reviewer': {},
-        'commit-audit-reviewer': {}, 'spec-readiness-reviewer': {},
+        'code-standards-reviewer': {}, 'requirements-reviewer': {}, 'spec-readiness-reviewer': {},
     });
-    const source = Buffer.from('{"configVersion":2,"languageChecks":{"doc":{"language":"chinese","minPercentage":1e2,"include":["docs/**"]}},"reviewers":{"code-spec-reviewer":{"serviceTier":"fast"}}}\n');
+    const source = Buffer.from('{"configVersion":2,"languageChecks":{"doc":{"language":"chinese","minPercentage":1e2,"include":["docs/**"]}},"reviewers":{"requirements-reviewer":{"serviceTier":"fast"}}}\n');
     const completed = completeRepositoryConfigurationBytes(source);
     assert.equal(completed.changed, true);
     assert.ok(completed.bytes.toString('utf8').includes('"minPercentage":1e2'));
-    assert.deepEqual(JSON.parse(completed.bytes.toString('utf8')).reviewers['code-spec-reviewer'], {serviceTier: 'fast'});
+    assert.deepEqual(JSON.parse(completed.bytes.toString('utf8')).reviewers['requirements-reviewer'], {serviceTier: 'fast'});
     assert.deepEqual(completeRepositoryConfigurationBytes(completed.bytes), {bytes: completed.bytes, changed: false});
-    assert.throws(() => completeRepositoryConfigurationBytes(Buffer.from('{"configVersion":2,"reviewers":{"code-spec-reviewer":{"serviceTier":null}}}')), /serviceTier/u);
+    assert.throws(() => completeRepositoryConfigurationBytes(Buffer.from('{"configVersion":2,"reviewers":{"requirements-reviewer":{"serviceTier":null}}}')), /serviceTier/u);
 });
 
 test('Application Configuration blocks invalid v2 fields without returning a context', () => {

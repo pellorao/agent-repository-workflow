@@ -213,7 +213,7 @@ test('maintenance unloads roots and closes the shared server only after exit',as
 test('the internal unload signal follows confirmed root and tool exit, never a failed stop',async t=>{
   const fake=await harness(t);
   /** @type {string[]} */ const signals=[];
-  const session=await fake.manager.openManaged({ownerId:'main-1',controllerId:'main-1',role:'code-spec-reviewer',
+  const session=await fake.manager.openManaged({ownerId:'main-1',controllerId:'main-1',role:'requirements-reviewer',
     settings,cwd:fake.directory,readPaths:[],writePaths:[],onNotification:()=>{},
     onUnloaded:()=>{signals.push('unloaded');}});
   await session.start({instructions:'Complete one Reviewer task.'});

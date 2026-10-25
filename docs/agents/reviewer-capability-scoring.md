@@ -10,15 +10,13 @@
 
 Spec Readiness 报告中, 单条 finding 提供的个别证据路径不是本次 Input 或允许的审核对象, 或定位信息归一化后没有正文行时, 只让无效证据失去匹配. 该 finding 的其他有效证据及同份报告的其他 finding 继续评分; 如果该 finding 没有剩余有效证据, 它无法命中相应用例并记 0 分. 原始引用错误同时按下方折减规则处理. 这一处理不放宽真实 Spec Readiness 生成对有效正文证据的要求.
 
-Commit Audit 的正式报告仍须为每项独立要求提供一条记录. 能力评分中, 某项预期要求被拆成多条原始记录, 或完全缺失时, 该项对应的问题用例或干净用例得 0 分, 不从拆分记录中选择最佳条目, 也不拼接结果和证据; 来源引用错误的要求同样记 0 分, 其他可明确归属的要求继续评分. 同一来源行可能包含多项独立要求. 当该来源行的原始记录数量异常, 且无法仅凭要求来源唯一归属时, Main Agent 必须对该行的每项预期要求明确指定唯一的一条原始记录, 或指定该项得 0 分. 未完成覆盖该行全部预期要求的绑定前, 不计算该实例的分数. 一条原始记录不能绑定多项预期要求. 原始要求记录错误同时按下方折减规则处理; Code Review 对重复或合并 finding 仍应用现行原子性公式.
-
 ## Clean cases
 
-干净用例首先获得二元误报分数, 并且只评估未与任何问题用例关联的问题. 每个普通干净用例保留一个必要的主要 `evidence` 集合. 可选的 `evidenceAlternatives` 数组声明直接支持同一个用例的其他完整非空证据集合. 它不得与主要集合或该用例中的其他替代集合重复. 主要集合仍然是从预期已满足的 Commit Audit 要求到对应干净用例的唯一绑定. Commit Audit 的干净观察与误报判断同时保留 Gate 和 requirement 绑定; 同一证据集合支持不同 requirement 时, 一项误报不得影响其他 requirement. 对于普通干净用例, 只有当问题位于相同范围, 其实际证据根据 [Locator matching](reviewer-capability-scenarios.md#locator-matching) 包含任一完整已接受集合中的每个定位信息, 且后续宽松概念确认与预期语义对象匹配时, 问题才以它为目标. 独立评估每个集合, 绝不跨集合合并定位信息. 仅共享文件路径并不足够, 除非该精确的仅含文件路径定位信息是一个已经声明的完整集合. 每个范围包含一个固定的 `no other supported finding` 干净用例. 如果实际范围中仍有任何未关联的问题, 该用例失败. 部分正确, 合并或重复的问题由相应问题用例评分, 不再接受第二项干净用例惩罚. 测试夹具内容不得包含已经批准的问题清单以外的受支持缺陷. 结构化的已满足 Commit Audit 要求还会向相应干净用例提供一项 F3 证据观察. 主要绑定标识该用例后, 分别根据主要集合和每个替代集合独立计算相同的精确定位信息覆盖率和精确率公式, 使用最高分, 不对集合求和或组合, 然后取该观察分数和二元误报分数中的较小值. 缺失, 非数组, 格式错误, 超出范围或无法定位的证据不获得匹配, 但不会成为强制关卡失败. 除上述已确认的空白行外, 所提供的每个证据项仍计入每次比较的精确率分母, 有效行范围中的每个实际行计数一次.
+干净用例首先获得二元误报分数, 并且只评估未与任何问题用例关联的问题. 每个普通干净用例保留一个必要的主要 `evidence` 集合. 可选的 `evidenceAlternatives` 数组声明直接支持同一个用例的其他完整非空证据集合. 它不得与主要集合或该用例中的其他替代集合重复. 对于普通干净用例, 只有当问题位于相同范围, 其实际证据根据 [Locator matching](reviewer-capability-scenarios.md#locator-matching) 包含任一完整已接受集合中的每个定位信息, 且后续宽松概念确认与预期语义对象匹配时, 问题才以它为目标. 独立评估每个集合, 绝不跨集合合并定位信息. 仅共享文件路径并不足够, 除非该精确的仅含文件路径定位信息是一个已经声明的完整集合. 每个范围包含一个固定的 `no other supported finding` 干净用例. 如果实际范围中仍有任何未关联的问题, 该用例失败. 部分正确, 合并或重复的问题由相应问题用例评分, 不再接受第二项干净用例惩罚. 测试夹具内容不得包含已经批准的问题清单以外的受支持缺陷. 缺失, 非数组, 格式错误, 超出范围或无法定位的证据不获得匹配, 但不会成为强制关卡失败. 除上述已确认的空白行外, 所提供的每个证据项仍计入每次比较的精确率分母, 有效行范围中的每个实际行计数一次.
 
 ## Final score
 
-对可评分的报告内容统一应用上述逐用例规则. 判断缺失或无效证据只影响对应内容的得分, 同份报告中其余可评分内容继续评分. Code Standards, Code Spec 和 Commit Audit 的一次重复只汇总该重复唯一实例的全部问题用例和干净用例. Spec Readiness 的一次重复只按相同序号配对两个场景实例, 先合并这一对实例的全部问题用例和全部干净用例, 再计算该重复的比率和分数. 两个场景的用例数量直接进入同一分母, 不先计算场景分数再等权平均. 重复序号只用于配对, 不赋予权重或优先级.
+对可评分的报告内容统一应用上述逐用例规则. 判断缺失或无效证据只影响对应内容的得分, 同份报告中其余可评分内容继续评分. Code Standards 的一次重复只汇总该重复唯一实例的全部问题用例和干净用例. Spec Readiness 的一次重复只按相同序号配对两个场景实例, 先合并这一对实例的全部问题用例和全部干净用例, 再计算该重复的比率和分数. 两个场景的用例数量直接进入同一分母, 不先计算场景分数再等权平均. 重复序号只用于配对, 不赋予权重或优先级.
 
 对每次重复, 报告 `fullProblemCases`, `earnedProblemPoints`, `totalProblemCases`, `earnedCleanPoints`, `passedCleanCases` 和 `totalCleanCases`. 计算 `problemDetectionRate = earnedProblemPoints / totalProblemCases` 和 `cleanAcceptanceRate = earnedCleanPoints / totalCleanCases`. 使用 `score = 5 * problemDetectionRate * cleanAcceptanceRate / (4 * cleanAcceptanceRate + problemDetectionRate)` 组合两者. 任一比率为 0 时该重复分数为 0. 该 F2 分数更重视问题发现率, 同时惩罚误报. `fullProblemCases` 和 `passedCleanCases` 只计算分数精确为 `1` 的用例, 这两个计数都不驱动比率.
 
@@ -36,8 +34,7 @@ Main Agent 核对原生会话与冻结场景后, 确认实例因模型自身行�
 
 - Spec Readiness 的 `runtime-migration` 实例正常完成后, Main Agent 从声明的 `workdir` 执行精确的对应 `generation` 项, 使用绑定的 `draftPath`, 并收集生成的规范结果. 正式生成因模型报告内容错误而拒绝时, 直接提交绑定的原始 JSONL, 所有可评分内容继续评分. Main Agent 不更改生成命令, 不向 Reviewer 暴露该命令.
 - Spec Readiness 的 `artifact-promotion` 实例直接提交准备记录绑定的 `resultPath`, 该路径必须与不可变请求的 `draftPath` 相同. 交接要求完成全部适用检查, Requirements 问题与后续检查的问题可以同时存在; 验证器保留全部 finding, 不把这种场景要求的继续检查记为停止规则错误, 不生成正式就绪产物或实施授权.
-- Commit Audit 正常完成后, Main Agent 从该实例绑定的 Request 调用正式生成入口, 收集完整规范审计路径集合. 正式生成因要求覆盖, 来源或证据错误而拒绝时, 直接提交绑定的原始 JSONL, 保留原始错误并按逐要求规则评分. Request 和当前候选身份校验始终适用.
-- Code Spec 或 Code Standards 直接提交绑定的 `resultPath`. 最终响应遵循 [Code Review 完成状态合同](reviewer.md#code-review-results); 是否存在可评分内容由绑定报告与原生会话共同核对, 不由简短完成状态代替.
+- Code Standards 直接提交绑定的 `resultPath`. 最终响应遵循 [Code Review 完成状态合同](reviewer.md#code-review-results); 是否存在可评分内容由绑定报告与原生会话共同核对, 不由简短完成状态代替.
 
 每个实例执行一次独立审核, Main Agent 保留 Reviewer 写入绑定 `reportPath` 的原始报告不变. 表示格式妨碍解析时, Main Agent 只在该实例临时工作区的独立副本修正表示, 使用 `{ "instanceId": "<prepared-instance-id>", "artifactPaths": null, "formatCorrection": {"originalReportPath":"<bound-report-path>","correctedReportPath":"<independent-copy-path>"} }` 作为同一能力评分入口的输入. 原件必须准确等于准备绑定的 `reportPath`, 副本必须在同一实例场景的 `.tmp` 临时范围, 与原件不同且不属于其他实例. 修正不得改变检查, finding, 结果, 要求身份, 问题含义, 来源, 证据选择或定位, 也不得补造报告. 原始格式错误完整记录, 副本通过可解析性和身份校验后按同一用例规则评分; 其中保留的来源, 证据及覆盖错误继续失分并触发所属重复的折减. 该评分副本不充当普通审核的正式生成产物或授权.
 

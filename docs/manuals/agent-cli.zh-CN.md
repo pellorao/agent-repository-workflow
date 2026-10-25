@@ -161,6 +161,6 @@ arw agent start impl --resume <session>
 
 外部 CLI 的工作目录保持为调用 `arw agent start` 时的当前目录, 不自动切换到发现的 Git 根目录. 它继承当前终端的标准输入, 标准输出和标准错误. ARW 等待进程结束并传播正常的非负整数退出码. 启动失败或没有正常数值退出码时, ARW 报告操作失败.
 
-每次启动得到的是外部 Main Agent CLI 进程. 它不是 `code-spec-reviewer`, `code-standards-reviewer`, `commit-audit-reviewer` 或 `spec-readiness-reviewer` 等平台内部 Reviewer. 配置名称与这些身份相同也不会建立映射或共享责任.
+每次启动得到的是外部 Main Agent CLI 进程. 它不是 `code-standards-reviewer`, `requirements-reviewer` 或 `spec-readiness-reviewer` 等平台内部 Reviewer. 配置名称与这些身份相同也不会建立映射或共享责任.
 
 ARW 不保存进程或会话登记表, 不启动, 监控或复用外部 CLI 会话, 也不为多个可写 Main Agent 提供并发保护. 会话生命周期和恢复结果由外部 CLI 拥有. 如果在多个终端中工作, 由使用者保证同一工作树在同一时间只有一个可写 Main Agent.

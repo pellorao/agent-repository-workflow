@@ -824,7 +824,7 @@ test('interactive confirmation and uninstaller usage follow the explicit command
 });
 
 test('background Agent closing requires its own choice and is rechecked before deletion', async t => {
-    const activeAgents = [{role: 'code-spec-reviewer', ownerId: 'main-1', ownerTitle: 'Review', state: 'running', taskElapsedMs: 1000}];
+    const activeAgents = [{role: 'requirements-reviewer', ownerId: 'main-1', ownerTitle: 'Review', state: 'running', taskElapsedMs: 1000}];
     const home = await createHome(t);
     const installation = await writeInstallation(home);
     /** @type {string[]} */

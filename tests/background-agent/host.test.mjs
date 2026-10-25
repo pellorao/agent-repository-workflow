@@ -112,7 +112,7 @@ const fixture = async (t, providers, createStrataDriver, engineOptions = {}) => 
         /** @type {string} */ ownerId = 'main-session',
         /** @type {((value:unknown)=>Promise<void>)|undefined} */ emit = undefined) =>
         host.dispatch({ownerId, caller, operation, input, emit});
-    const handoff = {role: 'code-spec-reviewer', identity: {kind: 'ordinary', issueIds: ['issue:0093:01']},
+    const handoff = {role: 'requirements-reviewer', identity: {kind: 'ordinary', issueIds: ['issue:0093:01']},
         instructions: 'Complete Reviewer rules.', handoff: 'Review the prepared evidence.',
         cwd: repositoryRoot, writePaths: [reportDirectory], reportPath, stateDirectory};
     return {directory, repositoryRoot, installationDirectory, programDirectory, reportDirectory, reportPath, stateDirectory,
@@ -128,7 +128,7 @@ const measurement = result => {
 const earlyExitFixture = async t => {
     t.mock.timers.enable({apis:['Date'],now:1000});
     const f=await fixture(t,undefined,undefined,{backgroundAgent:{earlyExitNotificationThreshold:2},
-        reviewers:{'code-spec-reviewer':{modelProvider:'test-provider'}}});
+        reviewers:{'requirements-reviewer':{modelProvider:'test-provider'}}});
     const accepted=succeeded(await f.dispatch('spawn_agent',{...f.handoff,identity:{kind:'ordinary',issueIds:['issue:0093:03']}}));
     const runId=String(accepted.runId);
     await f.host.manager.owned(runId,'main-session','main-session').work;
@@ -180,7 +180,7 @@ test('Host applies provider capacity to generic background work and keeps anothe
 test('two Engine callers select Reviewer settings and manager capacity changes only after restart', async t => {
     const f = await fixture(t, undefined, undefined, {
         backgroundAgent: {maxInstances: 2, persistenceIntervalMs: 4000},
-        reviewers: {'code-spec-reviewer': {model: 'engine-a-model', modelProvider: 'provider-a',
+        reviewers: {'requirements-reviewer': {model: 'engine-a-model', modelProvider: 'provider-a',
             reasoningEffort: 'high', serviceTier: 'default'}},
     });
     const otherProgramDirectory = join(f.directory, 'engine-b');
@@ -189,12 +189,12 @@ test('two Engine callers select Reviewer settings and manager capacity changes o
         configVersion: 3, editor: {command: 'code', args: ['{file}']},
         reviewEditor: {command: 'code', args: ['{file}']}, jira: {listLimit: 50},
         backgroundAgent: {maxInstances: 5, persistenceIntervalMs: 1},
-        reviewers: {'code-spec-reviewer': {model: 'engine-b-model', modelProvider: 'provider-b',
+        reviewers: {'requirements-reviewer': {model: 'engine-b-model', modelProvider: 'provider-b',
             reasoningEffort: 'low', serviceTier: 'fast'}},
     };
     await writeFile(join(otherProgramDirectory, 'config.json'), JSON.stringify(otherConfig));
     await writeFile(join(f.repositoryRoot, 'arw.config.json'), JSON.stringify({
-        configVersion: 2, reviewers: {'code-spec-reviewer': {model: 'repository-model'}},
+        configVersion: 2, reviewers: {'requirements-reviewer': {model: 'repository-model'}},
     }));
     const otherCaller = {repositoryRoot: f.repositoryRoot, programDirectory: otherProgramDirectory};
     const otherDispatch = (/** @type {Record<string, unknown>} */ input) => f.host.dispatch({
@@ -732,11 +732,11 @@ test('Reviewer keeps current-turn settings and adopts user configuration only fo
         await writeFile(join(f.programDirectory, 'config.json'), JSON.stringify({
             configVersion: 3, agents: {}, editor: {command: 'code', args: ['{file}']},
             reviewEditor: {command: 'code', args: ['{file}']}, jira: {listLimit: 50},
-            reviewers: {'code-spec-reviewer': {modelProvider: `provider-${suffix}`,
+            reviewers: {'requirements-reviewer': {modelProvider: `provider-${suffix}`,
                 reasoningEffort: suffix === 'a' ? 'high' : 'low', serviceTier}},
         }));
         await writeFile(join(f.repositoryRoot, 'arw.config.json'), JSON.stringify({
-            configVersion: 2, reviewers: {'code-spec-reviewer': {model: `repository-model-${suffix}`}},
+            configVersion: 2, reviewers: {'requirements-reviewer': {model: `repository-model-${suffix}`}},
         }));
     };
     await writeConfiguration('a', 'default');
@@ -789,7 +789,7 @@ test('Strata rejected undeclared tool response receives concrete feedback and co
         async release() {},
     })));
     const f = await fixture(t, {strata:{driver:'strata',installationDirectory:serviceDirectory}}, driver, {
-        reviewers:{'code-spec-reviewer':{model:'qwen3.8-flash-next-q2_0',modelProvider:'strata',reasoningEffort:'high',serviceTier:'default'}},
+        reviewers:{'requirements-reviewer':{model:'qwen3.8-flash-next-q2_0',modelProvider:'strata',reasoningEffort:'high',serviceTier:'default'}},
     });
     const accepted = succeeded(await f.dispatch('spawn_agent',f.handoff));
     await f.host.manager.owned(String(accepted.runId),'main-session','main-session').work;

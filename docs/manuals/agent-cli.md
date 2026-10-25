@@ -161,6 +161,6 @@ The full meaning and availability of these arguments remain defined by the relev
 
 The external CLI's working directory remains the current directory where you called `arw agent start`; ARW does not switch to the discovered Git root. The process inherits the current terminal's standard input, output, and error streams. ARW waits for it to exit and propagates a normal non-negative integer exit code. If launch fails or there is no normal numeric exit code, ARW reports an operation failure.
 
-Each launch starts an external Main Agent CLI process. It is not an internal platform Reviewer such as `code-spec-reviewer`, `code-standards-reviewer`, `commit-audit-reviewer`, or `spec-readiness-reviewer`. Giving a configuration the same name as one of these identities does not create a mapping or shared responsibility.
+Each launch starts an external Main Agent CLI process. It is not an internal platform Reviewer such as `code-standards-reviewer`, `requirements-reviewer`, or `spec-readiness-reviewer`. Giving a configuration the same name as one of these identities does not create a mapping or shared responsibility.
 
 ARW does not keep a process or session registry, start, monitor, or reuse external CLI sessions, or protect multiple writable Main Agents from running concurrently. The external CLI owns session lifecycle and recovery results. If you work in multiple terminals, ensure that only one writable Main Agent uses a given working tree at a time.

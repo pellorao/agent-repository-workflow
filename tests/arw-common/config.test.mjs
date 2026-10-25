@@ -40,37 +40,37 @@ test('global configuration rejects invalid UTF-8 before JSON validation', async 
 
 test('Reviewer settings resolve by role and field with explicit Standard and isolated overrides', () => {
     const globalConfig = {reviewers: {
-        'code-spec-reviewer': {model: 'global-model', modelProvider: 'provider', reasoningEffort: 'high', serviceTier: 'fast'},
+        'requirements-reviewer': {model: 'global-model', modelProvider: 'provider', reasoningEffort: 'high', serviceTier: 'fast'},
     }};
-    const repositoryConfig = {reviewers: {'code-spec-reviewer': {model: 'repository-model'}}};
-    assert.deepEqual(resolveReviewerSettings({role: 'code-spec-reviewer', globalConfig, repositoryConfig}), {
+    const repositoryConfig = {reviewers: {'requirements-reviewer': {model: 'repository-model'}}};
+    assert.deepEqual(resolveReviewerSettings({role: 'requirements-reviewer', globalConfig, repositoryConfig}), {
         model: 'repository-model', modelProvider: 'provider', reasoningEffort: 'high', serviceTier: 'fast',
     });
-    assert.deepEqual(resolveReviewerSettings({role: 'code-spec-reviewer', globalConfig, repositoryConfig, overrides: {serviceTier: 'default'}}), {
+    assert.deepEqual(resolveReviewerSettings({role: 'requirements-reviewer', globalConfig, repositoryConfig, overrides: {serviceTier: 'default'}}), {
         model: 'repository-model', modelProvider: 'provider', reasoningEffort: 'high', serviceTier: 'default',
     });
-    assert.deepEqual(resolveReviewerSettings({role: 'commit-audit-reviewer', globalConfig, repositoryConfig}), {
+    assert.deepEqual(resolveReviewerSettings({role: 'spec-readiness-reviewer', globalConfig, repositoryConfig}), {
         model: 'gpt-6-luna', modelProvider: 'openai', reasoningEffort: 'xhigh', serviceTier: 'default',
     });
-    assert.deepEqual(resolveReviewerSettings({role: 'commit-audit-reviewer', globalConfig, repositoryConfig, platform: 'claude-code'}), {
+    assert.deepEqual(resolveReviewerSettings({role: 'spec-readiness-reviewer', globalConfig, repositoryConfig, platform: 'claude-code'}), {
         model: 'haiku', modelProvider: 'anthropic', reasoningEffort: 'high', serviceTier: 'default',
     });
-    const claude = {reviewers: {'commit-audit-reviewer': {model: 'sonnet', modelProvider: 'anthropic', env: {ANTHROPIC_AUTH_TOKEN: 'secret'}}}};
-    assert.deepEqual(resolveReviewerSettings({role: 'commit-audit-reviewer', globalConfig: claude, repositoryConfig, platform: 'claude-code'}), {
+    const claude = {reviewers: {'spec-readiness-reviewer': {model: 'sonnet', modelProvider: 'anthropic', env: {ANTHROPIC_AUTH_TOKEN: 'secret'}}}};
+    assert.deepEqual(resolveReviewerSettings({role: 'spec-readiness-reviewer', globalConfig: claude, repositoryConfig, platform: 'claude-code'}), {
         model: 'sonnet', modelProvider: 'anthropic', reasoningEffort: 'xhigh', serviceTier: 'default',
     });
-    assert.throws(() => resolveReviewerSettings({role: 'commit-audit-reviewer', globalConfig, repositoryConfig: claude}),
-        /reviewers\.commit-audit-reviewer\.env is allowed only in the user-level ARW config\.json/);
+    assert.throws(() => resolveReviewerSettings({role: 'spec-readiness-reviewer', globalConfig, repositoryConfig: claude}),
+        /reviewers\.spec-readiness-reviewer\.env is allowed only in the user-level ARW config\.json/);
 });
 
 test('Global default completion preserves existing JSON text and rejects malformed known fields', () => {
-    const original = Buffer.from('{\n  "configVersion": 3,\n  "agents": {},\n  "editor": {"command":"code","args":["{file}"]},\n  "reviewEditor": {"command":"code","args":["{file}"]},\n  "jira": {"listLimit":50},\n  "extension": {"literal": 1e3},\n  "reviewers": {"code-spec-reviewer": {"model": "custom"}}\n}\n');
+    const original = Buffer.from('{\n  "configVersion": 3,\n  "agents": {},\n  "editor": {"command":"code","args":["{file}"]},\n  "reviewEditor": {"command":"code","args":["{file}"]},\n  "jira": {"listLimit":50},\n  "extension": {"literal": 1e3},\n  "reviewers": {"requirements-reviewer": {"model": "custom"}}\n}\n');
     const completed = completeGlobalConfigurationBytes(original);
     assert.equal(completed.changed, true);
     const text = completed.bytes.toString('utf8');
     assert.ok(text.includes('"extension": {"literal": 1e3}'));
-    assert.ok(text.includes('"code-spec-reviewer": {"model": "custom",'));
-    assert.deepEqual(validateConfig(JSON.parse(text)).reviewers?.['code-spec-reviewer'], {
+    assert.ok(text.includes('"requirements-reviewer": {"model": "custom",'));
+    assert.deepEqual(validateConfig(JSON.parse(text)).reviewers?.['requirements-reviewer'], {
         model: 'custom', modelProvider: 'openai', reasoningEffort: 'xhigh', serviceTier: 'default',
     });
     assert.deepEqual(validateConfig(JSON.parse(text)).backgroundAgent, BACKGROUND_AGENT_DEFAULTS);
@@ -78,7 +78,9 @@ test('Global default completion preserves existing JSON text and rejects malform
     const customCapacity = Buffer.from(original.toString('utf8').replace('"extension"', '"backgroundAgent": {"maxInstances": 2},\n  "extension"'));
     assert.deepEqual(validateConfig(JSON.parse(completeGlobalConfigurationBytes(customCapacity).bytes.toString('utf8'))).backgroundAgent, {...BACKGROUND_AGENT_DEFAULTS, maxInstances: 2});
     const invalid = Buffer.from(original.toString('utf8').replace('"model": "custom"', '"model": 7'));
-    assert.throws(() => completeGlobalConfigurationBytes(invalid), /reviewers\.code-spec-reviewer\.model/u);
+    assert.throws(() => completeGlobalConfigurationBytes(invalid), /reviewers\.requirements-reviewer\.model/u);
+    const retiredRole = Buffer.from(original.toString('utf8').replace('"requirements-reviewer"', '"code-spec-reviewer"'));
+    assert.equal(validateConfig(JSON.parse(retiredRole.toString('utf8'))).reviewers?.['code-spec-reviewer'], undefined);
     const retiredField = Buffer.from(original.toString('utf8').replace('"extension"', '"backgroundAgent": {"maxAppServers": 4},\n  "extension"'));
     assert.throws(() => completeGlobalConfigurationBytes(retiredField), /backgroundAgent contains an unsupported field/u);
 });

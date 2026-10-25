@@ -65,7 +65,7 @@ Governing requirements:
 `## Validation` 保存当前验收项对应的实际命令, 测试, 文件位置和结果; `## Comments` 在 issue 底部保存讨论, 审核事件和已取得的结论. 这两章整章是记录:
 
 - 它们不承载实施要求, 验收条件或授权例外, 不成为独立通过的权威. 有效要求和替代决定写入 `## What to build`, `## Spec Requirement` 或 `## Acceptance criteria`. 正式验收以某审核通过为条件时, 必须先取得该事实.
-- 它们的变化不改变审核对象身份, 不触发 Spec Readiness, Code Standards, Code Spec 或 Commit Audit 的语义复审. 修改后机械核对准确章节范围, 文本和证据定位, 确认没有其他实现, 要求, 输入或授权变化. Commit Audit 运行中先改工作树, 暂存时点见 `commit` Skill. `Status` 和验收勾选不属于此例外.
+- 它们的变化不改变审核对象身份, 不触发 Spec Readiness, Code Standards 或要求符合审核的语义复审. 修改后机械核对准确章节范围, 文本和证据定位, 确认没有其他实现, 要求, 输入或授权变化. 提交审核运行中先改工作树, 暂存时点见 `commit` Skill. `Status` 和验收勾选不属于此例外.
 - 链接不扩大 Reviewer 读取权限, 成功声明不替代独立判断. 新失败和反证仍须处理, 删除记录不消除已知失败.
 - 其他工作流对记录中结构化信息的解析, 同步, 关联和纠错合同不变.
 

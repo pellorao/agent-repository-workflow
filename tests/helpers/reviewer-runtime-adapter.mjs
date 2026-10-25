@@ -2,7 +2,7 @@ import {basename, dirname, relative} from 'node:path';
 import {randomUUID} from 'node:crypto';
 import {cloneJsonValue} from '../../lib/common/json.mjs';
 import {createUsage} from '../../lib/reviewer-runtime/reviewer-measurement.mjs';
-import {createScriptedScopedFilesystemFactory} from './commit-audit-adapters.mjs';
+import {createScriptedScopedFilesystemFactory} from './scripted-filesystem.mjs';
 
 /** @typedef {import('../../lib/background-agent/codex-app-server.mjs').NativeMember} NativeMember */
 /** @typedef {import('../../lib/background-agent/codex-app-server.mjs').NativeSession} NativeSession */
@@ -20,7 +20,7 @@ export const reviewerSettings = /** @type {NativeSettings} */ ({
 });
 
 export const reviewerHandoff = {
-    role: 'code-spec-reviewer',
+    role: 'requirements-reviewer',
     identity: {kind: /** @type {'ordinary'} */ ('ordinary'), issueIds: ['issue:0093:01']},
     settings: reviewerSettings,
     instructions: 'Full Canonical Role and common Reviewer rules.',
