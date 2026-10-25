@@ -6,12 +6,13 @@
 import {spawnSync} from 'node:child_process';
 import {existsSync, mkdtempSync, readdirSync, readFileSync} from 'node:fs';
 import {homedir, tmpdir} from 'node:os';
-import {dirname, join} from 'node:path';
+import {delimiter, dirname, join} from 'node:path';
 import {fileURLToPath} from 'node:url';
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const WINDOWS = process.platform === 'win32';
 const INSTALLATION = join(homedir(), '.agent-repository-workflow');
+const NODE_DIRECTORY = dirname(process.execPath);
 const VERSION = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8')).version;
 const INIT_ARGUMENTS = 'workflow init --non-interactive --platform codex --platform claude-code'
     + ' --domain-layout single-context --code-map-root --code-map-include --code-map-exclude';
@@ -34,15 +35,16 @@ const step = (label, result, expectOk = true) => {
 };
 
 // 新开命令解释器: Windows 从注册表重新读取 Machine + User Path (与新打开的终端相同), Linux 用登录 shell 读取 ~/.profile.
+// 运行本脚本的 node 所在目录排在 PATH 最前, 让 arw 启动器调用的 `node` 就是受验的 Node.js.
 // 默认在 HOME 运行, 且 Windows 禁止从当前目录解析命令, 以免解析到候选 checkout 自带的 arw.
 /** @param {string} command @param {string} [cwd] */
 const fresh = (command, cwd = homedir()) => {
-    if (!WINDOWS) return run('bash', ['-lc', command], {cwd});
+    if (!WINDOWS) return run('bash', ['-lc', `PATH='${NODE_DIRECTORY}':"$PATH"; ${command}`], {cwd});
     const path = run('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command',
         "[Environment]::ExpandEnvironmentVariables([Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [Environment]::GetEnvironmentVariable('Path','User'))"]);
     if (!path.ok) return path;
     const env = Object.fromEntries(Object.entries(process.env).filter(([key]) => key.toUpperCase() !== 'PATH'));
-    return run('cmd.exe', ['/d', '/c', command], {cwd, env: {...env, Path: path.stdout, NoDefaultCurrentDirectoryInExePath: '1'}, windowsVerbatimArguments: true});
+    return run('cmd.exe', ['/d', '/c', command], {cwd, env: {...env, Path: `${NODE_DIRECTORY}${delimiter}${path.stdout}`, NoDefaultCurrentDirectoryInExePath: '1'}, windowsVerbatimArguments: true});
 };
 
 const locate = WINDOWS ? 'where arw' : 'command -v arw';
@@ -74,4 +76,4 @@ const leftovers = existsSync(INSTALLATION)
     ? readdirSync(INSTALLATION, {recursive: true, withFileTypes: true}).filter(entry => !entry.isDirectory())
     : [];
 step('Installation 目录不剩文件', {ok: leftovers.length === 0, output: leftovers.map(entry => join(entry.parentPath, entry.name)).join('\n')});
-process.stdout.write(`PASS ${process.platform} ${VERSION} ${commit}\n`);
+process.stdout.write(`PASS ${process.platform} node ${process.versions.node} ${VERSION} ${commit}\n`);

@@ -30,8 +30,8 @@ disable-model-invocation: true
 
 1. 向维护者索取本次 VM 配置 JSON 的绝对路径. 配置格式和受验系统要求见 [VM 参考](references/vm.md). 配置内容, VM 身份和凭据不写入仓库, issue 或报告.
 2. `mkdir -p .tmp/release`, 然后 `git bundle create .tmp/release/candidate.bundle HEAD`.
-3. 对配置中的每台机器运行 `node scripts/release-vm.mjs check <config> <machine> <bundle>`. 脚本依次还原快照, 启动 VM, 传入 bundle, 运行 `scripts/release-guest-check.mjs`, 最后硬关机并还原快照. 不同机器之间互不依赖, 可以并行. 从 WSL 操作 Windows 宿主上的 VM 时, 按 [VM 参考](references/vm.md#wsl-and-windows-host) 使用 Windows 的 `node.exe` 运行.
-4. 只有每台机器的最后一行都是 `<machine>: PASS` 才算通过. 记录 guest 输出的 `PASS <platform> <version> <commit>` 行.
+3. 对配置中的每台机器运行 `node scripts/release-vm.mjs check <config> <machine> <bundle>`. 脚本依次还原快照, 启动 VM, 传入 bundle, 运行 `scripts/release-guest-check.mjs`, 最后硬关机并还原快照. 不同机器之间互不依赖, 可以并行, 但不超过配置的 `maxParallelMachines`. 从 WSL 操作 Windows 宿主上的 VM 时, 按 [VM 参考](references/vm.md#wsl-and-windows-host) 使用 Windows 的 `node.exe` 运行.
+4. 只有每台机器的最后一行都是 `<machine>: PASS` 才算通过. 记录 guest 为每个 Node.js 输出的 `PASS <platform> node <node-version> <version> <commit>` 行.
 
 失败时先保存原始输出. 需要现场诊断时, 加 `--keep` 重跑, 用 `node scripts/release-vm.mjs ssh <config> <machine> <command>` 检查 VM, 诊断完运行 `down` 还原快照. 判断失败原因:
 
