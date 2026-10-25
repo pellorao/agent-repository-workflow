@@ -17,7 +17,7 @@ const fixture = async (t, environment = {}) => {
     const directory = await createTemporaryDirectory(t, 'arw-claude-sessions-');
     const log = join(directory, 'calls.jsonl');
     await writeFile(join(directory, 'config.json'), JSON.stringify({configVersion: 3, editor: {command: 'code', args: ['{file}']}, reviewEditor: {command: 'code', args: ['{file}']},
-        jira: {listLimit: 50}, reviewers: {'code-spec-reviewer': {env: {ANTHROPIC_BASE_URL: 'https://models.example'}}}}));
+        jira: {listLimit: 50}, reviewers: {'code-spec-reviewer': {model: 'haiku', modelProvider: 'anthropic', env: {ANTHROPIC_BASE_URL: 'https://models.example'}}}}));
     const sessions = createClaudeSessions({executable,
         environment: {...process.env, ...environment, FAKE_CLAUDE_LOG: log, CLAUDE_CONFIG_DIR: directory}});
     t.after(() => sessions.close());
@@ -110,7 +110,7 @@ test('a Claude Code Main starts, follows up, waits for and interrupts a Claude R
     await mkdir(stateDirectory, {recursive: true});
     await mkdir(programDirectory);
     await writeFile(join(programDirectory, 'config.json'), JSON.stringify({configVersion: 3, editor: {command: 'code', args: ['{file}']},
-        reviewEditor: {command: 'code', args: ['{file}']}, jira: {listLimit: 50}, reviewers: {'code-spec-reviewer': {env: {ANTHROPIC_BASE_URL: 'https://host.example'}}}}));
+        reviewEditor: {command: 'code', args: ['{file}']}, jira: {listLimit: 50}, reviewers: {'code-spec-reviewer': {model: 'haiku', modelProvider: 'anthropic', env: {ANTHROPIC_BASE_URL: 'https://host.example'}}}}));
     const log = join(directory, 'calls.jsonl');
     /** @type {NodeJS.ProcessEnv} */ const environment = {...process.env, FAKE_CLAUDE_LOG: log, CLAUDE_CONFIG_DIR: directory};
     const started = host = await createBackgroundAgentHost({installationDirectory: join(directory, 'installation'), programDirectory,
