@@ -1,5 +1,7 @@
 # 使用当前用户共享的后台 Agent 管理进程
 
+状态: [ADR 0032](0032-run-claude-reviewers-through-headless-claude.md) 修订了本决定只管理 Codex App Server 的范围: 管理进程也通过 Claude 后端运行 Claude Reviewer. 共享 App Server, 模型目录和 Strata 的决定只适用于 Codex 后端.
+
 多个仓库和与用户沟通的 Main Agent 可能同时启动后台 Agent. ARW 使用当前用户范围内单个不调用模型的常驻进程, 统一管理至多一个 ARW 专用共享 App Server 中的多个独立根线程, 不接管用户前台 Codex CLI 的 App Server. 管理进程首次需要后台服务时自动启动, 空闲与客户端断开后继续驻留, 正常运行至关机, 安装维护, 明确终止或故障另行处理. 最后一个根线程卸载且相关工具退出后, 共享 App Server 等待连续 60 秒无后台根线程或已接受待启动任务才关闭; 新任务取消关闭并复用, 维护可立即关闭. 它通过所有受支持系统上的本机回环 TCP 与机器入口连接, 并以当前用户私密凭据鉴权. 如果每个调用方自行管理进程, 容量, 会话恢复和安装维护责任就会分散, 跨调用方协调更复杂; 统一的本机回环 TCP 连接减少不同操作系统之间通信实现和维护的差异. 安装, 更新和卸载由操作进程先取得独立的固定本机回环维护端口, 再关闭管理进程; 正常管理进程启动也持有该端口直到启动完成. 操作进程持续持有该端口直到退出, 由操作系统释放互斥, 不留下需要人工清理的交接标记.
 
 通用后台进程负责连接, 按已加载根线程计的容量, 恢复和共享 App Server 生命周期; Reviewer 专属规则继续负责四个审核角色, 单 Agent 审核及绑定报告. 管理进程崩溃后, 单靠已关闭的 `stdio` 连接或可能复用的 PID 不能证明旧共享进程已退出, 因此私有状态用独立于批量消息保存的 PID 与操作系统进程创建时间辨认原来那次启动; 身份仍活动或无法核对时拒绝启动第二个共享进程. 统一管理接受私有共享状态, 低资源占用要求和安装, 更新, 卸载时与活动任务协调的成本. 准确控制行为由 [产品后台 Agent 规则](../specs/agent-repository-workflow/spec.md#background-agent-control) 拥有, 配置, 私有状态与安装生命周期由 [安装管理规则](../specs/agent-repository-workflow-installation/spec.md#background-agent-management) 拥有.
