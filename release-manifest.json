@@ -80,7 +80,6 @@
     "lib/common/canonical-contract.mjs",
     "lib/common/configuration-conversion.mjs",
     "lib/common/document-language.mjs",
-    "lib/common/evidence-locators.mjs",
     "lib/common/file-transaction.mjs",
     "lib/common/filesystem.mjs",
     "lib/common/git-content.mjs",

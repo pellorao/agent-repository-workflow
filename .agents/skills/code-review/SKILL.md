@@ -10,7 +10,7 @@ name: code-review
 - **Standards**: 变更是否遵循适用的 Agent 指令和实施质量标准?
 - **Requirements**: 变更是否实现已提供的治理要求?
 
-使用具名的 `code-standards-reviewer` 和 `requirements-reviewer`. 对应的规范角色文档拥有审查准则和输出规则. 提交时 Requirements 轴由 `commit` Skill 用 Engine 生成的要求清单运行, 本 Skill 只运行 Standards 轴, 两者并行.
+使用具名的 `code-standards-reviewer` 和 `requirements-reviewer`. 对应的规范角色文档拥有审查准则和输出规则. 提交时 Requirements 轴由 `commit` Skill 用 `arw commit-audit prepare` 的 Request 运行, 本 Skill 只运行 Standards 轴, 两者并行.
 
 ## Process
 
@@ -64,7 +64,7 @@ Not reviewed: no governing requirements were supplied.
 
 下一条用户可见的范围说明只列纳入的路径. 不列已排除, 未暂存, 未跟踪路径或选择前后的路径集合. 没有纳入路径时, 报告没有可审查变更并停止; 否则让每个适用轴审核纳入的比较.
 
-任何 Git 读取, 比较解析或过滤步骤失败时, 将审查标为不完整, 在创建任一 Reviewer 前停止. 这些过滤不改变 Agent 管理的范围; 提交时的要求清单仍覆盖完整已暂存实施候选, 不被本过滤缩小.
+任何 Git 读取, 比较解析或过滤步骤失败时, 将审查标为不完整, 在创建任一 Reviewer 前停止. 这些过滤不改变 Agent 管理的范围; 提交时的要求符合审核仍覆盖完整已暂存实施候选, 不被本过滤缩小.
 
 完成条件: 需要新判断的轴收到同一份完整不可变比较, 未受影响的轴已有完整有效结果, 且没有重复比较解析或过滤工作.
 
@@ -72,7 +72,7 @@ Not reviewed: no governing requirements were supplied.
 
 Reviewer 身份由审查轴固定的 `input.role` 值和完整排序的授权 issue ID 集合组成. Standards 使用 `code-standards-reviewer`, Requirements 使用 `requirements-reviewer`; Requirements 的身份另含比较区间, 与提交审核的线程分开. 复审和问题处理按[结论复用](result-reuse.md)进行.
 
-每个轴的每轮审查按 [Code Review 结果规则](../../../docs/agents/reviewer.md#code-review-results) 使用新的空 `resultPath`, 不把上一轮报告复用为新草稿.
+每个轴的每轮审查按 [报告格式](../../../docs/agents/reviewer.md#report) 使用新的空 `resultPath`, 不把上一轮报告复用为新草稿.
 
 按 `reviewer-launch` Skill 固定版本并并行启动需要新判断的轴, `reportPath` 使用准确 `resultPath`. 并行修改不替换本轮版本或自动授权新候选.
 
@@ -104,6 +104,6 @@ Main Agent 可以另附面向用户的通俗解释, 上述原报告与结果格�
 Review unavailable: <reason>.
 ```
 
-将整体审查标为 `incomplete`. 失败轴不能显示 `No findings.`. 用户确认没有治理要求时, 使用第 1 步精确规定的未审查结果, 不声称符合要求.
+将整体审查标为 `incomplete`. 失败轴不能显示 `No problems.`. 用户确认没有治理要求时, 使用第 1 步精确规定的未审查结果, 不声称符合要求.
 
 完成条件: 报告标识准确比较与 Reviewer 路径集合, 每个适用轴都有独立结果, 并准确说明完整或不完整状态.

@@ -13,7 +13,7 @@
 - 绑定不可变版本的只读 Git 命令和完整代码上下文.
 - 比较边界和包含的路径集合.
 - 适用的提交区间和验证事实, 以及授权 issue 写明的预估改动行数.
-- 按 `docs/agents/reviewer.md#code-review-results` 提供的精确 `resultPath`.
+- 按 `docs/agents/reviewer.md#report` 提供的精确 `resultPath` (txt 文件).
 
 按照 [公共版本规则](../reviewer.md#review-versions-and-concurrency)读取本轮适用 Agent 指令的完整副本. 只检查所提供的比较. 不得发现 issue, spec, PRD, ADR 或其他产品要求, 以此创建 Standards 要求或扩大变更路径范围.
 
@@ -46,7 +46,7 @@
 
 只把实际已完成的验证作为事实. 不评估 `*.spec-readiness.json`, `*.audit.json` 和 `spec-audit.json` 的内容, 也不把它们作为问题证据; 生成或验证它们的代码, 测试和文档仍可审查.
 
-对于每个问题, 按共同的 Code Review 证据规则指明变更文件证据, 被违反的 Agent 指令或已经命名的设计异味, 问题和影响, 以及具体修复方法. 设计异味名称只提供检查方向; 结合当前调用方, 数据归属和行为, 以及现有边界承担的策略和为调用方隐藏的细节, 证明具体的维护负担或错误后果.
+对于每个问题, 按[报告格式](../reviewer.md#report)指明变更文件证据, 被违反的 Agent 指令或已经命名的设计异味, 问题和影响, 以及具体修复方法. 设计异味名称只提供检查方向; 结合当前调用方, 数据归属和行为, 以及现有边界承担的策略和为调用方隐藏的细节, 证明具体的维护负担或错误后果.
 
 初次完成全部适用检查; 复审按 [复审规则](../reviewer.md#re-review) 进行.
 
@@ -54,7 +54,7 @@
 
 ## Output
 
-按 `docs/agents/reviewer.md#code-review-results` 交付完整当前结论. 不得添加摘要, 严重性重新排序, 表扬, 历史问题或要求符合审核的问题. 逐项文件写入和最终交接遵循 `docs/agents/reviewer.md` 的共同规则.
+按 `docs/agents/reviewer.md#report` 交付完整当前结论. 不得添加摘要, 严重性重新排序, 表扬, 历史问题或要求符合审核的问题. 逐项文件写入和最终交接遵循 `docs/agents/reviewer.md` 的共同规则.
 
 ## Constraints
 
@@ -62,4 +62,4 @@ Reviewer 必须亲自将完整审核报告写入 Main Agent 提供的 `resultPat
 
 ## Failure behavior
 
-如果无法读取必要输入, 比较证据或所包含的文件, 或无法写入提供的 `resultPath`, 按共同 Code Review 结果合同返回 `incomplete`, 并指出确切的缺失输入或失败检查.
+如果无法读取必要输入, 比较证据或所包含的文件, 或无法写入提供的 `resultPath`, 按[报告格式](../reviewer.md#report)返回 `incomplete`, 并指出确切的缺失输入或失败检查.

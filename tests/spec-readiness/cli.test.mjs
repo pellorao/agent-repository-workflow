@@ -15,7 +15,7 @@ test('spec readiness prepare accepts JSON stdin and emits a minimal reviewer req
     await mkdir(join(repository.root, 'docs', 'agents', 'roles'), {recursive: true});
     await writeFile(join(repository.root, 'docs', 'agents', 'roles', 'spec-readiness-reviewer.md'), role, 'utf8');
 
-    const draftPath = join(repository.root, '.tmp', 'codex', 'test-session', '0001_01', 'spec-readiness', 'reviewer-drafts', 'draft.jsonl');
+    const draftPath = join(repository.root, '.tmp', 'codex', 'test-session', '0001_01', 'spec-readiness', 'reviewer-drafts', 'draft.txt');
     const prepared = await run(['spec-readiness', 'prepare', '--issue', 'issue:0001:01'], repository, {
         specReadinessDependencies: {
             platformAdapter: {getCurrentAgentIdentity: () => ({platform: 'codex', sessionId: 'test-session'})},
@@ -47,7 +47,7 @@ test('spec readiness prepare accepts the shared JSON schema from an input file',
     await writeFile(join(repository.root, 'docs', 'agents', 'roles', 'spec-readiness-reviewer.md'), role, 'utf8');
     const inputPath = join(repository.root, '.tmp', 'codex', 'test-session', '0001_01', 'spec-readiness', 'prepare-input.json');
     await mkdir(dirname(inputPath), {recursive: true});
-    const draftPath = join(repository.root, '.tmp', 'codex', 'test-session', '0001_01', 'spec-readiness', 'reviewer-drafts', 'draft.jsonl');
+    const draftPath = join(repository.root, '.tmp', 'codex', 'test-session', '0001_01', 'spec-readiness', 'reviewer-drafts', 'draft.txt');
     await writeFile(inputPath, JSON.stringify({draftPath, inputs: [{filePath: '.scratch/0001-workflow/spec.md', role: 'governing-spec'}]}), 'utf8');
 
     const prepared = await run(['spec-readiness', 'prepare', '--issue', 'issue:0001:01', '--input', inputPath], repository, {
@@ -74,7 +74,7 @@ test('spec readiness rejects an issue in duplicate effort identities', async t =
     await writeArtifact(repository.root, '0001-second', 'spec.md', spec);
     await mkdir(join(repository.root, 'docs', 'agents', 'roles'), {recursive: true});
     await writeFile(join(repository.root, 'docs', 'agents', 'roles', 'spec-readiness-reviewer.md'), '# Reviewer\n', 'utf8');
-    const draftPath = join(repository.root, '.tmp', 'codex', 'test-session', '0001_01', 'spec-readiness', 'reviewer-drafts', 'draft.jsonl');
+    const draftPath = join(repository.root, '.tmp', 'codex', 'test-session', '0001_01', 'spec-readiness', 'reviewer-drafts', 'draft.txt');
 
     const prepared = await run(['spec-readiness', 'prepare', '--issue', 'issue:0001:01'], repository, {
         specReadinessDependencies: {
@@ -100,7 +100,7 @@ test('spec readiness CLI covers immutable request, generate, promote, verify, an
     await mkdir(join(repository.root, 'docs', 'agents', 'roles'), {recursive: true});
     await writeFile(join(repository.root, 'docs', 'agents', 'roles', 'spec-readiness-reviewer.md'), '# Reviewer\n', 'utf8');
 
-    const draftPath = join(workspace, 'reviewer-drafts', 'draft.jsonl');
+    const draftPath = join(workspace, 'reviewer-drafts', 'draft.txt');
     const prepared = await run(['spec-readiness', 'prepare', '--issue', 'issue:0001:01'], repository, {
         specReadinessDependencies: dependencies,
         stdin: JSON.stringify({draftPath, inputs: [
@@ -112,7 +112,7 @@ test('spec readiness CLI covers immutable request, generate, promote, verify, an
     const missingInput = await run(['spec-readiness', 'generate', '--issue', 'issue:0001:01'], repository, {specReadinessDependencies: dependencies});
     assert.equal(missingInput.result, 2);
 
-    await writeFile(draftPath, `${JSON.stringify({status: 'no-findings'})}\n`, 'utf8');
+    await writeFile(draftPath, 'No problems.\n', 'utf8');
     const generated = await run(['spec-readiness', 'generate', '--issue', 'issue:0001:01', '--input', draftPath], repository, {
         specReadinessDependencies: dependencies,
     });
@@ -126,11 +126,11 @@ test('spec readiness CLI covers immutable request, generate, promote, verify, an
     assert.equal(verified.result, 1);
     assert.match(verified.events[0].message, /Spec Readiness record does not match the issue/);
 
-    await writeFile(draftPath, '{not valid JSON}\n', 'utf8');
-    const rejectedInvalidJsonl = await run(['spec-readiness', 'generate', '--issue', 'issue:0001:01', '--input', draftPath], repository, {
+    await writeFile(draftPath, '', 'utf8');
+    const rejectedEmpty = await run(['spec-readiness', 'generate', '--issue', 'issue:0001:01', '--input', draftPath], repository, {
         specReadinessDependencies: dependencies,
     });
-    assert.equal(rejectedInvalidJsonl.result, 1);
+    assert.equal(rejectedEmpty.result, 1);
     assert.equal(await readFile(recordPath, 'utf8'), before);
     await writeFile(join(repository.root, '.scratch', '0001-workflow', 'spec.md'), `${spec}\nChanged.\n`, 'utf8');
     const stale = await run(['spec-readiness', 'verify', '--issue', 'issue:0001:01'], repository);
