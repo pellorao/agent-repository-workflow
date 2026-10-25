@@ -15,3 +15,6 @@ coverage/
 
 # 仅来源的 Upstream Sync 工作区
 upstream/.workspaces/
+
+# 状态页
+.status/
