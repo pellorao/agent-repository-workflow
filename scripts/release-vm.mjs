@@ -53,9 +53,9 @@ const down = () => {
     must('revertToSnapshot', vmrun('revertToSnapshot', machine.location, machine.snapshot));
 };
 
-// 每次连接使用自己的本地临时目录写固定 known-hosts, 结束时删除.
+// 每次连接使用自己的本地临时目录写固定 known-hosts, 结束时删除. 文件只属于这台机器, 别名固定 (机器键可能含空格).
 const workspace = mkdtempSync(join(tmpdir(), 'arw-release-vm-'));
-const alias = `arw-release-${machineKey}`;
+const alias = 'arw-release-vm';
 writeFileSync(join(workspace, 'known_hosts'), `${alias} ${machine.ssh.hostKey}\n`);
 const sshOptions = [
     '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=10', '-o', 'StrictHostKeyChecking=yes',
