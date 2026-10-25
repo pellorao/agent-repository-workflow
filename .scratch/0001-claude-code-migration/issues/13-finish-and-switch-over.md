@@ -19,6 +19,7 @@ Governing requirements:
 - [ ] `AGENTS.md` 已恢复, 临时 `CLAUDE.md` 已被生成版本取代.
 - [ ] 两个环境的真实冒烟都完成, 结果记入 `## Validation`.
 - [ ] 用户级优先级说明已加入.
+- [ ] 卸载后不再残留空的 background-agent-state 目录.
 - [ ] 在旧版目标仓库上运行 `arw workflow update` 时, 已删除规则文档中的仓库自有内容不丢失: 迁入入口文件的仓库自有区域, 并在交接输出中提示用户核对.
 
 ## Blocked by
