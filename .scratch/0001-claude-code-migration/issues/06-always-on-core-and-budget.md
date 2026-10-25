@@ -1,6 +1,6 @@
 # 常驻核心规则与预算测试
 
-Status: ready-for-agent
+Status: completed
 
 ## What to build
 
@@ -16,9 +16,9 @@ Governing requirements:
 
 ## Acceptance criteria
 
-- [ ] 常驻规则不超过 8K token, 预算测试覆盖并通过.
-- [ ] 最高原则位于常驻规则最前面.
-- [ ] 分发副本同步.
+- [x] 常驻规则不超过 8K token, 预算测试覆盖并通过.
+- [x] 最高原则位于常驻规则最前面.
+- [x] 分发副本同步.
 
 ## Blocked by
 
