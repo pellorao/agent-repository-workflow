@@ -84,7 +84,7 @@
 
 当任务目标和实施方式已经非常明确, 不需要审核实施前的治理设计, 但你对最终生成的代码或文档仍没有把握时, 可以只保留直接审核最终候选的两个 Reviewer:
 
-> 我授权这次实施及 commit 流程省略 Spec Readiness 和 Commit Audit, 只保留 Code Standards Reviewer 与 Code Spec Reviewer. 这是仅此一次的例外授权.
+> 我授权这次实施及 commit 流程省略 Spec Readiness 和要求符合审核, 只保留 Code Standards Reviewer. 这是仅此一次的例外授权.
 
 这两项例外都必须由用户根据当前工作的风险主动发送. Agent 不能自行推断例外, 也不能把一次授权用于后续工作.
 

@@ -45,7 +45,7 @@ Registry 中的跨平台 Installation 场景必须使用候选捆绑包携带的
 只有当前候选的全部可执行路径都已经完成, 才进入一次集中修复:
 
 1. 把每个实际问题和确定的修复方法追加到当前发布准备 issue 的 `## Comments`. 不为单个发布验证问题创建另一个 issue, 也不把这些运行细节写入 effort spec.
-2. 直接实施并暂存修复. 每项修改前后不单独运行 Spec Reviewer, Code Review 或 Commit Audit Reviewer.
+2. 直接实施并暂存修复. 每项修改前后不单独运行 Spec Readiness, Code Standards 或要求符合审核 Reviewer.
 3. 用新的完整暂存 tree 创建新的隔离提交. 旧候选的 VM 结果, 归档和 Conformance 结果不进入新候选的正式通过结果.
 4. 继续使用当前发布已经确认的版本, VM JSON 路径和 Reviewer Capability 选择. 配置仍在每次运行前重新验证. 本次准备中已经核对的目标 Git 捆绑包可以复用, 但候选捆绑包必须为新提交重建. 先前候选的 `post-init` 选择不绑定到新候选.
 5. `run` 选择为新提交重新运行适用 Reviewer Capability 批次; `skip` 继续不运行. 随后重新运行完整 Registry `pre-tag` 矩阵和 `pre-tag` Conformance. 通过后重新询问新候选的 `post-init` 选择, 完成该选择要求的状态和验证, 再运行本地版本 tag Bootstrap 与本地 `post-tag` Conformance. 再次发现问题时重复本节.
@@ -58,7 +58,7 @@ Registry 中的跨平台 Installation 场景必须使用候选捆绑包携带的
 
 Gate 3 具备当前完整有效的通过结果后, 当前发布准备 issue 的职责已经完成. Main Agent 按 [issue 完成责任](../../.agents/skills/issue-tracking/SKILL.md#issue-lifecycle)更新真实终态和文字未变且已经满足的验收标记, 在 `## Validation` 中保存实际验收证据, 在 `## Comments` 中记录讨论和审核事件. 两个记录章节变化按统一记录责任机械核对, 其他候选变化按 `code-review` 的实际输入有效性规则处理. 终态转换继续按通用提交规则运行 Gate 1, Gate 2, Commit Audit 和 `commit-audit verify`; 没有发布专用审核豁免.
 
-Commit Audit Reviewer 要求修改实现, 测试, 治理或 issue 正式要求时, 当前 Commit Audit 结果按通用提交规则失效, Main Agent 回到本节的审核收敛过程. 按实际影响刷新必要就绪, 验证及代码审核轴并取得全部适用的有效通过结果后, 再返回一次 `Repair iteration`. 只有完整本地发布验证重新通过, 审核结果仍可复用, 且 issue 仍满足终态转换要求时, 才重新执行 Commit Audit. 两个记录章节的变化按下方闭合收尾范围处理, 不因此重跑本地发布验证. Commit Audit 不会提前到完整本地发布验证或 issue 终态转换之前.
+要求符合审核 Reviewer 要求修改实现, 测试, 治理或 issue 正式要求时, 当前 Commit Audit 结果按通用提交规则失效, Main Agent 回到本节的审核收敛过程. 按实际影响刷新必要就绪, 验证及代码审核轴并取得全部适用的有效通过结果后, 再返回一次 `Repair iteration`. 只有完整本地发布验证重新通过, 审核结果仍可复用, 且 issue 仍满足终态转换要求时, 才重新执行 Commit Audit. 两个记录章节的变化按下方闭合收尾范围处理, 不因此重跑本地发布验证. Commit Audit 不会提前到完整本地发布验证或 issue 终态转换之前.
 
 本地验证候选与最终已暂存候选之间只允许以下变化:
 

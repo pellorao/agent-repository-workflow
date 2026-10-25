@@ -29,7 +29,6 @@ const DAILY_FLOW_FILES = [
     ...['implement', 'spec-readiness', 'validation', 'issue-tracking', 'reviewer-launch', 'commit', 'code-review']
         .map(name => `.agents/skills/${name}/SKILL.md`),
     '.agents/skills/code-review/result-reuse.md',
-    '.agents/skills/code-review/reviewer-followup.md',
     ...['agent-writes', 'subagent-allocation', 'subagent-findings', 'writing', 'environment'].map(name => `docs/agents/${name}.md`),
 ];
 

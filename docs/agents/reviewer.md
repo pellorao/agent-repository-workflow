@@ -17,23 +17,17 @@ Agent 指令约束 Reviewer 的工作方式. 它们单独作为执行规则交�
 
 ## Review versions and concurrency
 
-Spec Readiness, Code Standards, Code Spec 和 Commit Audit 可以与已授权实施及其他 Reviewer 并行. 本轮读取的是 Main Agent 按 `reviewer-launch` Skill 启动前固定的版本; 单份 diff 文件不能替代完整上下文. 适用 Agent 指令的原始路径用于解释适用范围和链接, 实际读取本轮绑定副本.
+Spec Readiness, Code Standards 和要求符合审核可以与已授权实施及其他 Reviewer 并行. 本轮读取的是 Main Agent 按 `reviewer-launch` Skill 启动前固定的版本; 单份 diff 文件不能替代完整上下文. 适用 Agent 指令的原始路径用于解释适用范围和链接, 实际读取本轮绑定副本.
 
 Reviewer 只读取该版本, 不从正在变化的工作树补取证据或更新执行规则; 必要内容未完整固定时返回 `incomplete`. 本轮结论只对应固定的完整版本. 代码轴结果的复用由 `code-review` Skill 的 `result-reuse.md` 判断, Spec Readiness 的有效性与最终检查时点由 `spec-readiness` Skill 判断.
 
-## Review changes and prior coverage
+## Re-review
 
-后续复审默认不进行全盘重新审核, 只重新判断相邻受审版本差异及关联影响. 先核对前轮覆盖和本轮变化, 再沿调用关系, 数据归属, 结果和失败分支, 跨文档约束, 适用规则及证据含义确认影响范围, 不能只读变化行或按文件名推断影响.
-
-自己的前轮原始报告和绑定输入只用于确认历史覆盖及定位旧问题, 不作为当前语义判断的证据或独立授权. 只读取 Main Agent 准确交接的这些历史材料, 不发现其他角色的报告, 作者会话或额外临时文件. 当前结论的证据仍来自本轮固定输入; 已有正式 Issue Audit, Spec Audit 和 Spec Readiness 记录不作为语义证据或先前结论, 生成或验证它们的代码, 测试和文档仍可接受审查. issue 记录章节变化本身不触发复审, 新失败及反证按实际影响处理.
-
-初次审核完成全部适用检查. 后续未受影响且覆盖可核对的判断可以保留, 旧问题逐项处置, 前轮未完成的检查继续完成. Reviewer 自行判断全盘审核是否必需, 并按[通信规则](#communication-and-observation)向 Main Agent 说明具体理由, 例如准确前轮材料无法恢复, 覆盖无法核对或实际影响遍及全部范围. 新请求, 哈希变化或一般性的谨慎不能单独构成理由. 必要事实不可取得时返回 `incomplete`, 不伪造历史覆盖.
-
-本轮完成标准是全部当前适用范围均有有效判断, 受影响部分已经复核, 旧问题和未完成检查得到处理, 当前证据与定位准确. Reviewer 亲自把完整当前结果写入本轮新绑定报告, 不只交付变化条目. 复审方式不改变 Role 的输出格式或正式结果的生成, 提升与 verify 边界, 全盘例外理由不作为 finding 或新增报告字段.
+复审只交付相邻受审版本之间的变化及其影响范围, 以及自己前轮的完整报告. Reviewer 沿调用关系, 数据流, 失败分支和跨文档约束确认影响范围, 只重新判断受影响的部分; 未受影响的有效结论原样保留, 旧问题逐项处置. 本轮报告仍是完整当前结果, 定位按本轮版本核对. 前轮报告只用于确认已有覆盖, 不作为当前证据. 影响遍及全部范围或前轮报告不可用时, 按[通信规则](#communication-and-observation)说明理由后全盘审核.
 
 ## Independent runtime
 
-普通 Code Standards, Code Spec, Spec Readiness 和 Commit Audit 审核通过 `arw background-agent` 在共享 Codex App Server 中以独立根线程运行; 跨调用方控制, 容量, 恢复和生命周期遵循 [通用后台 Agent 控制规则](../specs/agent-repository-workflow/spec.md#background-agent-control), 设置与运行信任遵循 [Reviewer 运行规则](../specs/agent-repository-workflow/spec.md#reviewer-runtime). 所有模型完整使用本公共规则和对应 Canonical Role, 不使用非 GPT 专有角色或输出覆盖. Reviewer 不取得用户沟通或 Git 写入权限.
+普通 Code Standards, 要求符合审核和 Spec Readiness 审核通过 `arw background-agent` 在共享 Codex App Server 中以独立根线程运行; 跨调用方控制, 容量, 恢复和生命周期遵循 [通用后台 Agent 控制规则](../specs/agent-repository-workflow/spec.md#background-agent-control), 设置与运行信任遵循 [Reviewer 运行规则](../specs/agent-repository-workflow/spec.md#reviewer-runtime). 所有模型完整使用本公共规则和对应 Canonical Role, 不使用非 GPT 专有角色或输出覆盖. Reviewer 不取得用户沟通或 Git 写入权限.
 
 ## Single-agent execution
 
@@ -61,13 +55,13 @@ Canonical Role 定义审查对象以及结论可以使用的证据. Role 对已�
 
 Main Agent 交接前保证绑定文件为空. Reviewer 的最终回复只报告工作成功或失败, 不包含问题条数等结论信息; 最终绑定文件必须包含符合该角色输出格式的明确结论, 没有 finding 时也写入该角色规定的无问题表示. 零字节文件不是合法结果; Main Agent 收到成功回复后仍检查绑定文件, 不把空文件解释为无问题, 补写为成功结果或交给 Engine. 文件非空只是必要条件, 仍须满足完整审查和该角色的其他接收要求.
 
-Reviewer 发现并核实 finding 后, 立即亲自写入同一次审查的结果文件或草稿, 然后继续完成同一份 Input 的其余检查. Main Agent 可以中途读取该文件, 但新的工作树内容不替换本轮快照. 后续证据要求修订或撤回 finding 时, Reviewer 原位修订或删除对应条目; 文件只保留当前结论, 不保留修订或撤回历史, 不添加正确案例说明. 审查完成前其内容是草稿, 不是完整结论, Engine Input, 授权或通过证据. Spec Readiness 和 Commit Audit 继续按各自草稿与 Engine 正式生成边界处理.
+Reviewer 发现并核实 finding 后, 立即亲自写入同一次审查的结果文件或草稿, 然后继续完成同一份 Input 的其余检查. Main Agent 可以中途读取该文件, 但新的工作树内容不替换本轮快照. 后续证据要求修订或撤回 finding 时, Reviewer 原位修订或删除对应条目; 文件只保留当前结论, 不保留修订或撤回历史, 不添加正确案例说明. 审查完成前其内容是草稿, 不是完整结论, Engine Input, 授权或通过证据. Spec Readiness 和提交审核的要求清单继续按各自 Engine 的生成边界处理.
 
 ## Code Review evidence
 
 审查涉及跨函数的数据传递时, 沿实际调用关系核对数据的含义, 归属和使用是否一致, 依据该角色的适用要求判断问题.
 
-Code Standards 和 Code Spec 的每条 Markdown finding 使用相对于受审 Git 仓库的定位, 定位用反引号包裹; 同一对反引号内可以用逗号分隔多个文件的完整定位. 同一文件的多个不连续位置可以写成 `src/file.mjs:5,15-18,28-33`, 也可以分别写出每个位置的完整路径.
+每条 Markdown finding (Code Standards, 以及非提交比较中的要求符合审核) 使用相对于受审 Git 仓库的定位, 定位用反引号包裹; 同一对反引号内可以用逗号分隔多个文件的完整定位. 同一文件的多个不连续位置可以写成 `src/file.mjs:5,15-18,28-33`, 也可以分别写出每个位置的完整路径.
 
 每条 finding 只报告一个可独立成立和修复的缺陷, 合并同一根因的多处表现; 同一函数或同一段要求中的不同缺陷仍分条报告. 提供足以独立复核的最小完整证据. 结论依赖调用, 数据传递或顺序时, 引用实际建立该关系的必要位置并解释影响, 包括所需的跨文件证据. 行范围覆盖相关证据, 不以整段文件代替精确位置. 问题, 影响和修复建议中的每项断言都必须有适用要求和当前实现的依据. 只为问题提供这些说明, 不为已满足的检查增加说明或覆盖清单.
 

@@ -1,5 +1,5 @@
 ---
-description: Main Agent 启动, 跟进, 等待, 中断或恢复独立 Reviewer (Code Review, Spec Readiness, Commit Audit) 时使用: 固定审核版本, 准备报告路径, 调用 `arw background-agent` 机器接口, 处理长时间运行和暂停通知. Reviewer 自身不使用.
+description: Main Agent 启动, 跟进, 等待, 中断或恢复独立 Reviewer (Code Standards, 要求符合审核, Spec Readiness) 时使用: 固定审核版本, 准备报告路径, 调用 `arw background-agent` 机器接口, 处理长时间运行和暂停通知. Reviewer 自身不使用.
 name: reviewer-launch
 ---
 
@@ -14,9 +14,9 @@ Reviewer 的审核行为由 [Reviewer 责任](../../../docs/agents/reviewer.md) 
 
 ## Fix the review version
 
-- 启动前固定本轮完整候选与所需代码上下文, 治理输入和全部适用 Agent 指令. Code Review 使用 `code-review` 规定的不可变 Git 对象; Spec Readiness 和 Commit Audit 使用 Engine Request 的快照. 适用 Agent 指令在本轮会话临时范围保存完整副本, 记录每份来源路径和 SHA-256, 把映射和完整执行指令交给 Reviewer. 两个 Code Review 轴共用同一版本.
-- 源工作树可以继续修改. 不改写运行中的输入, 不把未完成审核当作通过. 新版本按所属工作流准备完整输入; 复审交付本轮完整输入, 该 Reviewer 自己前轮的准确绑定输入和原始报告路径, 以及变化范围.
-- Commit Audit 运行期间另外保持索引, HEAD 和绑定输入固定, 见 `commit` Skill.
+- 启动前固定本轮完整候选与所需代码上下文, 治理输入和全部适用 Agent 指令. Code Standards 使用 `code-review` 规定的不可变 Git 对象; 要求符合审核和 Spec Readiness 使用 Engine Request 绑定的版本. 适用 Agent 指令在本轮会话临时范围保存完整副本, 记录每份来源路径和 SHA-256, 把映射和完整执行指令交给 Reviewer. 同一提交的两个 Reviewer 共用同一版本.
+- 源工作树可以继续修改. 不改写运行中的输入, 不把未完成审核当作通过. 新版本按所属工作流准备输入; 复审按 [复审规则](../../../docs/agents/reviewer.md#re-review) 交付变化及影响范围和该 Reviewer 的前轮报告路径.
+- 提交审核期间另外保持索引, HEAD 和绑定输入固定, 见 `commit` Skill.
 - 各角色只收到它需要的审查输入, 不复制作者对话, 隐藏推理或其他角色的旧结论.
 
 ## Machine operations
@@ -35,7 +35,7 @@ Reviewer 的审核行为由 [Reviewer 责任](../../../docs/agents/reviewer.md) 
 
    所有路径都是绝对路径. 普通审核的 `model`, `modelProvider`, `reasoningEffort` 和 `serviceTier` 由用户配置 `config.json` 和仓库 `arw.config.json` 中该角色的字段逐项覆盖形成, Main Agent 不选择或覆盖; 只有 Reviewer Capability 和基准的隔离实例可以在 `settings` 中覆盖. `settings.config` 不保存明文凭据. Agent 协作由运行入口强制禁用.
 3. 回执只证明管理进程已经登记本轮. 保存 `runId`, `recoveryPath`, 首次交接的 `messageId` 和 `accepted`, 再用 `list_agents` 或 `wait_agent` 取得 `threadId`, `turnId` 和运行状态; 不重复发送首次工作指示.
-4. 复审时准备完整当前输入和新的空报告, 使用同一角色, 同一 issue 身份集合和 `stateDirectory` 调用 `followup_task`, 管理进程按需恢复原线程. 只有 issue 身份集合改变, 原线程不可用或不可恢复, 或用户明确要求时, 才使用 `newThread` 创建替代线程; 字节, 哈希或结论变化不构成理由. 首次启动不继承发起者的对话.
+4. 复审时准备复审输入和新的空报告, 使用同一角色, 同一 issue 身份集合和 `stateDirectory` 调用 `followup_task`, 管理进程按需恢复原线程. 只有 issue 身份集合改变, 原线程不可用或不可恢复, 或用户明确要求时, 才使用 `newThread` 创建替代线程; 字节, 哈希或结论变化不构成理由. 首次启动不继承发起者的对话.
 
 | 操作 | 用法 |
 | --- | --- |

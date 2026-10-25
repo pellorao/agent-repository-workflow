@@ -200,7 +200,7 @@ const createCurrentReleaseSource = async (/** @type {string} */ sourceDirectory)
         'distribution/projections/config.json',
         'distribution/projections/codex/config.toml',
         'distribution/baseline/.arwignore',
-        'distribution/baseline/docs/agents/roles/code-spec-reviewer.md',
+        'distribution/baseline/docs/agents/roles/requirements-reviewer.md',
         ...runtimeFiles,
     ];
     await Promise.all([...new Set(files.map(path => dirname(join(sourceDirectory, path))))]

@@ -93,7 +93,7 @@ test('global background list preserves title and full session identity without M
             cwd:outside,
             backgroundAgentList:async () => [
                 {role:'reviewer',ownerId,ownerTitle:'中文标题 with long visible text',state:'idle',taskElapsedMs:3_723_000},
-                {role:'code-spec-reviewer',ownerId:unknownId,ownerTitle:null,state:'running',taskElapsedMs:2_000},
+                {role:'requirements-reviewer',ownerId:unknownId,ownerTitle:null,state:'running',taskElapsedMs:2_000},
                 {role:'code-standards-reviewer',ownerId:'main-blank',ownerTitle:' \t ',state:'unknown',taskElapsedMs:null},
             ],
         });
@@ -102,7 +102,7 @@ test('global background list preserves title and full session identity without M
         assert.match(result.events[0].message,/中文标题 with long visible text/u);
         assert.ok(result.events[0].message.includes(ownerId));
         assert.ok(result.events[0].message.includes(unknownId));
-        assert.ok(result.events[0].message.includes('code-spec-reviewer'));
+        assert.ok(result.events[0].message.includes('requirements-reviewer'));
         assert.ok(result.events[0].message.includes('running'));
         assert.ok(result.events[0].message.includes('main-blank'));
         assert.equal((result.events[0].message.match(/\u001b\[90mN\/A\u001b\[0m/gu) ?? []).length, 2);

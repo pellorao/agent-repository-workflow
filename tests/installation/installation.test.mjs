@@ -959,7 +959,7 @@ test('existing configuration is upgraded, rejected, or reinitialized according t
     });
     const configurationNotices = preserved.messages.filter(event => event.channel === 'stdout').map(event => event.message);
     assert.ok(configurationNotices.includes('Configuration added path: backgroundAgent.maxInstances.'));
-    assert.ok(configurationNotices.includes('Configuration added path: reviewers.code-spec-reviewer.model.'));
+    assert.ok(configurationNotices.includes('Configuration added path: reviewers.requirements-reviewer.model.'));
     assert.ok(configurationNotices.includes('Configuration updated path: configVersion.'));
     assert.ok(configurationNotices.includes('Preserved unknown configuration path: extension.'));
 

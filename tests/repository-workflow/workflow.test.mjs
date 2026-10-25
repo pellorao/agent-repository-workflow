@@ -674,7 +674,7 @@ test('update blocks dirty state and invalid Reviewer settings without changing t
     assert.deepEqual(await readFile(join(root, 'arw-lock.json')), lockBefore);
 
     await writeFile(join(root, '.scratch', '.keep'), '', 'utf8');
-    await writeFile(join(root, 'arw.config.json'), '{"configVersion":2,"reviewers":{"code-spec-reviewer":{"serviceTier":"invalid"}}}\n', 'utf8');
+    await writeFile(join(root, 'arw.config.json'), '{"configVersion":2,"reviewers":{"requirements-reviewer":{"serviceTier":"invalid"}}}\n', 'utf8');
     const incompatible = await runRepositoryWorkflow({
         allowDirty: true,
         distribution,

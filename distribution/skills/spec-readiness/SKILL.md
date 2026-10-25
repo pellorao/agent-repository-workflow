@@ -1,5 +1,5 @@
 ---
-description: 为实施 issue 安排和完成 Spec Readiness 独立设计审核: 准备 Request, 启动 Reviewer, 生成, 提升和验证就绪记录, 处理问题, 质疑和例外. 实施 issue 开工, 报告完成, 开始 Commit Audit 或提交前需要就绪结果时使用.
+description: 为实施 issue 安排和完成 Spec Readiness 独立设计审核: 准备 Request, 启动 Reviewer, 生成, 提升和验证就绪记录, 处理问题, 质疑和例外. spec 和 issue 设计定稿, 或设计修正后需要复审时使用.
 name: spec-readiness
 ---
 
@@ -9,10 +9,9 @@ Spec Readiness 针对每个实施 issue 运行, 不针对 Application Source Iss
 
 ## Authorization timing
 
-- 已授权 issue 在已确认设计范围内的实施可以与首次就绪审核并行, 第一次写入不要求先取得成功结果. 尚未确认的重要设计和其他真实前置结果仍须先解决; 并行不授予越界写入, 真实模型运行或发布验证权限.
-- 缺失, 过期, `gap` 或 `uncertain` 结果阻断该 issue 的完成报告, Commit Audit 和提交, 不阻断不依赖该结果的已授权工作.
-- 报告 issue 完成前, 以它授权的候选开始 Commit Audit 前, 以及提交前, 分别对最终内容运行 `arw spec-readiness verify --issue issue:<NNNN>:<NN>` 并取得退出码 `0`. `0` 只满足就绪这一项前提; `1` 表示记录缺失, 格式错误, 过期, 语义未满足或对该 issue 无效; `2` 表示命令用法无效.
-- 任何治理 Input 字节, Reviewer Role, subject 身份或记录变化后, 旧结果不授权新版本. 重新完整执行 `prepare -> review -> generate -> promote -> verify`, 语义上按 [公共复审规则](../../../docs/agents/reviewer.md#review-changes-and-prior-coverage) 只复审变化及其影响. 不放宽字节和身份的新鲜度检查.
+- Spec Readiness 在 spec 和 issue 设计定稿时审核一次, 不在报告完成或提交审核时重复. 已授权 issue 在已确认设计范围内的实施可以与首次审核并行; 尚未确认的重要设计和其他真实前置结果仍须先解决.
+- 不通过时修正后复审: 重新执行 `prepare -> review -> generate -> promote`, Reviewer 按 [复审规则](../../../docs/agents/reviewer.md#re-review) 只看改动部分及其影响范围. 治理 Input 字节, Reviewer Role 或 subject 变化后旧记录不授权新版本, 新鲜度检查不放宽.
+- `arw spec-readiness verify --issue issue:<NNNN>:<NN>` 只在提交前运行 (见 `commit` Skill), 必须取得退出码 `0`; `1` 表示记录缺失, 格式错误, 过期, 语义未满足或对该 issue 无效, `2` 表示命令用法无效. 缺失, 过期, `gap` 或 `uncertain` 结果阻断提交, 不阻断不依赖该结果的已授权工作.
 
 ## Subject
 
@@ -38,13 +37,13 @@ subject 是连续的 `## What to build`, `## Spec Requirement` 和 `## Acceptanc
 
 - Reviewer 返回 `ready` 后运行 `arw spec-readiness generate --issue issue:<NNNN>:<NN> --input <draft-jsonl-path>`, 传入精确绑定的 `draftPath`. Engine 拒绝其他路径, 零字节或仅含空白的草稿和无效行, 在当前 issue 工作区写入模式版本 6 记录并只打印其路径. 生成本身不授权实施.
 - 运行 `arw spec-readiness promote --input <generated-path>`, 传入精确生成路径, 不编辑其字节. 它是写入 `.scratch/<NNNN>-<effort-slug>/issues/<NN>.spec-readiness.json` 的唯一边界, 写入前重新验证请求, subject, Input 字节, Reviewer Role 和派生结果; 任何失败都保留先前记录. 有效的 `gap` 或 `uncertain` 记录可以作为诊断结果提升, 但不满足授权.
-- 提升后按 [授权时点](#authorization-timing) 运行 `verify`. 只有模式版本 6 记录有效; 更早版本和 effort 根目录的 `spec-readiness.json` 只是历史记录, Engine 不读取, 不迁移也不删除它们.
+- 提交前按 [授权时点](#authorization-timing) 运行 `verify`. 只有模式版本 6 记录有效; 更早版本和 effort 根目录的 `spec-readiness.json` 只是历史记录, Engine 不读取, 不迁移也不删除它们.
 
 ## Respond to findings
 
 Main Agent 在修改 issue 前独立验证每个问题. 问题有效时修正设计或 `## Spec Requirement`, 修改受保护文档前按 `rule-and-design-changes` Skill 取得确认, 然后对新内容执行完整工作流.
 
-结果符合 `docs/agents/subagent-findings.md` 的质疑条件时, 用未变的 subject 和 Input 重新 `prepare`, 通过 `followup_task` 把新请求, 每个受质疑问题的具体证据和推理错误交给原 Reviewer. 质疑消息只是提示, 不是 Input, 证据或授权. 有争议的结果在替代结果完成 `generate -> promote -> verify` 前继续阻断完成, 审计和提交. subject 或 Input 已改变时改用普通的新请求.
+结果符合 `docs/agents/subagent-findings.md` 的质疑条件时, 用未变的 subject 和 Input 重新 `prepare`, 通过 `followup_task` 把新请求, 每个受质疑问题的具体证据和推理错误交给原 Reviewer. 质疑消息只是提示, 不是 Input, 证据或授权. 有争议的结果在替代结果完成 `generate -> promote` 前继续阻断提交. subject 或 Input 已改变时改用普通的新请求.
 
 ## Exception workflow
 

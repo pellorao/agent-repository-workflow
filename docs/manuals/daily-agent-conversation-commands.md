@@ -84,7 +84,7 @@ If you are confident in the document or code prepared for commit and accept the 
 
 If the goal and implementation approach are clear and you do not need an independent review of the implementation design, but you are unsure about the final generated code or documents, you can keep only the two Reviewers that directly review the final candidate:
 
-> I authorize this implementation and commit workflow to omit Spec Readiness and Commit Audit, retaining only the Code Standards Reviewer and Code Spec Reviewer. This exception applies once only.
+> I authorize this implementation and commit workflow to omit Spec Readiness and the requirements review, retaining only the Code Standards Reviewer. This exception applies once only.
 
 You must actively send one of these authorizations based on the risk of the current work. The Agent must not infer an exception or reuse a one-time authorization for later work.
 

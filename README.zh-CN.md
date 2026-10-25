@@ -297,9 +297,7 @@ arw agent start <name> [agent-arguments...]
 审核并提交 issue:<NNNN>:<NN> 的实现. 只包含这张 issue 授权的修改, 保留其他工作树内容.
 ```
 
-Main Agent 先确认完成证据和准确 staged candidate. `code-review` Skill 随后用同一 Git 比较分别启动 `code-standards-reviewer` 和适用的 `code-spec-reviewer`: 前者检查仓库标准, 后者检查 governing requirements. 只有两个方向的完整结果都通过, 且允许的收尾完成后, 才冻结最终实施字节.
-
-冻结后, Main Agent 为候选准备 Commit Audit Request, `commit-audit-reviewer` 核对 issue 要求和本批次适用的长期要求, 并把完整结果写入绑定 JSONL. Reviewer 返回完成状态后, Main Agent 调用 ARW 生成正式记录, 只按返回映射提升准确字节, 再运行 `arw commit-audit verify` 和其余机械检查. 审计开始后, 任何冻结实施字节变化都会使原审核和审计失效.
+Main Agent 先确认完成证据和准确 staged candidate, 再运行 `arw commit-audit prepare`. ARW 从 issue 和适用 spec 逐行生成要求清单. 随后并行启动两个 Reviewer: `requirements-reviewer` 为清单每项填写结论和一个证据定位, `code-standards-reviewer` 检查仓库标准并指出可删除的代码. 两者完成后, Main Agent 调用 `arw commit-audit generate` 检查清单完整性, 只按返回映射提升正式记录, 再运行 `arw commit-audit verify` 和其余机械检查. 修复后的复审只交付变化及影响范围, 未受影响的结论保留.
 
 只有调查, 设计或其他封闭的非实施内容组成的候选可以使用较轻的提交路线. 候选一旦包含当前仓库实施产物, 就使用完整实施提交流程. 具体比较准备, 结果复用和恢复规则由目标仓库的 `code-review` 与 `commit` Skill 拥有, README 不复制它们的完整协议.
 
@@ -379,12 +377,11 @@ arw agent start <name> [agent-arguments...]
 
 ## 为什么还要独立审核
 
-Main Agent 与用户沟通, 选择范围, 协调实施, 运行验证并统一执行 Git 写入. 同一个 Agent 容易在审核自己的工作时保留原有假设, 所以 ARW 在不同阶段使用 4 个 Canonical Reviewer Role:
+Main Agent 与用户沟通, 选择范围, 协调实施, 运行验证并统一执行 Git 写入. 同一个 Agent 容易在审核自己的工作时保留原有假设, 所以 ARW 在不同阶段使用 3 个 Canonical Reviewer Role:
 
-- `spec-readiness-reviewer`: 第一次实施写入前, 审核 issue 选择的治理设计是否当前, 完整且足以实施.
-- `code-standards-reviewer`: 用户请求 implementation commit 后, 审核同一候选是否符合仓库标准和适用写作或代码规则.
-- `code-spec-reviewer`: 同一阶段从另一个轴审核候选是否满足明确的 governing requirements.
-- `commit-audit-reviewer`: 两个 Code Review 轴完成并冻结最终候选后, 核对 issue 要求和本批次适用的长期要求.
+- `spec-readiness-reviewer`: 设计定稿时审核一次 issue 选择的治理设计是否当前, 完整且足以实施, 之后只复审变化.
+- `requirements-reviewer`: 用户请求 implementation commit 后, 逐项核对候选是否满足 issue 要求和适用的长期要求.
+- `code-standards-reviewer`: 同一阶段并行审核候选是否符合仓库标准和适用写作或代码规则.
 
 典型关系是:
 
@@ -393,9 +390,8 @@ Main Agent
 |-- 实施前: spec-readiness-reviewer
 |-- 实施和验证: Main Agent 与获分配写入范围的 subagent
 `-- 用户明确请求 implementation commit 后
-    |-- code-standards-reviewer
-    |-- code-spec-reviewer
-    `-- 冻结最终候选后: commit-audit-reviewer
+    |-- requirements-reviewer
+    `-- code-standards-reviewer
 ```
 
 Reviewer 只对绑定的输入独立判断, 不选择工作范围, 不替用户作重要决定, 不修改实现, 也不创建 commit. Main Agent 可以核对 finding 的证据和影响, 但不能用自己的判断覆盖 Spec Readiness 或 Commit Audit 的授权结果.
@@ -408,7 +404,7 @@ Reviewer 只对绑定的输入独立判断, 不选择工作范围, 不替用户�
 
 ```json
 "reviewers": {
-  "code-spec-reviewer": {
+  "requirements-reviewer": {
     "model": "my-model",
     "modelProvider": "anthropic",
     "env": {

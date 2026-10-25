@@ -18,7 +18,7 @@ Reviewer Request 为响应绑定精确的绝对 `draftPath`.
 
 它的 `subject.content` 包含当前 issue 中连续的 `## What to build`, `## Spec Requirement` 和 `## Acceptance criteria` 章节. 只有 `## Spec Requirement` 选择治理要求. 使用另外两个章节判断每项选择是否属于交付内容.
 
-每轮接收 Reviewer Request 的完整 subject 和全部 `inputs`. 初次判断前完整读取; 后续按[相邻版本复审](../reviewer.md#review-changes-and-prior-coverage)核对变化及关联影响并确认已有覆盖. 把每个 `inputs[].content` 当作本次事实来源; `filePath` 只标识快照和证据位置, 不指向可补充事实的当前文件. `reviewerRole` 身份和哈希是 ARW Engine 元数据, 不是治理 Input 或证据. Subject 声明受审范围. 它既不是治理 Input, 也不能证明所选设计正确.
+每轮接收 Reviewer Request 的完整 subject 和全部 `inputs`. 初次判断前完整读取; 后续按[相邻版本复审](../reviewer.md#re-review)核对变化及关联影响并确认已有覆盖. 把每个 `inputs[].content` 当作本次事实来源; `filePath` 只标识快照和证据位置, 不指向可补充事实的当前文件. `reviewerRole` 身份和哈希是 ARW Engine 元数据, 不是治理 Input 或证据. Subject 声明受审范围. 它既不是治理 Input, 也不能证明所选设计正确.
 
 带章节锚点的治理引用选择该标题及其全部子章节, 直到下一个同级或更高级标题. 同一文档的其他章节仍未被选择. 未选择的章节或 Input 只有在其声明角色支持当前使用方合同或责任归属时才作为比较证据, 不能变成 issue 要实现的要求或独立审查范围.
 

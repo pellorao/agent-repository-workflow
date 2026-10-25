@@ -13,9 +13,8 @@
     "listLimit": 50
   },
   "reviewers": {
-    "code-spec-reviewer": {"model": "gpt-6-luna", "modelProvider": "openai", "reasoningEffort": "xhigh", "serviceTier": "default"},
     "code-standards-reviewer": {"model": "gpt-6-luna", "modelProvider": "openai", "reasoningEffort": "xhigh", "serviceTier": "default"},
-    "commit-audit-reviewer": {"model": "gpt-6-luna", "modelProvider": "openai", "reasoningEffort": "xhigh", "serviceTier": "default"},
+    "requirements-reviewer": {"model": "gpt-6-luna", "modelProvider": "openai", "reasoningEffort": "xhigh", "serviceTier": "default"},
     "spec-readiness-reviewer": {"model": "gpt-6-luna", "modelProvider": "openai", "reasoningEffort": "xhigh", "serviceTier": "default"}
   },
   "backgroundAgent": {

@@ -23,7 +23,7 @@ const createMinimalCandidate = async (/** @type {string} */ directory) => {
         'distribution/projections/config.json',
         'distribution/projections/codex/config.toml',
         'distribution/baseline/.arwignore',
-        'distribution/baseline/docs/agents/roles/code-spec-reviewer.md',
+        'distribution/baseline/docs/agents/roles/requirements-reviewer.md',
         'distribution/skills/grilling/SKILL.md',
     ];
     await Promise.all(copiedFiles.map(async path => {

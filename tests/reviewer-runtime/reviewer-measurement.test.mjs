@@ -131,9 +131,9 @@ test('Existing response samples produce paired estimates and retain working tool
     const tokenUsage={input:result.usage.inputTokens-result.usage.cachedInputTokens,cachedInput:result.usage.cachedInputTokens,output:result.usage.outputTokens};
     const configuration={model:'same-model',reasoningEffort:'high'};
     const rendered=renderTablesHtml([{schemaVersion:4,configuration,
-        roles:[{reviewerId:'code-spec-reviewer',repetitions:[1,2,3].map(repetition=>({repetition,score:1,scoreSource:'formal',
+        roles:[{reviewerId:'code-standards-reviewer',repetitions:[1,2,3].map(repetition=>({repetition,score:1,scoreSource:'formal',
             diagnosticReason:null,mainAgentCorrectedScoringCopy:false,completedInstances:1,expectedInstances:1,deliveryErrors:[]}))}],
-        observations:[1,2,3].map(repetition=>({reviewerId:'code-spec-reviewer',scenarioId:'default',repetition,completed:true,
+        observations:[1,2,3].map(repetition=>({reviewerId:'code-standards-reviewer',scenarioId:'default',repetition,completed:true,
             delivery:{mode:'reviewer-bound-report',errors:[],mainAgentCorrectedScoringCopy:false},runtime:{
                 actualModel:configuration.model,actualReasoningEffort:configuration.reasoningEffort,durationMs:result.wallClockMs,
                 tokenUsage,conditions:{},workDuration:result.workDuration,modelPhases:result.modelPhases}}))}]);

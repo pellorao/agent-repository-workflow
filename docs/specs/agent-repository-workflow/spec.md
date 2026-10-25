@@ -44,11 +44,11 @@ Spec Readiness 使用 `prepare -> independent review -> generate -> promote -> v
 
 Spec Readiness 的结果生成与验证不判断开放语义, 原生会话控制和线程身份由共享 Reviewer 运行责任管理. 会话延续不等于准备度结果仍然有效: 任一治理输入, 审核对象, Reviewer Role 或结果绑定变化都会使旧记录失效. 审核对象是连续的 `## What to build`, `## Spec Requirement` 和 `## Acceptance criteria`. `Status:`, `## Blocked by`, `## Validation` 和 `## Comments` 不进入审核对象. 完整 issue 格式与阻断问题图由 ARW Artifact 清单和 Issue Gate 独立验证.
 
-Commit Audit 的准确调用条件只由通用提交工作流拥有. Commit Audit 适用时, Gate 1 和 Gate 2 由独立 `commit-audit-reviewer` 审核冻结的完整已暂存候选内容. 每个提交只包含一个 effort, Main Agent 只暂存该 effort 的内容. `authorizingIssueIds` 可以包含该 effort 的多个 issue, 表示完整实施授权范围; Request 中的 Gate 1 范围只包含实际适用的终态转换子集. Gate 2 使用本次接受 issue 的有效 `## Spec Requirement` 并集. Reviewer 只写绑定 JSONL 并返回状态, Main Agent 调用 Engine 生成正式审核字节, 再按明确映射原样提升.
+Commit Audit 的准确调用条件只由通用提交工作流拥有. Commit Audit 适用时, Gate 1 和 Gate 2 由独立 `requirements-reviewer` (要求符合审核) 逐项审核冻结的完整已暂存候选内容, `code-standards-reviewer` 同时并行审核实施质量; 一次提交最多这两个并行 Reviewer. 每个提交只包含一个 effort, Main Agent 只暂存该 effort 的内容. `authorizingIssueIds` 可以包含该 effort 的多个 issue, 表示完整实施授权范围; Request 中的 Gate 1 范围只包含实际适用的终态转换子集. Gate 2 使用本次接受 issue 的有效 `## Spec Requirement` 并集. Reviewer 只填写 Engine 生成的要求清单并返回状态, Main Agent 调用 Engine 生成正式审核字节, 再按明确映射原样提升.
 
-Gate 3 由 `code-review` Skill Package 拥有实施质量与治理符合性两个独立审核轴. Main Agent 优先使用各轴完整有效的已有结果; 需要新审查时, 只解析一次比较基线与完整变更路径集合, 执行一次过滤, 再把相同的不可变比较对象, 完整代码上下文, 纳入范围的路径和适用验证事实交给 Code Standards 与适用的 Code Spec. Spec 轴还取得明确的完整治理要求. 各轴按自己的实际完整输入判断有效性, 不因为另一轴的输入变化就自动失效, 具体版本与复审边界见 [Review versions and result validity](#review-versions-and-result-validity).
+Gate 3 由 `code-review` Skill Package 拥有 Standards 与 Requirements 两个独立审核轴; 提交时 Requirements 轴由 Commit Audit 承担. Main Agent 优先使用各轴完整有效的已有结果; 需要新审查时, 只解析一次比较基线与完整变更路径集合, 执行一次过滤, 再把相同的不可变比较对象, 完整代码上下文, 纳入范围的路径和适用验证事实交给 Code Standards 与适用的 `requirements-reviewer`. Requirements 轴还取得明确的完整治理要求. 各轴按自己的实际完整输入判断有效性, 不因为另一轴的输入变化就自动失效, 具体版本与复审边界见 [Review versions and result validity](#review-versions-and-result-validity).
 
-当前有效 Spec Readiness, 必要实施验证和真实完整的最终候选齐备后, Code Standards, Code Spec 与适用 Commit Audit 可以对同一候选并行. 任何正式验收条件实际要求取得另一审核的完成事实时, 仍须等待该事实, 运行中结果不能作为通过. Main Agent 按[公共 Reviewer 规则](../../agents/reviewer.md#review-versions-and-concurrency)协调固定版本, 已授权源工作树写入及替代版本, 最终核对实际暂存字节与各轮受审版本, 再取得当前有效的全部适用结果和提交授权.
+当前有效 Spec Readiness, 必要实施验证和真实完整的最终候选齐备后, Code Standards 与适用 Commit Audit 可以对同一候选并行. 任何正式验收条件实际要求取得另一审核的完成事实时, 仍须等待该事实, 运行中结果不能作为通过. Main Agent 按[公共 Reviewer 规则](../../agents/reviewer.md#review-versions-and-concurrency)协调固定版本, 已授权源工作树写入及替代版本, 最终核对实际暂存字节与各轮受审版本, 再取得当前有效的全部适用结果和提交授权.
 
 完全由封闭分类中不属于当前仓库实施产物的内容组成的已暂存候选内容使用轻量提交流程, 并且同样只属于一个 effort. 适用内容包括该 effort 的本地 `spec.md`, `map.md`, Application Source Issue, Wayfinder issue, 本次不进入 `completed | wontfix` 的实施 issue, `research/**` 和 `prototype/**` 下的安全普通文件, 以及按实际语义归入该 effort 的安全 gitlink. Gitlink 只记录当前仓库引用的子模块提交状态, 不属于当前仓库的实施产物. 该流程只检查准确已暂存范围, effort 归属, 安全路径, 条目模式与对象身份, ARW Artifact 基本格式, 实施 issue 终态转换, 适用文本格式, Git 差异和候选内容不变性. 它不做语义或跨文件关系检查, 不运行 Spec Readiness, Commit Audit, Gate 1, Gate 2, Gate 3 或独立 Reviewer. 候选包含当前仓库的实施产物时, 完整候选内容使用实施提交流程. 不能归入任一分类的内容先停止并明确责任, 不因为它尚未进入轻量流程的封闭分类就推定为实施产物.
 
@@ -135,7 +135,7 @@ Issue 创建过程在发布 issue 前选择该 issue 实际实施的既有治理
 
 实施 issue 的 `## Validation` 整章记录当前验收项到实际证据的索引和结果, 是完成生命周期所需的证据记录. `## Comments` 整章记录讨论, 审核事件及已经取得的结论. 两章不承载实施要求, 验收条件或授权例外, 不成为 Gate 1 的要求来源或独立审核通过的权威. 有效要求及替代决定进入正式交付要求或验收章节; 授权仍来自实际用户决定和适用工作流. 记录中的链接不扩大读取权限.
 
-两个记录章节的内容变化本身不触发 Spec Readiness, Code Standards, Code Spec 或 Commit Audit 的语义复审. 审计期间可先更新源工作树记录, 旧轮完整结束后统一暂存. Main Agent 准确核对差异仅位于这两个章节, 检查文本, 字节和最终证据定位, 并确认实施内容, 正式要求, 适用输入与授权事实没有发生其他变化. 正式生成与最终 verify 仍检查当前完整适用要求和实际证据, 不由记录中的成功声明推断通过.
+两个记录章节的内容变化本身不触发 Spec Readiness, Code Standards 或要求符合审核的语义复审. 审计期间可先更新源工作树记录, 旧轮完整结束后统一暂存. Main Agent 准确核对差异仅位于这两个章节, 检查文本, 字节和最终证据定位, 并确认实施内容, 正式要求, 适用输入与授权事实没有发生其他变化. 正式生成与最终 verify 仍检查当前完整适用要求和实际证据, 不由记录中的成功声明推断通过.
 
 新失败, 相反证据, 证据含义变化或缺少必要事实仍须处理其真实影响. 删除记录不会消除已经知道的失败或未解决问题. `Status:` 的真实终态更新及验收文字不变的任务列表勾选继续遵循既有完成责任. 记录章节身份不豁免整份 issue, 正式审核对象, 完整治理输入或其他候选变化, 也不解除真实验收依赖.
 
@@ -386,7 +386,7 @@ Strata 驱动只从[共享模型目录](../agent-repository-workflow-installatio
 
 ### Reviewer runtime
 
-普通 Code Standards, Code Spec, Spec Readiness 和 Commit Audit 审核, Reviewer Capability 验证及基准执行共用后台 Agent 控制入口, 并由 Reviewer 专属运行责任约束. Reviewer 调用方交付完整角色, 已准备输入, 工作目录, 授权临时写入范围和报告绑定, 不引入额外管理模型. Reviewer 层从调用入口所属 Engine 的全局 `config.json` 与发起仓库的 `arw.config.json` 统一解析角色的模型, 提供方, 推理强度与服务档位, 仓库按字段覆盖全局, 不受外部 Main Agent CLI 配置或服务档位影响. 普通请求不得覆盖用户选择, 能力验证和基准的隔离实例可显式覆盖本轮设置. 配置来源, 格式及默认值由 [Reviewer 配置规格](../agent-repository-workflow-installation/spec.md#reviewer-configuration) 拥有. 所有模型使用同一完整规范角色文档和公共 Reviewer 规则, 模型差异不形成专有角色正文或输出覆盖规则. 模型设置由上述统筹流程确定并完整交付原生线程与回合, 运行程序信任这份选择与交付, 不将模型, 提供方, 推理强度或服务档位与原生运行记录重复比对. 普通审核, 能力验证和基准执行使用同一边界.
+普通 Code Standards, 要求符合审核和 Spec Readiness 审核, Reviewer Capability 验证及基准执行共用后台 Agent 控制入口, 并由 Reviewer 专属运行责任约束. Reviewer 调用方交付完整角色, 已准备输入, 工作目录, 授权临时写入范围和报告绑定, 不引入额外管理模型. Reviewer 层从调用入口所属 Engine 的全局 `config.json` 与发起仓库的 `arw.config.json` 统一解析角色的模型, 提供方, 推理强度与服务档位, 仓库按字段覆盖全局, 不受外部 Main Agent CLI 配置或服务档位影响. 普通请求不得覆盖用户选择, 能力验证和基准的隔离实例可显式覆盖本轮设置. 配置来源, 格式及默认值由 [Reviewer 配置规格](../agent-repository-workflow-installation/spec.md#reviewer-configuration) 拥有. 所有模型使用同一完整规范角色文档和公共 Reviewer 规则, 模型差异不形成专有角色正文或输出覆盖规则. 模型设置由上述统筹流程确定并完整交付原生线程与回合, 运行程序信任这份选择与交付, 不将模型, 提供方, 推理强度或服务档位与原生运行记录重复比对. 普通审核, 能力验证和基准执行使用同一边界.
 
 独立 Reviewer 在自己的审核运行环境中独自完成全部适用检查, 不创建, 复用或恢复子 Agent, 也不把部分审核交给其他 Agent. 它不占用与用户沟通的 Main Agent 的子 Agent 槽位, 对检查覆盖, 证据和最终报告质量负责.
 
@@ -420,7 +420,7 @@ Reviewer 专属层只在 Reviewer 根线程的原生配置中强制 `agents.enab
 
 每轮审核读取完整固定的候选, 关联上下文, 请求, 治理 Input 与适用执行规则, 不用后续源工作树字节补证. Main Agent 可以继续其他已授权工作或本候选已经获准的修复, 这些写入不替换运行中的输入. Commit Audit 依赖的实时索引及 HEAD 必须在旧轮完整结束前保持不变, 新实现随后才由 Main Agent 暂存并交付新的完整版本. 这种协调使用已有临时材料和 Git 对象, 不建立另一套候选来源或原生审核调度协议.
 
-Code Standards 与 Code Spec 各自按比较基线, 纳入范围, 文件模式和实现字节, 关联上下文, 适用指令, 授权及验证事实判断完整通过结果是否仍然有效, Code Spec 还依赖完整治理要求. 这些实际输入未变且没有新失败或相反证据时, 可以保留该轴结果. 仅 Spec 治理输入变化, 且未进入 Standards 的候选, 规则或关联证据时, 不使 Standards 自动失效; 不得只按文件路径推断无影响. Spec Readiness 和 Commit Audit 继续执行各自机械新鲜度与当前候选检查, 原线程存在或另一轴通过不替代完整有效结果.
+Code Standards 与要求符合审核各自按比较基线, 纳入范围, 文件模式和实现字节, 关联上下文, 适用指令, 授权及验证事实判断完整通过结果是否仍然有效, 要求符合审核还依赖完整治理要求. 这些实际输入未变且没有新失败或相反证据时, 可以保留该轴结果. 仅治理要求输入变化, 且未进入 Standards 的候选, 规则或关联证据时, 不使 Standards 自动失效; 不得只按文件路径推断无影响. Spec Readiness 和 Commit Audit 继续执行各自机械新鲜度与当前候选检查, 原线程存在或另一轴通过不替代完整有效结果.
 
 四种 Reviewer 的后续复审默认检查相邻受审版本的实际差异和全部关联影响. Main Agent 提供完整当前输入, 准确前轮绑定输入, 该 Reviewer 自己已完成的原始报告及变化范围. 前轮材料只证明历史覆盖并定位仍待处理的事项, 当前语义证据仍来自当前固定版本. 初次审核完成全部适用检查; 前轮未完成的检查继续完成, 旧问题逐项处理, 不因为本轮差异未再提及就消失. 其他作者的结论, 作者会话历史及正式历史审计或就绪记录不能成为替代独立判断的语义权威.
 
@@ -428,7 +428,7 @@ Code Standards 与 Code Spec 各自按比较基线, 纳入范围, 文件模式�
 
 ### Reports and result authority
 
-4 个 Canonical Reviewer Role 保持各自的审查对象和最终输出协议. Code Standards 和 Code Spec 审核的 Reviewer 在与用户沟通的 Main Agent 提供的本轮 `resultPath` 中维护当前 Markdown finding 列表, 无问题时在完成审查后写入准确的 `No findings.`, 最终回复仅返回 `{"status":"ready"}` 完成标记; Spec Readiness 和 Commit Audit 审核的 Reviewer 都返回 `ready | incomplete` 状态, 与用户沟通的 Main Agent 从准确绑定路径消费草稿. 普通真实审核按现有工作流启动所需 Reviewer, 不使用能力验证专属的 3 实例集合.
+3 个 Canonical Reviewer Role 保持各自的审查对象和最终输出协议. Code Standards 审核和非提交比较中的要求符合审核的 Reviewer 在与用户沟通的 Main Agent 提供的本轮 `resultPath` 中维护当前 Markdown finding 列表, 无问题时在完成审查后写入准确的 `No findings.`, 最终回复仅返回 `{"status":"ready"}` 完成标记; Spec Readiness 和提交审核中的要求符合审核 Reviewer 都返回 `ready | incomplete` 状态, 与用户沟通的 Main Agent 从准确绑定路径消费草稿或清单. 普通真实审核按现有工作流启动所需 Reviewer, 不使用能力验证专属的 3 实例集合.
 
 Reviewer 独自完成全部检查并亲自把完整报告写入本轮绑定的文件. 最终平台消息仅包含现行状态及适用理由, 与用户沟通的 Main Agent 和运行入口不得代写, 修改原始绑定报告或从摘要合成报告. 只有 Reviewer Capability 验证在完整审核之后, 才允许 Main Agent 按[发布能力验证的格式规则](../agent-repository-workflow-release/spec.md#reviewer-capability-gate)在独立副本修正表示, 保留原报告及其判断和证据; 普通真实审核不使用该副本. Engine 的正式结果生成, 提升与验证责任保持单一, 不因运行入口成功或 ready 状态推断通过.
 
@@ -517,15 +517,15 @@ Engine 对同一 finding 按文件合并重复, 重叠和相邻选中范围, 剔
 
 ## Commit Audit
 
-Main Agent 在仓库 `.tmp/` 下为每次审核建立独立 Request 目录. 固定名称 `input.json` 只包含同一 effort 的排序 `authorizingIssueIds`, 以及适用时的一个空要求确认. `arw commit-audit prepare --input <absolute-input-path>` 使用该文件的父目录, 从实时 Git 索引物化完整 `request.json`, 并在独立的 `reports/` 子目录中创建空 `review.jsonl`, 然后只输出 Request 的绝对路径. 报告目录使用 [Reviewer 运行规则](#reviewer-runtime) 的目录写授权, `input.json`, `request.json` 和正式结果生成目录保持只读. 除本次 `input.json` 外, 受管理文件碰撞使准备关闭式失败且不覆盖. 每个 Request 目录独立, 可以同时保留; [提交工作流](../../../.agents/skills/commit/SKILL.md#exclusive-commit-audit)拥有完整索引, HEAD 和输入的固定及替代版本交接责任, 不阻止独立的已授权源工作树写入.
+Main Agent 在仓库 `.tmp/` 下为每次审核建立独立 Request 目录. 固定名称 `input.json` 只包含同一 effort 的排序 `authorizingIssueIds`, 以及适用时的一个空要求确认. `arw commit-audit prepare --input <absolute-input-path>` 从实时 Git 索引物化 `request.json`, 并在 `reports/` 子目录中生成要求清单 `review.md`, 然后只输出 Request 的绝对路径. 已有文件不覆盖. 清单由程序生成: 每个授权 issue 的 `## What to build` 正文行和每条验收标准, 以及适用 Gate 2 时治理文档的每个正文行 (非空, 非标题, 不在围栏代码块内) 各为一项.
 
-Reviewer 只接收 Request 路径, 读取冻结的 Git 索引, 在绑定 `review.jsonl` 中为每项独立要求写一行, 然后只返回 `ready | incomplete`. 每行包含精确单行 `source`, 要求文本, `satisfied | gap | uncertain` 结果和非空证据; 问题项还包含 finding. 文件证据按仓库相对路径分组, 使用经过排序及合并的单行或闭区间集合. 命令证据保存命令和整数退出码.
+Reviewer 只接收 Request 路径, 读取冻结的 Git 索引, 为每项填写 `verdict` (`satisfied | gap | uncertain | n/a`) 和一个 `path:line` 或 `path:start-end` 证据定位; 只有 `gap`, `uncertain` 和 `n/a` 需要说明, `n/a` 不填定位. 然后只返回 `ready | incomplete`.
 
-Reviewer 返回 `ready` 后, Main Agent 调用 `arw commit-audit generate --request <absolute-request-path>`. Engine 依次检查 Request, 当前候选前置条件, JSONL 语法, 要求覆盖, 证据和完整输出计划. 失败只返回最早失败阶段中能够安全确定的稳定排序诊断. Reviewer 输出错误交回同一 Reviewer 修订完整草稿; Request, 候选或输出写入错误由 Main Agent 处理. Engine 逐文件原子写入 Request 主目录中平铺的临时文件, 并且只在完整成功时返回按目标排序, 来源与目标各自唯一的仓库相对 `sourcePath` 和 `targetPath` 映射. 写入失败不返回映射并尽力恢复; 恢复失败残留没有提升资格, 由后续完整重试覆盖.
+Reviewer 返回 `ready` 后, Main Agent 调用 `arw commit-audit generate --request <absolute-request-path>`. Engine 重新从当前候选推导 Request 并比较, 检查每项结论, 定位 (文件存在于已暂存候选且行号不越界) 和必要说明. 缺失或无效时返回 `review-incomplete` 及全部诊断, 交回同一 Reviewer 修正; Request 或候选错误由 Main Agent 处理. 成功时 Engine 在 Request 目录写入临时记录, 返回按目标排序的 `sourcePath` 和 `targetPath` 映射及未满足项 `open`. Main Agent 每轮抽查一到两项 `satisfied` 的证据.
 
-`authorizingIssueIds` 和 Gate 1 的 `issueId` 使用本地数字 Canonical ID. Gate 1 提升目标是 `.scratch/<NNNN>-<effort-slug>/issues/<NN>.audit.json`, 正式对象的顶层字段准确为 `{requirements, result}`. Gate 2 的 `effort` 是 4 位 effort 编号, 提升目标是实际登记 effort 目录中的 `spec-audit.json`. Gate 2 文档只取已接受 issue 的有效 `## Spec Requirement` 并集. 普通正式对象的顶层字段准确为 `{documents, requirements, result}`. 空并集仍需要用户明确确认具体理由和精确到秒的 UTC `confirmedAt`, 才能生成顶层字段准确为 `{documents, exception, requirements, result}` 的 `not-applicable` 对象. 正式记录只对当时冻结并验证的候选有效.
+`authorizingIssueIds` 和 Gate 1 的 `issueId` 使用本地数字 Canonical ID. Gate 1 提升目标是 `.scratch/<NNNN>-<effort-slug>/issues/<NN>.audit.json`, 正式对象的顶层字段准确为 `{requirements, result}`, 每项要求记录 `source`, `result`, 定位 `evidence` 和说明 `note`. Gate 2 的 `effort` 是 4 位 effort 编号, 提升目标是实际登记 effort 目录中的 `spec-audit.json`. Gate 2 文档只取已接受 issue 的有效 `## Spec Requirement` 并集. 普通正式对象的顶层字段准确为 `{documents, requirements, result}`. 空并集仍需要用户明确确认具体理由和精确到秒的 UTC `confirmedAt`, 才能生成顶层字段准确为 `{documents, exception, requirements, result}` 的 `not-applicable` 对象. 正式记录只对当时冻结并验证的候选有效.
 
-Gate 1 从正式交付要求和验收条件派生独立要求, [Implementation records](#implementation-records) 定义的两个记录章节不进入要求集合. 它们的增补仍需当前证据定位及完整覆盖检查. Request 范围或要求来源相同不能机械证明任意实现语义和字节未变, Main Agent 必须比较最终实际候选与受审版本.
+Gate 1 从 `## What to build` 正文行和验收条件派生要求, [Implementation records](#implementation-records) 定义的两个记录章节不进入要求集合. 它们的增补仍需当前证据定位及完整覆盖检查. Request 范围或要求来源相同不能机械证明任意实现语义和字节未变, Main Agent 必须比较最终实际候选与受审版本.
 
 Main Agent 只把映射指定的准确字节提升并暂存. 旧轮运行中完整索引, HEAD 和绑定输入保持不变, 不在同一仓库进行另一提交. 旧轮完整结束后, 可以加入经过准确核对的两个记录章节变化及映射正式记录, 再执行当前候选检查; 其他实际变化按 [Review versions and result validity](#review-versions-and-result-validity)形成替代版本并刷新受影响结果. `arw commit-audit verify` 在最终暂存候选上只读验证当前终态变化所需的已提升审核, 其结构, 定位信息, 适用事实和完整要求. 其他 audit 文件作为历史记录保留, 不参与当前候选验证. 非零退出码或非空错误列表阻止提交.
 
@@ -694,7 +694,7 @@ Main Agent 或用户负责语义决定. 独立 Reviewer 只返回结果. Module 
 
 `Spec Readiness Module` 拥有准备, Reviewer Request, 草稿绑定, 生成, 提升和特定 issue 验证. 它机械验证身份, 字节, 摘要, 结构, 路径与证据, 不判断开放语义, 原生会话控制由共享 Reviewer 运行责任承担.
 
-`Commit Audit Module` 复用 Repository State Inspector, 通过 Git Runner 读取实时已暂存候选及 HEAD, 准备 Reviewer Request, 再通过 Scoped Filesystem Factory 严格读取绑定 JSONL 并生成规范临时审核文件. 它只在完整成功时返回可提升的映射, 复用 Issue Documents 的要求操作, 验证单 effort 授权范围, Gate 1, Gate 2, 当前证据定位, 完整要求覆盖, 派生结果和输出计划. 它不因记录章节增补派生额外要求, 不判断任意实现变化的语义影响, 不选择暂存范围, 不承担原生会话控制, 不提升受 Git 跟踪文件. Main Agent 协调版本与准确记录差异, 独立 Reviewer 判断当前语义及历史覆盖.
+`Commit Audit Module` 复用 Repository State Inspector, 通过 Git Runner 读取实时已暂存候选及 HEAD, 准备 Reviewer Request 和要求清单, 再检查填写后的清单并生成规范临时审核文件. 它只在完整成功时返回可提升的映射, 复用 Issue Documents 的要求操作, 验证单 effort 授权范围, Gate 1, Gate 2, 当前证据定位, 完整要求覆盖, 派生结果和输出计划. 它不因记录章节增补派生额外要求, 不判断任意实现变化的语义影响, 不选择暂存范围, 不承担原生会话控制, 不提升受 Git 跟踪文件. Main Agent 协调版本与准确记录差异, 独立 Reviewer 判断当前语义及历史覆盖.
 
 `Agent CLI Launch Module` 接受已经验证的 Agent 配置, 本次参数, 当前目录和子进程 Adapter. 它稳定拼接固定参数与本次参数, 直接启动可执行文件, 等待结束并返回 `exited | failed`. 它不读取全局配置, 不解析公开命令, 不发现当前 Git 仓库, 不创建命令解释器或会话登记表.
 
@@ -833,7 +833,7 @@ Agent CLI Launch Module 隐藏子进程复杂性, 但不成为 Agent 编排器. 
 
 Temporary Workspace Module 独立验证主机身份并构造 `.tmp/` 路径, 优先让所有临时审核和事务材料使用同一仓库与会话范围. 允许调用方任意选择系统临时目录会失去 issue 和会话隔离, 增加锁和自动清理又会建立当前没有的生命周期. 当前选择接受临时内容不自动清理, 调用方必须显式提供已经验证的 Platform Adapter 身份的成本.
 
-Commit Audit Module 独立于实施 Module 和 Reviewer, 优先从实时 Git 暂存区读取准确候选并机械物化完整 Request, 再严格转换 Reviewer 的逐项 JSONL. 独立的 Git Runner 与 Scoped Filesystem Factory 保留进程失败和路径或写入失败的不同语义, 同时让确定性测试使用相同 Interface. Main Agent 手工拼接每个 Gate 会复制派生规则, Reviewer 生成正式文件会混合语义审核与机械写入, 提交后再审核又失去提交前阻断能力. 固定本轮完整输入而允许源工作树继续已授权写入, 可以利用审核等待而不增加候选来源. 当前选择接受 Main Agent 准确交接, 新版本影响核对及必要替代审核的成本.
+Commit Audit Module 独立于实施 Module 和 Reviewer, 优先从实时 Git 暂存区读取准确候选并机械物化完整 Request, 再检查 Reviewer 逐项填写的清单. 清单由程序生成, Reviewer 只填结论和定位, 使机械检查覆盖每项要求且 Reviewer 输出最短. Main Agent 手工拼接每个 Gate 会复制派生规则, Reviewer 生成正式文件会混合语义审核与机械写入, 提交后再审核又失去提交前阻断能力. 固定本轮完整输入而允许源工作树继续已授权写入, 可以利用审核等待而不增加候选来源. 当前选择接受 Main Agent 准确交接, 新版本影响核对及必要替代审核的成本.
 
 差异复审保留原 Reviewer 自己已经完成且未受影响的覆盖, 可以减少重复判断, 同时每轮完整输入和完整报告保持当前结果的可核对性. 把历史覆盖判断留给 Reviewer, 把候选及记录差异比较留给 Main Agent, 可以避免 Engine 伪装成任意代码语义检查器. 明确记录章节的非要求身份使正常收尾不反复触发审核, 但新的真实失败仍削弱相应结论, 不成为降低证据责任的例外. 这些边界复用已有请求, 临时材料及 Git 对象, 不需要调度器, 覆盖登记或新增持久格式.
 

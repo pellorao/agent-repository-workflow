@@ -8,9 +8,9 @@ test('background Agent overview uses four columns and retains full Main identity
     const fullId = '019caaaa-bbbb-cccc-dddd-eeeeeeeeeeee';
     const fullTitle = '日本語の長い Main タイトル 😀';
     const result = renderBackgroundAgents([
-        {role: 'code-spec-reviewer', ownerId: fullId, ownerTitle: fullTitle, state: 'running', taskElapsedMs: 3_661_000},
+        {role: 'requirements-reviewer', ownerId: fullId, ownerTitle: fullTitle, state: 'running', taskElapsedMs: 3_661_000},
         {role: 'code-standards-reviewer', ownerId: 'main-2', ownerTitle: 'ASCII', state: 'idle', taskElapsedMs: 3_000},
-        {role: 'commit-audit-reviewer', ownerId: 'main-3', ownerTitle: null, state: 'unknown', taskElapsedMs: null},
+        {role: 'spec-readiness-reviewer', ownerId: 'main-3', ownerTitle: null, state: 'unknown', taskElapsedMs: null},
         {role: 'spec-readiness-reviewer', ownerId: 'main-4', ownerTitle: ' \t ', state: 'starting', taskElapsedMs: 0},
     ]);
     const [heading, divider, first, second, third, fourth] = result.split('\n');
@@ -25,7 +25,7 @@ test('background Agent overview uses four columns and retains full Main identity
     assert.match(third, /\u001b\[90mN\/A\u001b\[0m/u);
     assert.match(fourth, /\u001b\[90mN\/A\u001b\[0m/u);
     assert.ok(third.includes('unknown'));
-    assert.ok(third.includes('commit-audit-reviewer'));
+    assert.ok(third.includes('spec-readiness-reviewer'));
     assert.ok(third.includes('main-3'));
     assert.ok(third.endsWith('  -'));
     assert.ok(fourth.endsWith('0:00:00'));

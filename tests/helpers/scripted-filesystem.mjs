@@ -3,39 +3,12 @@ import {TextDecoder} from 'node:util';
 
 import {resolveAbsolutePathWithinScope, resolveRelativePathWithinScope} from '../../lib/common/filesystem.mjs';
 
-/** @typedef {{code: number | null, failure: 'process' | 'timeout' | null, stderr: string, stdout: Buffer}} GitResult */
 /** @typedef {{directories: Set<string>, files: Map<string, Buffer>, hardLinks: Set<string>}} FilesystemStore */
 /** @typedef {{calls: Array<{operation: string, path?: string}>, open: typeof import('../../lib/common/filesystem.mjs').createScopedFilesystem, snapshot: (root: string) => Map<string, Buffer>}} ScriptedScopedFilesystemFactory */
 /** @template {object} T @param {T} value @returns {T & {diagnostics: never[], status: 'succeeded'}} */
 const succeeded = value => ({...value, diagnostics: [], status: /** @type {'succeeded'} */ ('succeeded')});
 /** @param {string} code @param {string} message @param {string} [path] */
 const blocked = (code, message, path) => ({diagnostics: [{code, message, ...(path === undefined ? {} : {path})}], status: /** @type {'blocked'} */ ('blocked')});
-
-/** @param {GitResult} result @returns {GitResult} */
-const cloneGitResult = result => ({...result, stdout: Buffer.from(result.stdout)});
-/** @param {Buffer | string | undefined} value */
-const inputBytes = value => value === undefined ? null : Buffer.from(value).toString('hex');
-
-export const createScriptedGitRunner = (/** @type {Array<{argv: string[], input?: Buffer | string, result: {code: number | null, failure: 'process' | 'timeout' | null, stderr: string, stdout: Buffer}}>} */ scripts) => {
-    const remaining = scripts.map(script => ({...script, argv: [...script.argv], result: cloneGitResult(script.result)}));
-    /** @type {Array<{argv: string[], input?: Buffer}>} */
-    const calls = [];
-    return {
-        calls,
-        async run(/** @type {{argv: string[], input?: Buffer | string}} */ input) {
-            if (!input || !Array.isArray(input.argv) || input.argv.some(argument => typeof argument !== 'string')
-                || (input.input !== undefined && typeof input.input !== 'string' && !Buffer.isBuffer(input.input))) {
-                throw new TypeError('ScriptedGitRunner input violates the GitRunner Interface.');
-            }
-            calls.push({argv: [...input.argv], ...(input.input === undefined ? {} : {input: Buffer.from(input.input)})});
-            const index = remaining.findIndex(script => JSON.stringify(script.argv) === JSON.stringify(input.argv)
-                && inputBytes(script.input) === inputBytes(input.input));
-            if (index < 0) throw new Error(`ScriptedGitRunner has no result for: ${input.argv.join(' ')}.`);
-            const [script] = remaining.splice(index, 1);
-            return cloneGitResult(script.result);
-        },
-    };
-};
 
 const logicalPath = (/** @type {string} */ path) => path === '' ? '.' : path.split('\\').join('/');
 

@@ -23,7 +23,7 @@ const createMinimalReleaseCheckout = async (/** @type {test.TestContext} */ t, p
         'distribution/projections/config.json',
         'distribution/projections/codex/config.toml',
         'distribution/baseline/.arwignore',
-        'distribution/baseline/docs/agents/roles/code-spec-reviewer.md',
+        'distribution/baseline/docs/agents/roles/requirements-reviewer.md',
     ];
     await Promise.all(distributionFiles.map(async file => {
         await mkdir(dirname(join(checkout, file)), {recursive: true});

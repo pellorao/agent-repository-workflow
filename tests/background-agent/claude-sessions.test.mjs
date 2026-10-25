@@ -17,13 +17,13 @@ const fixture = async (t, environment = {}) => {
     const directory = await createTemporaryDirectory(t, 'arw-claude-sessions-');
     const log = join(directory, 'calls.jsonl');
     await writeFile(join(directory, 'config.json'), JSON.stringify({configVersion: 3, editor: {command: 'code', args: ['{file}']}, reviewEditor: {command: 'code', args: ['{file}']},
-        jira: {listLimit: 50}, reviewers: {'code-spec-reviewer': {model: 'haiku', modelProvider: 'anthropic', env: {ANTHROPIC_BASE_URL: 'https://models.example'}}}}));
+        jira: {listLimit: 50}, reviewers: {'requirements-reviewer': {model: 'haiku', modelProvider: 'anthropic', env: {ANTHROPIC_BASE_URL: 'https://models.example'}}}}));
     const sessions = createClaudeSessions({executable,
         environment: {...process.env, ...environment, FAKE_CLAUDE_LOG: log, CLAUDE_CONFIG_DIR: directory}});
     t.after(() => sessions.close());
     /** @type {Array<() => void>} */
     const waiters = [];
-    const open = () => sessions.open({settings: {...settings, programDirectory: directory}, role: 'code-spec-reviewer', cwd: directory, readPaths: [], writePaths: [join(directory, 'reports')],
+    const open = () => sessions.open({settings: {...settings, programDirectory: directory}, role: 'requirements-reviewer', cwd: directory, readPaths: [], writePaths: [join(directory, 'reports')],
         onNotification: () => {for (const wake of waiters.splice(0)) wake();}});
     const changed = () => new Promise(resolve => {waiters.push(() => resolve(undefined));});
     const calls = async () => (await readFile(log, 'utf8')).trim().split('\n').map(line => JSON.parse(line));
@@ -110,7 +110,7 @@ test('a Claude Code Main starts, follows up, waits for and interrupts a Claude R
     await mkdir(stateDirectory, {recursive: true});
     await mkdir(programDirectory);
     await writeFile(join(programDirectory, 'config.json'), JSON.stringify({configVersion: 3, editor: {command: 'code', args: ['{file}']},
-        reviewEditor: {command: 'code', args: ['{file}']}, jira: {listLimit: 50}, reviewers: {'code-spec-reviewer': {model: 'haiku', modelProvider: 'anthropic', env: {ANTHROPIC_BASE_URL: 'https://host.example'}}}}));
+        reviewEditor: {command: 'code', args: ['{file}']}, jira: {listLimit: 50}, reviewers: {'requirements-reviewer': {model: 'haiku', modelProvider: 'anthropic', env: {ANTHROPIC_BASE_URL: 'https://host.example'}}}}));
     const log = join(directory, 'calls.jsonl');
     /** @type {NodeJS.ProcessEnv} */ const environment = {...process.env, FAKE_CLAUDE_LOG: log, CLAUDE_CONFIG_DIR: directory};
     const started = host = await createBackgroundAgentHost({installationDirectory: join(directory, 'installation'), programDirectory,
@@ -127,7 +127,7 @@ test('a Claude Code Main starts, follows up, waits for and interrupts a Claude R
         await writeFile(path, '');
         return {writePaths: [dirname(path)], reportPath: path, handoff: `Review the prepared evidence.\nreport: ${path}`};
     };
-    const handoff = {role: 'code-spec-reviewer', identity: {kind: 'ordinary', issueIds: ['issue:0093:01']},
+    const handoff = {role: 'requirements-reviewer', identity: {kind: 'ordinary', issueIds: ['issue:0093:01']},
         instructions: 'Complete Reviewer rules.', cwd: repositoryRoot, stateDirectory};
     const completion = async (/** @type {string} */ runId) => {
         for (let attempt = 0; attempt < 200; attempt++) {
@@ -138,13 +138,13 @@ test('a Claude Code Main starts, follows up, waits for and interrupts a Claude R
         assert.fail('The Claude Reviewer did not complete.');
     };
     const first = await report('first');
-    await writeFile(join(repositoryRoot, 'arw.config.json'), JSON.stringify({configVersion: 2, reviewers: {'code-spec-reviewer': {env: {ANTHROPIC_AUTH_TOKEN: 'secret'}}}}));
+    await writeFile(join(repositoryRoot, 'arw.config.json'), JSON.stringify({configVersion: 2, reviewers: {'requirements-reviewer': {env: {ANTHROPIC_AUTH_TOKEN: 'secret'}}}}));
     const rejected = await started.dispatch({ownerId: 'main-session', caller, operation: 'spawn_agent', input: {...handoff, ...first}});
-    assert.match(JSON.stringify(rejected), /code-spec-reviewer\.env is allowed only in the user-level ARW config\.json/);
+    assert.match(JSON.stringify(rejected), /requirements-reviewer\.env is allowed only in the user-level ARW config\.json/);
     await rm(join(repositoryRoot, 'arw.config.json'));
     const {runId} = await dispatch('spawn_agent', {...handoff, ...first});
     assert.deepEqual(await completion(runId), {status: 'ready', reportPath: first.reportPath});
-    assert.match(renderBackgroundAgents(await started.manager.list()), /idle +code-spec-reviewer +.*main-session/);
+    assert.match(renderBackgroundAgents(await started.manager.list()), /idle +requirements-reviewer +.*main-session/);
     const second = await report('second');
     await dispatch('followup_task', {...handoff, ...second, runId});
     assert.deepEqual(await completion(runId), {status: 'ready', reportPath: second.reportPath});
