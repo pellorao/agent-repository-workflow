@@ -60,7 +60,6 @@
     "lib/background-agent/codex-app-server.mjs",
     "lib/background-agent/codex-consumption.mjs",
     "lib/background-agent/daemon.mjs",
-    "lib/background-agent/machine-client.mjs",
     "lib/background-agent/machine.mjs",
     "lib/background-agent/manager-process.mjs",
     "lib/background-agent/manager.mjs",

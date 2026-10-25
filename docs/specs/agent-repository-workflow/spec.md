@@ -430,7 +430,7 @@ Code Standards 与要求符合审核各自按比较基线, 纳入范围, 文件�
 
 3 个 Canonical Reviewer Role 保持各自的审查对象和最终输出协议. Code Standards 审核和非提交比较中的要求符合审核的 Reviewer 在与用户沟通的 Main Agent 提供的本轮 `resultPath` 中维护当前 Markdown finding 列表, 无问题时在完成审查后写入准确的 `No findings.`, 最终回复仅返回 `{"status":"ready"}` 完成标记; Spec Readiness 和提交审核中的要求符合审核 Reviewer 都返回 `ready | incomplete` 状态, 与用户沟通的 Main Agent 从准确绑定路径消费草稿或清单. 普通真实审核按现有工作流启动所需 Reviewer, 不使用能力验证专属的 3 实例集合.
 
-Reviewer 独自完成全部检查并亲自把完整报告写入本轮绑定的文件. 最终平台消息仅包含现行状态及适用理由, 与用户沟通的 Main Agent 和运行入口不得代写, 修改原始绑定报告或从摘要合成报告. 只有 Reviewer Capability 验证在完整审核之后, 才允许 Main Agent 按[发布能力验证的格式规则](../agent-repository-workflow-release/spec.md#reviewer-capability-gate)在独立副本修正表示, 保留原报告及其判断和证据; 普通真实审核不使用该副本. Engine 的正式结果生成, 提升与验证责任保持单一, 不因运行入口成功或 ready 状态推断通过.
+Reviewer 独自完成全部检查并亲自把完整报告写入本轮绑定的文件. 最终平台消息仅包含现行状态及适用理由, 与用户沟通的 Main Agent 和运行入口不得代写, 修改原始绑定报告或从摘要合成报告. Engine 的正式结果生成, 提升与验证责任保持单一, 不因运行入口成功或 ready 状态推断通过.
 
 与用户沟通的 Main Agent 在启动审查前固定共同受审的完整候选, 代码上下文, 请求, 治理 Input 与适用执行规则, 具体交接遵循[公共版本规则](../../agents/reviewer.md#review-versions-and-concurrency). Reviewer 发现并核实 finding 后按角色合同立即写入同一草稿或结果文件, 并继续完成同一份 Input 的全部适用检查. 修订或撤回直接更新或删除原条目, 文件只保留当前结论. 与用户沟通的 Main Agent 如需提前核对问题, 直接读取该文件, 但不能把未完成草稿作为 Engine Input, 授权或通过证据. Code Review 的精确绝对结果路径由与用户沟通的 Main Agent 指定并提供, Reviewer 亲自把完整报告写入并更新该文件, 完成后返回 `{"status":"ready"}`. 与用户沟通的 Main Agent 已知该路径, 无需再次传递, 收到完成标记后直接从文件读取完整结果. 完成标记不表示没有问题; 完整报告包含 finding 列表或 `No findings.`, 空文件不构成完成结果. 这避免维护消息与文件两份报告, 也避免末尾重新组织报告时丢失已核实的证据或改变原结论. 与用户沟通的 Main Agent 可以核对和讨论 finding, 并在授权内修改源工作树; 固定的本轮输入保持不变, 结论只属于该受审版本. 完整版本绑定防止一次审核混用不同字节, 按需读取则允许尽早核对问题.
 

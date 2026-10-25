@@ -10,7 +10,7 @@
 
 实际 Skill 中的 `agents/openai.yaml` 是 Codex 调用数据的唯一内容权威. Codex 投影保留它, Claude Code 投影排除它; 投影不依据 frontmatter 过滤 Skill, 也不从表面语法推断调用政策. 固定输入的转换应产生可复现的目标字节, 无法确定的引用由用户审核, 不能用整个 Markdown 范围的搜索替换代替结构化分析.
 
-`$reviewer-benchmark` 的实际 Skill 在自己的 `agents/openai.yaml` 中把 `policy.allow_implicit_invocation` 明确设置为 `false`. 用户准确输入该名称才触发基准操作, 其他 Skill 不自动转调. 原生调用元数据与操作规则由同一个实际 Skill 拥有, 使平台能够消费显式调用限制, 避免按任务相似性自动开始模型测量.
+`$reviewer-capability` 的实际 Skill 在自己的 `agents/openai.yaml` 中把 `policy.allow_implicit_invocation` 明确设置为 `false`. 用户准确输入该名称才触发能力测试操作, 其他 Skill 不自动转调. 原生调用元数据与操作规则由同一个实际 Skill 拥有, 使平台能够消费显式调用限制, 避免按任务相似性自动开始能力测试.
 
 原先每个软件包单独绑定有版本的 Skill Package Grammar 的机制已由 [ADR 0026](0026-use-source-checkout-workflow-files-as-distribution-authority.md#decision) 取代. 当前投影配置, 转换代码和待安装载荷由同一 Git 修订版本绑定, 不读取旧语法文件或维护其升级路径.
 

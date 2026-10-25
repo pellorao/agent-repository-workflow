@@ -136,17 +136,11 @@ To adopt an update to a fixed external Skill Package, the maintainer explicitly 
 
 ### Reviewer configuration and capability validation
 
-Use this route to change canonical Reviewer Roles, Reviewer-specific execution, or Reviewer capability scenarios. Roles are in `docs/agents/roles/`. Shared execution and communication rules are in [Reviewer responsibilities (Chinese)](../agents/reviewer.md). The [product background Agent rules (Chinese)](../specs/agent-repository-workflow/spec.md#background-agent-control) and [installation management rules (Chinese)](../specs/agent-repository-workflow-installation/spec.md#background-agent-management) own cross-repository background Agent capacity, connection, and recovery. User model and tier settings are stored in the ARW program directory's `config.json` and the repository's `arw.config.json`. Their format and defaults are in the [Reviewer configuration specification (Chinese)](../specs/agent-repository-workflow-installation/spec.md#reviewer-configuration). The [Reviewer capability validation rules (Chinese)](../agents/reviewer-capability-validation.md) own the capability-scenario maintenance entry point.
-
-Focused preparation, result verification, and release preparation for Reviewer capabilities use these command names:
+Use this route to change canonical Reviewer Roles, Reviewer-specific execution, or Reviewer capability scenarios. Roles are in `docs/agents/roles/`. Shared execution and communication rules are in [Reviewer responsibilities (Chinese)](../agents/reviewer.md). The [product background Agent rules (Chinese)](../specs/agent-repository-workflow/spec.md#background-agent-control) and [installation management rules (Chinese)](../specs/agent-repository-workflow-installation/spec.md#background-agent-management) own cross-repository background Agent capacity, connection, and recovery. User model and tier settings are stored in the ARW program directory's `config.json` and the repository's `arw.config.json`. Their format and defaults are in the [Reviewer configuration specification (Chinese)](../specs/agent-repository-workflow-installation/spec.md#reviewer-configuration). Capability tests run when a maintainer explicitly invokes the source-only `$reviewer-capability` Skill. Scenarios are in `tests/fixtures/reviewer-capability/`; build one scenario repository with:
 
 ~~~text
-node scripts/reviewer-capability-conformance.mjs prepare --reviewer <identity>
-node scripts/reviewer-capability-conformance.mjs verify --prepared <prepared-path> --input <artifacts-path>
-node scripts/reviewer-capability-conformance.mjs prepare
+node scripts/reviewer-capability.mjs <scenario-directory> <new-target-directory>
 ~~~
-
-The staged Reviewer capability validation documents define the command modes and inputs.
 
 ### Cross-operating-system validation environment
 
@@ -185,7 +179,7 @@ Direct children of `scripts/` are entry points for Source Checkout maintainers o
 | `scripts/install-arw.mjs` | Separately downloadable bootstrap script that starts installation from a fixed release source |
 | `scripts/release-guest-check.mjs` | In a disposable test system, check install, PATH registration, `arw workflow init`, and uninstall |
 | `scripts/release-vm.mjs` | Run the guest check in a VMware VM and restore its snapshot |
-| `scripts/reviewer-capability-conformance.mjs` | Prepare or verify Reviewer capability scenarios |
+| `scripts/reviewer-capability.mjs` | Build a Reviewer capability scenario repository and print its launch input |
 | `scripts/sync-workflow-distribution.mjs` | Review, prepare, and apply pre-release Workflow Distribution synchronization |
 | `scripts/upstream-sync.mjs` | Build the upstream three-way view for the `$upstream-sync` Skill |
 

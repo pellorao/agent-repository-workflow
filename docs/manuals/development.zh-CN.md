@@ -136,17 +136,11 @@ node scripts/check-workflow-distribution.mjs
 
 ### Reviewer 配置和能力验证
 
-修改规范 Reviewer Role, Reviewer 专属审核运行或 Reviewer 能力场景时使用这条路线. Role 位于 `docs/agents/roles/`, 共同执行与通信规则见 [Reviewer 责任](../agents/reviewer.md). 跨仓库共享的后台 Agent 容量, 连接和恢复由 [产品后台 Agent 规则](../specs/agent-repository-workflow/spec.md#background-agent-control) 与 [安装管理规则](../specs/agent-repository-workflow-installation/spec.md#background-agent-management) 拥有. 用户模型与档位保存在 ARW 程序目录的 `config.json` 和仓库的 `arw.config.json`, 格式及默认值见 [Reviewer 配置规格](../specs/agent-repository-workflow-installation/spec.md#reviewer-configuration). 能力场景的维护入口见 [Reviewer 能力验证](../agents/reviewer-capability-validation.md).
-
-Reviewer 能力维护的定向准备, 结果验证和发布准备使用这些命令名称:
+修改规范 Reviewer Role, Reviewer 专属审核运行或 Reviewer 能力场景时使用这条路线. Role 位于 `docs/agents/roles/`, 共同执行与通信规则见 [Reviewer 责任](../agents/reviewer.md). 跨仓库共享的后台 Agent 容量, 连接和恢复由 [产品后台 Agent 规则](../specs/agent-repository-workflow/spec.md#background-agent-control) 与 [安装管理规则](../specs/agent-repository-workflow-installation/spec.md#background-agent-management) 拥有. 用户模型与档位保存在 ARW 程序目录的 `config.json` 和仓库的 `arw.config.json`, 格式及默认值见 [Reviewer 配置规格](../specs/agent-repository-workflow-installation/spec.md#reviewer-configuration). 能力测试由维护者显式调用源码专用的 `$reviewer-capability` Skill, 场景在 `tests/fixtures/reviewer-capability/`, 单个场景仓库这样搭建:
 
 ```text
-node scripts/reviewer-capability-conformance.mjs prepare --reviewer <identity>
-node scripts/reviewer-capability-conformance.mjs verify --prepared <prepared-path> --input <artifacts-path>
-node scripts/reviewer-capability-conformance.mjs prepare
+node scripts/reviewer-capability.mjs <scenario-directory> <new-target-directory>
 ```
-
-命令模式和输入由 Reviewer 能力验证的分阶段文档负责.
 
 ### 跨操作系统验证环境
 
@@ -185,7 +179,7 @@ node scripts/reviewer-capability-conformance.mjs prepare
 | `scripts/install-arw.mjs` | 可单独下载并从固定发布来源启动安装的引导脚本 |
 | `scripts/release-guest-check.mjs` | 在可丢弃的受验系统中检查安装, PATH 登记, `arw workflow init` 和卸载 |
 | `scripts/release-vm.mjs` | 在 VMware VM 中运行 guest 检查并还原快照 |
-| `scripts/reviewer-capability-conformance.mjs` | 准备或验证 Reviewer 能力场景 |
+| `scripts/reviewer-capability.mjs` | 搭建 Reviewer 能力场景仓库并输出启动输入 |
 | `scripts/sync-workflow-distribution.mjs` | 审核, 准备并应用发布前工作流分发同步 |
 | `scripts/upstream-sync.mjs` | 为 `$upstream-sync` Skill 生成上游三方视图 |
 
