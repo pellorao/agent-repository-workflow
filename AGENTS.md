@@ -77,6 +77,8 @@ Code Map roots: (none)
 
 ARW Artifact 操作使用最近的 Git 仓库中的 `.scratch`.
 
+ARW 必须在 Codex 和 Claude Code 中都完整可用, 包括 `arw background-agent` 系列命令. 改动与平台相关的行为时, 两个平台都要验证.
+
 # Autonomous Working Mode
 
 作为 `Important Decisions` 的 Baseline 例外, 本仓库按待办自主推进:
@@ -85,6 +87,8 @@ ARW Artifact 操作使用最近的 Git 仓库中的 `.scratch`.
 - 重要决策先由一个智能水平和推理强度不低于 Main Agent 的独立 Agent 分析, Main Agent 综合双方意见后执行. 双方仍拿不准的, 写成自成一体的待决定事项 (背景, 选项, 建议) 列入状态页 `decide`, 先推进不依赖它的其他待办.
 - `Efficiency First` 中要求交用户决定或取得同意的事项 (投入产出比, 稳健性复杂度, 体积超出预算), 同样列入 `decide` 后继续其他工作.
 - 状态页由用户级配置定义. 当前环境没有状态页时, 按 `Important Decisions` 交用户决定.
+- 作为 `commit` Skill 的 Baseline 例外, 完成一个完整的小改动后, Main Agent 不等用户要求, 直接在当前分支按 `commit` Skill 提交, 视同用户已请求提交; 不 push. 提交前对本 ticket 的改动做一次只删减与合并的自查 (Claude Code 中用 `/simplify`).
+- 每张 ticket 提交后在状态页加 `know` 条目 (结论, 偏离, 遗留, 提交号), 供用户事后复核.
 - 作为 `rule-and-design-changes` Skill 的 Baseline 例外, 本仓库的 Agent 指令和设计文档修改不逐处预先确认, 由用户按 ticket 在状态页复核整体 diff.
 
 # Source Checkout Validation
