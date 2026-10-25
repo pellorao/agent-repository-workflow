@@ -421,6 +421,33 @@ Reviewer 只对绑定的输入独立判断, 不选择工作范围, 不替用户�
 
 `env` 可能含凭据, 只能写在用户级 `config.json` 中. 仓库的 `arw.config.json` 出现 `env` 时配置校验失败并拒绝启动 Reviewer.
 
+### 在 Claude Code 中放行常用 ARW 命令
+
+ARW 不生成 `.claude/settings.json`. 要让 Claude Code 像 Codex 的 `.codex/rules/default.rules` 那样免确认运行这些 `arw` 命令, 把下面的 `permissions.allow` 合并进用户级 `~/.claude/settings.json` 或仓库的 `.claude/settings.json`. 在 ARW 源码仓库中以 `node arw.mjs` 运行时, 把每项的 `arw ` 换成 `node arw.mjs `.
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "Bash(arw list:*)",
+      "Bash(arw li:*)",
+      "Bash(arw lm:*)",
+      "Bash(arw ls:*)",
+      "Bash(arw print:*)",
+      "Bash(arw spec-readiness prepare:*)",
+      "Bash(arw spec-readiness verify:*)",
+      "Bash(arw --version:*)",
+      "Bash(arw migrate artifacts:*)",
+      "Bash(arw code-map verify:*)",
+      "Bash(arw text check:*)",
+      "Bash(arw text fix:*)",
+      "Bash(arw workflow verify:*)",
+      "Bash(arw workflow update:*)"
+    ]
+  }
+}
+```
+
 ## 附带技能
 
 `arw workflow init` 根据用户选择的平台安装适用 Skills. Codex 使用目标仓库中的 `.agents/skills`, Claude Code 使用 `.claude/skills`. Skill 是 Agent 在特定任务中遵循的操作说明; 用户可以在对话中直接点名, 例如 `使用 $grill-with-docs 和我确认需求`.

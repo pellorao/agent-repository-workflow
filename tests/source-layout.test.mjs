@@ -70,3 +70,8 @@ test('shared implementation dependencies point from arw-common to common without
         }
     }
 });
+
+test('.claude/skills/ matches the claude-code projection of .agents/skills/', async () => {
+    const {staleClaudeSkills} = await import('../scripts/project-claude-skills.mjs');
+    assert.deepEqual(await staleClaudeSkills(), [], 'Run: node scripts/project-claude-skills.mjs');
+});
