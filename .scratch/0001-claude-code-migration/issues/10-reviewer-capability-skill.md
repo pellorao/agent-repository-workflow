@@ -15,6 +15,8 @@ Governing requirements:
 - `.scratch/0001-claude-code-migration/spec.md#rule-structure-and-context-budget`
 - `.scratch/0001-claude-code-migration/spec.md#code-reduction`
 
+08 遗留给本 ticket: 为 `requirements-reviewer` 补能力场景, 删除只给退役角色用的评分代码; 发布 spec 中能力测试一节仍按 Code Spec 和 Commit Audit 描述, 一并改写; 评估复审时 Reviewer 手工抄写前轮结论导致旧行号偏移的问题.
+
 ## Acceptance criteria
 
 - [ ] Skill 不自动触发, 两个平台的元数据都已设置.
