@@ -34,4 +34,5 @@ Governing requirements:
 - 未发现吞掉错误又不处理的 `catch`: 现有空 `catch` 都是转换为诊断/`null`, 或临时文件清理失败时保留原错误.
 - 只删除了针对被删校验的测试断言 (6 个测试文件中的 `assert.throws`/`doesNotThrow` 断言).
 - 跳过 (ticket 14 范围或不确定): `lib/background-agent/**`, `lib/commit-audit/**`, `lib/reviewer-runtime/**`, `lib/spec-readiness/**`, `lib/arw-common/reviewer-configuration.mjs`, `lib/arw-background-agent-host.mjs`, `lib/workflow-distribution/skill-reference-review.mjs` 及 `workflow-distribution-sync.mjs` 中的 review 结果校验, `lib/common/evidence-locators.mjs`, `lib/common/windows-command-line.mjs` (仅 background-agent 使用).
-- `lib/` 行数 30479 → 29735 (-744). typecheck 通过; 测试 709 项, 仅 1 项因 `AGENTS.md` 迁移期改名而失败 (预期); `check-workflow-distribution` 通过.
+- 按 `6fa9082` 新增的两条原则补做一轮: 删除对已校验数据的二次判断 (repository-configuration 解析结果, workflow-distribution 配置字节与形状, installation 内部不变量, file-transaction/json 对 filesystem 结果的复查, configuration-conversion 未知路径复查), 改用类型断言; 内联只用一次的单行辅助函数 (jira-client, issue-documents, platform-adapter, configuration-conversion, markdown-visible-text, file-transaction, document-terms). 保留 workflow-distribution 批量读取的 `try/catch`, 它保证返回排序上第一个失败 (有测试覆盖).
+- `lib/` 行数 30479 → 29649 (-830). typecheck 通过; 测试 709 项, 仅 1 项因 `AGENTS.md` 迁移期改名而失败 (预期); `check-workflow-distribution` 通过.
