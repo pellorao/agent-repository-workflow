@@ -93,6 +93,7 @@ ARW 由 Codex 开发和维护, 现在改由 Claude Code 维护, 并且今后 ARW
   - 测试清理.
   - 测试性能优化.
 - Reviewer 协议和角色文件仍由 Reviewer 运行时读取, 不进入 Main Agent 上下文.
+- 规则文档或 Skill 中 Codex 与 Claude Code 实现不同的部分, 各写一个独立文件, 父文档只保留共同部分和指向两者的链接, 使每个 harness 只加载自己需要的部分. 预算按两者中较大的一份计算.
 - 删除或大幅压缩:
   - `user-communication.md`: 沟通格式和汇报渠道交给 harness 与用户级配置.
   - `subagent-allocation.md` 中的容量调度与空闲线程恢复: 并发与额度由 harness 和用户级配置管理.
