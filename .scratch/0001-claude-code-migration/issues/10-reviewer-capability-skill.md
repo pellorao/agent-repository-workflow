@@ -4,7 +4,7 @@ Status: ready-for-agent
 
 ## What to build
 
-Reviewer 能力一致性和 reviewer-benchmark 改为源码仓库专用, 不自动触发的 Skill, 仍由 Agent 执行, 目标是证明 Reviewer 角色能发现已知问题, 两种后端都可用. 实现压缩到达成目标所需的最小程度. 用它比较 08 的轻格式下 luna xhigh 和 haiku high 的检出率, 检出率下降的模型恢复必要的复述要求.
+Reviewer 能力一致性和 reviewer-benchmark 改为源码仓库专用, 不自动触发的 Skill, 仍由 Agent 执行, 目标是证明 Reviewer 角色能发现已知问题, 两种后端都可用. 实现压缩到达成目标所需的最小程度. 用它比较 08 的轻格式下 luna xhigh 和 haiku high 的检出率, 检出率下降的模型恢复必要的复述要求. 比较的格式档位至少包括 08 的轻格式和最轻一档 (只用自然语言把问题逐条写进 txt).
 
 预估改动: 大幅净减.
 
