@@ -58,7 +58,7 @@ test('a new Claude session runs one restricted turn and later turns resume it', 
     assert.equal(created.baseUrl, 'https://models.example');
     assert.equal(JSON.parse(created.args[created.args.indexOf('--json-schema') + 1]).required[0], 'status');
     for (const [flag, value] of [['--session-id', threadId], ['--model', 'haiku'], ['--effort', 'high'], ['--permission-mode', 'dontAsk'],
-        ['--tools', 'Read,Grep,Glob,Edit,Write,Bash'], ['--disallowedTools', 'Bash(git *--output*)'], ['--allowedTools', 'Bash(git show:*)'],
+        ['--tools', 'Read,Grep,Glob,Edit,Write,Bash'], ['--disallowedTools', 'Bash(git *--output*)', 'Bash(git *--no-index*)'], ['--allowedTools', 'Bash(git show:*)'],
         ['--append-system-prompt', 'Reviewer rules.']]) {
         assert.equal(created.args[created.args.indexOf(flag) + 1], value, flag);
     }

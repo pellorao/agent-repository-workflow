@@ -11,7 +11,7 @@
 - 提交审核: Main Agent 交接 `arw commit-audit prepare` 生成的 `request.json` 绝对路径; `reportPath` 是其中 `reviewPath` 指向的空 txt 报告. 受审版本是 Git 索引中的已暂存字节 (用 `git diff --cached`, `git show :<path>` 读取), `authorizingIssueIds` 是完整授权范围, `gate2.documents` 是需要整份核对的治理文档.
 - 其他比较 (分支, 拉取请求, 提交区间): Main Agent 交接固定比较和治理要求副本, `reportPath` 是空 txt 文件.
 
-只审查这些输入, 不发现额外的 issue, spec, PRD 或 ADR. 已有的 `*.audit.json`, `spec-audit.json` 和 `*.spec-readiness.json` 不是证据或先前结论; 生成或验证它们的代码, 测试和文档仍可审查.
+只审查这些输入, 不发现额外的 issue, spec, PRD 或 ADR. 已有的 `*.spec-readiness.json` 不是证据或先前结论; 生成或验证它们的代码, 测试和文档仍可审查.
 
 ## Instructions
 
