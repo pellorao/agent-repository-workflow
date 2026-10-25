@@ -6,4 +6,4 @@
 
 ## Source Checkout release validation issue lifecycle
 
-处理发布验证 issue 的生命周期和预先配置的用户选择答案时, 遵循 `docs/agents/validation.md`. 一次性目标任务仍然是普通实施 issue. 普通 issue 格式, 状态转换, 精确的 `## Validation` 证据标题和严格读取规则保持不变. 不得在目标 issue 正文中加入发布场景限制.
+处理发布验证 issue 的生命周期和预先配置的用户选择答案时, 遵循 `validation` Skill 和 `docs/agents/source-checkout-exceptions.md`. 一次性目标任务仍然是普通实施 issue. 普通 issue 格式, 状态转换, 精确的 `## Validation` 证据标题和严格读取规则保持不变. 不得在目标 issue 正文中加入发布场景限制.

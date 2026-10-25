@@ -18,7 +18,7 @@ name: code-review
 
 要求调用方为 Spec 轴提供适用的治理要求输入. 接受仓库相对路径, 在任一审查轴启动前, 将每份来源路径, SHA-256 和完整内容保存在本轮绑定的临时副本中. 不发现其他 issue, spec, PRD 或 ADR.
 
-Main Agent 按 [公共审查版本规则](../../../docs/agents/reviewer.md#review-versions-and-concurrency)固定适用的 Agent 指令. Standards Reviewer 按其规范角色读取这些完整的绑定副本. 它们是执行规则, 不是 Spec 治理输入; Standards 轴不要求调用方选择标准文档路径集合, 也不要求确认没有标准.
+Main Agent 按 [固定审核版本](../reviewer-launch/SKILL.md#fix-the-review-version)固定适用的 Agent 指令. Standards Reviewer 按其规范角色读取这些完整的绑定副本. 它们是执行规则, 不是 Spec 治理输入; Standards 轴不要求调用方选择标准文档路径集合, 也不要求确认没有标准.
 
 缺少治理要求输入时, 请用户提供, 或明确确认没有治理要求.
 
@@ -30,7 +30,7 @@ Not reviewed: no governing requirements were supplied.
 
 Gate 2 与是否跳过 Spec Reviewer 相互独立. 它的适用性, 治理要求并集和例外规则不能证明 Spec 审查没有必要.
 
-调用方应已提供 issue 跟踪规则. 如果缺少 `docs/agents/issue-tracker.md`, 运行只读的 `arw workflow verify`. 如果验证表明仓库尚未初始化, 告知用户另行运行 `arw workflow init`. 此检查只验证仓库工作流设置, 不发现或提供审查输入.
+调用方应已提供 issue 跟踪规则. 如果缺少 `issue-tracking` Skill, 运行只读的 `arw workflow verify`. 如果验证表明仓库尚未初始化, 告知用户另行运行 `arw workflow init`. 此检查只验证仓库工作流设置, 不发现或提供审查输入.
 
 调用本技能前, Main Agent 必须确定预期仓库范围并准备 Git 索引. 本技能消费已经形成的比较, 不暂存或取消暂存文件. Main Agent 已经准备的范围不增加第二次用户确认关卡.
 
@@ -76,9 +76,9 @@ Gate 2 与是否跳过 Spec Reviewer 相互独立. 它的适用性, 治理要求
 
 Reviewer 身份由审查轴固定的 `input.role` 值和完整排序的授权 issue ID 集合组成. Standards 使用 `code-standards-reviewer`, Spec 使用 `code-spec-reviewer`. 解析既有身份, 处理报告的问题或准备后续审核前, 阅读 [后续审核与问题处理](reviewer-followup.md).
 
-为每个轴的每轮审查, 在受审仓库的当前会话临时工作区内分配不同的绝对 `resultPath`, 并创建空文件. 将准确路径交给 Reviewer; 只有 Reviewer 写入其内容. 不把上一轮报告复用为新草稿.
+每个轴的每轮审查按 [Code Review 结果规则](../../../docs/agents/reviewer.md#code-review-results) 使用新的空 `resultPath`, 不把上一轮报告复用为新草稿.
 
-任一轴启动前绑定完整审查版本, Git 对象和临时副本保持不变. 源工作树可在授权内继续变化; 有依赖实时索引的 Commit Audit 时保持其索引和 HEAD 固定. 按 [Reviewer 机器操作](../../../docs/agents/reviewer.md#machine-operations), 通过共享独立 Codex App Server 并行运行需要新判断的轴. `input.role` 分别为 `code-standards-reviewer` 和 `code-spec-reviewer`; `handoff` 交接该轴完整输入, 后续再按公共复审规则交接自身前轮材料, `reportPath` 使用准确 `resultPath`. Main Agent 提供完整绑定角色与公共指令, 受审仓库 `cwd` 和获准临时写入范围, 模型设置及读写路径遵循共同入口. 首次不继承父会话, 不发送作者讨论, 隐藏推理或倾向性结论. Reviewer 独自完成当前判断并亲自写完整报告, 并行修改不替换本轮版本或自动授权新候选.
+按 `reviewer-launch` Skill 固定版本并并行启动需要新判断的轴, `reportPath` 使用准确 `resultPath`. 并行修改不替换本轮版本或自动授权新候选.
 
 每次调用接收:
 

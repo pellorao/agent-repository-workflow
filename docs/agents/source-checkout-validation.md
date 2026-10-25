@@ -56,7 +56,7 @@ Release Candidate Process Seam 覆盖通过公开 Interface 提供确定性的�
 
 ## Source Checkout validation commands
 
-完成前取得以下全部必要源码仓库验证的当前有效结果. 实施期间先进行相关定向检查, 独立命令按[验证版本和复用规则](validation.md#validation-versions-and-reuse)并行或复用, 列表顺序不构成命令间依赖. 实际需要某个产物或当前主仓库来源时保留该依赖和准确版本核对.
+完成前取得以下全部必要源码仓库验证的当前有效结果. 实施期间先进行相关定向检查, 独立命令按[验证版本和复用规则](../../.agents/skills/validation/SKILL.md#reuse-and-parallel-runs)并行或复用, 列表顺序不构成命令间依赖. 实际需要某个产物或当前主仓库来源时保留该依赖和准确版本核对.
 
 - `pnpm typecheck` - 运行完整的严格 JavaScript 检查, 不输出文件.
 - `pnpm test` - 运行完整 Node.js 内置测试套件, 隐藏成功条目, 保留测试日志, 失败诊断和完整最终统计. 需要逐项结果时改用 `pnpm test:verbose`, 无需重复运行两种模式; 两种模式都不自动保存日志.

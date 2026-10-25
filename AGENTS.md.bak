@@ -47,22 +47,21 @@ Subagent 只写 Main Agent 分配的范围, Git 写入只由与用户沟通的 M
 
 ## Workflow Triggers
 
-行动前使用每个匹配的条目, 并遵循所指文档中的条件性交接规则.
+行动前使用每个匹配的条目, 并遵循所指 Skill 或文档中的条件性交接规则.
 
-- 构建, 修复, 修改或完成仓库交付内容前, 使用 `implement` Skill.
-- 开始多步实施, 调研或文档编写任务前, 以及委派工作或创建 subagent 前, 读取 `docs/agents/subagent-allocation.md`.
-- 更改已跟踪文件前, 读取 `docs/agents/issue-gate.md`.
-- 实现前, 读取 `docs/agents/spec-readiness.md`, 按其规定安排就绪审核与最终授权检查.
-- 更改行为, 测试或运行验证前, 读取 `docs/agents/validation.md`.
-- 用户要求清理低价值测试时, 读取 `docs/agents/test-value-cleanup.md`.
+- 更改已跟踪文件, 或构建, 修复, 修改, 完成仓库交付内容前: `implement` Skill (Entry 确认授权 issue).
+- 实现前安排就绪审核与最终授权检查: `spec-readiness` Skill.
+- 更改行为, 测试或运行验证前: `validation` Skill; 创建或语义修改测试案例后测量耗时: `test-performance-optimization` Skill; 用户要求清理低价值测试: `test-value-cleanup` Skill.
+- 处理 issue, map, spec 或其工作流字段前, 以及报告 issue 完成前: `issue-tracking` Skill.
+- 启动或控制独立 Reviewer 前: `reviewer-launch` Skill.
+- 用户请求 Git 提交后, 在提交验证或提交前: `commit` Skill.
+- 修改 Agent 指令或保存持久设计或治理的文档前: `rule-and-design-changes` Skill.
+- 探索不熟悉的领域, 命名持久领域概念或决定架构边界前: `domain-modeling` Skill.
+- 处理 ARW 命令和仓库发现时: `arw-commands` Skill; Code Map 适用时: `code-maps` Skill.
+- 开始多步任务, 委派工作或创建 subagent 前, 读取 `docs/agents/subagent-allocation.md`.
 - 创建或重命名文件或目录, 或编写仓库文本前, 读取 `docs/agents/writing.md`.
 - 创建临时文件或目录前, 读取 `docs/agents/environment.md`.
-- 处理 issue, map, spec 或其工作流字段前, 以及报告 issue 完成前, 读取 `docs/agents/issue-tracker.md`.
 - 接受或处理负责识别问题的 subagent 所提供的问题前, 读取 `docs/agents/subagent-findings.md`.
-- 修改 Agent 指令或保存持久设计或治理的文档前, 读取 `docs/agents/rule-and-design-changes.md`.
-- 探索不熟悉的领域, 命名持久领域概念或决定架构边界前, 读取 `docs/agents/domain.md`.
-- 用户请求 Git 提交后, 在提交验证或提交前读取 `docs/agents/commits.md`.
-- 处理 ARW 命令和仓库发现时, 读取 `docs/agents/arw-operations.md`.
 
 Code Map roots: (none)
 <!-- arw:managed:end -->
@@ -85,9 +84,20 @@ ARW Artifact 操作使用最近的 Git 仓库中的 `.scratch`.
 - 重要决策先由一个智能水平和推理强度不低于 Main Agent 的独立 Agent 分析, Main Agent 综合双方意见后执行. 双方仍拿不准的, 写成自成一体的待决定事项 (背景, 选项, 建议) 列入状态页 `decide`, 先推进不依赖它的其他待办.
 - `Efficiency First` 中要求交用户决定或取得同意的事项 (投入产出比, 稳健性复杂度, 体积超出预算), 同样列入 `decide` 后继续其他工作.
 - 状态页由用户级配置定义. 当前环境没有状态页时, 按 `Important Decisions` 交用户决定.
+- 作为 `rule-and-design-changes` Skill 的 Baseline 例外, 本仓库的 Agent 指令和设计文档修改不逐处预先确认, 由用户按 ticket 在状态页复核整体 diff.
+
+# Source Checkout Validation
+
+- 测试命令: `pnpm test`, `pnpm typecheck`, `node scripts/check-workflow-distribution.mjs`. 确定性覆盖和完整验证命令见 `docs/agents/source-checkout-validation.md`; 定向或发布 Reviewer Capability Conformance 见 `docs/agents/reviewer-capability-validation.md`; 发布流程或共享虚拟机交接见 `docs/agents/source-checkout-release-validation.md`.
+- 单个测试回调耗时阈值为 100 毫秒.
+- 非发布流程不判断 `distribution/**` 中分发副本的语言结果; 发布流程仍检查候选分发文档.
+- 不对本仓库运行 `arw workflow init|update|verify|remove`; 它是 Workflow Distribution 的创作源. Source Checkout 验证使用 Workflow Distribution 的生产检查, Repository Workflow 验证使用隔离的目标仓库.
+- 安装: `node install.mjs` (相关 issue 授权时从克隆安装), 卸载: 在安装目录运行 `node uninstall.mjs`.
 
 # Source Checkout Workflow Triggers
 
+- 处理 Source Checkout 治理引用迁移例外, 迁移规则或发布验证生命周期时, 读取 `docs/agents/source-checkout-issue-workflow.md`.
+- 进行定向 Reviewer 优化, 发布验证修复, 修改 `tests/fixtures/reviewer-capability/**` 或在发布验证中执行 Post-init Handoff 前, 读取 `docs/agents/source-checkout-exceptions.md`.
 - 在 ARW 源码仓库中准备, 审查, 批准, 最终写入, 恢复或中止 Upstream Sync 前, 读取 `docs/agents/upstream-sync.md`, 并遵循其中只适用于源码仓库的交接规则.
 - 研究, 更改或批准受支持的 Agent 平台标准, Skill Package Grammar, Projection Definition, 运行时绑定, 保留身份, 优先级规则或精确输出基准前, 读取 `docs/agents/platform-standards.md`.
 <!-- arw:repository-owned:end -->

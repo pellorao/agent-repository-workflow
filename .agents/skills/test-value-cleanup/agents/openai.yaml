@@ -1,0 +1,5 @@
+interface:
+  display_name: "Test Value Cleanup"
+  short_description: "Remove low-value tests on request"
+policy:
+  allow_implicit_invocation: true

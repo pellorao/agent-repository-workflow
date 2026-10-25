@@ -23,7 +23,7 @@
 - 现有实例的上下文已经混杂或过长.
 - 工作确实需要并行执行.
 
-独立 Reviewer 的身份, 初始上下文隔离和原线程复用遵循 [Reviewer 会话操作规则](reviewer.md#machine-operations), 结论有效性遵循 [Reviewer 报告交接规则](reviewer.md#review-handoff).
+独立 Reviewer 的身份, 初始上下文隔离和原线程复用遵循 `reviewer-launch` Skill, 结论有效性遵循 [Reviewer 报告交接规则](reviewer.md#review-handoff).
 
 subagent 可以向所属运行环境的 Main Agent 申请协作者, 不自行创建下级实例. 该 Main Agent 提供获分配实例的标识和任务关系, 使双方可以直接沟通.
 
@@ -53,7 +53,7 @@ subagent 可以向所属运行环境的 Main Agent 申请协作者, 不自行创
 
 缺少仓库配置时, 所属运行环境的 Main Agent 调查当前可用的主流模型及其支持的推理强度, 拟定智力到模型, 努力到所选模型推理强度的映射. 提交方案前可以询问用户偏好. 该调查由创建非预定义 subagent 前的配置检查触发, 由所属运行环境的 Main Agent 完成.
 
-向用户提交具体模型及其低, 中, 高努力档位的推理强度. 用户批准后, 将这些配置写入本文件的 repository owned 区域, 然后继续创建原定的 subagent. 审批前不使用候选映射. 当前创建 Interface 不能逐次设置 Fast, 因此本规则不把 Fast 状态作为可配置映射或创建承诺.
+向用户提交具体模型及其低, 中, 高努力档位的推理强度. 用户批准后, 将这些配置写入本文件的 repository owned 区域, 然后继续创建原定的 subagent. 审批前不使用候选映射. Codex 的创建 Interface 不能逐次设置 Fast, 因此本规则不把 Fast 状态作为可配置映射或创建承诺; Claude Code 通过 Agent 工具的 `model` 和 `effort` 参数传递所选映射.
 <!-- arw:managed:end -->
 <!-- arw:repository-owned:start -->
 ## Repository model mapping

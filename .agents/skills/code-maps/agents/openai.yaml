@@ -1,0 +1,5 @@
+interface:
+  display_name: "Code Maps"
+  short_description: "Maintain configured Code Map READMEs"
+policy:
+  allow_implicit_invocation: true

@@ -15,7 +15,7 @@
 
 新文件以写入前不存在为恢复起点, 所属运行环境的 Main Agent 在已有授权内明确允许创建的路径范围. 只有确实无法先暂存再工作时才允许保存副本作为例外. 恢复能力不得依赖承担任务的 Agent 没有犯错.
 
-受保护文档的比较准备和用户批准遵循 [规则和设计更改](rule-and-design-changes.md). 其专门审批范围不因本规则适用于所有文件而扩大. 基线准备不自行授予暂存, 提交, 删除或丢弃修改的权限.
+受保护文档的用户确认遵循 `rule-and-design-changes` Skill. 其专门确认范围不因本规则适用于所有文件而扩大. 基线准备不自行授予暂存, 提交, 删除或丢弃修改的权限.
 
 ## Assign and hand off
 
@@ -39,7 +39,7 @@
 
 承担任务的 Agent 完成范围内交付和定向验证, 向所属运行环境的 Main Agent 返回修改结果, 验证证据及未解决的问题. 所属运行环境的 Main Agent 核对子 Agent 交付的结果; 与用户沟通的 Main Agent 组织最终集成验证, 管理正式完成记录和状态, 并按适用工作流组织实施前与提交前审查.
 
-独立 Reviewer 的结果由与用户沟通的 Main Agent 按 [Subagent 问题处理](subagent-findings.md) 独立核对, 完成必要的用户决定后再分派修复. 交接前重新确认范围和基线. 实现者不组织这些审查, 不审核自己的候选内容. 提交只在用户请求后按 [提交规则](commits.md) 进行.
+独立 Reviewer 的结果由与用户沟通的 Main Agent 按 [Subagent 问题处理](subagent-findings.md) 独立核对, 完成必要的用户决定后再分派修复. 交接前重新确认范围和基线. 实现者不组织这些审查, 不审核自己的候选内容. 提交只在用户请求后按 `commit` Skill 进行.
 <!-- arw:managed:end -->
 <!-- arw:repository-owned:start -->
 None.

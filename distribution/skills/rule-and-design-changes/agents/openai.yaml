@@ -1,0 +1,5 @@
+interface:
+  display_name: "Rule and Design Changes"
+  short_description: "Confirm protected document changes first"
+policy:
+  allow_implicit_invocation: true

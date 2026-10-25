@@ -4,13 +4,13 @@ Commit Audit 的 Gate 1 和 Gate 2 判断完整交付是否满足正式要求. �
 
 ## Decision
 
-Gate 1 和 Gate 2 在通用提交工作流判定 Commit Audit 适用后运行; 准确调用条件只由[提交工作流](../agents/commits.md#implementation-issue-commit-workflow)拥有. Main Agent 准备完整候选, 按 `code-review` Skill Package 的实际输入有效性规则复用已有完整 Gate 3 结果, 或安排必要的 Code Standards 与 Code Spec 双轴审核. 当前有效 Spec Readiness, 必要实施验证及真实完整的最终候选齐备后, 两个代码审核轴和适用 Commit Audit 可以对同一候选并行, 实际验收要求另一审核完成事实时仍保留依赖. 有效就绪结果的检查时点由[设计就绪工作流](../agents/spec-readiness.md#authorization-timing)拥有, 运行中结果不作为通过. 审查候选不包含本次 Gate 1 或 Gate 2 输出.
+Gate 1 和 Gate 2 在通用提交工作流判定 Commit Audit 适用后运行; 准确调用条件只由[提交工作流](../../.agents/skills/commit/SKILL.md#implementation-issue-commit-workflow)拥有. Main Agent 准备完整候选, 按 `code-review` Skill Package 的实际输入有效性规则复用已有完整 Gate 3 结果, 或安排必要的 Code Standards 与 Code Spec 双轴审核. 当前有效 Spec Readiness, 必要实施验证及真实完整的最终候选齐备后, 两个代码审核轴和适用 Commit Audit 可以对同一候选并行, 实际验收要求另一审核完成事实时仍保留依赖. 有效就绪结果的检查时点由[设计就绪工作流](../../.agents/skills/spec-readiness/SKILL.md#authorization-timing)拥有, 运行中结果不作为通过. 审查候选不包含本次 Gate 1 或 Gate 2 输出.
 
 需要新审核时, Reviewer 一旦核实问题就写入结果文件. Main Agent 可按需读取并独立核对, 并处理已授权修复或请求必要决定; 两个审核轴仍各自返回完整结果. Main Agent 按 [ADR 0013](0013-use-main-agent-single-writer-orchestration.md) 协调实现和修复, 负责暂存, Reviewer 调用, 结论检查和文件提升, 但不负责独立审核结论.
 
 Validation 与 Comments 的整章记录身份由[产品记录合同](../specs/agent-repository-workflow/spec.md#implementation-records)拥有. Gate 1 的要求来自正式交付要求与验收条件, 两个记录章节不产生要求或授权例外, 内容变化本身不触发语义复审. Main Agent 仍核对实际证据, 新失败及相反证据, 并负责准确的记录差异和最终证据定位检查. 这不豁免正式要求, 整份 issue 或其他完整治理输入, 也不解除真实验收依赖.
 
-Commit Audit 适用时, Main Agent 按[当前仓库的审计版本规则](../agents/commits.md#exclusive-commit-audit)固定完整实时索引, HEAD, 候选范围, 关联上下文, 治理输入及执行规则, 再为本次唯一 effort 提供完整排序的 `authorizingIssueIds`, 准备独立 Reviewer Request, 并调用 `commit-audit-reviewer`. 旧轮完整结束前这些输入保持不变, 同一仓库不执行另一提交. 固定版本的其他审核及已授权源工作树工作可以继续, 包括本候选已经获准的修复; 新字节不流入旧轮, 旧轮完整结束后才暂存新实现并交接替代版本.
+Commit Audit 适用时, Main Agent 按[当前仓库的审计版本规则](../../.agents/skills/commit/SKILL.md#exclusive-commit-audit)固定完整实时索引, HEAD, 候选范围, 关联上下文, 治理输入及执行规则, 再为本次唯一 effort 提供完整排序的 `authorizingIssueIds`, 准备独立 Reviewer Request, 并调用 `commit-audit-reviewer`. 旧轮完整结束前这些输入保持不变, 同一仓库不执行另一提交. 固定版本的其他审核及已授权源工作树工作可以继续, 包括本候选已经获准的修复; 新字节不流入旧轮, 旧轮完整结束后才暂存新实现并交接替代版本.
 
 `authorizingIssueIds` 表示已暂存实现的完整 issue 授权范围. `gate1` 只表示本次提交实际适用 Gate 1 的子集. 未完成 issue 可以授权中间提交而不进入 Gate 1. Engine 从实时已暂存索引推导机械可见终态转换并拒绝授权或 Gate 1 遗漏, Reviewer 复核 Git 无法证明的仅代码候选, 重新打开后再次完成的历史, 以及任意代码与 issue 的语义关系.
 

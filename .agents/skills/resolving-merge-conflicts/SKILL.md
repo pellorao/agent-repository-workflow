@@ -11,4 +11,4 @@ name: resolving-merge-conflicts
 
 4. Discover the project's **automated checks** and run them — typically typecheck, then tests, then format. Fix anything the merge broke.
 
-5. **Hand off Git writes.** If you are a subagent, report the resolved paths, checks, and remaining conflict state to the Main Agent. The Main Agent stages only the authorized paths under `docs/agents/agent-writes.md`. Merge or rebase continuation can create a commit, so the Main Agent handles it under the applicable Git authorization. Enter the commit workflow in `docs/agents/commits.md` only after the user explicitly requests a Git commit.
+5. **Hand off Git writes.** If you are a subagent, report the resolved paths, checks, and remaining conflict state to the Main Agent. The Main Agent stages only the authorized paths under `docs/agents/agent-writes.md`. Merge or rebase continuation can create a commit, so the Main Agent handles it under the applicable Git authorization. Enter the `commit` Skill workflow only after the user explicitly requests a Git commit.

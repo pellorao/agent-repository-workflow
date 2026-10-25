@@ -35,9 +35,9 @@ const requireProjection = result => {
 test('Application workflow Skill projects explicit-only metadata through one configured Platform Adapter', async () => {
     const payload = await readSkillPayload();
     payload.push({bytes: await readFile(join(repositoryRoot, 'distribution/projections/codex/config.toml')), path: 'projections/codex/config.toml'});
-    const issueTrackerBytes = await readFile(join(repositoryRoot, 'docs', 'agents', 'issue-tracker.md'));
+    const issueTrackerBytes = await readFile(join(repositoryRoot, 'docs', 'agents', 'environment.md'));
     payload.push({bytes: await readFile(join(repositoryRoot, 'AGENTS.md')), path: 'baseline/AGENTS.md'});
-    payload.push({bytes: issueTrackerBytes, path: 'baseline/docs/agents/issue-tracker.md'});
+    payload.push({bytes: issueTrackerBytes, path: 'baseline/docs/agents/environment.md'});
     const projectionConfig = JSON.parse(await readFile(join(repositoryRoot, 'distribution', 'projections', 'config.json'), 'utf8'));
     const profile = {
         codeMaps: {excludes: [], includes: [], roots: []},
@@ -71,7 +71,7 @@ test('Application workflow Skill projects explicit-only metadata through one con
         'references/synchronization.md',
     ]);
     for (const targets of [codex, claude]) {
-        const issueTracker = targets.find(entry => entry.path === 'docs/agents/issue-tracker.md');
+        const issueTracker = targets.find(entry => entry.path === 'docs/agents/environment.md');
         assert.ok(issueTracker);
         assert.deepEqual(issueTracker.bytes, issueTrackerBytes);
     }

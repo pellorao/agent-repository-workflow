@@ -1,0 +1,5 @@
+interface:
+  display_name: "Issue Tracking"
+  short_description: "Read and update local tracker artifacts"
+policy:
+  allow_implicit_invocation: true

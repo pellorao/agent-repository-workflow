@@ -1,48 +1,40 @@
 ---
-description: "根据一个 implementation issue 及其适用规范构建, 修复, 修改或完成仓库交付内容. 当用户要求实际改变代码, 测试或文档时使用. 只读诊断, 审查, 研究, grilling 和规划不触发."
+description: "根据一个 implementation issue 及其适用规范构建, 修复, 修改或完成仓库交付内容. 当用户要求实际改变代码, 测试或文档时使用; 任何已跟踪文件修改 (包括 Wayfinder issue 处理和初始规划记录) 前也用其 Entry 确认授权. 只读诊断, 审查, 研究和 grilling 不触发."
 name: implement
 ---
 
 # 实施
 
-这是仓库实施工作的统一入口. 各专用治理文档保留所属阶段的详细契约. 完整流程按以下顺序推进, 当前阶段满足进入下一阶段的条件后才继续:
+先对照根 `AGENTS.md` 的效率与精简最高原则: 用最少的时间, token 和代码只交付当前验收标准要求的内容, 先删后加, 不为推测性的稳健性扩大范围.
 
-1. 按 [Entry](#entry) 确认实施授权, 读取完整上下文, 并确定工作何时可以开始.
-2. 按 [Preparation](#preparation) 建立恢复基线, 分配写入范围, 并选择适用规则.
-3. 按 [Implementation](#implementation) 完成已授权的交付内容.
-4. 按 [Validation](#validation) 验证已经完成的实施结果.
-5. 按 [Completion](#completion) 检查验收条件, 记录证据, 并处理后续状态.
+按 Entry, Preparation, Implementation, Validation, Completion 顺序推进. 某个阶段的条件失效时, 回到拥有该条件的阶段.
 
 ## Entry
 
-1. 按 [Issue Gate](../../../docs/agents/issue-gate.md) 找到并检查授权本次实施的一个 issue.
-2. 完整读取该 issue, 以及它所属 effort 下的 spec (如果存在).
-3. 新 Agent 接手, 中断后恢复实施, 或 effort spec 的任何字节发生变化时, 重新完整读取第 2 步要求的文档.
-4. 按 [设计就绪工作流](../../../docs/agents/spec-readiness.md)安排独立审核, 并识别需要有效结果的最终授权时点.
-5. 任务授权, 已确认设计, 实际前置工作和必要的用户决定都满足后, 进入 [Preparation](#preparation). 就绪审核尚未通过时, 按其工作流开展不依赖该结果的已授权实施. 运行中的审核不代表已经通过, 源设计变化也不使旧结论取得新版本的效力.
+1. 找到授权本次工作的 issue. 先使用对话中已识别的路径或 ID, 解析为 `.scratch/<NNNN>-<effort-slug>/issues/<NN>-<issue-slug>.md`, 并核对它仍与所请求的工作匹配; 否则搜索当前仓库的全部 issue. 没有匹配或存在多个合理匹配时请用户指定, 不代替用户选择或创建实施范围.
+2. 按 `issue-tracking` Skill 确认文件结构与记录类型, 再按类型判断授权:
+   - 实施 issue 只有直接覆盖所请求范围, 使用 `Status: ready-for-agent`, 且每个阻断项都已达到适用终态时, 才授权更改已跟踪文件. `Status: ready-for-human` 不授权 Agent 实施.
+   - Application Source Issue 永远不授权本地实施; 关联和同步内容只由 Application 和 JIRA 工作流修改.
+   - Wayfinder issue 以 `Status: claimed` 领取, 且每个阻断项都是 `Status: resolved` 后, 才授权处理其中记录的问题. `claimed` 和 `resolved` 不是实施 issue 状态.
+   - 初始规划记录授权只允许创建或更新其治理 Skill 授权的规划产物, 不授权生产代码, 测试或无关文档.
+3. 完成 issue 所必需, 且不增加行为, 规则, 公开合同或架构决定的机械性配套修改可以留在本 issue 内. 其他新要求先通过 issue 工作流记录并取得授权, 不默默扩大 issue.
+4. 完整读取 issue 及其 effort spec (如存在). 新 Agent 接手, 中断后恢复, 或 spec 任何字节变化时, 重新完整读取.
+5. 按 `spec-readiness` Skill 安排就绪审核.
 
 ## Preparation
 
-1. 按 [Subagent 分配](../../../docs/agents/subagent-allocation.md) 决定实施分工和交接.
-2. 按 [Agent 文件写入](../../../docs/agents/agent-writes.md) 准备恢复基线和准确的写入范围.
-3. 根据实际行动使用 `AGENTS.md` 中所有匹配的 Workflow Trigger, 并遵循它们指向的详细契约.
-4. 存在未解决的重要决定时, 按 `AGENTS.md` 的 Important Decisions 处理, 不进入下一阶段.
-5. 实施分工, 写入范围, 恢复基线, 适用规则和重要决定都已经处理后, 进入 [Implementation](#implementation).
+1. 按 `docs/agents/subagent-allocation.md` 决定分工, 按 `docs/agents/agent-writes.md` 准备恢复基线和准确的写入范围.
+2. 应用根 `AGENTS.md` 中所有匹配的 Workflow Trigger. 存在未解决的重要决定时, 按 `Important Decisions` 处理后才继续.
 
 ## Implementation
 
-1. 完成 issue 授权的交付内容. 适用时使用 `$tdd`.
-2. 任务授权或实施上下文失效时返回 [Entry](#entry). 分工, 写入范围或其他准备条件变化时返回 [Preparation](#preparation). 就绪结果因内容变化失效时, 按设计就绪工作流刷新最终版本的审核, 不把它当作无关实施自动失去授权.
-3. 交付内容完成且没有阻止验证的问题时, 进入 [Validation](#validation).
+完成 issue 授权的交付内容, 适用时使用 `$tdd`. 授权或上下文失效时回到 Entry, 分工或写入范围变化时回到 Preparation.
 
 ## Validation
 
-1. 按 [Validation](../../../docs/agents/validation.md) 验证已经完成的实施结果.
-2. 验证要求的修复需要重新授权时, 返回 [Entry](#entry). 需要重新准备时, 返回 [Preparation](#preparation). 授权和准备仍然有效, 但需要修改交付内容时, 返回 [Implementation](#implementation).
-3. 其他验证尚未成功或证据不足时, 留在 Validation, 并重新执行受影响的验证. 全部必要验证成功后, 进入 [Completion](#completion).
+按 `validation` Skill 验证已完成的结果. 修复需要新授权时回到 Entry, 需要重新准备时回到 Preparation, 只需修改交付内容时回到 Implementation.
 
 ## Completion
 
-1. 先按设计就绪工作流核对最终当前内容的有效结果, 再按 [任务跟踪规则](../../../docs/agents/issue-tracker.md)检查验收条件, 记录完成证据并更新任务状态. 就绪结果缺失或无效时, 保留尚未完成的状态, 不把代码实现或测试成功作为设计审核通过的替代依据.
-2. 交付内容不满足验收条件时, 返回 [Implementation](#implementation). 必要验证或验证证据不完整时, 返回 [Validation](#validation). 授权失效时, 返回 [Entry](#entry). 准备条件失效时, 返回 [Preparation](#preparation).
-3. 验收条件已经满足, 必要验证已经成功, 且第 1 步的记录和状态更新已经完成后, 实施流程结束.
+1. 按 `spec-readiness` Skill 核对最终内容的有效就绪结果, 再按 `issue-tracking` Skill 检查验收条件, 记录完成证据并更新状态.
+2. 验收条件满足, 必要验证成功, 记录和状态已更新后, 实施流程结束. Git 提交只在用户请求后按 `commit` Skill 进行.

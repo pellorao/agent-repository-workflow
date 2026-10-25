@@ -73,7 +73,7 @@ Code Standards, Code Spec, Spec Readiness 和 Commit Audit 的定向优化都由
 
 ## Targeted Spec Readiness exception
 
-Source Checkout 使用 `docs/agents/spec-readiness.md` 中的定向 Reviewer 优化例外时, 先完成用户批准的修改批次, 然后根据本节运行该迭代的确定性, 语法, 文本和实时能力验证. 不得在已批准批次和定向验证之间插入另一次普通的仓库 Spec Readiness 周期.
+Source Checkout 使用 `docs/agents/source-checkout-exceptions.md` 中的定向 Reviewer 优化例外时, 先完成用户批准的修改批次, 然后根据本节运行该迭代的确定性, 语法, 文本和实时能力验证. 不得在已批准批次和定向验证之间插入另一次普通的仓库 Spec Readiness 周期.
 
 ## Release convergence
 
