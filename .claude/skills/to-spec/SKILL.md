@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 本 Skill 把当前对话和已获得的代码库理解整理为规范, 不重新访谈用户. 编写和发布前遵循 [Subagent 分配](../../../docs/agents/subagent-allocation.md), [Agent 文件写入](../../../docs/agents/agent-writes.md) 与 [规范设计呈现](../../../docs/agents/writing.md#specification-design-presentation).
 
-创建本地实施 issue 时, 按 [Issue requirements](../../../docs/agents/issue-tracker.md#issue-requirements) 使用唯一的要求引用格式.
+创建本地实施 issue 时, 按 [Issue requirements](../issue-tracking/SKILL.md#issue-requirements) 使用唯一的要求引用格式.
 
 如果尚未提供 issue 跟踪器和分流标签词汇, 运行只读 `arw workflow verify`. 如果验证报告仓库尚未初始化, 告知用户另行运行 `arw workflow init`.
 
