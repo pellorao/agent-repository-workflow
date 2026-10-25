@@ -13,8 +13,6 @@ name: implement
 4. 按 [Validation](#validation) 验证已经完成的实施结果.
 5. 按 [Completion](#completion) 检查验收条件, 记录证据, 并处理后续状态.
 
-Main Agent 发送实施进度, 各阶段结果或交付说明时, 按[面向用户说明](../../../docs/agents/user-communication.md)表达, 当前阶段的业务进入及完成条件仍按下方规则执行.
-
 ## Entry
 
 1. 按 [Issue Gate](../../../docs/agents/issue-gate.md) 找到并检查授权本次实施的一个 issue.

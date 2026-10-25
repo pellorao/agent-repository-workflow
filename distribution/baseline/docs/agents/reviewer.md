@@ -121,7 +121,7 @@ Main Agent 为每个角色的每轮 Code Review 指定精确绝对 `resultPath`,
 
 ## Conflicts
 
-如果适用的 Agent 指令相互冲突, 停止受影响的审查, 并按照 Canonical Role 的失败行为报告冲突的确切内容. 不得根据路径, 表面上的具体程度或推定的新旧选择某项指令. 只继续不受冲突影响的独立审查工作.
+如果适用的 Agent 指令相互冲突, 停止受影响的审查, 并按照 Canonical Role 的失败行为报告冲突的确切内容. 只继续不受冲突影响的独立审查工作.
 <!-- arw:managed:end -->
 <!-- arw:repository-owned:start -->
 None.
