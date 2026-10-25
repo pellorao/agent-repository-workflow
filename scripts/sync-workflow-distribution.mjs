@@ -6,7 +6,7 @@ import {dirname, resolve} from 'node:path';
 import {loadConfig} from '../lib/arw-common/config.mjs';
 import {createScopedFilesystem} from '../lib/common/filesystem.mjs';
 import {parseJson, writeJson} from '../lib/common/json.mjs';
-import {createCodexPlatformAdapter} from '../lib/arw-common/platform-adapter.mjs';
+import {createCurrentPlatformAdapter} from '../lib/arw-common/platform-adapter.mjs';
 import {reviewSkillReferences} from '../lib/workflow-distribution/skill-reference-review.mjs';
 import {resolveTemporaryWorkspace} from '../lib/arw-common/temporary-workspace.mjs';
 import {
@@ -294,7 +294,7 @@ const presentResult = ({command, result, stderr, stdout}) => {
 export const runWorkflowDistributionSyncCli = async (/** @type {string[]} */ args, /** @type {SyncCliOptions} */ {
     configurationLoader = loadConfig,
     createFilesystem = createScopedFilesystem,
-    platformAdapter = createCodexPlatformAdapter(),
+    platformAdapter = createCurrentPlatformAdapter(),
     repositoryRoot = SOURCE_ROOT,
     review = reviewSkillReferences,
     stderr = (/** @type {string | Uint8Array<ArrayBufferLike>} */ value) => process.stderr.write(value),
