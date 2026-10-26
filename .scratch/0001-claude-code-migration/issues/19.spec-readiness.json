@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0001:19",
+  "request": {
+    "digest": "a72aee155c68ab8ec037abccd4e90abef6de9664420289869ad7a4a08e3bd75c",
+    "filePath": ".tmp/claude-code/06588b1e-7f07-4832-8933-107aaf5b5978/0001_19/spec-readiness/requests/request-24658b43-7e3d-483d-b20f-98ba47f0056f.json",
+    "id": "24658b43-7e3d-483d-b20f-98ba47f0056f"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "658f4283cabb570c22c4f8ad59eb3afc858a34bc9973c25f581ba324cd1561d3"
+  },
+  "inputs": [
+    {
+      "filePath": "docs/specs/agent-repository-workflow-installation/spec.md",
+      "role": "governing-spec",
+      "sha256": "735fad68b6bd4a9ae20c923f841a1c9cbe8d42b09b7dfec9a884a1da5e3ebeea"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow/spec.md",
+      "role": "governing-spec",
+      "sha256": "e86eee9be66ae4e2f9c761f7e8a87b33ca5686ced68ba6ea4dc91971abad6f69"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow/strata.md",
+      "role": "governing-spec",
+      "sha256": "6445d98050d23e6f1d93eef7b39d505bb4d1ad92d677550053bae68a54b2d0f0"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0001-claude-code-migration/issues/19-cleanup.md",
+    "sha256": "ff6e4c1c9d59b4496881d558d94cd3267dc19f7b3ea85cc1d15a0c1dfcd971fc"
+  },
+  "result": "satisfied"
+}

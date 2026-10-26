@@ -71,7 +71,7 @@ Installation Payload Module 验证清单的封闭结构, 平台启动器选择, 
 
 ## Global Engine configuration
 
-每个入口读取其自然所属 Engine 目录中的 `config.json`. 不增加模式参数, 路径探测或第二套选择逻辑.
+每个入口读取其自然所属 Engine 目录中的 `config.json`. 不增加模式参数, 路径探测或第二套选择逻辑. 源码仓库入口的 Engine 目录没有 `config.json` 时, 普通读取使用同目录 `config.install.json` 的内容作为默认值, 不写配置.
 
 当前已知结构使用 `configVersion: 3`:
 

@@ -25,6 +25,19 @@ test('global configuration loads through the scoped JSON file Interface', async 
     await assert.rejects(loadConfig(join(directory, 'missing')), /could not be read/u);
 });
 
+test('a source checkout without config.json uses config.install.json as defaults', async t => {
+    const directory = await createTemporaryDirectory(t, 'arw-config-seed-');
+    await writeFile(join(directory, 'config.install.json'), `${JSON.stringify({
+        configVersion: 3,
+        editor: {args: ['{file}'], command: 'code'},
+        jira: {listLimit: 50},
+        reviewEditor: {args: ['--wait', '{file}'], command: 'code'},
+    })}\n`, 'utf8');
+
+    assert.equal((await loadConfig(directory)).jira?.listLimit, 50);
+    await assert.rejects(loadConfig(await createTemporaryDirectory(t, 'arw-config-none-')), /Configuration file not found/u);
+});
+
 test('global configuration rejects invalid UTF-8 before JSON validation', async t => {
     const directory = await createTemporaryDirectory(t, 'arw-invalid-config-');
     const prefix = Buffer.from('{"agents":{},"configVersion":3,"editor":{"args":["{file}"],"command":"', 'utf8');
