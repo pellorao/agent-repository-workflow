@@ -36,7 +36,7 @@ ARW 由 Codex 开发和维护, 现在改由 Claude Code 维护, 并且今后 ARW
 13. 作为使用者, 我希望观察 Haiku 在 Gate 2 effort 级审计中的漏报, 以便决定是否需要更强的模型.
 14. 作为维护者, 我希望 release VM 验证, Reviewer 能力一致性与 benchmark, Upstream Sync 改为只在我要求时才使用的 Skill, 由 Agent 执行并达成各自目标, 以便它们不再占用日常上下文.
 15. 作为维护者, 我希望删除重复工具函数和手写校验链, 以便代码量更小, 更容易维护.
-16. 作为维护者, 我希望每张 ticket 预估改动行数, 超出一倍时 Agent 停下说明, 以便及早发现过度设计.
+16. 作为维护者, 我希望每张 ticket 预估净增行数, 超出一倍时 Agent 停下说明, 以便及早发现过度设计.
 17. 作为维护者, 我希望 Code Standards Reviewer 专门检查可删除的代码, 以便在 Codex 和 Claude Code 中都能拦住过度设计.
 18. 作为 ARW 源码仓库维护者, 我希望本仓库用 ARW 自己的投影生成 `.claude/skills/`, 以便同时检验 Claude 投影.
 19. 作为使用者, 我希望 ARW 规则与我的用户级规则冲突时以用户级规则为准, 以便个人工作方式不被仓库规则覆盖.
@@ -74,7 +74,7 @@ ARW 由 Codex 开发和维护, 现在改由 Claude Code 维护, 并且今后 ARW
   - 代码保持直白: 只用一次的逻辑不提前抽成函数, 除非复用或封装复杂逻辑; 一个函数能写清的不拆.
   - 为推测性或极不可能的竞态, 安全极端情况增加复杂度前, 先向用户说明故障模式, 概率和复杂度成本并取得同意.
   - 先删后加.
-  - 体积预算.
+  - 体积预算: 按本任务净增行数 (新增减删除) 计, 只算为本任务所做的改动, 含被替换的旧代码; 净增为负没有问题. 与本任务无关的冗余代码删除受鼓励, 但不抵扣净增, 在交付说明 (Agent 最终报告和提交说明) 中单独列出, 能分开时单独提交. 实际净增超出预估一倍时停下说明.
 
   现有 `writing.md` 中 "最小充分合同" 一节的出口条文删除, 由此原则取代.
 
@@ -112,7 +112,7 @@ ARW 由 Codex 开发和维护, 现在改由 Claude Code 维护, 并且今后 ARW
 - Spec Readiness 只在 spec 定稿时审核一次. 不通过时修改后复审, 复审只看改动部分及其影响范围. 机械记录只保留审核对象绑定与 `verify` 校验, `verify` 在开始实施前和提交前运行.
 - 提交审核最多两个并行 Reviewer:
   - 要求符合审核: 由 Code Spec 与 Commit Audit Gate 1 合并而成, 逐条对照 issue 要求和验收标准检查实现.
-  - 代码质量审核: 即 Code Standards, 职责中增加 "指出可删除的代码": 未使用的通用性, 对内部数据的校验, 没有现实失败场景的错误处理, 改动行数超出预算.
+  - 代码质量审核: 即 Code Standards, 职责中增加 "指出可删除的代码": 未使用的通用性, 对内部数据的校验, 没有现实失败场景的错误处理, 净增行数超出预算.
 - Gate 2 effort 级审计时机不变, 在 effort 的全部实施 issue 进入终态时运行.
 - 任何复审只看改动部分及其影响范围; 未受影响的有效结论保留.
 - Reviewer 输出格式减负, 以实测而不是格式严格程度防止偷懒:
@@ -136,7 +136,7 @@ ticket 16 的要求. ticket 15 冒烟中 Main Agent 每轮审核要手工拼 `sp
 
   `prepare` 只打印轮目录绝对路径. Main Agent 运行 `cat <轮目录>/*.jsonl | arw background-agent --wait` 并行运行本轮全部 Reviewer; 只需重审其中一个时只传它的文件.
 - **Spec Readiness.** `arw spec-readiness prepare` 的 Input 只含 `inputs`, 不再含 `draftPath`. 轮目录是 issue `spec-readiness` 工作区下的 `rounds/<requestId>/`, 草稿固定为 `report/draft.txt`, 冻结的 Request 仍写在 `requests/` 下. 轮目录另有 `snapshot/` (subject 和每个 Input 快照的文件形式); 复审时 handoff 指向前轮 Request, 前轮草稿, 以及 `git diff --no-index` 生成的前后两轮 `snapshot/` 差异 `changes.diff`. `generate --input` 仍须传入该草稿路径.
-- **提交审核.** `arw commit-audit prepare --input <input.json>` 的轮目录是当前会话工作区下的 `_commit-audit/<n>/` (`n` 从 1 递增), Main Agent 修复后用同一个 `input.json` 再次运行即得到下一轮. `request.json` 增加 `base` (`HEAD` 提交) 和 `tree` (`git write-tree` 固定的已暂存树); 两个 Reviewer 都读取 `git diff <base> <tree>` 和 `git show <tree>:<path>`, 不读实时索引, 所以审核期间 Main Agent 可以继续暂存修复. Code Standards 的 handoff 列出按 `.arwignore` 和 effort `prototype/**`, `research/**` 排除后的纳入路径, 并指向授权 issue 中写明的预估改动行数. 复审的相邻版本变化是 `git diff <前轮 tree> <tree>`. 提交前 Main Agent 核对最终暂存树相对受审 `tree` 只有获准的记录差异.
+- **提交审核.** `arw commit-audit prepare --input <input.json>` 的轮目录是当前会话工作区下的 `_commit-audit/<n>/` (`n` 从 1 递增), Main Agent 修复后用同一个 `input.json` 再次运行即得到下一轮. `request.json` 增加 `base` (`HEAD` 提交) 和 `tree` (`git write-tree` 固定的已暂存树); 两个 Reviewer 都读取 `git diff <base> <tree>` 和 `git show <tree>:<path>`, 不读实时索引, 所以审核期间 Main Agent 可以继续暂存修复. Code Standards 的 handoff 列出按 `.arwignore` 和 effort `prototype/**`, `research/**` 排除后的纳入路径, 并指向授权 issue 中写明的预估净增行数. 复审的相邻版本变化是 `git diff <前轮 tree> <tree>`. 提交前 Main Agent 核对最终暂存树相对受审 `tree` 只有获准的记录差异.
 - **等到完成.** `arw background-agent --wait` 在每个 `spawn_agent` 或 `followup_task` 成功回执后, 对该运行反复 `wait_agent` 直到 `completion` 非空, 运行环境退出, 等待失败, 或等到程序产生的暂停通知 (消息来源为 `provider-program`, 即提前结束阈值暂停), 然后为该请求再输出一行 `{id: "<请求 id>:done", ok, result: {runId, state, completion, messages, providerError}}`, `messages` 是期间收集的全部发给 Main 的消息 (编号, 来源, 正文); Reviewer 自己发的问题或进度消息只收集, 不结束等待, 中途的状态变化不输出. 为此 `wait_agent` 的消息通知增加已存储的 `source` 字段. 标准输入结束后等这些行都输出才退出. `completion` 为 `null` 且 `messages` 含 `provider-program` 消息时, Main Agent 按暂停通知规则取得用户决定后用 `send_message` 或 `interrupt_agent` 处理, 再用 `wait_agent` 等待. 不加 `--wait` 时行为不变.
 - **非实施提交检查.** `arw commit-audit verify --non-implementation` 一条命令完成长期规格 "轻量提交流程" 列出的全部机械检查, 替代 `commit` Skill 非实施工作流的手工步骤: 候选非空, 已暂存路径都属于非实施分类 (只接受分类内的安全路径) 且同属一个 effort, 条目是普通文件或 gitlink (拒绝符号链接等其他模式), 没有未暂存的替代内容 (含子模块 `HEAD`), 没有实施 issue 新进入终态, 已注册 ARW Artifact 的路径与记录类型可解析, 文本是无 BOM 的 UTF-8 和 LF, `git diff --cached --check` 通过, 以及普通 `verify` 的 Artifact 身份保留; 检查前后 `git write-tree` 相同, 证明候选对象身份在检查期间不变. 输出与退出码同普通 `verify`.
 - **复审收敛.** 复审判断前轮问题是否解决, 以及本轮变化 (含其影响范围) 引入的新问题; 前轮未完成的检查继续完成. 前轮已完成且未变化, 不受影响的内容不再审核, 也不为其提出新问题, 即使前轮漏报. 准确前轮输入无法恢复或影响遍及整个适用范围时, Reviewer 写明理由后全盘复审 (长期规格 `Review versions and result validity` 不变). 代价是前轮漏报的问题可能留到提交审核或之后才被发现; 换来复审轮数收敛 (ticket 15 冒烟中 haiku 每轮对新补文字之外的旧文字提新问题).
@@ -214,11 +214,11 @@ ticket 13 冒烟后的日常使用修正, 预期结果如下:
 
 ### Module Design Rationale
 
-复用 `NativeSessions` 让管理, 恢复和计量逻辑不分平台; 每回合一个 `claude -p` 进程用会话续接代替常驻服务, 换取没有 Claude 专用生命周期代码, 代价是不支持运行中追加指令. Projection 保持单一 Skill 来源, 避免两份规则漂移. 公共工具只收被两个以上 Module 使用的函数: 替代方案是每个 Module 保留自己的副本, 已被 `Code reduction` 拒绝, 因为副本会各自漂移; 接受的成本是使用方与公共函数签名耦合, 公共函数因此只放无领域规则, 签名稳定的通用函数. 路由放在管理进程入口而不是管理 Module 或各后端内: 管理 Module 只认 `NativeSessions`, 后端彼此不知道对方; 代价是入口多一个很小的分派对象. 后端由设置而不是调用平台直接决定, 使同一配置在两个平台得到同一 Reviewer; 平台默认值只影响设置解析, 记录在 ADR-0032. 审核轮准备放在 Reviewer 运行时一侧而不是两个工作流各写一份: 两个 `prepare` 生成的请求必须满足同一 `spawn_agent` 合同和同一恢复记录位置规则, 一份实现避免两处漂移; 替代方案是新增一个统一的 `arw review` 命令, 被拒绝, 因为两个工作流的 Request 冻结和输入不同, 合并命令只会多一层分派. 代价是 `prepare` 依赖恢复记录文件格式中的四个字段.
+复用 `NativeSessions` 让管理, 恢复和计量逻辑不分平台; 每回合一个 `claude -p` 进程用会话续接代替常驻服务, 换取没有 Claude 专用生命周期代码, 代价是不支持运行中追加指令. Projection 保持单一 Skill 来源, 避免两份规则漂移. 公共工具只收被两个以上 Module 使用的函数: 替代方案是每个 Module 保留自己的副本, 已被 `Code reduction` 拒绝, 因为副本会各自漂移; 接受的成本是使用方与公共函数签名耦合, 公共函数因此只放无领域规则, 签名稳定的通用函数. 路由放在管理进程入口而不是管理 Module 或各后端内: 管理 Module 只认 `NativeSessions`, 后端彼此不知道对方; 代价是入口多一个很小的分派对象. 后端由设置而不是调用平台直接决定, 使同一配置在两个平台得到同一 Reviewer; 平台默认值只影响设置解析, 记录在 ADR-0032. 审核轮准备放在 Reviewer 运行时一侧而不是两个工作流各写一份: 两个 `prepare` 生成的请求必须满足同一 `spawn_agent` 合同和同一恢复记录位置规则, 一份实现避免两处漂移; 替代方案是新增一个统一的 `arw review` 命令, 被拒绝, 因为两个工作流的 Request 冻结和输入不同, 合并命令只会多一层分派. 代价是 `prepare` 依赖恢复记录文件格式中的四个字段. 体积预算只计本任务的净增, 不让无关的冗余删除抵扣: 替代方案是允许顺带清理抵扣, 被拒绝, 因为这会让阈值被无关清理放宽, 失去及早发现本任务过度设计的作用; 接受的成本是无关清理要单独列出, 能分开时单独提交, 多一步说明.
 
 ### ADR Evaluation
 
-Claude Code Reviewer 执行和后台管理范围由 ADR-0032 记录, 它取代 ADR-0016 的暂停决定并修订 ADR-0030 的管理范围. 其余变化不新增持久状态或权威来源, 不需要 ADR. ticket 16 的审核轮准备, `--wait` 和非实施提交检查只把 Main Agent 原先手工执行的步骤交给程序, 轮目录在临时工作区, 不新增持久状态或权威来源; 复审收敛, 提交审核读取固定 `tree` 和实施前就绪检查是规则文字层面的取舍, 改回原文字即可撤销, 不需要 ADR. `newThread: true` 改绑同身份线程是 Reviewer 运行层既有行为, 对应长期规格 "原线程不可用或不可恢复时才新建线程", 本 ticket 只把它写进 `spawn_agent` 合同, 也不需要 ADR.
+Claude Code Reviewer 执行和后台管理范围由 ADR-0032 记录, 它取代 ADR-0016 的暂停决定并修订 ADR-0030 的管理范围. 其余变化不新增持久状态或权威来源, 不需要 ADR. ticket 16 的审核轮准备, `--wait` 和非实施提交检查只把 Main Agent 原先手工执行的步骤交给程序, 轮目录在临时工作区, 不新增持久状态或权威来源; 复审收敛, 提交审核读取固定 `tree` 和实施前就绪检查是规则文字层面的取舍, 改回原文字即可撤销, 不需要 ADR; 体积预算的净增口径 (无关删除不抵扣) 同属规则文字层面的取舍, 不新增持久状态或权威来源, 改回原文字即可撤销, 不需要 ADR. `newThread: true` 改绑同身份线程是 Reviewer 运行层既有行为, 对应长期规格 "原线程不可用或不可恢复时才新建线程", 本 ticket 只把它写进 `spawn_agent` 合同, 也不需要 ADR.
 
 ## Testing Decisions
 
