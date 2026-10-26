@@ -12,6 +12,7 @@ ticket 15 冒烟和审计发现的小问题:
 - `arw lba` 的 Main 标题取到注入的 "# AGENTS.md instructions for …": 跳过注入指令, 从用户消息取标题.
 - 从源码运行需要手放 `config.json`: 源码运行时缺省使用默认值.
 - ticket 10, 11 的 Status 与勾选不一致.
+- ARW 管理进程中写死的 Strata 窗口 156584 和压缩点 100000 (`lib/background-agent/strata-models.mjs`, `strata-work-policy.mjs`) 改为 206584 / 150000, 与 `qwen_strata` 2026-10-24 定的部署默认档一致 (用户 2026-10-26 确认).
 
 预估改动: 约 60 行.
 
