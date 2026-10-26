@@ -253,7 +253,7 @@ export const createScriptedReviewerSessions = () => {
                     return {accepted: true};
                 },
                 async readThreadMetadata({threadId}) {
-                    return {title: null, preview: `First user message for ${threadId}`, sessionPath: required(threadId).sessionPath};
+                    return {title: null, sessionPath: required(threadId).sessionPath};
                 },
                 async idleFacts({rootThreadId}) {
                     await idleBehaviors.get(rootThreadId)?.();

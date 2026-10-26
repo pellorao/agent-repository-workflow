@@ -75,7 +75,7 @@ function nativeHarness({blockedStart=false,unsafeIdle=false,failStart=false,inco
           clientRequests:[],publicMessages:[],userMessages:[]};},
         async respond(){return{accepted:true};},
         async rejectRequest(){return{accepted:true};},
-        async readThreadMetadata({threadId}){return{title:null,preview:'',sessionPath:`/native/${threadId}.jsonl`};},
+        async readThreadMetadata({threadId}){return{title:null,sessionPath:`/native/${threadId}.jsonl`};},
         async idleFacts(){return{safe:!unsafeIdle,known:!unsafeIdle,reason:unsafeIdle?'active tool':null};},
         async cleanupTurnTerminals(){throw new Error('The fake native session has no background terminals.');},
         async interruptGroup(){return{accepted:true};},
@@ -1004,6 +1004,28 @@ test('cold recovery preserves paused work and advances past the saved message cu
   const current=restored.owned(stored.runId,'main-1','main-1');
   for(const [key,value] of Object.entries({...stored,state:'exited',stateVersion:21}))
     assert.deepEqual(/** @type {Record<string,unknown>} */(current)[key],value,key);
+  await restored.close();
+});
+
+test('cold startup checks each Claude run by its own turn process instead of the shared App Server',async t=>{
+  const fake=await harness(t,{maxInstances:4});
+  const claudeSettings={...settings,modelProvider:'anthropic'};
+  for(const name of ['idle','orphan'])fake.stateStore.upsertAgent({runId:name,ownerId:'main-1',role:'generic',ownerTitle:null,ownerSessionPath:null,
+    threadId:`${name}-thread`,turnId:'turn',sessionPath:`/native/${name}.jsonl`,settings:claudeSettings,cwd:fake.directory,readPaths:[],writePaths:[],
+    instructions:'instructions',recoveryPath:null,state:name==='idle'?'idle':'running',taskState:name==='idle'?'ended':'working',stateVersion:1,
+    lastUsedAtMs:1000,taskStartedAtMs:900,taskFinishedAtMs:null,knownThreadIds:[`${name}-thread`],providerWork:null});
+  await fake.manager.close();
+  let unresolved=['orphan-thread'];
+  const nativeSessions={...fake.native.nativeSessions,unresolvedProcesses:async()=>unresolved,async close(){
+    return {environmentState:/** @type {const} */('exited'),previousProcessState:/** @type {const} */('absent')};}};
+  const restored=await createBackgroundAgentManager({nativeSessions,maxInstances:4,
+    stateStore:createBackgroundAgentStateStore({runtimeDirectory:fake.directory,clock:fake.clock}),clock:fake.clock});
+  assert.equal(restored.owned('idle','main-1','main-1').state,'exited');
+  assert.equal(restored.owned('orphan','main-1','main-1').state,'unknown');
+  unresolved=[];
+  assert.equal((await restored.execute({ownerId:'main-1',controllerId:'main-1',operation:'spawn_agent',input:{
+    role:'generic',settings,cwd:fake.directory,stateDirectory:fake.directory,readPaths:[],writePaths:[],instructions:'instructions',handoff:'new work'}})).status,'succeeded');
+  assert.equal(restored.owned('orphan','main-1','main-1').state,'exited');
   await restored.close();
 });
 

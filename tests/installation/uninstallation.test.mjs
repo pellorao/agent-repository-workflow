@@ -905,6 +905,7 @@ test('installed uninstall command executes through the real CLI entry point', as
             'lib/arw-common/identity.mjs',
             'lib/arw-common/installation-manifest.mjs',
             'lib/arw-common/product-identity.mjs',
+            'lib/background-agent/claude-provider.mjs',
             'lib/background-agent/client.mjs',
             'lib/background-agent/manager-process.mjs',
             'lib/background-agent/message-store.mjs',
@@ -929,6 +930,7 @@ test('installed uninstall command executes through the real CLI entry point', as
     await copyFile(join(SOURCE_DIRECTORY, 'lib', 'arw-common', 'installation-manifest.mjs'), join(installationDirectory, 'lib', 'arw-common', 'installation-manifest.mjs'));
     await copyFile(join(SOURCE_DIRECTORY, 'lib', 'arw-common', 'product-identity.mjs'), join(installationDirectory, 'lib', 'arw-common', 'product-identity.mjs'));
     await mkdir(join(installationDirectory, 'lib', 'background-agent'), {recursive: true});
+    await copyFile(join(SOURCE_DIRECTORY, 'lib', 'background-agent', 'claude-provider.mjs'), join(installationDirectory, 'lib', 'background-agent', 'claude-provider.mjs'));
     await copyFile(join(SOURCE_DIRECTORY, 'lib', 'background-agent', 'client.mjs'), join(installationDirectory, 'lib', 'background-agent', 'client.mjs'));
     await copyFile(join(SOURCE_DIRECTORY, 'lib', 'background-agent', 'manager-process.mjs'), join(installationDirectory, 'lib', 'background-agent', 'manager-process.mjs'));
     await copyFile(join(SOURCE_DIRECTORY, 'lib', 'background-agent', 'message-store.mjs'), join(installationDirectory, 'lib', 'background-agent', 'message-store.mjs'));

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {mkdtemp,rm,writeFile} from 'node:fs/promises';
+import {chmod,mkdtemp,rm,writeFile} from 'node:fs/promises';
 import {createServer} from 'node:net';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
@@ -134,4 +134,13 @@ test('a refused connection cannot restart the ordinary request budget',async t=>
     await assert.rejects(client.execute({operation:'list_agents',input:{}}),/timed out before delivery/);
     assert.equal(launches,1);
   }finally{await client.close();await rm(runtimeDirectory,{recursive:true,force:true});}
+});
+
+test('a manager launch that cannot write its state asks for a rerun outside the sandbox',async()=>{
+  const parent=await mkdtemp(join(tmpdir(),'arw-background-agent-sandbox-'));
+  await chmod(parent,0o500);
+  const client=createBackgroundAgentClient({runtimeDirectory:join(parent,'runtime'),entryPoint:'/unused-entry.mjs'});
+  try {
+    await assert.rejects(client.execute({operation:'list_agents',input:{}}),/blocked by the sandbox\. Rerun this same command with escalated permissions/);
+  }finally{await client.close();await chmod(parent,0o700);await rm(parent,{recursive:true,force:true});}
 });

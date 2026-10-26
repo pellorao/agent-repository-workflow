@@ -9,7 +9,7 @@ Reviewer 的审核行为由 [Reviewer 责任](../../../docs/agents/reviewer.md) 
 
 平台差异:
 
-- Codex: 管理进程须在沙盒外启动; 沙盒内启动的管理进程拉起的 App Server 无法写入状态, 报 `Read-only file system`. 管理进程启动后常驻, 已在运行时沙盒内的 `arw background-agent` 通过本机 TCP 直接连接它 (沙盒须允许网络访问). 先用 `arw lba` 查看: 管理进程未运行时申请在沙盒外运行第一条请求; 不能提权 (如 `codex exec`) 时停止, 请用户在可提权的会话中运行一次. 可以保留一个工具会话逐行写入请求, 长请求写入文件后用 `arw background-agent < <request.jsonl>` 发送. 管理进程在共享 Codex App Server 中为每个 Reviewer 创建独立根线程, 不占用 Main Agent 的原生子 Agent 槽位, 不用原生子 Agent 工具代替该入口.
+- Codex: 直接运行 `arw background-agent`. 输出 `Background Agent control is blocked by the sandbox` 时 (管理进程须在沙盒外启动, 沙盒禁用网络时连接也被拒绝), 申请提权在沙盒外重跑同一命令, 可按 `arw background-agent` 前缀申请长期批准; 审批策略为 `never` 等不能提权时停止, 请用户在可提权的会话中运行. 可以保留一个工具会话逐行写入请求, 长请求写入文件后用 `arw background-agent < <request.jsonl>` 发送. 管理进程在共享 Codex App Server 中为每个 Reviewer 创建独立根线程, 不占用 Main Agent 的原生子 Agent 槽位, 不用原生子 Agent 工具代替该入口.
 - Claude Code: Bash 工具不保留可续写的进程会话, 每次操作单独运行一次 `arw background-agent`, 用文件或管道把 JSONL 请求写入标准输入; 等待较久的命令放进后台命令. 未选择 `anthropic` 的 Reviewer 设置在这里默认用 Claude 后端 `haiku` 和 `high`; Claude 后端 Reviewer 只用 `haiku`, 不用其他 Claude 模型. 不用 Claude Code 原生 subagent 代替独立 Reviewer.
 - 两个平台: 标准输入结束后, 进程先等全部未返回的请求写出响应再退出, 管理进程和已启动的审核继续运行. `wait_agent` 的 `timeout_ms` 必须在 `10000` 到 `3600000` 之间; 同一进程内的请求 `id` 不能重复.
 
