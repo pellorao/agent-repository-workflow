@@ -12,9 +12,8 @@ ticket 15 冒烟和审计发现的小问题:
 - `arw lba` 的 Main 标题取到注入的 "# AGENTS.md instructions for …": 跳过注入指令, 从用户消息取标题.
 - 从源码运行需要手放 `config.json`: 源码运行时缺省使用默认值.
 - ticket 10, 11 的 Status 与勾选不一致.
-- `test-value-cleanup` Skill 改为可按用户定的周期运行 (本仓库每周一次): 删去 "不设置固定周期或自动任务" 和 "默认至少删除 N 的 20%", 改为只删确属低价值的案例; 目标保持完整测试命令墙钟中位数低于 5 秒且测试保持高价值. 同步分发副本和 Projection.
 
-预估改动: 约 70 行.
+预估改动: 约 60 行.
 
 ## Spec Requirement
 
