@@ -6,7 +6,8 @@ Status: ready-for-agent
 
 长期规范要求 Main 能用 `send_message` 给运行中的后台 Agent 发工作指示, 后台 Agent 也能主动通知 Main. Claude 后端 (ADR 0032, ticket 04) 每轮运行一次性的 `claude -p`, 作业从 stdin 一次写完即关闭, 运行中的指示一律拒绝 (`lib/background-agent/claude-sessions.mjs` 的 `steer`); Reviewer 只有读写文件工具, 也发不出通知. 进程 id 没有记录, 所以管理进程异常退出后冷启动无法核对旧进程, 库中有空闲 Agent 时每次请求都失败 ("Earlier App Server exit could not be confirmed").
 
-用户决定 (2026-10-27) 选 A:
+用户决定 (2026-10-27) 选 A. 总要求: Claude 后台 Agent 必须实现规范 `Background Agent control` 下全部功能 (Machine entry, Communication, State, Capacity and recovery, listing), 与 Codex 后端对等, 不打折扣; 现有 Claude 后端因 ADR 0032 而缺失或降级的行为都要补齐, 不只限于下列各项.
+
 
 - 先实测: `claude -p --input-format stream-json --output-format stream-json` 常驻进程在回合进行中收到 stdin 新消息时如何处理 (插入当前回合, 排队到回合后, 或报错). 实测结果决定 `send_message` 在活动回合上的语义, 写进本 ticket.
 - 每个 Claude 后台 Agent 改为一个常驻进程. 规范 `Background Agent Communication` 中的各种消息都要覆盖, stdin 只解决其中一个方向:
@@ -29,6 +30,7 @@ Governing requirements:
 
 ## Acceptance criteria
 
+- [ ] 逐节对照 `Background Agent control` 列出 Claude 后端的每项缺失或降级, 全部补齐, 对照表记入 `## Comments`.
 - [ ] stream-json 回合中插入消息的实测行为记入 `## Comments`.
 - [ ] Claude 后端覆盖规范列出的全部消息形式 (Main 指示, 程序指示, Agent 主动通知, 程序暂停与管理状态通知), 有测试覆盖.
 - [ ] 管理进程被结束后冷启动, 空闲的 Claude Agent 不再导致请求失败; 有测试覆盖.
