@@ -22,4 +22,4 @@ Governing requirements:
 
 ## Blocked by
 
-- 16 审核流程的机械步骤交给程序
+- issue:0001:16

@@ -1,6 +1,6 @@
 # Upstream Sync 与 Platform Standards 改为不自动触发的 Skill
 
-Status: in-progress
+Status: ready-for-agent
 
 ## What to build
 
@@ -23,8 +23,8 @@ Governing requirements:
 
 ## Blocked by
 
-- 03 共享工具函数与声明式校验
-- 07 流程文档改为自动触发的 Skill
+- issue:0001:03
+- issue:0001:07
 
 ## Comments
 

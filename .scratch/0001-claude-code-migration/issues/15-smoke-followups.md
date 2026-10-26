@@ -36,7 +36,7 @@ Governing requirements:
 
 ## Blocked by
 
-- 13 收尾接入
+- issue:0001:13
 
 ## Validation
 

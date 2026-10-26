@@ -21,10 +21,10 @@ Governing requirements:
 
 ## Blocked by
 
-- 03 共享工具函数与声明式校验
-- 09 release VM 验证改为不自动触发的 Skill
-- 10 Reviewer 能力一致性与 benchmark 改为不自动触发的 Skill
-- 11 Upstream Sync 与 Platform Standards 改为不自动触发的 Skill
+- issue:0001:03
+- issue:0001:09
+- issue:0001:10
+- issue:0001:11
 
 ## Comments
 

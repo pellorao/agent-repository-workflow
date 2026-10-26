@@ -22,7 +22,7 @@ Governing requirements:
 
 ## Blocked by
 
-None - can start immediately
+- None - can start immediately
 
 ## Comments
 

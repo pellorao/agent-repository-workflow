@@ -23,7 +23,7 @@ Governing requirements:
 
 ## Blocked by
 
-- 04 Claude 后端跑通 Reviewer
+- issue:0001:04
 
 ## Comments
 

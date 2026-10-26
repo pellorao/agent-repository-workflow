@@ -22,7 +22,7 @@ Governing requirements:
 
 ## Blocked by
 
-- 06 常驻核心规则与预算测试
+- issue:0001:06
 
 ## Comments
 

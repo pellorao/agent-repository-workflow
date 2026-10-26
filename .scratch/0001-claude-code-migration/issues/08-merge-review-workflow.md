@@ -23,8 +23,8 @@ Governing requirements:
 
 ## Blocked by
 
-- 04 Claude 后端跑通 Reviewer
-- 07 流程文档改为自动触发的 Skill
+- issue:0001:04
+- issue:0001:07
 
 ## Comments
 

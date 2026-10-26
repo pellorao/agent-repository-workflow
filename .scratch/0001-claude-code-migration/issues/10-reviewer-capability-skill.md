@@ -1,6 +1,6 @@
 # Reviewer 能力一致性与 benchmark 改为不自动触发的 Skill
 
-Status: in-progress
+Status: ready-for-agent
 
 ## What to build
 
@@ -26,10 +26,10 @@ Governing requirements:
 
 ## Blocked by
 
-- 03 共享工具函数与声明式校验
-- 04 Claude 后端跑通 Reviewer
-- 07 流程文档改为自动触发的 Skill
-- 08 合并审核流程
+- issue:0001:03
+- issue:0001:04
+- issue:0001:07
+- issue:0001:08
 
 ## Comments
 

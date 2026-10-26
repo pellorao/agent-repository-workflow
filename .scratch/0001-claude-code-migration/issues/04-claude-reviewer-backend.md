@@ -23,7 +23,7 @@ Governing requirements:
 
 ## Blocked by
 
-- 01 Claude Code 会话身份
+- issue:0001:01
 
 ## Comments
 

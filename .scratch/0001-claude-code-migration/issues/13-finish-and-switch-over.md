@@ -28,7 +28,19 @@ Governing requirements:
 
 ## Blocked by
 
-- 01 至 12, 14 全部
+- issue:0001:01
+- issue:0001:02
+- issue:0001:03
+- issue:0001:04
+- issue:0001:05
+- issue:0001:06
+- issue:0001:07
+- issue:0001:08
+- issue:0001:09
+- issue:0001:10
+- issue:0001:11
+- issue:0001:12
+- issue:0001:14
 
 ## Validation
 

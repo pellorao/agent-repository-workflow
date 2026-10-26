@@ -28,7 +28,7 @@ Governing requirements:
 
 ## Blocked by
 
-- 10 Reviewer 能力一致性与 benchmark 改为不自动触发的 Skill
+- issue:0001:10
 
 ## Comments
 
