@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0001:22",
+  "request": {
+    "digest": "580b9dab502e25ee3743b097969a4df851fcacb1b7ca14c3c92e268dd6f2e58e",
+    "filePath": ".tmp/claude-code/06588b1e-7f07-4832-8933-107aaf5b5978/0001_22/spec-readiness/requests/request-7acd3ef0-f690-477e-b73f-0db9409a418b.json",
+    "id": "7acd3ef0-f690-477e-b73f-0db9409a418b"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "658f4283cabb570c22c4f8ad59eb3afc858a34bc9973c25f581ba324cd1561d3"
+  },
+  "inputs": [
+    {
+      "filePath": ".scratch/0001-claude-code-migration/spec.md",
+      "role": "governing-spec",
+      "sha256": "5feb5d45509ae4a7b16fec8c09f4e2d5b4041ae66ff6890bc8b53c579ec5545c"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow/spec.md",
+      "role": "architecture-evidence",
+      "sha256": "ed66e14e728c0a6dcf95e8f4480717bc1e703a501e299cac0abe0daff8a2219c"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0001-claude-code-migration/issues/22-size-budget-net-lines.md",
+    "sha256": "10c339b50d2451e209201a23353fe8203917dc64e4205766a84b616477b90f90"
+  },
+  "result": "satisfied"
+}
