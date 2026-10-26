@@ -81,3 +81,65 @@ Spec Readiness 收敛轮数 (15 冒烟 `claude-pre-readiness` 场景, 各 1 次,
 xhigh 没有更快收敛, 第 2 轮重新提出整篇层面的问题, 耗时为 high 的 2.4 倍. 只有 1 个样本, 且两边的修法随发现不同, 结论只作参考; 维持 haiku high.
 
 偏离: 未用盲裁, 改用规则匹配加人工复核; 修 spec 时没有按规则与独立 subagent 共同决定; luna SR 基线 rep1 的 artifact 子场景因供应商容量拒绝重发一次, 耗时偏长.
+
+### 2026-10-27 第二批: Spec Readiness 复核, 盲裁, 完整流程墙钟 (worker)
+
+Spec Readiness 复核: 独立 Agent (opus) 先不看 worker 结论, 逐条复核第一批 21 条误报和 29 条漏报, 再与 worker 合并意见. 结论:
+
+- 现行角色与基线角色的检查文本几乎相同. 第一批 "退步" 大部分来自自写匹配器的偏差: 只认英文关键词 (基线 handoff 要求英文报告, 现行不要求), runtime 与 artifact 两个子场景合并计分, 贪心分配, 以及基线中的隐性误命中. 只纠正匹配器错误后, haiku 改动召回为 33/46 (基线 37), luna 为 38/46 (基线 33).
+- 确属角色过严的有两处, 已在 worker 的 worktree 改 `docs/agents/roles/spec-readiness-reviewer.md` 及其分发副本 (未提交, 见下方 "提交阻断"):
+  - INPUTS: 原文要求 "分别检查适用权威, 来源, 新鲜度边界和持续时间", 导致对设计可自选的内容报缺失事实. 改为只为选定要求或适用权威确实要求的事实报告缺失或未知.
+  - REQUIREMENTS: 现行角色把所选治理 spec 中的理由, Module Design, ADR Evaluation, Testing Decisions 章节判为 "只提供辅助信息的 Input" 而报 `gap`. 补一句说明这些章节不是辅助信息.
+- 没有找到纯重复报告, 未做去重改动.
+- 答案键未改. 改用盲裁后, 答案键之外的真实缺陷判为 supported, 不扣分, 已不构成误报来源. 仍有争议的条目见下方待决定事项.
+
+评分方法: 按 qwen_strata 多模型 v2 的盲裁流程复现. 冻结 r8.5 评分器 `score-completed` 列出关联和发现候选; qwen_strata 的 `blind_pool` 按 v2 登记表组池 (每池 12 个锚点, SR 9 个合成对照, 隐藏来源, 每池最多 210 项) 并生成冻结 brief; 由 `claude_headless` 以 benchmark 的裁决参数 (`--copy ADJ:adj --write adj`, 无启动和压缩提示, 工具 Read,Write,Edit,Glob,Grep,Bash) 运行; `blind_pool split` 检查锚点一致率 ≥90% 且合成对照全对; 多轮迭代直到无候选, 再用全部裁决计分. 现行 txt 报告先逐行转换为冻结角色的 JSONL 行 (发现原文不变, 证据取文中的 `path:lines`). 与 benchmark 的偏离: 裁决模型用 haiku high 而不是 Opus high (用户规定 Claude 侧只用 haiku); haiku 有时把 brief 固定的 adjudicator 标签写成自己的模型名, 驱动脚本统一改回该标签; 不写 qwen_strata 配额账本. 7 个池全部通过 (锚点 100%, 合成对照全对). 工具在 worktree 的 `.tmp/claude-code/<session>/0001_18/kit/` (`blind.py`, `sr_txt2jsonl.py`, `records.py`, `reports_of.py`, 未跟踪).
+
+结果 (每个条件 2 次; 检出与失败 clean 为 2 次之和, 问题共 46; 分数为 2 次的平均, 分 runtime 与 artifact 两个子场景; 匹配器为第一批的自写匹配器, 只作延续参考):
+
+| 模型 | 条件 | 盲裁检出 | 盲裁失败 clean | 盲裁分数 runtime | 盲裁分数 artifact | 匹配器召回 | 匹配器误报 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| haiku high | 基线 (原样角色) | 33/46 | 8 | 0.94 | 0.55 | 37/46 | 4 |
+| haiku high | 第一批改动 | 25/46 | 26 | 0.87 | 0.23 | 30/46 | 8 |
+| haiku high | 收紧后 | 33/46 | 6 | 0.90 | 0.48 | 28/46 | 9 |
+| luna xhigh | 基线 (原样角色) | 31/46 | 16 | 0.63 | 0.53 | 33/46 | 3 |
+| luna xhigh | 第一批改动 | 35/46 | 19 | 0.76 | 0.58 | 33/46 | 13 |
+| luna xhigh | 收紧后 | 33/46 | 5 | 0.79 | 0.62 | 32/46 | 7 |
+
+单次: haiku 基线 16, 17 (失败 clean 6, 2), 第一批 15, 10 (3, 23), 收紧后 14, 19 (4, 2); luna 基线 18, 13 (15, 1), 第一批 18, 17 (4, 15), 收紧后 16, 17 (3, 2). 收紧后单次耗时 haiku 12.2 与 9.8 分钟, luna 12.2 与 10.1 分钟 (4 个并发).
+
+结论:
+
+- 盲裁下收紧后的角色: haiku 检出与基线持平, 失败 clean 更少; artifact 子场景平均分 0.48 低于基线 0.55, 但单次分数 (0.30, 0.67 对 0.48, 0.62) 在波动范围内重叠. luna 检出, 失败 clean 和两个子场景分数都优于基线. 判定 Spec Readiness 改动后不低于基线 (在测量波动内), 验收通过.
+- 第一批改动条件中 haiku 第 2 次失败 clean 23 是离群值, 主要是大量把设计可自选内容报为缺失事实, 正是 INPUTS 收紧的对象.
+- 自写匹配器与盲裁的差距说明它不能作为正式分数; 今后以盲裁为准.
+- Code Spec, Code Standards, Commit Audit 未做盲裁重评: 第一批改动条件把这三个场景交给 `requirements-reviewer`, 其 txt 报告没有冻结角色的逐行格式, 转换需要另写适配; 第一批结论已是 "不低于基线", 投入产出比低, 留作后续.
+
+"Gate 2 漏报记一行": ticket 08 已落实, 见 `.agents/skills/commit/SKILL.md` (Main Agent 发现本应在已通过的 Gate 2 中发现的问题时, 在该 effort 的 spec 末尾记一行) 及 spec 第 125 行, 无需改动.
+
+工具拒绝: 收紧后 haiku 4 个会话共 116 次工具调用, 只有 1 次拒绝: Bash 中的 `python3 -c` 不在只读允许范围, 拒绝消息说明了原因和可用工具, Reviewer 改用 Read 继续完成. 第一批那种 Read/Bash 的偶发拒绝未再出现.
+
+完整流程墙钟: 取 benchmark v2 Commit Audit v3.1 场景的 base (spec, `docs/dispatch`, issue 01 与 02, 含预置的 spec 缺陷), 以本 worktree 的 ARW 执行 `arw workflow init`, Main Agent 为 `claude -p` sonnet high (真实 HOME, 只读项目级设置), 任务为实现 issue 01 并提交. Reviewer 由 Claude 后端以 haiku high 运行. 用户不在线, 只在 Main 停下时给一次现实回复.
+
+| 段 | Agent 墙钟 | 内容 |
+| --- | --- | --- |
+| 第 1 段 | 5.8 分钟 | SR 第 1 轮报出预置的 spec 冲突与缺口; Main 按规则停下, 请用户确认 spec 修改 |
+| 第 2 段 | 27.7 分钟 | 修 spec 与 issue, SR 第 2 到 7 轮, 实现, 提交审核 4 轮 (中间因撤回越界改动加 SR 第 8 轮); 剩 3 项需用户决定 (未事先估算体积, 一处去重建议, 一处极端精度) |
+| 第 3 段 | 1.2 分钟 | 用户接受 3 项, 提交审核第 5 轮通过, 提交 |
+| 合计 | 34.7 分钟 | SR 8 轮, 提交审核 (要求符合与 Code Standards 并行) 5 轮; 不含等用户的时间 |
+
+结论: 合格 (60 分钟内), 未达优 (30 分钟). 主要耗时在 SR 多轮 (约 20 分钟) 和提交审核多轮; 场景的 spec 预置了较多缺陷, 轮数偏多在预期内. Reviewer 会话 4 个 (SR, 要求符合, Code Standards, 各跨轮复用) 共约 200 次工具调用, 拒绝 2 次 (`printenv`, `node -e`), 均为只读允许范围外的 Bash, 拒绝消息说明了原因; 没有 Read 被拒.
+
+待决定事项 (未改动, 交 Main Agent):
+
+- P3: APPLICABILITY 中 "Interface" 是否只指形状; 已有字段的取值变化算不算 Interface 变化; "Module 间数据流" 的措辞. 影响若干误报与漏报的归类.
+- P4/K5: spec 中对内部缓存或解析算法的长期要求 (调用方不可见) 是否属于就绪缺口 (6 条). 二选一: 改角色第 11 行的长期边界句, 或改答案键与夹具.
+- K3/K4: 夹具问题: `promotion-runtime.md:97` 依赖验收标准; 保留期起点未定义. 可能是夹具本身的缺陷.
+- 答案键外的疑似真实缺陷: `persistence-precondition-failed` 的前提条件未定义; 不可变请求对象. 盲裁已判 supported, 不影响分数.
+- 覆盖句 (第 68 行) 的修改可能减弱覆盖压力, 本批未改.
+
+提交阻断: 角色修改按实施工作流提交需要 issue 18 的 Spec Readiness 记录, 本 issue 此前没有. worker 运行了一轮 (haiku high), 结果 6 个 `gap`: 长期规格未作为 Input; `#review-workflow` 锚点包含 ticket 14 到 16 的交付, 选择范围过宽; "Gate 2 漏报记一行" 追加到 spec 末尾会改变 governing-spec 的 sha256, 使已有就绪记录失效, 与 "只在定稿时审核一次" 冲突; 格式取舍的判定标准 (运行次数, 波动) 未定义; spec 第 120 与 122 行对现行格式的规定互斥; spec 第 147 行的授权变化缺少 ADR 结论. 这些需要修 spec 和本 issue 的 `## Spec Requirement`, 超出 worker 范围, 交 Main Agent. 本次只按非实施工作流提交本记录.
+
+偏离: 盲裁模型为 haiku high 而非 benchmark 的 Opus high; 墙钟只测 1 次, Main 用 sonnet (日常 Main 的模型因人而异).
+
+遗留: 本仓库历史提交场景; Strata 正规模式; 另三个场景的盲裁重评.
