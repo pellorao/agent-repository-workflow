@@ -35,4 +35,4 @@ Governing requirements:
 
 ## Blocked by
 
-- issue:0001:17
+- None - can start immediately
