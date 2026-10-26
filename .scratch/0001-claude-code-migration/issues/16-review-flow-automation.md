@@ -57,7 +57,7 @@ Governing requirements:
 | Codex 基线 (ticket 15) | `gpt-6.1-sol` high | `gpt-6-luna` xhigh | 19 分钟 | 82 次命令 + 12 次文件修改 | 2 | 要求符合 2, Code Standards 2 | 350 行 |
 | Codex | `gpt-6.1-sol` high, `codex exec` | `gpt-6-luna` xhigh | 30 分钟 (468 s + 248 s + 1102 s) | 61 次命令 (文件修改都在命令中) | 4 | 要求符合 2, Code Standards 2 | 提交 `6be4930`, +309/-32 |
 | Claude Code 基线 (ticket 15) | `sonnet` high, `claude -p` | `haiku` high | 62 分钟 | 66 | 5 | 要求符合 4, Code Standards 3 | 提交 `f4a6dc3`, Main 约 4.2 美元 |
-| Claude Code | `sonnet` high, `claude -p` | `haiku` high | 54 分钟 (1648 s + 138 s + 1456 s) | 93 (Bash 77, Agent 7, SendMessage 4, 其他 5) | 12 (3 个关卡: 7, 1, 4) | 6 轮, 每轮两个 Reviewer (有效: 要求符合 3, Code Standards 5) | 提交 `021215c`, Main 约 8.5 美元 |
+| Claude Code | `sonnet` high, `claude -p` | `haiku` high | 54 分钟 (1648 s + 138 s + 1456 s) | 93 (Bash 77, Agent 7, SendMessage 4, 其他 5) | 12 (3 个关卡: 7, 1, 4) | 6 轮, 每轮两个 Reviewer (有效: 要求符合 3, Code Standards 5) | 提交 `021215c`, Main 约 3.8 美元 (含共同决定 subagent) |
 
 - Codex: Main 工具调用下降约 35%, 不再手工拼请求, 复制规则或轮询; 每轮审核是一条 `cat <round>/*.jsonl | arw background-agent --wait`. 墙钟上升来自 Spec Readiness 多出的 2 轮: 每轮 gap 都要改 spec, `rule-and-design-changes` 要求先取得用户确认, Main 因此停下 2 次 (模拟用户都回复批准). 基线中的测试阈值和语言检查停顿没有再出现.
 - Codex: 管理进程仍须在沙盒外预启动 (本次由冒烟脚本用一条探测请求启动); 沙盒内的 `arw background-agent` 通过本机 TCP 连接它, Reviewer 正常完成.
