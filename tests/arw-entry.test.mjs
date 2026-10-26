@@ -40,7 +40,7 @@ const NO_COMMAND_MESSAGE = [
     '  arw spec-readiness promote --input <generated-path>',
     '  arw spec-readiness verify --issue issue:NNNN:NN',
     '  arw commit-audit prepare --input <absolute-input-path>',
-    '  arw commit-audit verify',
+    '  arw commit-audit verify [--non-implementation]',
     '  arw workflow init [--non-interactive (--reuse-profile | --platform <platform>... --domain-layout <layout> --code-map-root [<root>]... --code-map-include [<glob>]... --code-map-exclude [<glob>]...) --transform-existing-agent-docs <true|false> --orphan-code-map-readmes <delete|demote>]',
     '  arw workflow update [--non-interactive] [--dry-run] [--transform-existing-agent-docs <true|false>]',
     '  arw workflow verify',
@@ -157,7 +157,8 @@ test('invalid command shapes return usage exit code', async t => {
 });
 
 test('background-agent routes its exact machine form through persistent streams without the foreground launcher', async t => {
-    assert.deepEqual(parseCommand(['background-agent']), {kind: 'background-agent'});
+    assert.deepEqual(parseCommand(['background-agent']), {kind: 'background-agent', wait: false});
+    assert.deepEqual(parseCommand(['background-agent', '--wait']), {kind: 'background-agent', wait: true});
     for (const args of [['start'], ['--input', 'request.json'], ['--help']]) {
         assert.throws(() => parseCommand(['background-agent', ...args]), error => error instanceof UsageError && error.exitCode === 2);
     }

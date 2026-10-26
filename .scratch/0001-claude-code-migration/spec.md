@@ -53,7 +53,7 @@ ARW 由 Codex 开发和维护, 现在改由 Claude Code 维护, 并且今后 ARW
   - Claude 后端不支持运行中追加指令: 跟进以续接会话的新一轮实现, 中断以结束进程实现.
 - Codex 专有部分 (共享 App Server 生命周期, 模型目录合并, Strata key 租约) 只留在 Codex 后端内部, 不进入 Claude 后端.
 - 第三方模型: Reviewer 模型配置可以带一组环境变量 (如 `ANTHROPIC_BASE_URL`, `ANTHROPIC_AUTH_TOKEN`, `ANTHROPIC_MODEL`), Claude 后端启动 `claude -p` 时注入. 凭据只允许出现在用户级配置中, 仓库配置中出现凭据时拒绝.
-- Reviewer 默认值: Codex 后端 `gpt-6-luna`, `xhigh`; Claude 后端 `haiku`, `high`. 继续使用现有的用户级和仓库级两层配置.
+- Reviewer 默认值: Codex 后端 `gpt-6-luna`, `xhigh`; Claude 后端 `haiku`, `high`. Claude 后端 Reviewer 只用 `haiku`, 不用其他 Claude 模型 (见 `Review workflow`). 继续使用现有的用户级和仓库级两层配置.
 - 调用者身份: Claude Code 环境中的 Main Agent 会话身份先尝试读取 Claude Code 提供的会话环境变量; 不存在时由 ARW 投影的 `SessionStart` hook 把 hook 输入中的 `session_id` 写入 `CLAUDE_ENV_FILE`. 第一张 ticket 用实测选定其中一种, 只实现选中的一种.
 - 新 ADR 取代 ADR 0016 中 "Claude Code Reviewer 执行暂停" 的决定, 并修订 ADR 0030 中 "只管理 Codex App Server" 的范围.
 
@@ -109,7 +109,7 @@ ARW 由 Codex 开发和维护, 现在改由 Claude Code 维护, 并且今后 ARW
 
 ### Review workflow
 
-- Spec Readiness 只在 spec 定稿时审核一次. 不通过时修改后复审, 复审只看改动部分及其影响范围. 机械记录只保留审核对象绑定与 `verify` 校验, `verify` 只在提交前运行.
+- Spec Readiness 只在 spec 定稿时审核一次. 不通过时修改后复审, 复审只看改动部分及其影响范围. 机械记录只保留审核对象绑定与 `verify` 校验, `verify` 在开始实施前和提交前运行.
 - 提交审核最多两个并行 Reviewer:
   - 要求符合审核: 由 Code Spec 与 Commit Audit Gate 1 合并而成, 逐条对照 issue 要求和验收标准检查实现.
   - 代码质量审核: 即 Code Standards, 职责中增加 "指出可删除的代码": 未使用的通用性, 对内部数据的校验, 没有现实失败场景的错误处理, 改动行数超出预算.
@@ -123,6 +123,29 @@ ARW 由 Codex 开发和维护, 现在改由 Claude Code 维护, 并且今后 ARW
 - Main Agent 每轮自选一两处 Reviewer 应当检查的要求或代码位置抽查; 发现漏检时, 该轮结果作废并重审.
   - 三个 Reviewer (要求符合, 代码质量, Spec Readiness) 都使用 txt 报告, 无问题时写 `No problems.` (ticket 14).
 - Haiku Gate 2 观察: Main Agent 发现某个问题本应在已通过的 Gate 2 中被发现时, 在该 effort 的 spec 末尾记录一行. 累计记录作为调整 Reviewer 模型的依据, 不建立额外机制.
+- Claude 后端 Reviewer 只用 `haiku`, 不用其他 Claude 模型; 推理强度可调, 默认 `high` (用户决定, 2026-10-26). 这是规则约定, 程序不强制.
+
+#### Program-prepared review rounds
+
+ticket 16 的要求. ticket 15 冒烟中 Main Agent 每轮审核要手工拼 `spawn_agent` 请求 (含完整 Role 正文的 `instructions`), 复制规则副本并计算 SHA-256, 选择报告目录和 `stateDirectory`, 再反复 `wait_agent`. 这些步骤改由两个 `prepare` 完成, Main Agent 每轮只运行 `prepare` 和一条 `arw background-agent --wait` 命令:
+
+- **审核轮目录.** `prepare` 为每轮新建一个轮目录, 写入:
+  - 每个 Reviewer 的报告目录, 其中只有一个空 txt 报告.
+  - 执行规则副本 `rules/`: 全部 `AGENTS.md` (含嵌套), `docs/agents/**`, `.agents/skills/**` 和 `.claude/skills/**`, 保持仓库相对路径, 另有 `sha256sum` 格式的 `rules/SHA256SUMS`. Spec Readiness 取工作树中已跟踪或未被忽略的文件字节, 提交审核取已暂存字节.
+  - 每个 Reviewer 一个 `<role>.jsonl`, 只含一行可直接写给 `arw background-agent` 的请求: `instructions` 是该 Role 文件加 `docs/agents/reviewer.md` 的正文 (来自同一份规则副本), `cwd` 是仓库根目录, `writePaths` 只含报告目录, `stateDirectory` 是轮目录的上级 (同一工作流的各轮共用, 使复审能找到原线程), 身份是该 Role 加完整排序的 issue ID 集合. 该身份在 `stateDirectory` 中的恢复记录已有 `threadId` 且 `failure` 为 `null` 时, 原线程视为可用 (`failure` 是恢复记录已有字段, 运行层以具体错误 `{code, message}` 结束该运行, 即该运行没有交付 `ready` 而以运行层错误结束时写入; 正常结束, 正常停止和提前结束阈值暂停都保持 `null`. 审核轮准备只看它是否为 `null`, 不解释错误种类) (已卸载的原线程由 `followup_task` 在管理进程内恢复), 请求是带原 `runId` 的 `followup_task`, handoff 另给前轮报告路径和相邻版本变化; 没有恢复记录时是 `spawn_agent`; 有记录但原线程不可用时是带 `newThread: true` 的 `spawn_agent`. `newThread` 是 Reviewer 运行层已有的可选布尔输入: 同身份已有恢复记录时, 不带它的 `spawn_agent` 以 `reviewer-identity-exists` 拒绝, 带它则为同身份新建线程并改写恢复记录, 对应长期规格 "原线程不可用或不可恢复时才新建线程"; 本 ticket 把它写进长期规格的 `spawn_agent` 合同.
+
+  `prepare` 只打印轮目录绝对路径. Main Agent 运行 `cat <轮目录>/*.jsonl | arw background-agent --wait` 并行运行本轮全部 Reviewer; 只需重审其中一个时只传它的文件.
+- **Spec Readiness.** `arw spec-readiness prepare` 的 Input 只含 `inputs`, 不再含 `draftPath`. 轮目录是 issue `spec-readiness` 工作区下的 `rounds/<requestId>/`, 草稿固定为 `report/draft.txt`, 冻结的 Request 仍写在 `requests/` 下. 轮目录另有 `snapshot/` (subject 和每个 Input 快照的文件形式); 复审时 handoff 指向前轮 Request, 前轮草稿, 以及 `git diff --no-index` 生成的前后两轮 `snapshot/` 差异 `changes.diff`. `generate --input` 仍须传入该草稿路径.
+- **提交审核.** `arw commit-audit prepare --input <input.json>` 的轮目录是当前会话工作区下的 `_commit-audit/<n>/` (`n` 从 1 递增), Main Agent 修复后用同一个 `input.json` 再次运行即得到下一轮. `request.json` 增加 `base` (`HEAD` 提交) 和 `tree` (`git write-tree` 固定的已暂存树); 两个 Reviewer 都读取 `git diff <base> <tree>` 和 `git show <tree>:<path>`, 不读实时索引, 所以审核期间 Main Agent 可以继续暂存修复. Code Standards 的 handoff 列出按 `.arwignore` 和 effort `prototype/**`, `research/**` 排除后的纳入路径, 并指向授权 issue 中写明的预估改动行数. 复审的相邻版本变化是 `git diff <前轮 tree> <tree>`. 提交前 Main Agent 核对最终暂存树相对受审 `tree` 只有获准的记录差异.
+- **等到完成.** `arw background-agent --wait` 在每个 `spawn_agent` 或 `followup_task` 成功回执后, 对该运行反复 `wait_agent` 直到 `completion` 非空, 运行环境退出, 等待失败, 或等到程序产生的暂停通知 (消息来源为 `provider-program`, 即提前结束阈值暂停), 然后为该请求再输出一行 `{id: "<请求 id>:done", ok, result: {runId, state, completion, messages, providerError}}`, `messages` 是期间收集的全部发给 Main 的消息 (编号, 来源, 正文); Reviewer 自己发的问题或进度消息只收集, 不结束等待, 中途的状态变化不输出. 为此 `wait_agent` 的消息通知增加已存储的 `source` 字段. 标准输入结束后等这些行都输出才退出. `completion` 为 `null` 且 `messages` 含 `provider-program` 消息时, Main Agent 按暂停通知规则取得用户决定后用 `send_message` 或 `interrupt_agent` 处理, 再用 `wait_agent` 等待. 不加 `--wait` 时行为不变.
+- **非实施提交检查.** `arw commit-audit verify --non-implementation` 一条命令完成长期规格 "轻量提交流程" 列出的全部机械检查, 替代 `commit` Skill 非实施工作流的手工步骤: 候选非空, 已暂存路径都属于非实施分类 (只接受分类内的安全路径) 且同属一个 effort, 条目是普通文件或 gitlink (拒绝符号链接等其他模式), 没有未暂存的替代内容 (含子模块 `HEAD`), 没有实施 issue 新进入终态, 已注册 ARW Artifact 的路径与记录类型可解析, 文本是无 BOM 的 UTF-8 和 LF, `git diff --cached --check` 通过, 以及普通 `verify` 的 Artifact 身份保留; 检查前后 `git write-tree` 相同, 证明候选对象身份在检查期间不变. 输出与退出码同普通 `verify`.
+- **复审收敛.** 复审判断前轮问题是否解决, 以及本轮变化 (含其影响范围) 引入的新问题; 前轮未完成的检查继续完成. 前轮已完成且未变化, 不受影响的内容不再审核, 也不为其提出新问题, 即使前轮漏报. 准确前轮输入无法恢复或影响遍及整个适用范围时, Reviewer 写明理由后全盘复审 (长期规格 `Review versions and result validity` 不变). 代价是前轮漏报的问题可能留到提交审核或之后才被发现; 换来复审轮数收敛 (ticket 15 冒烟中 haiku 每轮对新补文字之外的旧文字提新问题).
+- **Reviewer 命令.** Reviewer 每次 Bash 调用只运行一条命令, 不用 `cd`, `&&`, `;` 或管道; 需要其他目录时用 `git -C <path>`. Claude 后端的只读放行规则按单条命令匹配, 组合命令会被拒绝.
+- **实施前就绪.** `implement` Skill 的 Entry 在修改实现文件前要求 `arw spec-readiness verify` 退出码为 `0`; 不再允许实施与首次 Spec Readiness 并行. 长期规格和 `spec-readiness` Skill 的并行许可同步删除. 理由: ticket 15 冒烟中 Claude Main 先写代码, 就绪审核随后要求改设计, 已写代码返工; 替代方案是保留并行, 只在提交前要求 `verify`, 被拒绝, 因为设计问题越晚发现返工越多. 接受的成本是实施要等就绪审核结束 (通常一到两轮).
+- **新仓库默认值.** 仓库 `AGENTS.md` 没有声明测试单回调耗时阈值时, 默认 100 毫秒; `arw.config.json` 没有配置 `languageChecks` 时不做语言检查, 都不需要询问用户. 默认值写在 `test-performance-optimization` 和 `validation` Skill 中, `workflow init` 不另写配置.
+- **长期规格.** 上述公开合同 (CLI 列表, 机器入口 `--wait`, Spec Readiness `prepare` 输入与输出, Commit Audit 轮目录与 `base`/`tree`, 非实施检查, 复审收敛, 实施前就绪) 同步写入长期规格 `docs/specs/agent-repository-workflow/spec.md`, 审核轮目录的共同部分写在其 `Review rounds`.
+- **Claude Reviewer 模型.** `reviewer-launch` 写明 Claude 后端 Reviewer 只用 `haiku`, 不用其他 Claude 模型 (用户决定, 见本节上方); 只是规则, 程序不强制.
+- **其他摩擦.** Claude 后端每回合的 `turnId` 改为唯一值 (原先进程内计数, 管理进程恢复会话后续接回合又从 `turn-1` 开始, 与前轮同名). `reviewer-launch` 写明 Codex 中管理进程须在沙盒外启动 (沙盒内启动的管理进程拉起的 App Server 无法写入状态, 报 `Read-only file system`): 管理进程按长期规格在首次请求时自动启动并常驻, 所以只有它未运行 (`arw lba` 报告未运行) 时第一条请求申请在沙盒外运行, 不能提权时停止并说明. 沙盒内请求能否连接已运行的管理进程取决于 Codex 沙盒的读取和网络范围, 属于平台事实, 由本 ticket 的 Codex 冒烟实测并写入 Skill, 本 spec 不规定. `reviewer-launch` 同时删除已由 `prepare` 承担的手工步骤.
 
 ### Code reduction
 
@@ -152,7 +175,7 @@ ticket 13 冒烟后的日常使用修正, 预期结果如下:
 - 分发的 Skill 和 Baseline 规则只链接目标仓库中存在的文件. 原先链接 Source Checkout 长期规格的地方, 把 Agent 需要的规则直接写在原处, 或删除链接.
 - `reviewer-launch` 和 `spec-readiness` Skill 写明报告目录约束: 报告目录只含本轮绑定报告并作为 `writePaths`, Spec Readiness 的 `draftPath` 位于 issue 临时工作区内的这样一个子目录, Request, Input, 规则副本和 `stateDirectory` 放在目录外; 违反时 `spawn_agent` 返回 `report-binding-invalid`. 长期规格 Spec Readiness 准备章节的 `draftPath` 合同同时写明这一要求.
 - `reviewer-launch` 写明 `wait_agent` 的 `timeout_ms` 必须在 `10000` 到 `3600000` 之间, 同一 `arw background-agent` 进程内重复的请求 `id` 被拒绝 (`background-agent-request-duplicate`).
-- `reviewer-launch` 的 Codex 用法写明 PTY 规范模式会截断约 4 KB 以上的单行请求, 写入前运行 `stty -echo -icanon`, 或用文件重定向单独调用.
+- `reviewer-launch` 的 Codex 用法写明长请求写入文件后用重定向单独调用 (PTY 规范模式会截断约 4 KB 以上的单行输入; 原 `stty -echo -icanon` 绕法由 ticket 16 删除).
 - 没有 `CONTEXT.md`, `CONTEXT-MAP.md` 且 `arw.config.json` 未配置语言检查时 (新初始化仓库的默认状态), `arw terms check` 以退出码 `0` 通过并说明没有可检查的术语; 配置了语言检查但没有术语表时仍返回 `terms-glossary-missing`. 长期规格 Document Terms 章节中两处描述这一场景的句子都按此条件写.
 - `arw background-agent` 标准输入结束时, 先等全部未返回的请求 (含 `wait_agent`) 写出响应再退出; `SIGINT` 和 `SIGTERM` 仍取消等待 (用户决定, 2026-10-26). `reviewer-launch` 删除 `sleep` 绕法.
 - Spec Readiness 的新鲜度只绑定设计 Input (`governing-spec`, `governing-prd`, `adr`, `domain-context`), Reviewer Role 和审核对象. `architecture-evidence` 是 issue 本身要修改的实现事实, `promote` 和 `verify` 不检查它的字节, 实施后不需要复审. 实现事实的变化都在提交候选中: 要求符合审核逐项核对 issue 要求, 并把要求范围之外的行为写成问题; Code Standards 审核检查同一候选的实施质量. 未被要求的架构事实变化因此在提交前被拦下. 不需要 ADR: 只缩小新鲜度检查范围, 不新增持久状态, 字段或权威来源, 恢复这项检查即可撤销.
@@ -169,12 +192,14 @@ ticket 13 冒烟后的日常使用修正, 预期结果如下:
 - **Claude 后端** (`lib/background-agent/claude-sessions.mjs`): 新增. 每个 Reviewer 回合运行一次 headless `claude -p`, 把 stream-json 事件转成后台 Agent 管理 Module 已有的通知. 隐藏会话续接, 启动参数, 权限限制和上下文排除.
 - **后端路由** (`lib/arw-background-agent-host.mjs`): 按解析后的 Reviewer 设置把会话交给 Codex 后端或 Claude 后端. 不负责设置解析, 也不持有会话状态. 共享 App Server 生命周期, 模型目录和 Strata key 租约仍只属于 Codex 后端.
 - **Projection** (`lib/workflow-distribution/` 与 `scripts/project-claude-skills.mjs`): 从 `.agents/skills/` 生成 `.claude/skills/` 和 `CLAUDE.md`.
+- **审核轮准备** (`lib/reviewer-runtime/reviewer-round.mjs`): 新增 (ticket 16). 为 Spec Readiness 和提交审核的 `prepare` 写出一轮的规则副本, 报告目录和每个 Reviewer 的机器请求, 并按 `stateDirectory` 中的恢复记录选择 `spawn_agent` 或 `followup_task`. 隐藏规则文件集合, `instructions` 的组成和恢复记录的位置; 不启动 Reviewer, 不解释审核结论.
 - **公共工具** (`lib/common/`): 负责与领域无关, 被两个以上 Module 使用的通用函数 (JSON 与摘要等纯函数, 以及文件系统和 Git 进程的薄封装) 和外部输入的声明式结构校验函数. 不负责任何 ARW 领域规则, 不持有状态; 只被一个 Module 使用的函数留在该 Module 内.
 
 ### Interfaces
 
 - Claude 后端实现现有 `NativeSessions` 接口, 不改变它. Claude 后端没有常驻服务, 它自己的 `ensureServer` 是空操作, `observeServer` 返回 `absent`, 两个 Adapter 满足同一接口. 管理 Module 只在打开 Codex 会话前调用 `ensureServer`, 打开 Claude 会话时跳过, 所以 Claude 回合不依赖 Codex 运行环境; `observeServer` 只在关闭共享 App Server 时调用. 共享服务只属于 Codex, 因此路由把这两项转给 Codex 后端, 只把 `open` 按设置分派, `close` 先结束全部 Claude 回合再关闭 Codex 后端. 跟进是续接会话的新回合, 中断是结束进程. 失败结果沿用 `NativeSessions` 已有的回合状态: 回合只在进程以 `0` 退出且取得 `is_error: false` 的最终结果事件时为 `completed`; 其余情况 (`claude` 无法启动, 非零退出, `is_error`, 流截断或进程被外部终止而没有结果事件) 都为 `failed`, 无法解析的输出行被忽略, 不自动重试, 由 Main Agent 按 `reviewer-launch` 决定跟进或重新启动; 运行中追加指令和客户端请求应答直接拒绝.
-- `arw background-agent` JSONL 机器接口和 `arw lba` 输出不变. 唯一行为变化是标准输入结束时先等未返回的请求写出响应 (见 `Smoke follow-ups`).
+- `arw background-agent` JSONL 机器接口和 `arw lba` 输出不变. 行为变化只有两项: 标准输入结束时先等未返回的请求写出响应 (见 `Smoke follow-ups`); 新增 `--wait` 选项, 在启动或跟进回执后追加一行本轮完成结果 (见 `Review workflow`).
+- 审核轮准备的 Interface 是 `prepareReviewerRound({repositoryRoot, roundDirectory, ruleFiles, reviewers})`: `ruleFiles` 是仓库相对路径到字节的映射, 每个 Reviewer 给出 Role, issue ID 集合, 报告路径和 handoff 正文, 复审附加内容由调用方按返回的前轮报告路径补充. `arw spec-readiness prepare` 的输入去掉 `draftPath`, 两个 `prepare` 都改为只打印轮目录; `arw commit-audit verify` 增加 `--non-implementation`. 失败时抛出错误, CLI 打印原因并以非零退出, Main Agent 处理原因后重新 `prepare`; 恢复记录由程序自己写入, 字段不再校验.
 - Projection 的输入是 `.agents/skills/` 与平台列表, 输出是平台目录中的文件; `--check` 只比较不写入.
 
 ### Seams and Adapters
@@ -184,15 +209,15 @@ ticket 13 冒烟后的日常使用修正, 预期结果如下:
 
 ### Dependencies and Data Flow
 
-后台 Agent 管理 Module -> 后端路由 -> Codex 后端或 Claude 后端. Claude 后端只依赖 `claude` 可执行文件, ARW 配置读取 (`lib/arw-common/config.mjs`) 和用量计量 (`usage.mjs`), 不依赖 Codex 后端代码. 后端只由解析后 Reviewer 设置的 `modelProvider` 决定 (`anthropic` 用 Claude 后端), 设置解析包括 ADR-0032 规定的调用平台默认值; 路由不另看调用方平台. Claude 会话标识 (`threadId`) 与其他后端一样写在 `stateDirectory` 的恢复记录中, 由后台 Agent 管理 Module 持有, 重启后从该记录续接; 会话内容由 `claude` 自己保存在 Reviewer HOME 下. 凭据只从用户级配置读取, 每回合注入子进程环境, 不写入持久设置.
+后台 Agent 管理 Module -> 后端路由 -> Codex 后端或 Claude 后端. Spec Readiness 与 Commit Audit 的 `prepare` -> 审核轮准备 -> Reviewer 恢复记录路径 (`reviewer-session-record.mjs`); 审核轮准备只读恢复记录中的 `runId`, `threadId`, `failure` 和前轮报告路径 (`reportPath`), 不写入它, 也不连接管理进程. 恢复记录的唯一写入者是管理进程内的 Reviewer 运行层: 受理 `spawn_agent` 时创建 (带 `newThread: true` 时改写为新运行), 取得原生线程后写 `threadId`, 以运行层错误结束时写 `failure`, 写入失败按长期规格 `Reviewer runtime` 处理. Claude 后端只依赖 `claude` 可执行文件, ARW 配置读取 (`lib/arw-common/config.mjs`) 和用量计量 (`usage.mjs`), 不依赖 Codex 后端代码. 后端只由解析后 Reviewer 设置的 `modelProvider` 决定 (`anthropic` 用 Claude 后端), 设置解析包括 ADR-0032 规定的调用平台默认值; 路由不另看调用方平台. Claude 会话标识 (`threadId`) 与其他后端一样由 Reviewer 运行层写在 `stateDirectory` 的恢复记录中, 重启后从该记录续接; 会话内容由 `claude` 自己保存在 Reviewer HOME 下. 凭据只从用户级配置读取, 每回合注入子进程环境, 不写入持久设置.
 
 ### Module Design Rationale
 
-复用 `NativeSessions` 让管理, 恢复和计量逻辑不分平台; 每回合一个 `claude -p` 进程用会话续接代替常驻服务, 换取没有 Claude 专用生命周期代码, 代价是不支持运行中追加指令. Projection 保持单一 Skill 来源, 避免两份规则漂移. 公共工具只收被两个以上 Module 使用的函数: 替代方案是每个 Module 保留自己的副本, 已被 `Code reduction` 拒绝, 因为副本会各自漂移; 接受的成本是使用方与公共函数签名耦合, 公共函数因此只放无领域规则, 签名稳定的通用函数. 路由放在管理进程入口而不是管理 Module 或各后端内: 管理 Module 只认 `NativeSessions`, 后端彼此不知道对方; 代价是入口多一个很小的分派对象. 后端由设置而不是调用平台直接决定, 使同一配置在两个平台得到同一 Reviewer; 平台默认值只影响设置解析, 记录在 ADR-0032.
+复用 `NativeSessions` 让管理, 恢复和计量逻辑不分平台; 每回合一个 `claude -p` 进程用会话续接代替常驻服务, 换取没有 Claude 专用生命周期代码, 代价是不支持运行中追加指令. Projection 保持单一 Skill 来源, 避免两份规则漂移. 公共工具只收被两个以上 Module 使用的函数: 替代方案是每个 Module 保留自己的副本, 已被 `Code reduction` 拒绝, 因为副本会各自漂移; 接受的成本是使用方与公共函数签名耦合, 公共函数因此只放无领域规则, 签名稳定的通用函数. 路由放在管理进程入口而不是管理 Module 或各后端内: 管理 Module 只认 `NativeSessions`, 后端彼此不知道对方; 代价是入口多一个很小的分派对象. 后端由设置而不是调用平台直接决定, 使同一配置在两个平台得到同一 Reviewer; 平台默认值只影响设置解析, 记录在 ADR-0032. 审核轮准备放在 Reviewer 运行时一侧而不是两个工作流各写一份: 两个 `prepare` 生成的请求必须满足同一 `spawn_agent` 合同和同一恢复记录位置规则, 一份实现避免两处漂移; 替代方案是新增一个统一的 `arw review` 命令, 被拒绝, 因为两个工作流的 Request 冻结和输入不同, 合并命令只会多一层分派. 代价是 `prepare` 依赖恢复记录文件格式中的四个字段.
 
 ### ADR Evaluation
 
-Claude Code Reviewer 执行和后台管理范围由 ADR-0032 记录, 它取代 ADR-0016 的暂停决定并修订 ADR-0030 的管理范围. 其余变化不新增持久状态或权威来源, 不需要 ADR.
+Claude Code Reviewer 执行和后台管理范围由 ADR-0032 记录, 它取代 ADR-0016 的暂停决定并修订 ADR-0030 的管理范围. 其余变化不新增持久状态或权威来源, 不需要 ADR. ticket 16 的审核轮准备, `--wait` 和非实施提交检查只把 Main Agent 原先手工执行的步骤交给程序, 轮目录在临时工作区, 不新增持久状态或权威来源; 复审收敛, 提交审核读取固定 `tree` 和实施前就绪检查是规则文字层面的取舍, 改回原文字即可撤销, 不需要 ADR. `newThread: true` 改绑同身份线程是 Reviewer 运行层既有行为, 对应长期规格 "原线程不可用或不可恢复时才新建线程", 本 ticket 只把它写进 `spawn_agent` 合同, 也不需要 ADR.
 
 ## Testing Decisions
 
@@ -204,6 +229,14 @@ Claude Code Reviewer 执行和后台管理范围由 ADR-0032 记录, 它取代 A
   - Claude 后端用一个按 `stream-json` 格式输出的假 `claude` 可执行脚本测试, 覆盖新建, 续接, 中断和失败退出.
   - 防止的风险: 命令在某个 harness 中不可用, 或复审丢失前轮上下文.
   - 参考 `tests/background-agent/` 和 `tests/helpers/reviewer-runtime-adapter.mjs`.
+- **审核轮与提交检查边界:** 通过 `arw` 命令行和注入的机器运行时观察公开结果.
+  - `prepare` 首轮写出 `spawn_agent`, 有可用原线程时写出带原 `runId` 的 `followup_task` 和复审 handoff, 记录有 `failure` 时写出带 `newThread: true` 的 `spawn_agent`, 恢复记录不是合法 JSON 时失败.
+  - 同身份已有记录而不带 `newThread` 的 `spawn_agent` 以 `reviewer-identity-exists` 拒绝, 带 `newThread: true` 时得到新的运行.
+  - `--wait` 收集 Reviewer 消息而不结束, 在 `completion` 或 `provider-program` 暂停通知时为每个请求输出一行 `:done`.
+  - `verify --non-implementation` 接受合格候选, 拒绝实施路径和终态转换.
+  - 防止的风险: Main 拿到的请求不能直接运行, 或等待提前结束.
+  - 不新增测试的部分 (风险接受): 运行层写入 `failure` 和 `newThread` 改写恢复记录 (新 `runId`, `threadId` 和 `failure: null`) 是本 ticket 之前已有的运行层行为, 本 ticket 不改其代码, 不为它新增测试. 它出错时 `prepare` 会选错请求, 但运行层对错选显式拒绝 (`reviewer-identity-exists`, 或跟进不可用线程时报错), Main 在 `:done` 行看到错误, 不会静默沿错线程审核. 唯一不报错的是 `failure` 被错记为非 `null`: 带 `newThread: true` 的新运行被受理, 原线程上下文不再续接, 结果是一次不带前轮上下文的完整新审核, 只多花时间, 不会沿错线程给出结论. `prepare` 的其他失败 (记录无法读取, 报告已存在) 是文件系统错误原样抛出; 失败残留的部分轮目录只占临时空间, 不影响下一轮 (前轮只取自恢复记录). 这些成本小于逐条写测试, 接受.
+  - 参考 `tests/commit-audit/`, `tests/spec-readiness/`, `tests/reviewer-runtime/` 和 `tests/background-agent/machine.test.mjs`.
 - **规则预算:** 一个测试按字符数近似计算常驻规则和最重日常流程的总量, 超过上限即失败.
 - **代码压缩:** 以现有完整测试套件保持通过作为行为不变的证据, 不为压缩新增测试.
 - **真实环境:** 在真实 Claude Code 和 Codex 会话中各做一次完整流程的人工冒烟验证, 作为最后一张 ticket 的验收项. 自动测试不调用真实模型.

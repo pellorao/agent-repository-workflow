@@ -40,7 +40,8 @@ test('a new Claude session runs one restricted turn and later turns resume it', 
     assert.equal(sessionPath, join(f.directory, 'projects', f.directory.replace(/[^A-Za-z0-9]/g, '-'), `${threadId}.jsonl`));
     assert.equal((await root(session, threadId)).hasConversationHistory, false);
     let changed = f.changed();
-    assert.deepEqual(await session.startTurn({threadId, handoff: 'Review it.'}), {turnId: 'turn-1'});
+    const {turnId} = await session.startTurn({threadId, handoff: 'Review it.'});
+    assert.match(turnId, /^turn-[0-9a-f-]{36}$/u);
     assert.equal((await root(session, threadId)).state, 'active');
     await changed;
     const first = await root(session, threadId);
@@ -50,7 +51,7 @@ test('a new Claude session runs one restricted turn and later turns resume it', 
     assert.equal(first.usage.totalTokens, 19);
     assert.deepEqual(first.contexts[0].permissionsRules, [{path: f.directory, access: 'read'}, {path: join(f.directory, 'reports'), access: 'write'}]);
     changed = f.changed();
-    await session.startTurn({threadId, handoff: 'Review the fix.'});
+    assert.notEqual((await session.startTurn({threadId, handoff: 'Review the fix.'})).turnId, turnId);
     await changed;
     const [created, resumed] = await f.calls();
     assert.equal(created.prompt, 'Review it.');
@@ -71,7 +72,7 @@ test('a new Claude session runs one restricted turn and later turns resume it', 
     const restored = await f.open();
     await restored.resume({threadId, expectedSessionPath: sessionPath, instructions: 'Reviewer rules.'});
     assert.equal((await root(restored, threadId)).hasConversationHistory, true);
-    await assert.rejects(restored.steer({threadId, turnId: 'turn-1', instruction: 'More.'}), /cannot take instructions while it runs/);
+    await assert.rejects(restored.steer({threadId, turnId, instruction: 'More.'}), /cannot take instructions while it runs/);
 });
 
 test('interrupting a Claude turn ends its process', async t => {

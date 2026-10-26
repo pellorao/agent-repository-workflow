@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0001:16",
+  "request": {
+    "digest": "ab66daa2e5b7cf6fa3ecf0ff9b0c28c79e70ad81d3dd82e36aa034332d05b04a",
+    "filePath": ".tmp/claude-code/06588b1e-7f07-4832-8933-107aaf5b5978/0001_16/spec-readiness/requests/request-c0471bd4-6017-439c-bce7-d73d9d2aec11.json",
+    "id": "c0471bd4-6017-439c-bce7-d73d9d2aec11"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "658f4283cabb570c22c4f8ad59eb3afc858a34bc9973c25f581ba324cd1561d3"
+  },
+  "inputs": [
+    {
+      "filePath": ".scratch/0001-claude-code-migration/spec.md",
+      "role": "governing-spec",
+      "sha256": "d59c110825b0ca80f1270a4d5d3ca968600bca1db19010258034a9ae715c6813"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow-installation/spec.md",
+      "role": "architecture-evidence",
+      "sha256": "769d970afa86292fe9f6b51c23739d89e0b8ceef804397e8547c9b09b23ae718"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow/spec.md",
+      "role": "architecture-evidence",
+      "sha256": "edd4bdd9430bb3417c7bc6184832f9f8dd8d6e365e667b93157e5325e65b168e"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0001-claude-code-migration/issues/16-review-flow-automation.md",
+    "sha256": "d3ddbb5c9154b949d1d81beb1c07a7ec43133f8206d1ee20c1524c324552a240"
+  },
+  "result": "satisfied"
+}

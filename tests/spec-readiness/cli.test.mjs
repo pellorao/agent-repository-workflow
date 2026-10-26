@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {mkdir, readFile, rm, writeFile} from 'node:fs/promises';
-import {dirname, join} from 'node:path';
+import {basename, dirname, join} from 'node:path';
 import test from 'node:test';
 
 import {createRepository, run, writeArtifact, writeIssue} from '../helpers/arw-cli.mjs';
@@ -14,20 +14,22 @@ test('spec readiness prepare accepts JSON stdin and emits a minimal reviewer req
     await writeIssue(repository.root, '0001-workflow', '01-implement.md', issue);
     await mkdir(join(repository.root, 'docs', 'agents', 'roles'), {recursive: true});
     await writeFile(join(repository.root, 'docs', 'agents', 'roles', 'spec-readiness-reviewer.md'), role, 'utf8');
+    await writeFile(join(repository.root, 'docs', 'agents', 'reviewer.md'), '# Reviewer rules\n', 'utf8');
 
-    const draftPath = join(repository.root, '.tmp', 'codex', 'test-session', '0001_01', 'spec-readiness', 'reviewer-drafts', 'draft.txt');
     const prepared = await run(['spec-readiness', 'prepare', '--issue', 'issue:0001:01'], repository, {
         specReadinessDependencies: {
             platformAdapter: {getCurrentAgentIdentity: () => ({platform: 'codex', sessionId: 'test-session'})},
         },
-        stdin: JSON.stringify({draftPath, inputs: [{filePath: '.scratch/0001-workflow/spec.md', role: 'governing-spec'}]}),
+        stdin: JSON.stringify({inputs: [{filePath: '.scratch/0001-workflow/spec.md', role: 'governing-spec'}]}),
     });
 
     assert.equal(prepared.result, 0, JSON.stringify(prepared.events));
-    assert.match(prepared.events[0].message, /[\\/]requests[\\/]request-[0-9a-f-]+\.json$/);
-    const request = JSON.parse(await readFile(prepared.events[0].message, 'utf8'));
+    const round = prepared.events[0].message;
+    assert.match(round, /[\\/]rounds[\\/][0-9a-f-]+$/);
+    const request = JSON.parse(await readFile(join(dirname(dirname(round)), 'requests', `request-${basename(round)}.json`), 'utf8'));
+    assert.equal(JSON.parse(await readFile(join(round, 'spec-readiness-reviewer.jsonl'), 'utf8')).operation, 'spawn_agent');
     assert.equal(request.issueId, 'issue:0001:01');
-    assert.equal(request.draftPath, draftPath);
+    assert.equal(request.draftPath, join(round, 'report', 'draft.txt'));
     assert.equal(request.inputs.length, 1);
     assert.equal(request.reviewerRole.id, 'spec-readiness-reviewer');
     assert.equal(request.reviewerRole.filePath, 'docs/agents/roles/spec-readiness-reviewer.md');
@@ -45,10 +47,10 @@ test('spec readiness prepare accepts the shared JSON schema from an input file',
     await writeIssue(repository.root, '0001-workflow', '01-implement.md', issue);
     await mkdir(join(repository.root, 'docs', 'agents', 'roles'), {recursive: true});
     await writeFile(join(repository.root, 'docs', 'agents', 'roles', 'spec-readiness-reviewer.md'), role, 'utf8');
+    await writeFile(join(repository.root, 'docs', 'agents', 'reviewer.md'), '# Reviewer rules\n', 'utf8');
     const inputPath = join(repository.root, '.tmp', 'codex', 'test-session', '0001_01', 'spec-readiness', 'prepare-input.json');
     await mkdir(dirname(inputPath), {recursive: true});
-    const draftPath = join(repository.root, '.tmp', 'codex', 'test-session', '0001_01', 'spec-readiness', 'reviewer-drafts', 'draft.txt');
-    await writeFile(inputPath, JSON.stringify({draftPath, inputs: [{filePath: '.scratch/0001-workflow/spec.md', role: 'governing-spec'}]}), 'utf8');
+    await writeFile(inputPath, JSON.stringify({inputs: [{filePath: '.scratch/0001-workflow/spec.md', role: 'governing-spec'}]}), 'utf8');
 
     const prepared = await run(['spec-readiness', 'prepare', '--issue', 'issue:0001:01', '--input', inputPath], repository, {
         specReadinessDependencies: {
@@ -58,9 +60,11 @@ test('spec readiness prepare accepts the shared JSON schema from an input file',
     });
 
     assert.equal(prepared.result, 0);
-    assert.match(prepared.events[0].message, /[\\/]requests[\\/]request-[0-9a-f-]+\.json$/);
-    const request = JSON.parse(await readFile(prepared.events[0].message, 'utf8'));
-    assert.equal(request.draftPath, draftPath);
+    const round = prepared.events[0].message;
+    assert.match(round, /[\\/]rounds[\\/][0-9a-f-]+$/);
+    const request = JSON.parse(await readFile(join(dirname(dirname(round)), 'requests', `request-${basename(round)}.json`), 'utf8'));
+    assert.equal(JSON.parse(await readFile(join(round, 'spec-readiness-reviewer.jsonl'), 'utf8')).operation, 'spawn_agent');
+    assert.equal(request.draftPath, join(round, 'report', 'draft.txt'));
     assert.equal(request.inputs.length, 1);
     assert.equal(request.reviewerRole.id, 'spec-readiness-reviewer');
 });
@@ -74,13 +78,12 @@ test('spec readiness rejects an issue in duplicate effort identities', async t =
     await writeArtifact(repository.root, '0001-second', 'spec.md', spec);
     await mkdir(join(repository.root, 'docs', 'agents', 'roles'), {recursive: true});
     await writeFile(join(repository.root, 'docs', 'agents', 'roles', 'spec-readiness-reviewer.md'), '# Reviewer\n', 'utf8');
-    const draftPath = join(repository.root, '.tmp', 'codex', 'test-session', '0001_01', 'spec-readiness', 'reviewer-drafts', 'draft.txt');
 
     const prepared = await run(['spec-readiness', 'prepare', '--issue', 'issue:0001:01'], repository, {
         specReadinessDependencies: {
             platformAdapter: {getCurrentAgentIdentity: () => ({platform: 'codex', sessionId: 'test-session'})},
         },
-        stdin: JSON.stringify({draftPath, inputs: [{filePath: '.scratch/0001-first/spec.md', role: 'governing-spec'}]}),
+        stdin: JSON.stringify({inputs: [{filePath: '.scratch/0001-first/spec.md', role: 'governing-spec'}]}),
     });
 
     assert.equal(prepared.result, 1);
@@ -99,16 +102,17 @@ test('spec readiness CLI covers immutable request, generate, promote, verify, an
     await writeIssue(repository.root, '0001-workflow', '02-same-scope.md', normalIssue.replace('#module-design', '#interfaces'));
     await mkdir(join(repository.root, 'docs', 'agents', 'roles'), {recursive: true});
     await writeFile(join(repository.root, 'docs', 'agents', 'roles', 'spec-readiness-reviewer.md'), '# Reviewer\n', 'utf8');
+    await writeFile(join(repository.root, 'docs', 'agents', 'reviewer.md'), '# Reviewer rules\n', 'utf8');
 
-    const draftPath = join(workspace, 'reviewer-drafts', 'draft.txt');
     const prepared = await run(['spec-readiness', 'prepare', '--issue', 'issue:0001:01'], repository, {
         specReadinessDependencies: dependencies,
-        stdin: JSON.stringify({draftPath, inputs: [
+        stdin: JSON.stringify({inputs: [
             {filePath: '.scratch/0001-workflow/spec.md', role: 'governing-spec'},
             {filePath: '.scratch/0001-workflow/spec.md', role: 'governing-spec'},
         ]}),
     });
     assert.equal(prepared.result, 0);
+    const draftPath = join(prepared.events[0].message, 'report', 'draft.txt');
     const missingInput = await run(['spec-readiness', 'generate', '--issue', 'issue:0001:01'], repository, {specReadinessDependencies: dependencies});
     assert.equal(missingInput.result, 2);
 

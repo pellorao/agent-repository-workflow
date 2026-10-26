@@ -32,7 +32,7 @@ arw spec-readiness generate --issue issue:<NNNN>:<NN> --input <draft-path>
 arw spec-readiness promote --input <generated-path>
 arw spec-readiness verify --issue issue:<NNNN>:<NN>
 arw commit-audit prepare --input <absolute-input-path>
-arw commit-audit verify
+arw commit-audit verify [--non-implementation]
 arw --version
 ```
 

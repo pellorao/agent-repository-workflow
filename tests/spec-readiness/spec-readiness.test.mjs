@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {createHash, randomUUID} from 'node:crypto';
-import {access, mkdir, readFile, readdir, symlink, writeFile} from 'node:fs/promises';
+import {mkdir, readFile, readdir, writeFile} from 'node:fs/promises';
 import {dirname, join} from 'node:path';
 import test from 'node:test';
 
@@ -60,21 +60,13 @@ const createRepository = async (/** @type {test.TestContext} */ t) => {
     await mkdir(join(root, 'docs', 'agents', 'roles'), {recursive: true});
     await writeFile(join(root, '.scratch', '0001-workflow', 'spec.md'), fullSpec, 'utf8');
     await writeFile(join(root, 'docs', 'agents', 'roles', 'spec-readiness-reviewer.md'), '# Reviewer\n', 'utf8');
+    await writeFile(join(root, 'docs', 'agents', 'reviewer.md'), '# Reviewer rules\n', 'utf8');
     await writeFile(join(root, '.scratch', '0001-workflow', 'issues', '01-implement.md'), issue(selectedRequirements), 'utf8');
     return root;
 };
 
-/** @param {string} repositoryRoot @param {{draftPath?: string, inputs: {filePath: string, role: string}[]}} [input] */
-const prepare = async (repositoryRoot, input = {inputs: normalInputs}) => {
-    const draftPath = join(repositoryRoot, '.tmp', 'codex', 'readiness-test', '0001_01', 'spec-readiness', 'reviewer-drafts', `draft-${randomUUID()}.txt`);
-    const prepared = await prepareSpecReadiness({
-        input: {draftPath, ...input},
-        issueId: 'issue:0001:01',
-        platformAdapter: adapter,
-        repositoryRoot,
-    });
-    return {...prepared, draftPath};
-};
+/** @param {string} repositoryRoot @param {{inputs: {filePath: string, role: string}[]}} [input] */
+const prepare = (repositoryRoot, input = {inputs: normalInputs}) => prepareSpecReadiness({input, issueId: 'issue:0001:01', platformAdapter: adapter, repositoryRoot});
 
 /** The Reviewer txt report: `No problems.` or one natural-language problem per item. */
 const report = (/** @type {string[]} */ problems) => problems.length === 0 ? 'No problems.\n' : `${problems.map(problem => `- ${problem}`).join('\n')}\n`;
@@ -154,13 +146,8 @@ test('each implementation issue owns an independent Spec Readiness sidecar', asy
         issue('Governing requirements:\n\n- `.scratch/0001-workflow/spec.md#module-design`'),
         'utf8',
     );
-    const draftPath = join(repositoryRoot, '.tmp', 'codex', 'readiness-test', '0001_02', 'spec-readiness', 'reviewer-drafts', `draft-${randomUUID()}.txt`);
-    await prepareSpecReadiness({
-        input: {draftPath, inputs: normalInputs},
-        issueId: 'issue:0001:02',
-        platformAdapter: adapter,
-        repositoryRoot,
-    });
+    const {roundDirectory} = await prepareSpecReadiness({input: {inputs: normalInputs}, issueId: 'issue:0001:02', platformAdapter: adapter, repositoryRoot});
+    const draftPath = join(roundDirectory, 'report', 'draft.txt');
     await writeFile(draftPath, report([]), 'utf8');
     const generated = await generateSpecReadiness({
         inputPath: draftPath,
@@ -232,14 +219,13 @@ test('prepare activation failure removes the new request and preserves the prior
     const requestsDirectory = dirname(initial.path);
     const activeBefore = await readFile(activePath, 'utf8');
     const requestsBefore = await readdir(requestsDirectory);
-    const draftPath = join(workspaceDirectory, 'reviewer-drafts', `draft-${randomUUID()}.txt`);
 
     await assert.rejects(prepareSpecReadiness({
         atomicWriteFile: async (path, text) => {
             if (path === activePath) throw new Error('Injected request activation failure.');
             await writeFile(path, text, {encoding: 'utf8', flag: 'wx'});
         },
-        input: {draftPath, inputs: normalInputs},
+        input: {inputs: normalInputs},
         issueId: 'issue:0001:01',
         platformAdapter: adapter,
         repositoryRoot,
@@ -247,48 +233,12 @@ test('prepare activation failure removes the new request and preserves the prior
 
     assert.equal(await readFile(activePath, 'utf8'), activeBefore);
     assert.deepEqual(await readdir(requestsDirectory), requestsBefore);
-    await assert.rejects(access(draftPath), {code: 'ENOENT'});
 });
 
-test('prepare rejects draft targets outside the issue workspace, at existing files, or through linked parents', async t => {
+test('prepare rejects a Main-chosen draft path', async t => {
     const repositoryRoot = await createRepository(t);
-    const outsidePath = join(repositoryRoot, '.tmp', 'codex', 'readiness-test', 'other_01', 'spec-readiness', 'draft.txt');
-    await assert.rejects(
-        prepare(repositoryRoot, {draftPath: outsidePath, inputs: normalInputs}),
-        /outside the current issue temporary workspace/i,
-    );
-
-    const wrongExtensionPath = join(repositoryRoot, '.tmp', 'codex', 'readiness-test', '0001_01', 'spec-readiness', 'reviewer-drafts', 'draft.json');
-    await assert.rejects(
-        prepare(repositoryRoot, {draftPath: wrongExtensionPath, inputs: normalInputs}),
-        /not a txt file/i,
-    );
-
-    const existingPath = join(repositoryRoot, '.tmp', 'codex', 'readiness-test', '0001_01', 'spec-readiness', 'reviewer-drafts', 'existing.txt');
-    await mkdir(dirname(existingPath), {recursive: true});
-    await writeFile(existingPath, '{}\n', 'utf8');
-    await assert.rejects(
-        prepare(repositoryRoot, {draftPath: existingPath, inputs: normalInputs}),
-        /must not already exist/i,
-    );
-
-    const redirected = join(repositoryRoot, 'redirected-drafts');
-    const linkedParent = join(repositoryRoot, '.tmp', 'codex', 'readiness-test', '0001_01', 'spec-readiness', 'linked-drafts');
-    await mkdir(redirected, {recursive: true});
-    try {
-        await symlink(redirected, linkedParent, process.platform === 'win32' ? 'junction' : 'dir');
-    } catch (error) {
-        if (process.platform === 'win32' && error !== null && typeof error === 'object' && 'code' in error
-            && (error.code === 'EPERM' || error.code === 'EACCES')) {
-            t.skip('The current environment does not allow directory symbolic links.');
-            return;
-        }
-        throw error;
-    }
-    await assert.rejects(
-        prepare(repositoryRoot, {draftPath: join(linkedParent, 'draft.txt'), inputs: normalInputs}),
-        /linked path segment/i,
-    );
+    await assert.rejects(prepareSpecReadiness({input: {draftPath: join(repositoryRoot, '.tmp', 'draft.txt'), inputs: normalInputs}, issueId: 'issue:0001:01',
+        platformAdapter: adapter, repositoryRoot}), /unknown or missing fields/u);
 });
 
 test('generate rejects an empty bound report when a different file contains No problems and writes no artifact', async t => {

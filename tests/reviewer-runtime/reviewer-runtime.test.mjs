@@ -84,6 +84,9 @@ test('spawn accepts once before native work, then verifies a bound report and ro
     assert.equal(completed.measurement?.wallClockMs, 120);
     assert.equal(JSON.stringify(completed).includes('The complete Reviewer-written report.'), false);
     failed(await runtime.execute({operation: 'spawn_agent', input: reviewerHandoff}), 'reviewer-identity-exists');
+    await fixture.writeReport('');
+    const fresh = succeeded(await runtime.execute({operation: 'spawn_agent', input: {...reviewerHandoff, newThread: true}}));
+    assert.notEqual(fresh.runId, accepted.runId);
     await runtime.close();
 });
 

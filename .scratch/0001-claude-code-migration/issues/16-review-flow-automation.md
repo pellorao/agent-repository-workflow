@@ -19,22 +19,27 @@ ticket 15 中等规模冒烟 (约 330 行 CLI, 同一 issue) 的基线: Codex �
 - `wait_agent` 增加等到完成的选项; `stateDirectory`, `resultPath` 的位置写进 `reviewer-launch`; followup 后 `turnId` 仍为 `turn-1` 的问题排查.
 - Codex 沙盒内启动的管理进程无法拉起 App Server: 文档写明在沙盒外预启动, 或让管理进程自行脱离沙盒.
 
+- 用户决定 (2026-10-26): Claude 后端 Reviewer 只用 `haiku`, 不用其他 Claude 模型, 推理强度可调; 只写进规则, 不加程序强制.
+
+各项的预期行为见治理 spec 的 `Program-prepared review rounds`.
+
 目标: 在 15 的同一中等规模冒烟上重测, Claude Code 墙钟和 Main 工具调用都减半以上, Reviewer 总轮数明显下降.
 
-预估改动: 净减.
+预估改动: 运行时代码约 +200 行, 测试约 +150 行, 规则和 Skill 约 -150 行.
 
 ## Spec Requirement
 
 Governing requirements:
 
-- `.scratch/0001-claude-code-migration/spec.md#review-workflow`
+- `.scratch/0001-claude-code-migration/spec.md#program-prepared-review-rounds`
 
 ## Acceptance criteria
 
-- [ ] Main 不再手工拼 spawn 请求和规则副本.
-- [ ] 非实施提交检查是一条命令.
+- [x] Main 不再手工拼 spawn 请求和规则副本.
+- [x] 非实施提交检查是一条命令.
 - [ ] 同一中等规模 issue 上, Main 工具调用数和耗时相对 15 的冒烟明显下降, 数据记入 `## Comments`.
-- [ ] 全量测试和分发检查通过.
+- [x] 长期规格与规则, Skill 同步更新上述公开合同和手工步骤.
+- [x] 全量测试和分发检查通过.
 
 ## Blocked by
 
