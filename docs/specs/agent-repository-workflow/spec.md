@@ -377,7 +377,7 @@ Strata 驱动只从[共享模型目录](../agent-repository-workflow-installatio
 
 两个命令成功连接并取得列表时照常显示表格, 真实空列表仍显示普通空表; 其他配置, 鉴权和状态读取错误继续报告具体原因. 连接被拒绝, 或状态目录缺失, 或凭据与数据库同时缺失而无法取得列表时, 客户端只读观察当前用户的操作系统进程. 只有可靠确认管理进程不存在时, 才向标准输出显示 `The manager process is not running; there are no managed background Agents.`, 退出码为 `0`. 即使遗留模型或工具仍存活, 该消息也只说明当前没有被管理的后台 Agent; 安全维护仍须独立核对原生退出. 管理进程存在而列表不可取得, 或进程观察无法可靠确认其不存在时, 向标准错误显示 `The background Agent list is temporarily unavailable.`, 退出码为 `1`, 不显示普通空表. 进程观察在 Linux, Windows 和 macOS 上以准确启动入口和实参识别管理进程, 不凭命令行关键词匹配; 缺少状态目录, 凭据或数据库本身不能证明进程不存在. 查询不创建持久身份文件, 不取得启动或维护锁, 不启动管理进程或模型.
 
-输出使用与现有 `arw list` 命令相同的表格形式, 列为 `Status`, `Role`, `Main session`, `Elapsed`, 不显示工作目录. Reviewer 的 `Elapsed` 消费 [模型工作时间](#model-work-time), 不将原始墙钟直接呈现为审核工作耗时. `Main session` 始终同时显示完整 session ID 和会话标题. 标题优先使用所属 Main 的原生标题, 没有原生标题时使用其首条用户消息的前 40 个字符. 两种来源都无法提供有效标题时, 标题位置以灰色文本显示 `N/A`, 表明标题未知, 同一行仍显示完整 session ID 和其他可取得的信息; 列表继续显示其他环境, 表格排版不受颜色控制字符影响. 两个命令的查询不启动或恢复 App Server, 不停止或中断后台任务, 不改变归属和控制权. Main 身份由控制层保存与核对, 不能从本轮 Reviewer 提示或报告反推.
+输出使用与现有 `arw list` 命令相同的表格形式, 列为 `Status`, `Role`, `Main session`, `Elapsed`, 不显示工作目录. Reviewer 的 `Elapsed` 消费 [模型工作时间](#model-work-time), 不将原始墙钟直接呈现为审核工作耗时. `Main session` 始终同时显示完整 session ID 和会话标题. 标题优先使用所属 Main 的原生标题, 没有原生标题时使用其首条用户消息的前 40 个字符, 平台注入的仓库指令消息 (以 `# AGENTS.md instructions for` 开头) 不算用户消息. 两种来源都无法提供有效标题时, 标题位置以灰色文本显示 `N/A`, 表明标题未知, 同一行仍显示完整 session ID 和其他可取得的信息; 列表继续显示其他环境, 表格排版不受颜色控制字符影响. 两个命令的查询不启动或恢复 App Server, 不停止或中断后台任务, 不改变归属和控制权. Main 身份由控制层保存与核对, 不能从本轮 Reviewer 提示或报告反推.
 
 `Elapsed` 表示当前任务自开始以来的执行时长, 包含等待时间. Reviewer 优先消费同一工作计量的当前结果, 表格统一显示耗时值, 不添加估算前缀或表尾说明. 冷查询尚未取得绑定的工作计量时, 仅按已保存的任务起止跨度估算; 机器结果保留估算标记及停机与休眠边界不完整的依据. 非 Reviewer 保留原任务墙钟口径, 不把两者混成另一个计时权威. 同一活动回合的补充消息与列表查询不重置它; 任务结束后停止累计, 新任务从自身开始时重新计时. 它不表示 App Server 的存活时长. `Status` 使用已观测的运行事实, 未知不能显示为空闲. 确认退出的环境不在列表中, 已完成任务但环境仍空闲的实例继续显示. 该列表只提供运行概览, 不把后台 Agent 的完成状态当作 Reviewer 审核通过结论.
 
@@ -479,7 +479,7 @@ Reviewer 耗时只计算同一审核任务的工作时间. 原始墙钟仍为任
 
 ### Platform support
 
-Claude Code 原生 Reviewer 执行暂停, 静态 Skill 与 CLAUDE.md 投射, 安装和更新继续受支持. 静态投射不证明 Reviewer 可执行, 平台暂停不豁免审核关卡, 不承诺 Claude Main 已接入独立 Codex Reviewer 入口. 公共运行合同保持一个权威来源, 不为暂停的平台维护第二套 Reviewer 运行流程.
+Codex 与 Claude Code 都完整支持静态 Skill 与 `AGENTS.md` / `CLAUDE.md` 投射, 安装, 更新和 `arw background-agent`. 用户级管理进程按 Reviewer 设置选择后端: `modelProvider` 为 `anthropic` 时用非交互运行的 `claude -p` 的 Claude 后端, 其他提供方用共享 Codex App Server; 两种后端实现同一 `NativeSessions` 接口. 静态投射不证明 Reviewer 可执行, 平台差异不豁免审核关卡. 公共运行合同保持一个权威来源, 不为任何平台维护第二套 Reviewer 运行流程.
 
 ## Spec Readiness
 
@@ -928,6 +928,6 @@ Reviewer 的定向测试分别观察中断保留运行环境, 违规时仅使该
 
 每个实施或文档 issue 在完成前必须通过 `arw text check`, 以及把该 issue 所属当前 effort 的实际仓库相对目录传给 `--include` 的 `arw terms check`. Repository Profile 配置 Code Map 时还必须通过 `arw code-map verify`. Repository-owned 测试套件继续补充测试, 构建和其他本地验证.
 
-Commit Audit 的确定性验证通过公开准备与 verify 生命周期观察授权范围, Gate 1 和 Gate 2 推导及 Artifact 身份保留; 观察审计使用准确索引, 不混入新工作树字节. Agent 工作流的独立核对使用正常交付实际取得的请求, 原始报告及结果, 证明共同候选, 自身前轮覆盖, 差异与关联影响, 未完成检查及最终授权. 确定性解析器不声称判断任意代码语义, 文档规则不使用仅断言包含某句话的测试证明, 普通规则验证不新增全自动真实模型端到端场景.
+Commit Audit 的确定性验证通过公开准备与 verify 生命周期观察授权范围, Gate 1 和 Gate 2 推导及 ARW Artifact 身份保留; 观察审计使用准确索引, 不混入新工作树字节. Agent 工作流的独立核对使用正常交付实际取得的请求, 原始报告及结果, 证明共同候选, 自身前轮覆盖, 差异与关联影响, 未完成检查及最终授权. 确定性解析器不声称判断任意代码语义, 文档规则不使用仅断言包含某句话的测试证明, 普通规则验证不新增全自动真实模型端到端场景.
 
 源码仓库的确定性测试矩阵与完整验证命令由[源码仓库验证规则](../../agents/source-checkout-validation.md)拥有, 测试与类型检查继续独立, 实际依赖和输入有效性决定执行顺序及结果复用. 安装与发布受验系统矩阵留在各自的责任规格中.

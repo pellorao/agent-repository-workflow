@@ -76,7 +76,7 @@ Workflow Distribution Module 递归枚举固定安全树. 每个安全普通文�
 
 `repositoryOwnedSeeds` 只接受精确文件或目标目录根, 不接受 `glob`. 目录只约束 ARW 投影的目标, 不取得目录中其他文件的归属.
 
-规范 Role 文件保留扁平身份布局, 同名子目录只保存该 Role 按需引用的安全普通 Markdown 文档, 不建立另一份 Role 身份. Claude Code 的静态 Skill 与 `CLAUDE.md` 投射继续按安装和更新生命周期处理, 原生 Reviewer 执行暂停. 运行支持范围与共享入口的实际上下文核对由[产品 Reviewer 工作流](../agent-repository-workflow/spec.md#reviewer-workflow)拥有, 不能用静态投射代替运行证据或豁免审核关卡.
+规范 Role 文件保留扁平身份布局, 同名子目录只保存该 Role 按需引用的安全普通 Markdown 文档, 不建立另一份 Role 身份. Claude Code 的静态 Skill 与 `CLAUDE.md` 投射继续按安装和更新生命周期处理, Claude Reviewer 经 Claude 后端执行. 运行支持范围与共享入口的实际上下文核对由[产品 Reviewer 工作流](../agent-repository-workflow/spec.md#reviewer-workflow)拥有, 不能用静态投射代替运行证据或豁免审核关卡.
 
 ### Projection configuration
 

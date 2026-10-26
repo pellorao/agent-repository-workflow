@@ -9,7 +9,7 @@ Application effort 的 `spec.md` 使用 `Application validation issue: <NN>` 标
 1. 审查镜像后的状态和 `Downstream changes`.
 2. 执行 Application 验证 issue, 并记录它要求的证据.
 
-`Downstream changes` 是提供给 Application Leader 的信息, 不是额外的完成资格条件.
+`Downstream changes` 是提供给 Application Leader 的信息, 不是额外的完成资格条件, 缺失时也不阻断完成.
 
 完成前, 已批准的 effort 字节和验证证据必须已经提交并推送, 使当前分支的上游包含 `HEAD` 中准确的 effort 目录树. 向用户展示准确的已暂存路径, 上游分支, JIRA issue 标识符, 完整的完成评论和目标状态. 为这组准确的提交, 推送和 JIRA 写入获取显式授权.
 

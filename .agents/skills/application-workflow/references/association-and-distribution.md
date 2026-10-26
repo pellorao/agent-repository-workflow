@@ -23,7 +23,7 @@ arw application associate issue:<application-effort-number>:<application-issue-n
 - 可能归一化受影响的阻断项引用.
 - 成功后使替换内容保持未暂存状态.
 
-命令不执行 Git 暂存, 提交或推送.
+命令不执行 Git 暂存, 提交或推送, 这些操作由用户审查后在后续步骤中另行完成.
 
 发布关联后, 任何一方都不得更改关联字段, 也不得建议更换关联目标. Application Source Issue 不是本地实施 issue. 同步操作负责镜像 Application Source Issue 的状态和 `Downstream changes`.
 

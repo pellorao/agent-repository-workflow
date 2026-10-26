@@ -30,6 +30,9 @@ test('Main title prefers native title and otherwise uses the first user message 
     assert.equal(await readCodexMainTitle({ownerId, native: native(sessionPath, 'Native session title')}), 'Native session title');
     assert.equal(await readCodexMainTitle({ownerId, native: native(sessionPath)}), `😀${'界'.repeat(39)}`);
 
+    await writeFile(sessionPath, line(session(ownerId)) + line(userMessage('# AGENTS.md instructions for /repo\n\n<INSTRUCTIONS>')) + line(userMessage('real request')), 'utf8');
+    assert.equal(await readCodexMainTitle({ownerId, native: native(sessionPath)}), 'real request');
+
     await writeFile(sessionPath, line(session(ownerId)) + line({type: 'response_item', payload: {type: 'message', role: 'assistant', content: [{type: 'output_text', text: 'assistant text'}]}}), 'utf8');
     assert.equal(await readCodexMainTitle({ownerId, native: native(sessionPath)}), null);
     await writeFile(sessionPath, line(session('other-native-session')) + line(userMessage(firstUser)), 'utf8');
