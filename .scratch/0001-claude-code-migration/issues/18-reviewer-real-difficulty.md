@@ -7,7 +7,8 @@ Status: ready-for-agent
 ticket 10 定 txt 格式所用场景过小 (候选 72 到 82 行, 每 5 到 10 行一个缺陷), 且只测了 `requirements-reviewer`. 改用真实难度的场景重新测三个角色:
 
 - 先把 qwen_strata benchmark v2 的 Reviewer 测试整套复制过来: 冻结的 ARW 源码 (`freeze_arw_source`), v1 `benchmarks/reviewer-suite-v1/arw-patches/` 的全部补丁 (场景逐版加难, 评分 `scoring-k`, harness 补丁 `strata-measurement-time-limit`, `reviewer-private-scratch`, `codex-0.163-synthetic-mount-targets` 等), v2 的 4 个场景补丁和 `scoring-r8.5`, 按 v2 计划声明的版本依次应用 (同 `arw_dimension prepare`), 并核对物化结果 (base/candidate/handoff, 答案键, 盲裁 brief) 与 benchmark 一致.
-- 再在复制结果上应用已商定的改动, 不完全照搬 (用户 2026-10-26): 被测的是 ARW 现行的三个角色和 txt 报告格式 (用户选 A), Code Spec 与 Commit Audit 场景都交给 `requirements-reviewer`; 评分按 txt 格式适配.
+- 已商定的改动 (ARW 现行三个角色, txt 报告格式, Code Spec 与 Commit Audit 场景交给 `requirements-reviewer`, 用户选 A) 尚未在真实难度场景上验收. 先用原样复制的 qwen_strata 那套跑出基线, 再在复制结果上应用这些改动 (评分按 txt 格式适配) 跑同样的配置; 改动后的得分不低于基线 (在测量波动内) 才算验收通过 (用户 2026-10-26).
+- 验收通过前, 需要本地 Strata 审查或 Reviewer 测量时都用 qwen_strata 原样的那套.
 - 再从本仓库历史中取被独立审查抓到问题的真实提交 (如 `530cca6` 修复前) 做场景.
 - 每个角色用 luna xhigh 和 haiku high 各跑 2 到 3 次, 记录召回, 误报, 偷懒迹象.
 - Spec Readiness 另测 haiku xhigh, 在同一冒烟场景与 haiku high 比较收敛轮数 (15 冒烟中 haiku high 5 到 9 轮才收敛). 日常 Reviewer 不考虑 sonnet, 成本过高.
