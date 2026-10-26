@@ -11,6 +11,7 @@ ticket 10 定 txt 格式所用场景过小 (候选 72 到 82 行, 每 5 到 10 �
 - 每个角色用 luna xhigh 和 haiku high 各跑 2 到 3 次, 记录召回, 误报, 偷懒迹象.
 - Spec Readiness 另测 haiku xhigh, 在同一冒烟场景与 haiku high 比较收敛轮数 (15 冒烟中 haiku high 5 到 9 轮才收敛). 日常 Reviewer 不考虑 sonnet, 成本过高.
 - 落实 spec 中 "Gate 2 漏报记一行" 的规定.
+- 用 benchmark v2 场景计一个 issue 的完整流程墙钟: 60 分钟以内为合格, 30 分钟以内为优, 达到优即停止流程优化 (用户 2026-10-26).
 - 格式或模型需要调整时, 在本 ticket 中写明并修改.
 
 ## Spec Requirement

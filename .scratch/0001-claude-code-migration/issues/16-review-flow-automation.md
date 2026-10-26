@@ -23,7 +23,9 @@ ticket 15 中等规模冒烟 (约 330 行 CLI, 同一 issue) 的基线: Codex �
 
 各项的预期行为见治理 spec 的 `Program-prepared review rounds`.
 
-目标: 在 15 的同一中等规模冒烟上重测, Claude Code 墙钟和 Main 工具调用都减半以上, Reviewer 总轮数明显下降.
+- Reviewer 提出修改 spec 的意见时, Main Agent 和一个智力与推理强度都不低于它的独立 subagent 共同决定是否修改及怎样修改, 双方有分歧再交用户决定 (用户 2026-10-26). 写进 `spec-readiness` 和 `rule-and-design-changes` Skill, 取代逐次向用户确认.
+
+目标 (用户 2026-10-26): Reviewer 每个关卡约 3 轮属于正常; 一个 issue 的完整流程墙钟必须在 60 分钟以内, 30 分钟以内为优, 达到即停止优化. 最终以 ticket 18 移植的 benchmark v2 场景计时; 本 ticket 先在 15 的同一冒烟上确认 Claude Code 不超过 60 分钟.
 
 预估改动: 运行时代码约 +200 行, 测试约 +150 行, 规则和 Skill 约 -150 行.
 
@@ -37,7 +39,8 @@ Governing requirements:
 
 - [x] Main 不再手工拼 spawn 请求和规则副本.
 - [x] 非实施提交检查是一条命令.
-- [ ] 同一中等规模 issue 上, Main 工具调用数和耗时相对 15 的冒烟明显下降, 数据记入 `## Comments`.
+- [ ] 同一中等规模 issue 上, Main 工具调用数相对 15 的冒烟明显下降, Claude Code 和 Codex 墙钟都不超过 60 分钟, 数据记入 `## Comments`.
+- [ ] Reviewer 的 spec 修改意见由 Main 与独立 subagent 共同决定, 分歧才交用户.
 - [x] 长期规格与规则, Skill 同步更新上述公开合同和手工步骤.
 - [x] 全量测试和分发检查通过.
 
