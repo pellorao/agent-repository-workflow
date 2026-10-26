@@ -27,7 +27,7 @@ Reviewer 只读取该版本, 不从正在变化的工作树补取证据或更新
 
 ## Commands
 
-每次 Bash 调用只运行一条命令, 不用 `cd`, `&&`, `;` 或管道. 工作目录就是仓库根目录, git 命令直接以 `git <子命令>` 开头, 不加 `-C`. Claude 后端的只读放行规则按单条命令前缀匹配, 组合命令会被拒绝.
+每次 Bash 调用只运行一条命令, 不用 `cd`, `&&`, `;` 或管道; 唯一例外是通知命令 `echo '<json>' | arw background-agent`. 工作目录就是仓库根目录, git 命令直接以 `git <子命令>` 开头, 不加 `-C`. Claude 后端的放行规则按单条命令前缀匹配, 其他组合命令会被拒绝.
 
 ## Independent runtime
 
@@ -43,9 +43,9 @@ Reviewer 只读取该版本, 不从正在变化的工作树补取证据或更新
 
 跨运行环境的通信只允许 Main Agent 向 Reviewer 发送工作指示, Reviewer 向 Main Agent 发送已核实问题, 必要进度, 阻塞或具体治理冲突等中途消息; 程序的自动工作指示和错误恢复由程序负责. Reviewer 独立完成审核, 不向 Main Agent 或用户索取信息, 征求同意或请求审批; 必要输入不足时按角色规则返回 `incomplete`.
 
-Reviewer 核实问题后先写入绑定报告, 再通过 `arw background-agent` 的 `send_message` 及时通知: 使用运行环境提供的 `ARW_BACKGROUND_AGENT_RUN_ID` 作为 `runId`, 用 `message` 提交通知正文, 保存返回的消息编号与状态; 运行环境没有提供 `ARW_BACKGROUND_AGENT_RUN_ID` 时 (如 Claude 后端) 跳过通知, 只写报告. 完成完整绑定报告后按角色格式结束原生回合. 原生进度文字和最终响应不自动生成 ARW 消息, 中途消息不替代报告; 最终交付由运行层核实.
+Reviewer 核实问题后先写入绑定报告, 再通过 `arw background-agent` 的 `send_message` 及时通知: 使用运行环境提供的 `ARW_BACKGROUND_AGENT_RUN_ID` 作为 `runId`, 用 `message` 提交通知正文, 保存返回的消息编号与状态; 运行环境没有提供 `ARW_BACKGROUND_AGENT_RUN_ID` 时跳过通知, 只写报告. 完成完整绑定报告后按角色格式结束原生回合. 原生进度文字和最终响应不自动生成 ARW 消息, 中途消息不替代报告; 最终交付由运行层核实.
 
-Reviewer 使用 Codex 原生 `on-request` 和 `auto_review` 处理仓库外访问, 保留原生网络审批, `web_search` 与 MCP 设置. 需要人工决定的用户输入, 权限或 MCP 请求不转交用户或 Main Agent 代答, 由运行层给出原生协议允许的拒绝响应并让 Reviewer 看到原因; 命令和文件审批使用继续当前回合的 `decline`. 拒绝只针对这次请求, Reviewer 继续利用已有输入完成其余检查; 只有必要检查或报告确实无法完成时, 说明具体不足并返回 `incomplete`.
+Codex 后端的 Reviewer 使用原生 `on-request` 和 `auto_review` 处理仓库外访问, 保留原生网络审批, `web_search` 与 MCP 设置; Claude 后端的 Reviewer 只有放行规则内的工具, 其他工具请求由运行层拒绝. 需要人工决定的用户输入, 权限或 MCP 请求不转交用户或 Main Agent 代答, 由运行层给出原生协议允许的拒绝响应并让 Reviewer 看到原因; 命令和文件审批使用继续当前回合的 `decline`. 拒绝只针对这次请求, Reviewer 继续利用已有输入完成其余检查; 只有必要检查或报告确实无法完成时, 说明具体不足并返回 `incomplete`.
 
 墙钟时间和原生 token 计量由运行层记录, 无法取得时保留未知, 不记为 0; 计量和通知都不替代完整文件报告或正式结果授权.
 

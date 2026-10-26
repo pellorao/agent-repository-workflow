@@ -1,6 +1,6 @@
 # 审核流程的机械步骤交给程序
 
-Status: ready-for-agent
+Status: completed
 
 ## What to build
 

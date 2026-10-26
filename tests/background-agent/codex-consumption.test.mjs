@@ -16,7 +16,7 @@ const session = id => ({type: 'session_meta', payload: {id}});
 const native = (sessionPath, title = null) => ({
     readThreadMetadata: async (/** @type {{threadId:string}} */ input) => {
         assert.equal(input.threadId, ownerId);
-        return {title, preview: '', sessionPath};
+        return {title, sessionPath};
     },
 });
 
