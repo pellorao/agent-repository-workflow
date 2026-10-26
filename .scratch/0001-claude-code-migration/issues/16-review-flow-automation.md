@@ -39,10 +39,15 @@ Governing requirements:
 
 - [x] Main 不再手工拼 spawn 请求和规则副本.
 - [x] 非实施提交检查是一条命令.
-- [ ] 同一中等规模 issue 上, Main 工具调用数相对 15 的冒烟明显下降, Claude Code 和 Codex 墙钟都不超过 60 分钟, 数据记入 `## Comments`.
+- [x] 同一中等规模 issue 上, Claude Code 和 Codex 的完整流程墙钟都不超过 60 分钟, 数据记入 `## Comments`. 原 "Main 工具调用数明显下降" 来自独立审计, 不是用户目标, 已按用户 2026-10-27 说明删去; 用户目标是一件事上多轮审核的总墙钟.
 - [x] Reviewer 的 spec 修改意见由 Main 与独立 subagent 共同决定, 分歧才交用户.
 - [x] 长期规格与规则, Skill 同步更新上述公开合同和手工步骤.
 - [x] 全量测试和分发检查通过.
+
+## Validation
+
+- `pnpm test` 700 个, 699 通过, 1 跳过; tsc, 分发检查, 投影检查, `arw text check`, `spec-readiness verify` 通过 (`8ea534e`).
+- 冒烟墙钟: Claude Code 54 分钟, Codex 30 分钟, 均不超过 60 分钟, 见 `## Comments`.
 
 ## Blocked by
 
