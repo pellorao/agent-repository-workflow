@@ -13,19 +13,15 @@ name: commit
 - 检查精确的已暂存路径集合. 每一项都符合 [非实施分类](#non-implementation-commit-workflow) 时使用非实施工作流; 任何一项属于当前仓库的实施工作时, 对完整候选使用 [实施 issue 工作流](#implementation-issue-commit-workflow); 某项无法分类时先停止并解决归属, 不推断它是实施工作.
 - 同一实施授权覆盖完整候选时, 符合条件的非实施内容可以与实施工作保留在一起, 不因一项原子变更同时更新规划记录或仓库状态而拆分它. 授权范围外的内容先取得自己的授权, 才能加入候选.
 
-## Fixed review version
-
-从 `arw commit-audit prepare` 到本轮两个 Reviewer 完整结束或 Main Agent 明确终止期间, 不改变索引, HEAD 和本轮输入, 也不进行另一次提交. 工作树中的修复可以继续, 本轮结束后才暂存. 违反此边界的变化使本轮作废.
-
 ## Implementation issue commit workflow
 
 1. 确定完整排序的 `authorizingIssueIds`, 按 `code-review` 的 [完成记录](../code-review/result-reuse.md#completion-records) 规则更新真实的 Status 和验收勾选, 暂存完整实施候选. 必要实施验证按 `validation` Skill, 可以与审核并行; 未完成的检查不提供通过事实.
-2. 按 [Run](#run) 准备 Request, 并行启动两个 Reviewer: `requirements-reviewer` (要求符合审核) 和 `code-review` Skill 的 Code Standards 轴. 一次提交最多这两个并行 Reviewer.
+2. 按 [Run](#run) 准备审核轮, 并行运行 `requirements-reviewer` (要求符合审核) 和 `code-standards-reviewer`. 一次提交最多这两个并行 Reviewer.
 3. 两个 Reviewer 正常结束 (`ready`) 后, 按 `docs/agents/subagent-findings.md` 独立核对报告中的每个问题. 每轮自选一两处 Reviewer 应当检查的要求或代码位置抽查; 发现漏检时该轮结果作废并重审. Reviewer 返回 `incomplete` 时本轮结束, Main Agent 处理其原因后重新 `prepare`.
-4. 修复后重新暂存并在新目录 `prepare`. 复审只交付相邻版本的变化及影响范围和该 Reviewer 的前轮报告 ([复审规则](../../../docs/agents/reviewer.md#re-review)); 某个 Reviewer 的输入没有受影响时保留其结果.
-5. 按 [记录章节](../issue-tracking/SKILL.md#issue-record-sections) 规则统一暂存收尾记录, 机械核对它相对受审候选的差异. 只有记录差异不需要复审.
+4. 修复后暂存 (审核运行期间也可以暂存) 并用同一 `input.json` 再次 `prepare`; 新一轮自动沿原线程复审, 只交付相邻版本变化和该 Reviewer 的前轮报告 ([复审规则](../../../docs/agents/reviewer.md#re-review)). 某个 Reviewer 的输入没有受影响时只运行另一个的 `.jsonl`, 保留其结果.
+5. 按 [记录章节](../issue-tracking/SKILL.md#issue-record-sections) 规则统一暂存收尾记录, 用 `git diff <受审 tree> $(git write-tree)` 核对最终暂存树相对受审版本只有记录差异. 只有记录差异不需要复审.
 6. 提交门槛是两个 Reviewer 正常结束且报告中的问题都已处理 (修正, 或按质疑规则证明无效). 未完成 issue 的问题只在确属计划中尚未完成的工作时保留. 运行 `arw commit-audit verify` 并取得空错误列表.
-7. 对每个授权 issue 运行 `arw spec-readiness verify --issue issue:<NNNN>:<NN>` 并取得 `0`, 再核对最终候选只包含已审核版本, 和获准记录差异, 然后提交.
+7. 对每个授权 issue 运行 `arw spec-readiness verify --issue issue:<NNNN>:<NN>` 并取得 `0`, 然后提交.
 
 Main Agent 发现某个问题本应在已通过的 Gate 2 中被发现时, 在该 effort 的 spec 末尾记录一行 (问题, 对应提交和 Gate 2 Reviewer 模型), 作为调整 Reviewer 模型的依据.
 
@@ -40,10 +36,10 @@ Main Agent 发现某个问题本应在已通过的 Gate 2 中被发现时, 在�
 
 ### Run
 
-1. 在仓库 `.tmp/` 下建立新目录, 写入 `input.json`, 只含完整排序的 `authorizingIssueIds` 和适用时的 `gate2Exception`. 运行 `arw commit-audit prepare --input <absolute-input-path>`; 它创建 `request.json` (含 `gate1`, `gate2` 范围和 `reviewPath`) 和空的 `reports/review.txt`, 只打印 Request 绝对路径, 已有文件不覆盖.
-2. 按 `reviewer-launch` Skill 启动 `requirements-reviewer`. 线程身份是该角色加完整排序的 `authorizingIssueIds`; `handoff` 提供 Request 路径; `reportPath` 是 `reports/review.txt`. Reviewer 按 [报告格式](../../../docs/agents/reviewer.md#report) 逐条写入问题, 或写 `No problems.`.
+1. 在仓库 `.tmp/` 下写一个 `input.json`, 只含完整排序的 `authorizingIssueIds` 和适用时的 `gate2Exception`. 运行 `arw commit-audit prepare --input <absolute-input-path>`; 它新建 [审核轮](../reviewer-launch/SKILL.md#review-rounds) 目录 `_commit-audit/<n>/`, 其中 `request.json` 含 `gate1`, `gate2`, `reviewPath` 和受审版本 `base`, `tree`, 只打印轮目录.
+2. 按 `reviewer-launch` 的 [审核轮](../reviewer-launch/SKILL.md#review-rounds) 运行 `cat <轮目录>/*.jsonl | arw background-agent --wait`. Reviewer 按 [报告格式](../../../docs/agents/reviewer.md#report) 逐条写入问题, 或写 `No problems.`.
 
-Main Agent 负责暂存, Request, 审核协调和处理问题, 不代写语义判断. Reviewer 只运行只读 git 命令读取索引, 不调用 Engine, 不修改索引.
+Main Agent 负责暂存, Request, 审核协调和处理问题, 不代写语义判断. Reviewer 只用只读 git 命令读取 `base` 和 `tree`, 不调用 Engine, 不修改索引.
 
 ## Non-implementation commit workflow
 
@@ -56,14 +52,9 @@ Main Agent 负责暂存, Request, 审核协调和处理问题, 不代写语义�
 
 候选可以删除该 effort 的辅助文件, 但必须保留每个已提交的 ARW Artifact 身份; 类型和编号不变的重命名属于身份保留. 候选使实施 issue 新进入 `completed` 或 `wontfix` (包括从另一个终态转换) 时不符合条件; `HEAD` 中已处于相同终态的 issue 不因其他字节变化而再次进入该状态.
 
-1. 运行 `git diff --cached --name-status` 并用 Git 检查已暂存项, 冻结非空路径集合, 状态, 项模式和对象身份. 拒绝不安全路径, 符号链接, 目录项, 不受支持的项和分类以外的项.
-2. 确认每个已暂存项都没有未暂存的替代内容. 对照 `HEAD` 分类添加, 更新, 重命名和删除, 保留每个已提交的 `issue:<NNNN>:<NN>`, `map:<NNNN>` 和 `spec:<NNNN>` 身份, 检测实施 issue 的终态转换. 当前存在于工作树中的 `gitlink`, 其子模块 `HEAD` 必须等于已暂存对象身份.
-3. 对每个新增或更新的已注册 ARW Artifact, 证明 `arw print <canonical-id>` 会读取已暂存字节后运行它, 只要求解析成功, 身份符合预期且记录类型正确. 不运行关系, 阻断项, 生命周期, 链接或语义检查.
-4. 检查已暂存普通文件字节是没有 BOM 的 UTF-8 和 LF 行尾, 并运行 `git diff --cached --check -- <path>...`. 不评估散文含义, 完整性, 引用或跨文件一致性.
-5. 再次读取已暂存路径集合, 状态, 模式和对象身份; 任何变化都从第 1 步重新开始.
-6. 每项检查都成功后才提交. 失败时修复候选并重新开始; 完整候选包含实施工作时改用实施 issue 工作流.
+运行 `arw commit-audit verify --non-implementation`, 它完成上述分类, 单一 effort, 未暂存替代内容 (含子模块 `HEAD`), 终态转换, ARW Artifact 解析, 文本格式, `git diff --cached --check` 和身份保留的全部机械检查, 不做语义或跨文件检查. 错误列表为空才提交; 失败时修复候选后重跑, 完整候选包含实施工作时改用实施 issue 工作流.
 
-该工作流不运行 Spec Readiness, Commit Audit, `arw commit-audit verify`, Code Review 或任何独立 Reviewer.
+该工作流不运行 Spec Readiness, Commit Audit, Code Review 或任何独立 Reviewer.
 
 ## Commit messages
 

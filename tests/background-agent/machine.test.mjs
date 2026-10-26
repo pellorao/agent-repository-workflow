@@ -185,3 +185,37 @@ test('termination closes the held runtime once and preserves cleanup failures', 
         assert.equal(peer.signals.listenerCount('SIGTERM'), 0);
     }
 });
+
+test('--wait follows each accepted Reviewer task until a completion or a program pause and reports its messages once', async () => {
+    const io = capture();
+    /** @type {Record<string, Array<Record<string, unknown>>>} */
+    const updates = {
+        done: [{cursor: 1, state: 'active'}, {cursor: 2, state: 'idle', completion: {status: 'ready', reportPath: '/r'}}],
+        paused: [{cursor: 1, state: 'active', notifications: [{type: 'message', messageId: 'r', source: 'agent', text: 'Issue.'}]},
+            {cursor: 2, state: 'idle', notifications: [{type: 'changed'}, {type: 'message', messageId: 'm', source: 'provider-program', text: 'Paused.'}]}],
+    };
+    const code = await runBackgroundAgent({
+        ...io,
+        input: Readable.from([request('a', 'spawn_agent'), request('b', 'followup_task'), request('c', 'list_agents')]),
+        runtime: {
+            async execute(/** @type {{operation: string}} */ {operation}) {
+                return /** @type {RuntimeResult} */ ({status: 'succeeded', result: {runId: operation === 'spawn_agent' ? 'done' : 'paused'}});
+            },
+            async wait({input}) {
+                return /** @type {RuntimeResult} */ ({status: 'succeeded', result: updates[String(input.runId)].shift()});
+            },
+            async close() {
+                return {status: 'succeeded', result: null};
+            },
+        },
+        waitForCompletion: true,
+    });
+    assert.equal(code, 0);
+    const done = Object.fromEntries(io.responses.filter(response => String(response.id).endsWith(':done')).map(response => [response.id, response.result]));
+    assert.deepEqual(done, {
+        'a:done': {runId: 'done', state: 'idle', completion: {status: 'ready', reportPath: '/r'}, messages: [], providerError: null},
+        'b:done': {runId: 'paused', state: 'idle', completion: null, providerError: null,
+            messages: [{messageId: 'r', source: 'agent', text: 'Issue.'}, {messageId: 'm', source: 'provider-program', text: 'Paused.'}]},
+    });
+    assert.equal(io.responses.length, 5);
+});

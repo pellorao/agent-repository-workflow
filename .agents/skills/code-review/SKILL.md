@@ -10,7 +10,7 @@ name: code-review
 - **Standards**: 变更是否遵循适用的 Agent 指令和实施质量标准?
 - **Requirements**: 变更是否实现已提供的治理要求?
 
-使用具名的 `code-standards-reviewer` 和 `requirements-reviewer`. 对应的规范角色文档拥有审查准则和输出规则. 提交时 Requirements 轴由 `commit` Skill 用 `arw commit-audit prepare` 的 Request 运行, 本 Skill 只运行 Standards 轴, 两者并行.
+使用具名的 `code-standards-reviewer` 和 `requirements-reviewer`. 对应的规范角色文档拥有审查准则和输出规则. 提交时两个轴都由 `commit` Skill 的 `arw commit-audit prepare` 审核轮准备并并行运行, 比较固定, 路径过滤和交接都由该命令完成; 本 Skill 的流程用于非提交比较.
 
 ## Process
 
@@ -18,7 +18,7 @@ name: code-review
 
 非提交比较中, 要求调用方为 Requirements 轴提供适用的治理要求输入. 接受仓库相对路径, 在任一审查轴启动前, 将每份来源路径, SHA-256 和完整内容保存在本轮绑定的临时副本中. 不发现其他 issue, spec, PRD 或 ADR.
 
-Main Agent 按 [固定审核版本](../reviewer-launch/SKILL.md#fix-the-review-version)固定适用的 Agent 指令. Standards Reviewer 按其规范角色读取这些完整的绑定副本. 它们是执行规则, 不是治理输入; Standards 轴不要求调用方选择标准文档路径集合, 也不要求确认没有标准.
+Main Agent 按 [手工准备审核](../reviewer-launch/SKILL.md#other-reviews)固定适用的 Agent 指令. Standards Reviewer 按其规范角色读取这些完整的绑定副本. 它们是执行规则, 不是治理输入; Standards 轴不要求调用方选择标准文档路径集合, 也不要求确认没有标准.
 
 缺少治理要求输入时, 请用户提供, 或明确确认没有治理要求.
 

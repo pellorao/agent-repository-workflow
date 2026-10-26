@@ -17,13 +17,17 @@ Agent 指令约束 Reviewer 的工作方式. 它们单独作为执行规则交�
 
 ## Review versions and concurrency
 
-Spec Readiness, Code Standards 和要求符合审核可以与已授权实施及其他 Reviewer 并行. 本轮读取的是 Main Agent 按 `reviewer-launch` Skill 启动前固定的版本; 单份 diff 文件不能替代完整上下文. 适用 Agent 指令的原始路径用于解释适用范围和链接, 实际读取本轮绑定副本.
+Code Standards 和要求符合审核可以与已授权实施及其他 Reviewer 并行. 本轮读取的是启动前固定的版本 (审核轮目录或 Main Agent 按 `reviewer-launch` Skill 固定的版本); 单份 diff 文件不能替代完整上下文. 适用 Agent 指令的原始路径用于解释适用范围和链接, 实际读取本轮绑定副本.
 
 Reviewer 只读取该版本, 不从正在变化的工作树补取证据或更新执行规则; 必要内容未完整固定时返回 `incomplete`. 本轮结论只对应固定的完整版本. 代码轴结果的复用由 `code-review` Skill 的 `result-reuse.md` 判断, Spec Readiness 的有效性与最终检查时点由 `spec-readiness` Skill 判断.
 
 ## Re-review
 
-复审只交付相邻受审版本之间的变化及其影响范围, 以及自己前轮的完整报告. Reviewer 沿调用关系, 数据流, 失败分支和跨文档约束确认影响范围, 只重新判断受影响的部分; 未受影响的有效结论原样保留, 旧问题逐项处置. 本轮报告仍是完整当前结果, 定位按本轮版本核对. 前轮报告只用于确认已有覆盖, 不作为当前证据. 影响遍及全部范围或前轮报告不可用时, 按[通信规则](#communication-and-observation)说明理由后全盘审核.
+复审只交付相邻受审版本之间的变化及其影响范围, 以及自己前轮的完整报告. Reviewer 沿调用关系, 数据流, 失败分支和跨文档约束确认影响范围, 只判断前轮问题是否解决和受影响部分的新问题, 前轮未完成的检查继续完成; 前轮已完成且未受影响的内容不再审核, 也不为其补报问题, 即使前轮漏报. 未受影响的有效结论原样保留, 旧问题逐项处置. 本轮报告仍是完整当前结果, 定位按本轮版本核对. 前轮报告只用于确认已有覆盖, 不作为当前证据. 影响遍及全部范围或前轮报告不可用时, 按[通信规则](#communication-and-observation)说明理由后全盘审核.
+
+## Commands
+
+每次 Bash 调用只运行一条命令, 不用 `cd`, `&&`, `;` 或管道; 需要其他目录时用 `git -C <path>`. Claude 后端的只读放行规则按单条命令匹配, 组合命令会被拒绝.
 
 ## Independent runtime
 

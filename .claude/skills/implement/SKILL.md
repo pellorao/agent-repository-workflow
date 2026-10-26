@@ -19,7 +19,7 @@ name: implement
    - 初始规划记录授权只允许创建或更新其治理 Skill 授权的规划产物, 不授权生产代码, 测试或无关文档.
 3. 完成 issue 所必需, 且不增加行为, 规则, 公开合同或架构决定的机械性配套修改可以留在本 issue 内. 其他新要求先通过 issue 工作流记录并取得授权, 不默默扩大 issue.
 4. 完整读取 issue 及其 effort spec (如存在). 新 Agent 接手, 中断后恢复, 或 spec 任何字节变化时, 重新完整读取.
-5. 按 `spec-readiness` Skill 安排就绪审核.
+5. 实施 issue 按 `spec-readiness` Skill 安排就绪审核; 修改实现文件前运行 `arw spec-readiness verify --issue issue:<NNNN>:<NN>` 并取得 `0`, 否则不开始实施.
 
 ## Preparation
 

@@ -7,7 +7,6 @@ import {cp, mkdir, readFile, readdir, writeFile} from 'node:fs/promises';
 import {basename, dirname, join, resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 
-import {resolveTemporaryWorkspace} from '../lib/arw-common/temporary-workspace.mjs';
 import {prepareCommitAudit} from '../lib/commit-audit/commit-audit.mjs';
 import {prepareSpecReadiness} from '../lib/spec-readiness/spec-readiness.mjs';
 
@@ -56,19 +55,19 @@ let task = `Review the staged comparison: \`git diff --cached HEAD\`; read stage
 if (role === 'requirements-reviewer') {
     await mkdir(review, {recursive: true});
     await writeFile(join(review, 'input.json'), JSON.stringify({authorizingIssueIds: issueIds}));
-    const {requestPath} = await prepareCommitAudit({inputPath: join(review, 'input.json'), repositoryRoot: target});
+    const round = await prepareCommitAudit({inputPath: join(review, 'input.json'), platformAdapter: {getCurrentAgentIdentity: () => IDENTITY}, repositoryRoot: target});
+    const requestPath = join(round.roundDirectory, 'request.json');
     reportPath = JSON.parse(await readFile(requestPath, 'utf8')).reviewPath;
     task = `Commit review. The Request is \`${requestPath}\`; write the review to its \`reviewPath\`.`;
 } else if (role === 'spec-readiness-reviewer') {
-    const workspace = resolveTemporaryWorkspace({agentIdentity: IDENTITY, issueId: issueIds[0], purpose: 'spec-readiness', repositoryRoot: target});
-    reportPath = join(workspace, 'reviewer-drafts', 'reports', 'draft.txt');
     const inputs = files.flatMap(filePath => {
         const prefix = Object.keys(SPEC_READINESS_INPUT_ROLES).find(entry => filePath.startsWith(entry));
         return prefix ? [{filePath, role: SPEC_READINESS_INPUT_ROLES[/** @type {keyof typeof SPEC_READINESS_INPUT_ROLES} */ (prefix)]}] : [];
     }).sort((left, right) => left.filePath.localeCompare(right.filePath));
-    const prepared = await prepareSpecReadiness({input: {draftPath: reportPath, inputs}, issueId: issueIds[0],
+    const prepared = await prepareSpecReadiness({input: {inputs}, issueId: issueIds[0],
         platformAdapter: {getCurrentAgentIdentity: () => IDENTITY}, repositoryRoot: target});
-    task = `The Reviewer Request is \`${prepared.path}\`; its draftPath is \`${reportPath}\`.`;
+    reportPath = prepared.draftPath;
+    task = `The Reviewer Request is in \`${prepared.path}\`; write the draft to \`${reportPath}\`.`;
 } else {
     await mkdir(dirname(reportPath), {recursive: true});
     await writeFile(reportPath, '');

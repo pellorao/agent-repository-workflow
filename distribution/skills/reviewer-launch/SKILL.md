@@ -9,34 +9,29 @@ Reviewer 的审核行为由 [Reviewer 责任](../../../docs/agents/reviewer.md) 
 
 平台差异:
 
-- Codex: 通过命令工具启动无附加参数的 `arw background-agent`, 保留该进程的工具会话, 逐行写入 JSONL 请求并读取响应和通知. PTY 规范模式会截断超过约 4 KB 的单行输入, 写入 `spawn_agent` 等长请求前先在该会话运行 `stty -echo -icanon`; 也可以把请求写入临时文件后单独运行 `arw background-agent < <request.jsonl>`. 管理进程在共享 Codex App Server 中为每个 Reviewer 创建独立根线程, 不占用 Main Agent 的原生子 Agent 槽位, 不用原生子 Agent 工具代替该入口.
-- Claude Code: Bash 工具不保留可续写的进程会话, 每次操作单独运行一次 `arw background-agent`, 用 heredoc 或临时文件 (`arw background-agent < <request.jsonl>`) 把本次的 JSONL 请求写入标准输入. 标准输入结束后, 进程先等全部未返回的请求 (含 `wait_agent`) 写出响应再退出, 管理进程和已启动的审核继续运行; 长时间等待可放进后台命令, 超时后用新 `cursor` 再次等待. 未选择 `anthropic` 的 Reviewer 设置在这里默认用 Claude 后端 `haiku` 和 `high`. 不用 Claude Code 原生 subagent 代替独立 Reviewer.
-- 两个平台: `wait_agent` 的 `timeout_ms` 必须在 `10000` 到 `3600000` 之间; 同一个 `arw background-agent` 进程内的请求 `id` 不能重复, 重复时返回 `background-agent-request-duplicate`.
+- Codex: 管理进程须在沙盒外启动; 沙盒内启动的管理进程拉起的 App Server 无法写入状态, 报 `Read-only file system`. 管理进程启动后常驻, 已在运行时沙盒内的 `arw background-agent` 通过本机 TCP 直接连接它 (沙盒须允许网络访问). 先用 `arw lba` 查看: 管理进程未运行时申请在沙盒外运行第一条请求; 不能提权 (如 `codex exec`) 时停止, 请用户在可提权的会话中运行一次. 可以保留一个工具会话逐行写入请求, 长请求写入文件后用 `arw background-agent < <request.jsonl>` 发送. 管理进程在共享 Codex App Server 中为每个 Reviewer 创建独立根线程, 不占用 Main Agent 的原生子 Agent 槽位, 不用原生子 Agent 工具代替该入口.
+- Claude Code: Bash 工具不保留可续写的进程会话, 每次操作单独运行一次 `arw background-agent`, 用文件或管道把 JSONL 请求写入标准输入; 等待较久的命令放进后台命令. 未选择 `anthropic` 的 Reviewer 设置在这里默认用 Claude 后端 `haiku` 和 `high`; Claude 后端 Reviewer 只用 `haiku`, 不用其他 Claude 模型. 不用 Claude Code 原生 subagent 代替独立 Reviewer.
+- 两个平台: 标准输入结束后, 进程先等全部未返回的请求写出响应再退出, 管理进程和已启动的审核继续运行. `wait_agent` 的 `timeout_ms` 必须在 `10000` 到 `3600000` 之间; 同一进程内的请求 `id` 不能重复.
 
-## Fix the review version
+## Review rounds
 
-- 启动前固定本轮完整候选与所需代码上下文, 治理输入和全部适用 Agent 指令. Code Standards 使用 `code-review` 规定的不可变 Git 对象; 要求符合审核和 Spec Readiness 使用 Engine Request 绑定的版本. 适用 Agent 指令在本轮会话临时范围保存完整副本, 记录每份来源路径和 SHA-256, 把映射和完整执行指令交给 Reviewer. 同一提交的两个 Reviewer 共用同一版本.
-- 源工作树可以继续修改. 不改写运行中的输入, 不把未完成审核当作通过. 新版本按所属工作流准备输入; 复审按 [复审规则](../../../docs/agents/reviewer.md#re-review) 交付变化及影响范围和该 Reviewer 的前轮报告路径.
-- 提交审核期间另外保持索引, HEAD 和绑定输入固定, 见 `commit` Skill.
-- 各角色只收到它需要的审查输入, 不复制作者对话, 隐藏推理或其他角色的旧结论.
+Spec Readiness 和提交审核的每一轮由所属工作流的 `prepare` 写出审核轮目录: 固定版本的输入, 执行规则副本, 每个 Reviewer 的空报告和一行 `<role>.jsonl` 请求 (首轮 `spawn_agent`, 复审 `followup_task`). Main Agent 不手工拼请求或复制规则.
+
+1. 运行 `cat <轮目录>/*.jsonl | arw background-agent --wait`; 只重审其中一个 Reviewer 时只传它的文件.
+2. 每个请求先输出回执, 结束时再输出一行 `<id>:done`. `completion` 非空时读取其 `reportPath` 的报告; `completion` 为 `null` 而 `messages` 含 `source` 为 `provider-program` 的消息时按 [暂停通知](#long-running-and-paused-reviews) 处理; 来源为 `agent` 的是 Reviewer 的中途通知, 结果以报告为准; `ok: false`, `state: "exited"` 或 `providerError` 按具体原因处理.
+3. 复审前修复并重新运行 `prepare`, 得到下一轮目录. 运行中的输入不改写, 未完成审核不当作通过.
+
+## Other reviews
+
+`code-review` 的独立比较等没有 `prepare` 的审核, 按审核轮目录的同样结构手工准备: 固定 `code-review` 规定的不可变 Git 对象, 在会话临时目录保存执行规则副本及来源路径和 SHA-256, 为报告分配只含空报告文件的独立目录, 然后调用 `spawn_agent`, `input` 提供:
+
+- `role`: Canonical Role ID. `identity`: 普通审核为 `{kind: "ordinary", issueIds: [...]}`, `issueIds` 完整排序.
+- `instructions`: 完整 Canonical Role 与 `docs/agents/reviewer.md` 内容. `handoff`: 所属审核工作流要求的全部审查输入.
+- `cwd`: 当前 Git 仓库根目录, 省略 `readPaths`. `writePaths`: 只含报告目录. `reportPath`: 准确报告文件. `stateDirectory`: 已存在的会话临时目录, 不在 `writePaths` 内.
+
+所有路径都是绝对路径. 模型设置由用户配置 `config.json` 和仓库 `arw.config.json` 决定, Main Agent 不覆盖; 只有 Reviewer Capability 和基准的隔离实例可以在 `settings` 中覆盖. 复审用 `runId` 加相同完整字段调用 `followup_task`; 只有 issue 身份集合改变, 原线程不可用或不可恢复, 或用户明确要求时, 才用 `newThread` 创建替代线程.
 
 ## Machine operations
-
-`arw background-agent` 是共享后台进程的 JSONL 客户端, 每行一个 `{id, operation, input}` 请求, 使用 UTF-8 JSONL 请求, 响应和通知. 连接断开或标准输入结束后, 已启动的审核继续执行, 保留期内的消息可在重新连接后取得.
-
-1. 为报告分配一个独立临时目录, 其中只放本轮的空报告文件; 该目录就是 `writePaths`. 审核输入, 冻结请求, 执行规则副本和恢复记录 (`stateDirectory`) 放在该目录之外. 目录里有其他文件, 或报告不在该目录中时, `spawn_agent` 返回 `report-binding-invalid`.
-2. 调用 `spawn_agent`, `input` 提供:
-   - `role`: Canonical Role ID.
-   - `identity`: 普通审核为 `{kind: "ordinary", issueIds: [...]}`, `issueIds` 完整排序.
-   - `instructions`: 完整 Canonical Role 与 `docs/agents/reviewer.md` 内容; 不能只凭角色名称认定规则已应用.
-   - `handoff`: 所属审核工作流要求的全部审查输入.
-   - `cwd`: 当前 Git 仓库根目录. 省略 `readPaths`; 如果传入, 只能包含该仓库内的路径.
-   - `writePaths`: 只含实际存在的报告目录. `reportPath`: 准确报告文件, 必须属于 `writePaths`. 不放入 `~/.codex` 等仓库外路径.
-   - `stateDirectory`: 已存在的会话临时目录, 不在 `writePaths` 内. 只在需要原生附加配置或隔离实例覆盖时提供 `settings`.
-
-   所有路径都是绝对路径. 普通审核的 `model`, `modelProvider`, `reasoningEffort` 和 `serviceTier` 由用户配置 `config.json` 和仓库 `arw.config.json` 中该角色的字段逐项覆盖形成, Main Agent 不选择或覆盖; 只有 Reviewer Capability 和基准的隔离实例可以在 `settings` 中覆盖. `settings.config` 不保存明文凭据. Agent 协作由运行入口强制禁用.
-3. 回执只证明管理进程已经登记本轮. 保存 `runId`, `recoveryPath`, 首次交接的 `messageId` 和 `accepted`, 再用 `list_agents` 或 `wait_agent` 取得 `threadId`, `turnId` 和运行状态; 不重复发送首次工作指示.
-4. 复审时准备复审输入和新的空报告, 使用 `runId` 加与 `spawn_agent` 相同的完整字段 (含 `instructions`), 同一角色, 同一 issue 身份集合和 `stateDirectory` 调用 `followup_task`, 管理进程按需恢复原线程. 只有 issue 身份集合改变, 原线程不可用或不可恢复, 或用户明确要求时, 才使用 `newThread` 创建替代线程; 字节, 哈希或结论变化不构成理由. 首次启动不继承发起者的对话.
 
 | 操作 | 用法 |
 | --- | --- |

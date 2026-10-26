@@ -40,7 +40,7 @@ ARW 是本地仓库工作流管理器. 它不自主发起 Agent 编码工作, �
 | Application Source Issue | 只镜像关联 Module 实施 issue 的状态, 不执行本地实施. | 不运行. |
 | Wayfinder issue | 记录研究或设计问题, 不替代实施 issue. | 不运行. |
 
-Spec Readiness 使用 `prepare -> independent review -> generate -> promote -> verify`. Engine 冻结完整治理输入, issue 中连续的交付结果, 要求选择与验收条件, 以及 Main Agent 选择的草稿路径, 并把 Reviewer Role 身份与哈希独立绑定到请求. 独立 Reviewer 在绑定路径写入语义问题, 完整审核没有问题时写入明确的无问题标记. Engine 从最终草稿推导完整的临时规范结果, Main Agent 只提升准确生成字节. issue 特定的 `verify` 核对当前设计的有效就绪结果. 首次就绪审核可以与已授权实施并行, 有效结果的完成, 审计与提交检查时点由[设计就绪工作流](../../../.agents/skills/spec-readiness/SKILL.md#authorization-timing)拥有.
+Spec Readiness 使用 `prepare -> independent review -> generate -> promote -> verify`. Engine 冻结完整治理输入, issue 中连续的交付结果, 要求选择与验收条件, 以及 `prepare` 固定的草稿路径, 并把 Reviewer Role 身份与哈希独立绑定到请求. 独立 Reviewer 在绑定路径写入语义问题, 完整审核没有问题时写入明确的无问题标记. Engine 从最终草稿推导完整的临时规范结果, Main Agent 只提升准确生成字节. issue 特定的 `verify` 核对当前设计的有效就绪结果. 修改实现文件前须取得当前有效就绪结果 (`verify` 退出码为 `0`), 有效结果的完成, 审计与提交检查时点由[设计就绪工作流](../../../.agents/skills/spec-readiness/SKILL.md#authorization-timing)拥有.
 
 Spec Readiness 的结果生成与验证不判断开放语义, 原生会话控制和线程身份由共享 Reviewer 运行责任管理. 会话延续不等于准备度结果仍然有效: 任一治理输入, 审核对象, Reviewer Role 或结果绑定变化都会使旧记录失效. `architecture-evidence` 是 issue 本身会修改的实现事实, 不属于这种绑定, 实施改动它不使记录失效. 审核对象是连续的 `## What to build`, `## Spec Requirement` 和 `## Acceptance criteria`. `Status:`, `## Blocked by`, `## Validation` 和 `## Comments` 不进入审核对象. 完整 issue 格式与阻断问题图由 ARW Artifact 清单和 Issue Gate 独立验证.
 
@@ -50,7 +50,7 @@ Gate 3 由 `code-review` Skill Package 拥有 Standards 与 Requirements 两个�
 
 当前有效 Spec Readiness, 必要实施验证和真实完整的最终候选齐备后, Code Standards 与适用 Commit Audit 可以对同一候选并行. 任何正式验收条件实际要求取得另一审核的完成事实时, 仍须等待该事实, 运行中结果不能作为通过. Main Agent 按[公共 Reviewer 规则](../../agents/reviewer.md#review-versions-and-concurrency)协调固定版本, 已授权源工作树写入及替代版本, 最终核对实际暂存字节与各轮受审版本, 再取得当前有效的全部适用结果和提交授权.
 
-完全由封闭分类中不属于当前仓库实施产物的内容组成的已暂存候选内容使用轻量提交流程, 并且同样只属于一个 effort. 适用内容包括该 effort 的本地 `spec.md`, `map.md`, Application Source Issue, Wayfinder issue, 本次不进入 `completed | wontfix` 的实施 issue, `research/**` 和 `prototype/**` 下的安全普通文件, 以及按实际语义归入该 effort 的安全 gitlink. Gitlink 只记录当前仓库引用的子模块提交状态, 不属于当前仓库的实施产物. 该流程只检查准确已暂存范围, effort 归属, 安全路径, 条目模式与对象身份, ARW Artifact 基本格式, 实施 issue 终态转换, 适用文本格式, Git 差异和候选内容不变性. 它不做语义或跨文件关系检查, 不运行 Spec Readiness, Commit Audit, Gate 1, Gate 2, Gate 3 或独立 Reviewer. 候选包含当前仓库的实施产物时, 完整候选内容使用实施提交流程. 不能归入任一分类的内容先停止并明确责任, 不因为它尚未进入轻量流程的封闭分类就推定为实施产物.
+完全由封闭分类中不属于当前仓库实施产物的内容组成的已暂存候选内容使用轻量提交流程, 并且同样只属于一个 effort. 适用内容包括该 effort 的本地 `spec.md`, `map.md`, Application Source Issue, Wayfinder issue, 本次不进入 `completed | wontfix` 的实施 issue, `research/**` 和 `prototype/**` 下的安全普通文件, 以及按实际语义归入该 effort 的安全 gitlink. Gitlink 只记录当前仓库引用的子模块提交状态, 不属于当前仓库的实施产物. 该流程只检查准确已暂存范围, effort 归属, 安全路径, 条目模式与对象身份, ARW Artifact 基本格式, 实施 issue 终态转换, 适用文本格式, Git 差异和候选内容不变性, 这些检查由 `arw commit-audit verify --non-implementation` 一条命令完成. 它不做语义或跨文件关系检查, 不运行 Spec Readiness, Commit Audit, Gate 1, Gate 2, Gate 3 或独立 Reviewer. 候选包含当前仓库的实施产物时, 完整候选内容使用实施提交流程. 不能归入任一分类的内容先停止并明确责任, 不因为它尚未进入轻量流程的封闭分类就推定为实施产物.
 
 ## Runtime baseline
 
@@ -194,7 +194,7 @@ arw spec-readiness generate --issue issue:<NNNN>:<NN> --input <draft-path>
 arw spec-readiness promote --input <generated-path>
 arw spec-readiness verify --issue issue:<NNNN>:<NN>
 arw commit-audit prepare --input <absolute-input-path>
-arw commit-audit verify
+arw commit-audit verify [--non-implementation]
 arw code-map verify
 arw text check
 arw text fix
@@ -260,17 +260,17 @@ ARW 等待进程退出并传播正常退出码. 启动失败或没有正常数�
 
 ### Machine entry
 
-`arw background-agent` 是 Main Agent 与后台 Agent 共用的通用完整后台 Agent 机器入口, 不接受额外位置参数或命令选项. 已安装的 ARW 启动器定位随附实现, Agent 无需发现安装目录或为每项任务编写启动脚本. 它与 `arw agent start` 的前台外部 CLI 生命周期分离; 入口本身是命令客户端, 用户级后台管理进程持有原生运行环境, 客户端不承担进程所有权.
+`arw background-agent` 是 Main Agent 与后台 Agent 共用的通用完整后台 Agent 机器入口, 只接受可选的 `--wait`, 不接受其他位置参数或命令选项. `--wait` 对每个成功受理的 `spawn_agent` 或 `followup_task` 持续 `wait_agent`, 直到 Reviewer `completion` 非空, 收到程序产生 (来源 `provider-program`) 的[提前结束阈值](#reviewer-task-continuation)暂停通知, 运行环境退出或等待失败, 然后为该请求追加一行 `{id: "<请求 id>:done", ok, result: {runId, state, completion, messages, providerError}}`, 其中 `messages` 是期间收集的全部发给 Main 的消息编号, 来源与正文, Reviewer 自己发的消息不结束等待; 标准输入结束后等这些行都输出才退出. 已安装的 ARW 启动器定位随附实现, Agent 无需发现安装目录或为每项任务编写启动脚本. 它与 `arw agent start` 的前台外部 CLI 生命周期分离; 入口本身是命令客户端, 用户级后台管理进程持有原生运行环境, 客户端不承担进程所有权.
 
 双方通过工具调用同一机器入口, 用 UTF-8 JSONL 标准输入和输出收发消息. 每行请求是 `{id, operation, input}`, `id` 为本进程内唯一的非空字符串, `input` 为对象. 成功响应是 `{id, ok: true, result}`, 失败响应是 `{id, ok: false, error: {code, message}}`, 按 `id` 关联请求; 无法取得有效请求身份时错误响应使用 `id: null`. 每项操作返回一行完整响应; 调用方读到完整合法回执后结束这次请求, 不等待模型执行或目标处理任务. 普通请求从客户端开始处理请求, 经必要的凭据读取, 管理进程启动或连接, 排队处理到完整回执, 共用客户端配置 `backgroundAgent.messageTimeoutMs` 的总等待预算, 来源和默认值由[后台 Agent 配置规则](../agent-repository-workflow-installation/spec.md#background-agent-configuration)拥有; 超时表示结果不确定, 不停止后台 Agent, 不自动重发, 也不能推断管理进程未接受请求. 该预算不限制 Reviewer 任务执行时长或 `wait_agent` 的独立等待预算. Reviewer 的完整报告写入绑定文件, 最终完成消息只返回现行状态与适用理由; 进度和通知仍由机器入口交付. 无法解析或不支持的请求返回错误, 不启动工作或把它改写成其他操作.
 
 | `operation` | 输入与可观察结果 |
 | --- | --- |
-| `spawn_agent` | 接收调用方已准备的完整首次工作指示, 原生运行设置, 工作目录, 原生权限范围与可靠身份. 管理进程在内存登记运行及首次工作消息后返回运行标识, 准确恢复记录位置, 消息编号和 `accepted` 状态; 后台异步启动原生环境并交付首次工作, 后续观察才提供已取得的原生线程与回合身份及实际状态. 首次工作只交付一次, 回执不声称线程已经创建或任务已经执行. Reviewer 调用方另外提供审核身份, 角色和报告绑定, 并由 Reviewer 专属层校验. |
+| `spawn_agent` | 接收调用方已准备的完整首次工作指示, 原生运行设置, 工作目录, 原生权限范围与可靠身份. 管理进程在内存登记运行及首次工作消息后返回运行标识, 准确恢复记录位置, 消息编号和 `accepted` 状态; 后台异步启动原生环境并交付首次工作, 后续观察才提供已取得的原生线程与回合身份及实际状态. 首次工作只交付一次, 回执不声称线程已经创建或任务已经执行. Reviewer 调用方另外提供审核身份, 角色和报告绑定, 并由 Reviewer 专属层校验; 同一身份已有恢复记录时, 只有带可选布尔输入 `newThread: true` 才为该身份新建线程并改写恢复记录, 否则以 `reviewer-identity-exists` 拒绝. |
 | `followup_task` | 所属 Main 向既有后台 Agent 分派完整后续任务. 管理进程校验归属及活动回合的准确身份, 在内存接受工作消息并返回 `messageId` 和 `accepted` 状态, 然后异步交付. Agent 空闲时启动新回合; 原根线程已卸载时先取得容量并在管理进程内部恢复准确原线程, 再交付该任务. 不自动重放先前未完成的任务, 不静默改用新线程. 普通 Reviewer 同身份新一轮审核同时更新完整当前输入, 报告绑定及本轮设置. |
 | `send_message` | 双方使用准确 `runId` 和非空 `message`, 方向由调用方原生会话身份确定. 所属 Main 向该后台 Agent 排入消息, 活动回合还须核对已观察的 `turnId`; 后台 Agent 根线程向所属 Main 排入角色允许的通知. 管理进程在内存登记后返回创建的 `messageId` 与 `accepted` 状态, 再异步分发; 单独发送消息不唤醒普通空闲 Agent; 所属 Main 向因[Reviewer 提前结束阈值](#reviewer-task-continuation)暂停的原任务发送普通工作消息时, 管理程序沿原线程恢复同一任务并交付消息正文. 回合已变更时拒绝且不改投, 其他 Main 或子线程不能冒用来源. 两个方向都不以模型执行, 目标历史或 SQLite 提交作为发送回执的前提. |
 | `messages` | 接收准确 `runId`, 选择该运行 Main 与后台 Agent 之间的发送方向 `direction` (`main-to-agent` 或 `agent-to-main`), 默认查询调用方自身发送的方向. `limit` 为正安全整数, 默认 `3`; 可用上一页的 `beforeMessageId` 向前查询更早记录. 返回最新在前的消息列表及后续分页位置, 每项只有 `messageId`, 正文前 100 个 Unicode 字符的 `preview`, 分发状态与保存状态, 不返回完整正文. 所属 Main 可查询该运行的双向通信; 后台 Agent 以自己的原生会话身份只能查询自身发给所属 Main 的消息, 不取得 Main 控制权或访问其他运行. 不扩大全用户列表的访问范围. |
-| `wait_agent` | 接收准确运行身份, 已取得的观察 `cursor` 和可选 `timeout_ms`, 等待主动消息, 真实状态转换或待处理原生请求更新, 随即一次返回当前可取得的更新, 当前事实和后续 `cursor`; 不必等本轮结束, 也不在一个请求中持续输出后续更新. `timeout_ms` 默认 `30000`, 最小 `10000`, 最大 `3600000` 毫秒; 没有更新时返回等待超时, 不限制后台任务执行时长. 调用方可取消等待, 仅释放等待与连接, 不停止 Agent, 不完成任务或提前删除未到期消息. |
+| `wait_agent` | 接收准确运行身份, 已取得的观察 `cursor` 和可选 `timeout_ms`, 等待主动消息, 真实状态转换或待处理原生请求更新, 随即一次返回当前可取得的更新, 当前事实和后续 `cursor`; 消息通知带消息编号, 来源 (`agent` 或程序产生的 `provider-program`) 和正文; 不必等本轮结束, 也不在一个请求中持续输出后续更新. `timeout_ms` 默认 `30000`, 最小 `10000`, 最大 `3600000` 毫秒; 没有更新时返回等待超时, 不限制后台任务执行时长. 调用方可取消等待, 仅释放等待与连接, 不停止 Agent, 不完成任务或提前删除未到期消息. |
 | `interrupt_agent` | 接收运行标识与准确活动回合身份, 中断当前工作并返回接受状态. 中断不表示交付完整, 不删除原生会话或替换线程. 对因提前结束阈值暂停的 Reviewer 原任务, 同样绑定其已结束的原 `turnId` 并结束整体任务, 不要求回合仍 active, 不向该已结束回合发出原生中断; 原保护保持到收尾确认. |
 | `list_agents` | 返回调用方可观察的后台 Agent 运行, 当前状态与必要身份. 所属 Main 按准确运行身份可取得已发现的原生线程与回合身份, 保留期内的主动通知, 观察 `cursor`, 以及仍待处理的原生请求身份, 类型与内容; 其他 Main 只有既有全用户只读概览权限, 不因此取得控制权. 查询不启动或恢复原生环境. |
 | `respond` | `input` 包含准确的 `runId`, `requestId` 和原生响应对象 `response`. 普通角色的所属 Main 取得真正的人工决定后, 才向仍待处理的准确原生请求交付合法响应; 已完成, 重复, 过期, 其他运行或 Reviewer 请求明确失败. 管理进程按已绑定的角色策略转交或拒绝原生请求, 不替 Main 自动批准. 响应格式由对应原生请求协议决定. |
@@ -401,6 +401,14 @@ Reviewer 专属层只在 Reviewer 根线程的原生配置中强制 `agents.enab
 
 原生文件权限观察只支持当前 Codex 上下文的权限表示. 优先读取 `file_system_sandbox_policy` 的 `kind` 与 `entries`; 该表示不存在时读取 `permission_profile.file_system` 的 `type` 与 `entries`. 路径条目中的具体绝对路径和可以准确解析的特殊路径定义实际权限范围. 不能根据这些条目确定范围时返回 `incomplete`, 不从其他上下文字段或请求配置补造范围. 只有可解析的实际工作目录与权限满足上述读取和写入边界时, 才能交接有效结果.
 
+### Review rounds
+
+`arw spec-readiness prepare` 和 `arw commit-audit prepare` 每次新建一个审核轮目录, 写入本轮全部 Reviewer 交接材料, Main Agent 只运行 `cat <轮目录>/*.jsonl | arw background-agent --wait` 启动本轮全部 Reviewer 并等到各自结束; 只需重审其中一个时只传它的文件. 轮目录包含:
+
+- 每个 Reviewer 一个报告目录, 其中只有一个空 txt 报告.
+- 执行规则副本 `rules/`: 全部 `AGENTS.md` (含嵌套), `docs/agents/**`, `.agents/skills/**` 和 `.claude/skills/**`, 保持仓库相对路径, 另有 `sha256sum` 格式的 `rules/SHA256SUMS`. Spec Readiness 取工作树中已跟踪或未被忽略的文件字节, 提交审核取已暂存字节.
+- 每个 Reviewer 一个 `<role>.jsonl`, 只含一行机器请求: `instructions` 是该 Role 文件加 `docs/agents/reviewer.md` 的副本正文, `cwd` 是仓库根目录, `writePaths` 只含报告目录, `stateDirectory` 是轮目录的上级, 身份是该 Role 加完整排序的 issue ID 集合. 该身份在 `stateDirectory` 中的恢复记录已有 `threadId` 且 `failure` 为 `null` (`failure` 是恢复记录已有字段, 运行层以具体错误 `{code, message}` 结束该运行, 即该运行没有交付 `ready` 而以运行层错误结束时写入; 正常结束, 正常停止和提前结束阈值暂停都保持 `null`. 审核轮准备只看它是否为 `null`, 不解释错误种类) 时, 请求是带原 `runId` 的 `followup_task` (原线程已卸载也由管理进程恢复), handoff 另给前轮报告和相邻版本变化; 没有恢复记录时是 `spawn_agent`, 有记录但不满足上述条件时是带 `newThread: true` 的 `spawn_agent`.
+
 ### Communication and sessions
 
 跨运行环境的主动通信只使用角色列出的类型: 与用户沟通的 Main Agent 向 Reviewer 发送工作指示, Reviewer 通知已核实的问题, 必要工作进度, 阻塞或具体治理冲突. 普通审核, 能力验证和基准执行均独立完成工作, 不向用户或与用户沟通的 Main Agent 询问信息或征求同意, 缺少必要输入按既有 incomplete 合同处理. 中途消息按 [通用后台 Agent 通信](#background-agent-communication) 的单一中介交付, Main Agent 用 `wait_agent` 取得一次更新后按需再次等待, Reviewer 专属层不维护第二份消息队列.
@@ -411,17 +419,17 @@ Reviewer 专属层只在 Reviewer 根线程的原生配置中强制 `agents.enab
 
 活动消息绑定准确原线程和当前回合; `send_message` 只排入消息, 空闲原线程的后续任务由 `followup_task` 开启新回合. 中断, 运行环境退出与空闲状态分别处理, 恢复必须指向已确认的原线程. 身份失效, 回合改变或线程无法恢复时显式报告, 不静默建立替代线程或把指示投向新线程.
 
-普通审核以角色和排序后的完整 issue 身份集合识别原线程, 首次启动没有父对话. 同一身份的后续审核必须复用可靠原线程, 只有 issue 身份集合改变, 原线程不可用或不可恢复, 或使用者明确要求时才新建线程. 候选, 请求或治理输入改变需要按所属审核工作流重新准备完整输入, 不自动改变普通线程身份. 能力验证和基准实例全新启动, 不与普通审核或其他实例混用.
+普通审核以角色和排序后的完整 issue 身份集合识别原线程, 首次启动没有父对话. 同一身份的后续审核必须复用可靠原线程, 只有 issue 身份集合改变, 原线程不可用或不可恢复, 或使用者明确要求时才新建线程; 同身份已有恢复记录时, 新建线程的 `spawn_agent` 输入带 `newThread: true`. 候选, 请求或治理输入改变需要按所属审核工作流重新准备完整输入, 不自动改变普通线程身份. 能力验证和基准实例全新启动, 不与普通审核或其他实例混用.
 
 本轮模型设置进入恢复记录, 恢复未完成审核时使用原设置; 在原线程开始后续新审核时重新读取当前两级用户配置. 模型变化不自动替换可靠原线程, 原生拒绝新的配置组合时明确失败, 不静默改用另一设置.
 
 ### Review versions and result validity
 
-每轮审核读取完整固定的候选, 关联上下文, 请求, 治理 Input 与适用执行规则, 不用后续源工作树字节补证. Main Agent 可以继续其他已授权工作或本候选已经获准的修复, 这些写入不替换运行中的输入. Commit Audit 依赖的实时索引及 HEAD 必须在旧轮完整结束前保持不变, 新实现随后才由 Main Agent 暂存并交付新的完整版本. 这种协调使用已有临时材料和 Git 对象, 不建立另一套候选来源或原生审核调度协议.
+每轮审核读取完整固定的候选, 关联上下文, 请求, 治理 Input 与适用执行规则, 不用后续源工作树字节补证. Main Agent 可以继续其他已授权工作或本候选已经获准的修复, 这些写入不替换运行中的输入. Commit Audit 的受审版本是 Request 中固定的 `base` 提交和 `tree` 已暂存树, Reviewer 不读实时索引, 所以 Main Agent 可以在审核期间继续暂存修复, 再用新一轮 `prepare` 交付新的完整版本. 这种协调使用已有临时材料和 Git 对象, 不建立另一套候选来源或原生审核调度协议.
 
 Code Standards 与要求符合审核各自按比较基线, 纳入范围, 文件模式和实现字节, 关联上下文, 适用指令, 授权及验证事实判断完整通过结果是否仍然有效, 要求符合审核还依赖完整治理要求. 这些实际输入未变且没有新失败或相反证据时, 可以保留该轴结果. 仅治理要求输入变化, 且未进入 Standards 的候选, 规则或关联证据时, 不使 Standards 自动失效; 不得只按文件路径推断无影响. Spec Readiness 和 Commit Audit 继续执行各自机械新鲜度与当前候选检查, 原线程存在或另一轴通过不替代完整有效结果.
 
-四种 Reviewer 的后续复审默认检查相邻受审版本的实际差异和全部关联影响. Main Agent 提供完整当前输入, 准确前轮绑定输入, 该 Reviewer 自己已完成的原始报告及变化范围. 前轮材料只证明历史覆盖并定位仍待处理的事项, 当前语义证据仍来自当前固定版本. 初次审核完成全部适用检查; 前轮未完成的检查继续完成, 旧问题逐项处理, 不因为本轮差异未再提及就消失. 其他作者的结论, 作者会话历史及正式历史审计或就绪记录不能成为替代独立判断的语义权威.
+四种 Reviewer 的后续复审默认检查相邻受审版本的实际差异和全部关联影响. Main Agent 提供完整当前输入, 准确前轮绑定输入, 该 Reviewer 自己已完成的原始报告及变化范围. 前轮材料只证明历史覆盖并定位仍待处理的事项, 当前语义证据仍来自当前固定版本. 初次审核完成全部适用检查; 前轮未完成的检查继续完成, 旧问题逐项处理, 不因为本轮差异未再提及就消失. 前轮已完成且未受本轮变化影响的内容不再审核, 也不为其补报问题, 即使前轮漏报; 代价是漏报可能留到之后才被发现, 换来复审轮数收敛. 其他作者的结论, 作者会话历史及正式历史审计或就绪记录不能成为替代独立判断的语义权威.
 
 需要全盘复审时由负责 Reviewer 给出本轮具体理由, 例如准确前轮输入无法恢复, 历史覆盖无法核对或影响确实遍及整个适用范围. 新请求, 哈希变化或一般性的谨慎本身不构成理由. 每轮仍由该 Reviewer 亲自写入完整的新绑定报告, 按当前全部要求和准确定位表达保留及更新的判断. Spec Readiness 与 Commit Audit 仍沿正常准备, 生成, 原样提升与 verify 边界取得当前正式结果, 不以局部读取或只有差异的报告冒充完整交付. 具体交接由[公共 Reviewer 规则](../../agents/reviewer.md#review-versions-and-concurrency)与各角色工作流拥有.
 
@@ -477,9 +485,9 @@ Claude Code 原生 Reviewer 执行暂停, 静态 Skill 与 CLAUDE.md 投射, 安
 
 ### Prepare and independent review
 
-`prepare --issue` 从 `stdin` 或 `--input <temp-json-path>` 接受草稿路径与显式治理输入. 治理输入至少包含一个 `governing-spec` 或 `governing-prd`, 也可以包含适用的 ADR, 领域上下文或架构证据. Agent 指令与 Reviewer Role 正文不属于治理输入. 输入路径必须是安全的仓库相对普通文件, 且不能指向本地跟踪器 issue.
+`prepare --issue` 从 `stdin` 或 `--input <temp-json-path>` 接受只含 `inputs` 的显式治理输入. 治理输入至少包含一个 `governing-spec` 或 `governing-prd`, 也可以包含适用的 ADR, 领域上下文或架构证据. Agent 指令与 Reviewer Role 正文不属于治理输入. 输入路径必须是安全的仓库相对普通文件, 且不能指向本地跟踪器 issue.
 
-`draftPath` 必须是当前 Main Agent 会话与 issue 的 `spec-readiness` 用途工作区内安全且尚不存在的绝对 `.txt` 路径. 草稿也是 Reviewer 的绑定报告, 所在目录须满足 [Reviewer 运行规则](#reviewer-runtime) 的独立报告目录要求, 否则 `spawn_agent` 返回 `report-binding-invalid`. Engine 创建零字节草稿, 从 Canonical ID 定位准确 issue, 然后把以下内容绑定到不可变 Reviewer Request, 只返回请求路径:
+Engine 在当前 Main Agent 会话与 issue 的 `spec-readiness` 用途工作区下新建审核轮目录 `rounds/<requestId>/`, 草稿固定为其中的 `report/draft.txt`, 也是 Reviewer 的绑定报告. Engine 创建零字节草稿, 从 Canonical ID 定位准确 issue, 然后把以下内容绑定到 `requests/` 下的不可变 Reviewer Request, 并按 [Review rounds](#review-rounds) 写出本轮其余文件, 只输出轮目录路径:
 
 - 审核对象: 连续的 `## What to build`, `## Spec Requirement` 和 `## Acceptance criteria`.
 - 完整治理输入.
@@ -510,9 +518,9 @@ Reviewer 在完成全部适用检查和绑定文件写入后单独返回完成�
 
 ## Commit Audit
 
-Main Agent 在仓库 `.tmp/` 下为每次审核建立独立 Request 目录. 固定名称 `input.json` 只包含同一 effort 的排序 `authorizingIssueIds`, 以及适用时的一个空要求确认. `arw commit-audit prepare --input <absolute-input-path>` 从实时 Git 索引物化 `request.json` (授权范围, Gate 1 终态 issue, Gate 2 治理文档或例外, `reviewPath`), 并在 `reports/` 子目录创建空报告 `review.txt`, 然后只输出 Request 的绝对路径. 已有文件不覆盖.
+Main Agent 在仓库 `.tmp/` 下写一个 `input.json`, 只包含同一 effort 的排序 `authorizingIssueIds`, 以及适用时的一个空要求确认. 每次运行 `arw commit-audit prepare --input <absolute-input-path>` 都在当前会话工作区下新建审核轮目录 `_commit-audit/<n>/` (`n` 从 1 递增), 从实时 Git 索引物化 `request.json` (授权范围, Gate 1 终态 issue, Gate 2 治理文档或例外, `reviewPath`, `base` 为 `HEAD` 提交, `tree` 为 `git write-tree` 固定的已暂存树), 为 `requirements-reviewer` 和 `code-standards-reviewer` 各建一个只含空 `review.txt` 的报告目录, 并按 [Review rounds](#review-rounds) 写出本轮其余文件, 然后只输出轮目录绝对路径. Code Standards 的 handoff 列出按 `.arwignore` 和 effort `prototype/**`, `research/**` 排除后的纳入路径, 并指向授权 issue 的预估改动行数. 复审的相邻版本变化是 `git diff <前轮 tree> <tree>`.
 
-Reviewer 只接收 Request 路径, 用只读 git 命令读取冻结的 Git 索引, 把发现的要求问题逐条写入 `review.txt` (每条写明位置, 影响和修正方向), 没有问题时写 `No problems.`, 然后只返回 `ready | incomplete`. `incomplete` 结束本轮并交回 Main Agent.
+要求符合审核的 Reviewer 接收 Request 路径, 只用 `git diff <base> <tree>` 和 `git show <tree>:<path>` 读取受审版本, 把发现的要求问题逐条写入 `review.txt` (每条写明位置, 影响和修正方向), 没有问题时写 `No problems.`, 然后只返回 `ready | incomplete`. `incomplete` 结束本轮并交回 Main Agent.
 
 提交门槛是两个 Reviewer 正常结束且报告中的问题都已处理. Main Agent 独立核对每个问题, 每轮自选一两处 Reviewer 应当检查的要求或代码位置抽查; 发现漏检时该轮结果作废并重审. ARW 不生成或提升审核记录.
 
@@ -520,7 +528,7 @@ Reviewer 只接收 Request 路径, 用只读 git 命令读取冻结的 Git 索�
 
 [Implementation records](#implementation-records) 定义的两个记录章节不是审核要求. Request 范围相同不能机械证明任意实现语义和字节未变, Main Agent 必须比较最终实际候选与受审版本.
 
-旧轮运行中完整索引, HEAD 和绑定输入保持不变, 不在同一仓库进行另一提交. 旧轮完整结束后, 可以加入经过准确核对的两个记录章节变化, 再执行当前候选检查; 其他实际变化按 [Review versions and result validity](#review-versions-and-result-validity)形成替代版本并刷新受影响结果. `arw commit-audit verify` 在最终暂存候选上只读确认每个已提交 ARW Artifact 身份得到保留. 非零退出码或非空错误列表阻止提交.
+旧轮运行中 HEAD 和绑定输入保持不变, 不在同一仓库进行另一提交; 索引可以继续暂存修复. 旧轮完整结束后, 可以加入经过准确核对的两个记录章节变化, 再执行当前候选检查, 最终暂存树相对受审 `tree` 只能有这些记录差异; 其他实际变化按 [Review versions and result validity](#review-versions-and-result-validity)形成替代版本并刷新受影响结果. `arw commit-audit verify` 在最终暂存候选上只读确认每个已提交 ARW Artifact 身份得到保留. 非零退出码或非空错误列表阻止提交.
 
 ## Repository Workflow
 
