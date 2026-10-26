@@ -3,7 +3,7 @@
 
 ## Scope
 
-本文件负责任务委派, 实例创建和复用, 以及非预定义 subagent 的模型和推理强度. 与用户沟通的 Main Agent 和其他非 Reviewer 运行环境的 Main Agent 管理各自的子 Agent. 独立 Reviewer 按 [Reviewer 单 Agent 执行规则](reviewer.md#single-agent-execution) 自行完成全部审核, 不创建或恢复子 Agent; 本文件以下的委派和模型映射规则不用于 Reviewer. 并发数量, 容量和空闲线程由 harness 与用户级配置管理. 其他预定义角色使用其已有完整配置.
+本文件负责任务委派, 实例创建和复用, 以及非预定义 subagent 的模型和推理强度. 与用户沟通的 Main Agent 和其他非 Reviewer 运行环境的 Main Agent 管理各自的子 Agent. 独立 Reviewer 按 [Reviewer 单 Agent 执行规则](reviewer.md#single-agent-execution) 自行完成全部审核, 不创建或恢复子 Agent; 本文件以下的委派和模型映射规则不用于 Reviewer. 并发数量, 容量和空闲线程由 harness 与用户级配置管理. 其他预定义角色使用其已有完整配置; 共同决定 Reviewer 的 spec 修改意见的 subagent (`rule-and-design-changes` Skill) 是预定义角色, 使用与所属 Main Agent 相同的模型和推理强度.
 
 ## Delegation and reuse
 

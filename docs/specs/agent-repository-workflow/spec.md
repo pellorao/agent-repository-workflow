@@ -435,7 +435,7 @@ Code Standards 与要求符合审核各自按比较基线, 纳入范围, 文件�
 
 ### Reports and result authority
 
-3 个 Canonical Reviewer Role 保持各自的审查对象和最终输出协议. Code Standards 审核和非提交比较中的要求符合审核的 Reviewer 在与用户沟通的 Main Agent 提供的本轮 `resultPath` 中维护当前 txt 问题列表, 无问题时在完成审查后写入准确的 `No problems.`; 3 个 Reviewer 都返回 `ready | incomplete` 状态, 与用户沟通的 Main Agent 从准确绑定路径读取报告. 普通真实审核按现有工作流启动所需 Reviewer, 不使用能力验证专属的 3 实例集合.
+3 个 Canonical Reviewer Role 保持各自的审查对象和最终输出协议. Code Standards 审核和非提交比较中的要求符合审核的 Reviewer 在与用户沟通的 Main Agent 提供的本轮 `reportPath` 中维护当前 txt 问题列表, 无问题时在完成审查后写入准确的 `No problems.`; 3 个 Reviewer 都返回 `ready | incomplete` 状态, 与用户沟通的 Main Agent 从准确绑定路径读取报告. 普通真实审核按现有工作流启动所需 Reviewer, 不使用能力验证专属的 3 实例集合.
 
 Reviewer 独自完成全部检查并亲自把完整报告写入本轮绑定的文件. 最终平台消息仅包含现行状态及适用理由, 与用户沟通的 Main Agent 和运行入口不得代写, 修改原始绑定报告或从摘要合成报告. Engine 的正式结果生成, 提升与验证责任保持单一, 不因运行入口成功或 ready 状态推断通过.
 

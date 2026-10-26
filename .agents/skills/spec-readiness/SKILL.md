@@ -39,7 +39,7 @@ subject 是连续的 `## What to build`, `## Spec Requirement` 和 `## Acceptanc
 
 ## Respond to findings
 
-Main Agent 在修改 issue 前独立验证每个问题. 问题有效时修正设计或 `## Spec Requirement`, 修改受保护文档前按 `rule-and-design-changes` Skill 取得确认, 然后对新内容执行完整工作流.
+Main Agent 在修改 issue 前独立验证每个问题. 问题有效时修正设计或 `## Spec Requirement`: 要求修改 spec 或 PRD 的问题按 `rule-and-design-changes` Skill 的 [Reviewer-proposed changes](../rule-and-design-changes/SKILL.md#reviewer-proposed-changes) 由 Main Agent 与独立 subagent 共同决定, 只有分歧交用户. 然后对新内容执行完整工作流.
 
 结果符合 `docs/agents/subagent-findings.md` 的质疑条件时, 用未变的 subject 和 Input 重新 `prepare`, 通过 `followup_task` 把新请求, 每个受质疑问题的具体证据和推理错误交给原 Reviewer. 质疑消息只是提示, 不是 Input, 证据或授权. 有争议的结果在替代结果完成 `generate -> promote` 前继续阻断提交. subject 或 Input 已改变时改用普通的新请求.
 

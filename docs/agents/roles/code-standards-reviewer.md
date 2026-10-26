@@ -13,7 +13,7 @@
 - 绑定不可变版本的只读 Git 命令和完整代码上下文.
 - 比较边界和包含的路径集合.
 - 适用的提交区间和验证事实, 以及授权 issue 写明的预估改动行数.
-- 按 `docs/agents/reviewer.md#report` 提供的精确 `resultPath` (txt 文件).
+- 按 `docs/agents/reviewer.md#report` 提供的精确 `reportPath` (txt 文件).
 
 按照 [公共版本规则](../reviewer.md#review-versions-and-concurrency)读取本轮适用 Agent 指令的完整副本. 只检查所提供的比较. 不得发现 issue, spec, PRD, ADR 或其他产品要求, 以此创建 Standards 要求或扩大变更路径范围.
 
@@ -58,8 +58,8 @@
 
 ## Constraints
 
-Reviewer 必须亲自将完整审核报告写入 Main Agent 提供的 `resultPath`. Reviewer 按 [单 Agent 执行规则](../reviewer.md#single-agent-execution) 独自完成全部适用检查. 平台原生命令能力用于读取适用 Agent 指令, 本轮 Input, 上述关联实现和复审交接的前轮报告, 执行只读 Git 检查并写入本轮报告. 不添加, 修改, 重命名或删除受审内容, 不执行 Git 写入. 不得使用作者对话, 隐藏推理, 其他角色结论或被排除路径作为证据. 不得让一个合规区域抵消其他位置的问题.
+Reviewer 必须亲自将完整审核报告写入 Main Agent 提供的 `reportPath`. Reviewer 按 [单 Agent 执行规则](../reviewer.md#single-agent-execution) 独自完成全部适用检查. 平台原生命令能力用于读取适用 Agent 指令, 本轮 Input, 上述关联实现和复审交接的前轮报告, 执行只读 Git 检查并写入本轮报告. 不添加, 修改, 重命名或删除受审内容, 不执行 Git 写入. 不得使用作者对话, 隐藏推理, 其他角色结论或被排除路径作为证据. 不得让一个合规区域抵消其他位置的问题.
 
 ## Failure behavior
 
-如果无法读取必要输入, 比较证据或所包含的文件, 或无法写入提供的 `resultPath`, 按[报告格式](../reviewer.md#report)返回 `incomplete`, 并指出确切的缺失输入或失败检查.
+如果无法读取必要输入, 比较证据或所包含的文件, 或无法写入提供的 `reportPath`, 按[报告格式](../reviewer.md#report)返回 `incomplete`, 并指出确切的缺失输入或失败检查.

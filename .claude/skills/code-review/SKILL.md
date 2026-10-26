@@ -72,9 +72,9 @@ Not reviewed: no governing requirements were supplied.
 
 Reviewer 身份由审查轴固定的 `input.role` 值和完整排序的授权 issue ID 集合组成. Standards 使用 `code-standards-reviewer`, Requirements 使用 `requirements-reviewer`; Requirements 的身份另含比较区间, 与提交审核的线程分开. 复审和问题处理按[结论复用](result-reuse.md)进行.
 
-每个轴的每轮审查按 [报告格式](../../../docs/agents/reviewer.md#report) 使用新的空 `resultPath`, 不把上一轮报告复用为新草稿.
+每个轴的每轮审查按 [报告格式](../../../docs/agents/reviewer.md#report) 使用新的空 `reportPath`, 不把上一轮报告复用为新草稿.
 
-按 `reviewer-launch` Skill 固定版本并并行启动需要新判断的轴, `reportPath` 使用准确 `resultPath`. 并行修改不替换本轮版本或自动授权新候选.
+按 `reviewer-launch` Skill 固定版本并并行启动需要新判断的轴, 每轴使用本轮准确的 `reportPath`. 并行修改不替换本轮版本或自动授权新候选.
 
 每次调用接收:
 
@@ -84,7 +84,7 @@ Reviewer 身份由审查轴固定的 `input.role` 值和完整排序的授权 is
 - 适用验证事实, 准确标识尚未完成的检查; Standards 轴另收授权 issue 写明的预估改动行数.
 - 完整绑定的适用 Agent 指令及其来源路径和 SHA-256 映射.
 - 仅 Requirements 轴接收完整治理要求副本及其来源路径和 SHA-256 记录.
-- 准确绑定的 `resultPath` 和只交付结果的指令.
+- 准确绑定的 `reportPath` 和只交付结果的指令.
 
 不在 Reviewer 提示中重复规范角色的审查准则.
 
