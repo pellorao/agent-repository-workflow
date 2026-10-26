@@ -1,6 +1,6 @@
 # Upstream Sync 与 Platform Standards 改为不自动触发的 Skill
 
-Status: ready-for-agent
+Status: ready-for-human
 
 ## What to build
 

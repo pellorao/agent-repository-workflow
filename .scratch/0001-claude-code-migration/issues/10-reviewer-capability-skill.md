@@ -1,6 +1,6 @@
 # Reviewer 能力一致性与 benchmark 改为不自动触发的 Skill
 
-Status: ready-for-agent
+Status: ready-for-human
 
 ## What to build
 
@@ -74,3 +74,4 @@ Governing requirements:
     - 真实仓库中工作区与索引不同时, Reviewer 会审错版本.
   - Reviewer 返回 `incomplete` 后, 运行时不停地续派 "complete successful delivery ... has not been confirmed". haiku 每轮都重复 incomplete, 8 分钟内续了约 30 轮, 最后只能停掉守护进程.
 - 从源码入口运行测量需要程序目录下的 `config.json` 和 `~/.codex/models.custom.json`. 旧安装没有后者时, 两个后端都会报 `Cannot read models.custom.json`.
+- 迁移前期无 Spec Readiness 记录就进入了实现与提交. 现在 AGENTS.md 已恢复, 标记 `completed` 的提交需要走 Commit Audit Gate 1, 而 Gate 1 要求授权 issue 有有效的 Spec Readiness, 本 ticket 的 `## Spec Requirement` 在要求列表之后还有一段说明文字, `arw spec-readiness verify` 报 `malformed governing requirement reference`. 4 项验收已勾选, 实现已在提交 d50ba9d; 如何正式关闭 (修正要求引用后补审, 或用户另行确认) 由用户决定, 因此暂为 `ready-for-human`.
