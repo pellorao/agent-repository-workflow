@@ -9,7 +9,10 @@ Status: ready-for-agent
 用户决定 (2026-10-27) 选 A:
 
 - 先实测: `claude -p --input-format stream-json --output-format stream-json` 常驻进程在回合进行中收到 stdin 新消息时如何处理 (插入当前回合, 排队到回合后, 或报错). 实测结果决定 `send_message` 在活动回合上的语义, 写进本 ticket.
-- 每个 Claude 后台 Agent 改为一个常驻进程, 运行中的消息从 stdin 送入; 后台 Agent 向 Main 的通知按规范的 `agent-to-main` 通道实现 (所需最小工具放行由设计决定).
+- 每个 Claude 后台 Agent 改为一个常驻进程. 规范 `Background Agent Communication` 中的各种消息都要覆盖, stdin 只解决其中一个方向:
+  - Main 到 Agent 的工作指示 (`send_message`), 以及 Reviewer 运行程序和提供方程序自动产生的工作指示: 由管理进程从 stdin 送入活动回合; 空闲时 `followup_task` 开启新回合.
+  - Agent 到 Main 的进度, 问题, 阻塞, 完成通知: Agent 自己调用 `arw background-agent send_message`. Claude Reviewer 现在只有读写文件工具, 需要只放行这一条命令 (`--allowedTools` 限定命令前缀), 进程环境提供 `ARW_BACKGROUND_AGENT_RUN_ID` 和根线程身份, 管理进程按身份核对来源.
+  - 程序产生的暂停通知和管理状态通知 (开始, 结束, 故障, 中断, 待答复请求): 由管理进程从 stream-json 输出观察原生事实后发给 Main, 不依赖 Agent 发送; `list_agents` 和 `wait_agent` 仍须呈现回合结束或故障.
 - 记录每个进程 id, 冷启动时按 id 核对旧进程是否已退出, 修复上述冷启动缺陷; 管理进程收到 SIGTERM 时正常退出.
 - Codex 沙盒内首次调用 `arw background-agent` 时, 启动管理进程的命令请求提权, 在沙盒外运行, 不需人工预启动 (用户 2026-10-27).
 - 设计定稿前交一个不低于 Main 的独立 Agent 复核; ADR 0032 中 "运行中指示被拒绝" 的决定由新 ADR 取代.
@@ -27,7 +30,7 @@ Governing requirements:
 ## Acceptance criteria
 
 - [ ] stream-json 回合中插入消息的实测行为记入 `## Comments`.
-- [ ] Claude 后端的运行中 `send_message` 和后台 Agent 到 Main 的通知按规范工作, 有测试覆盖.
+- [ ] Claude 后端覆盖规范列出的全部消息形式 (Main 指示, 程序指示, Agent 主动通知, 程序暂停与管理状态通知), 有测试覆盖.
 - [ ] 管理进程被结束后冷启动, 空闲的 Claude Agent 不再导致请求失败; 有测试覆盖.
 - [ ] Codex 沙盒内首次调用能自动在沙盒外启动管理进程.
 - [ ] Claude Code 和 Codex 各跑一次真实审核, 行为正常.
