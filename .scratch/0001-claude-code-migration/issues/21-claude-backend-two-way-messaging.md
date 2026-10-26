@@ -17,6 +17,7 @@ Status: ready-for-agent
 - 记录每个进程 id, 冷启动时按 id 核对旧进程是否已退出, 修复上述冷启动缺陷; 管理进程收到 SIGTERM 时正常退出.
 - Codex 沙盒内首次调用 `arw background-agent` 时, 启动管理进程的命令请求提权, 在沙盒外运行, 不需人工预启动 (用户 2026-10-27).
 - 设计定稿前交一个不低于 Main 的独立 Agent 复核; ADR 0032 中 "运行中指示被拒绝" 的决定由新 ADR 取代.
+- ticket 18 测量中 Claude 后端在 `dontAsk` 模式下偶发拒绝 Read/Bash, 导致 Reviewer `incomplete` (2026-10-27, 三次); 一并查明原因并修复.
 - 本 ticket 提交时一并把 issue 10 (先修好 `## Spec Requirement` 格式) 和 issue 16 设为 `completed`, 不补跑就绪审核 (用户 2026-10-27).
 
 预估改动: 运行时代码约 +150/-60 行, 测试约 +100 行, 规范与 ADR 约 +40 行.
