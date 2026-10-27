@@ -9,6 +9,7 @@ import {runExitedProcess, runSuccessfulProcess} from '../helpers/process.mjs';
 import {runGit} from '../helpers/git.mjs';
 import {createTemporaryDirectory} from '../helpers/cleanup.mjs';
 import {createRepository as createGitRepository} from '../helpers/repository-fixture.mjs';
+import {completeGlobalConfigurationBytes} from '../../lib/arw-common/config.mjs';
 import {ARW_VERSION, parseArwVersion} from '../../lib/arw-common/identity.mjs';
 import {createSharedModelCatalog} from '../../lib/background-agent/model-catalog.mjs';
 import {loadInstallationPayload} from '../../lib/installation/installation-payload.mjs';
@@ -52,7 +53,9 @@ const TEST_INSTALLATION_PAYLOAD = {
     status: /** @type {'succeeded'} */ ('succeeded'),
     verificationPaths: ['config.install.json', ...TEST_PAYLOAD_FILES],
 };
+// The seed has no providers; installation completes the written configuration with the defaults.
 const TEST_CONFIGURATION_DEFAULTS = JSON.parse(TEST_INSTALLATION_PAYLOAD.configSeedBytes.toString('utf8'));
+TEST_CONFIGURATION_DEFAULTS.backgroundAgent.providers = {openai: {maxInstances: 4}, anthropic: {maxInstances: 4}};
 const TEST_RELEASE_SOURCE = {
     arwVersion: ARW_VERSION,
     diagnostics: [],
@@ -448,65 +451,44 @@ test('managed update leaves installed bytes intact when maintenance is busy', as
     assert.ok(attempted.messages.some(event => event.channel === 'stderr' && event.message.includes('active background work')));
 });
 
-test('installation preserves an explicit OpenAI limit and the exact existing catalog bytes', async t => {
+test('installation migrates Codex-era provider settings once and never changes the Codex file', async t => {
     const home = await createHome(t);
     const codexHome = join(home, '.codex');
     const customPath = join(codexHome, 'models.custom.json');
-    const existing = Buffer.from('{"models":[{"slug":"user-model"}], "providers":{"openai":{"maxInstances":7}}, "userField": true}\n');
-    await mkdir(codexHome);
-    await writeFile(customPath, existing);
-
-    const {result} = await runNonInteractive(home);
-
-    assert.equal(result, 0);
-    assert.deepEqual(await readFile(customPath), existing);
-});
-
-test('installation adds only the missing OpenAI limit to an existing custom model catalog', async t => {
-    const home = await createHome(t);
-    const codexHome = join(home, '.codex');
-    const customPath = join(codexHome, 'models.custom.json');
-    const existing = '{\n  "models": [{"slug":"user-model"}],\n  "providers": {"deepseek": {"maxInstances": 2}},\n  "userField": 1e3\n}\n';
+    const existing = Buffer.from('{"models":[{"slug":"user-model"}], "providers":{"openai":{"maxInstances":7},"deepseek":{"maxInstances":2}}, "userField": true}\n');
     await mkdir(codexHome);
     await writeFile(customPath, existing);
 
     const first = await runNonInteractive(home);
+
     assert.equal(first.result, 0);
-    const completed = await readFile(customPath, 'utf8');
-    assert.ok(completed.includes('"models": [{"slug":"user-model"}]'));
-    assert.ok(completed.includes('"deepseek": {"maxInstances": 2}'));
-    assert.ok(completed.includes('"userField": 1e3'));
-    assert.deepEqual(JSON.parse(completed), {
-        models: [{slug: 'user-model'}],
-        providers: {deepseek: {maxInstances: 2}, openai: {maxInstances: 4}},
-        userField: 1000,
-    });
+    assert.ok(first.messages.some(event => event.message.includes('Migrated provider settings') && event.message.includes('deepseek')));
+    const configPath = join(home, '.agent-repository-workflow', 'config.json');
+    const config = JSON.parse(await readFile(configPath, 'utf8'));
+    assert.deepEqual(config.backgroundAgent.providers, {openai: {maxInstances: 7}, anthropic: {maxInstances: 4}, deepseek: {maxInstances: 2}});
+    assert.deepEqual(await readFile(customPath), existing);
+
+    config.backgroundAgent.providers = {openai: {maxInstances: 5}};
+    await writeFile(configPath, `${JSON.stringify(config)}\n`);
     const second = await runNonInteractive(home);
     assert.equal(second.result, 0);
-    assert.equal(await readFile(customPath, 'utf8'), completed);
+    assert.deepEqual(JSON.parse(await readFile(configPath, 'utf8')).backgroundAgent.providers, {openai: {maxInstances: 5}, anthropic: {maxInstances: 4}});
+
+    const legacyConfig = {...config, backgroundAgent: {maxInstances: 16}};
+    await writeFile(configPath, `${JSON.stringify(legacyConfig)}\n`);
+    assert.equal((await runNonInteractive(home)).result, 0);
+    assert.deepEqual(JSON.parse(await readFile(configPath, 'utf8')).backgroundAgent.providers, {openai: {maxInstances: 7}, anthropic: {maxInstances: 4}, deepseek: {maxInstances: 2}});
 });
 
-test('installation updates the actual target of a linked custom model catalog', async t => {
+test('installation without a Codex directory creates none and installs the provider defaults', async t => {
     const home = await createHome(t);
-    const codexHome = join(home, '.codex');
-    const targetPath = join(home, 'shared-models.json');
-    const customPath = join(codexHome, 'models.custom.json');
-    await mkdir(codexHome);
-    await writeFile(targetPath, '{"models":[{"slug":"linked"}],"note":true}\n');
-    if (process.platform !== 'win32') await chmod(targetPath, 0o600);
-    try {
-        await symlink(targetPath, customPath, 'file');
-    } catch (error) {
-        if (error instanceof Error && 'code' in error && error.code === 'EPERM') return;
-        throw error;
-    }
 
-    const installed = await runNonInteractive(home);
-    assert.equal(installed.result, 0);
-    assert.equal(await readlink(customPath), targetPath);
-    if (process.platform !== 'win32') assert.equal((await stat(targetPath)).mode & 0o777, 0o600);
-    assert.deepEqual(JSON.parse(await readFile(targetPath, 'utf8')), {
-        models: [{slug: 'linked'}], note: true, providers: {openai: {maxInstances: 4}},
+    const {result} = await runNonInteractive(home);
+
+    assert.equal(result, 0);
+    assert.deepEqual(await readdir(home), ['.agent-repository-workflow']);
+    assert.deepEqual(JSON.parse(await readFile(join(home, '.agent-repository-workflow', 'config.json'), 'utf8')).backgroundAgent.providers, {
+        openai: {maxInstances: 4}, anthropic: {maxInstances: 4},
     });
 });
 
@@ -534,15 +516,11 @@ test('invalid existing custom model catalog blocks installation before maintenan
 test('installation warns about a provider limit above the effective global limit but runtime rejects it', async t => {
     const home = await createHome(t);
     const installation = join(home, '.agent-repository-workflow');
-    const codexHome = join(home, '.codex');
     await mkdir(installation);
-    await mkdir(codexHome);
     const seed = JSON.parse(await readFile(join(SOURCE_DIRECTORY, 'config.install.json'), 'utf8'));
     await writeFile(join(installation, 'config.json'), `${JSON.stringify({
-        ...seed, backgroundAgent: {...seed.backgroundAgent, maxInstances: 2},
+        ...seed, backgroundAgent: {...seed.backgroundAgent, maxInstances: 2, providers: {other: {maxInstances: 3}}},
     })}\n`);
-    await writeFile(join(codexHome, 'models_cache.json'), '{"models":[]}');
-    await writeFile(join(codexHome, 'models.custom.json'), '{"models":[],"providers":{"other":{"maxInstances":3}}}');
 
     const installed = await runNonInteractive(home);
     assert.equal(installed.result, 0);
@@ -550,55 +528,17 @@ test('installation warns about a provider limit above the effective global limit
         && event.message.includes('openai') && event.message.includes('4') && event.message.includes('2')));
     assert.ok(installed.messages.some(event => event.channel === 'stderr'
         && event.message.includes('other') && event.message.includes('3') && event.message.includes('2')));
-    assert.equal(JSON.parse(await readFile(join(installation, 'config.json'), 'utf8')).backgroundAgent.maxInstances, 2);
-    assert.deepEqual(JSON.parse(await readFile(join(codexHome, 'models.custom.json'), 'utf8')).providers.openai, {maxInstances: 4});
+    const config = JSON.parse(await readFile(join(installation, 'config.json'), 'utf8')).backgroundAgent;
+    assert.equal(config.maxInstances, 2);
     const catalog = createSharedModelCatalog({
         runtimeDirectory: join(installation, 'background-agent-state'),
-        environment: () => ({CODEX_HOME: codexHome}),
         maxInstances: 2,
+        providers: config.providers,
     });
     await assert.rejects(catalog.getProviders(), /global limit/u);
 });
 
-test('invalid explicit CODEX_HOME stops installation before any write', async t => {
-    const home = await createHome(t);
-    const codexHome = join(home, 'missing-codex-home');
-    let maintenanceCalled = false;
-    const {result, messages} = await runNonInteractive(home, {
-        acquireMaintenance: async () => {
-            maintenanceCalled = true;
-            return maintenanceReady();
-        },
-        environment: {CODEX_HOME: codexHome, HOME: home, USERPROFILE: home},
-    });
-
-    assert.equal(result, 1);
-    assert.equal(maintenanceCalled, false);
-    assert.deepEqual(await readdir(home), []);
-    assert.ok(messages.some(event => event.channel === 'stderr' && event.message.includes('Codex home')));
-});
-
-test('custom model catalog creation failure cannot report installation success', async t => {
-    const home = await createHome(t);
-    const codexHome = join(home, '.codex');
-    const customPath = join(codexHome, 'models.custom.json');
-    await mkdir(codexHome);
-    const {result, messages} = await runNonInteractive(home, {
-        acquireMaintenance: async () => {
-            await mkdir(customPath);
-            return maintenanceReady();
-        },
-    });
-
-    assert.equal(result, 1);
-    assert.ok(messages.some(event => event.channel === 'stderr'
-        && event.message.includes('Custom model catalog path must be a regular file')));
-    assert.ok(messages.some(event => event.channel === 'stderr' && event.message.includes('manifest was not written')));
-    await assert.rejects(readFile(join(home, '.agent-repository-workflow', 'manifest.json')), {code: 'ENOENT'});
-    assert.deepEqual(await readdir(customPath), []);
-});
-
-test('installation writes the payload bytes captured by Release verification', async t => {
+test('installation writes the captured launcher payload and the completed configuration', async t => {
     const home = await createHome(t);
     const launcher = Buffer.from('#!/bin/sh\nnode arw.mjs "$@"\n');
     const seed = Buffer.from('{"configVersion":3,"agents":{},"editor":{"args":["{file}"],"command":"code"},"reviewEditor":{"args":["--wait","{file}"],"command":"code"},"jira":{"listLimit":50}}\n');
@@ -628,7 +568,7 @@ test('installation writes the payload bytes captured by Release verification', a
 
     assert.equal(result.status, 'installed');
     assert.equal(await readFile(join(home, '.agent-repository-workflow', 'arw'), 'utf8'), launcher.toString('utf8'));
-    assert.equal(await readFile(join(home, '.agent-repository-workflow', 'config.json'), 'utf8'), seed.toString('utf8'));
+    assert.deepEqual(await readFile(join(home, '.agent-repository-workflow', 'config.json')), completeGlobalConfigurationBytes(seed).bytes);
 });
 
 test('first installation copies the complete runtime and executes the installed command independently of the source checkout', async t => {

@@ -14,7 +14,7 @@ Strata 模型 ID `qwen3.8-flash-next-q2_0`, `qwen3.8-flash-next-iq2_xs` 和 `qwe
 
 ## Compaction support
 
-ARW 对已接入的 Strata 模型自动使用 `model_context_window=206584` 和 `model_auto_compact_token_limit=150000`, 与[运行参数](#runtime-parameters)中的模型与目录容量保持一致. 固定支持不增加 `models.custom.json.providers` 中的用户可调字段或新的调用步骤; 其他提供方的模型条目与原生运行设置保持其既有来源. 这些设置为实际模型容量保留固定压缩预算.
+ARW 对已接入的 Strata 模型自动使用 `model_context_window=206584` 和 `model_auto_compact_token_limit=150000`, 与[运行参数](#runtime-parameters)中的模型与目录容量保持一致. 固定支持不增加 `backgroundAgent.providers` 中的用户可调字段或新的调用步骤; 其他提供方的模型条目与原生运行设置保持其既有来源. 这些设置为实际模型容量保留固定压缩预算.
 
 Strata 历史压缩使用其实际安装目录中的 `config/compact_prompt.txt` 作为基础. 程序读取基础文件, 若调用方已有摘要提示则只追加一次作为补充, 把组合内容写入原任务绑定的私有临时文件, 通过 Codex 的 `experimental_compact_prompt_file` 使用它. 调用方已指向同一基础文件或提供相同基础内容时不重复拼接. 不复制维护 Codex 特定版本的默认摘要快照, 不以自定义摘要要求替代基础指令, 不把压缩提示加入普通审核提示. 服务自动接入的普通启动指令不在调用方重复添加.
 

@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0001:32",
+  "request": {
+    "digest": "934e8f7557faf39e224f2bb0cfab1575e437fdb35e012d204e9c086e6b4c62f1",
+    "filePath": ".tmp/claude-code/06588b1e-7f07-4832-8933-107aaf5b5978/0001_32/spec-readiness/requests/request-dc5a42ff-e429-4e06-9129-cce80067441f.json",
+    "id": "dc5a42ff-e429-4e06-9129-cce80067441f"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "9a8e7018d0d0dfc4caf63afd2497b367817ee40e6595b4690f4e735afc742287"
+  },
+  "inputs": [
+    {
+      "filePath": "CONTEXT.md",
+      "role": "domain-context",
+      "sha256": "e4ec7d0aaeea4a87cc122ecc5eb2fa2cb80394a73d0ad53222b09872720b2f38"
+    },
+    {
+      "filePath": "docs/adr/0030-use-user-wide-background-agent-management.md",
+      "role": "adr",
+      "sha256": "33edf98de25028d266d5afc61ee5a0f4cb4beee93b0016c501e8967d12e9e21a"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow-installation/spec.md",
+      "role": "governing-spec",
+      "sha256": "adb06fc9277e4b4223c5f4f88113dbc7a11066ae33a12035a1118ea766533773"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow/spec.md",
+      "role": "governing-spec",
+      "sha256": "523710b0abb58a2eae8f18317e227acc00d519500e40974d7efb9fd91024fd37"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow/strata.md",
+      "role": "governing-spec",
+      "sha256": "73374b5c048a1cfc6519061f715503f478343ef2bc000efcbf08602aafb62f9f"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0001-claude-code-migration/issues/32-model-catalog-outside-codex-home.md",
+    "sha256": "62fff105ca6283a8ad42e7bdff01473e3d9fa827b94c3f3725babe84fe7621d8"
+  },
+  "result": "satisfied"
+}

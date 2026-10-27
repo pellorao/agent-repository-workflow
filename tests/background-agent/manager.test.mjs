@@ -400,6 +400,16 @@ test('unverified tool work cannot be evicted to exceed the root capacity',async 
   assert.equal(fake.native.rootStops,0);
 });
 
+test('Claude backend runs are limited by the anthropic provider cap before the global cap',async t=>{
+  const fake=await harness(t,{maxInstances:4,providers:{anthropic:{maxInstances:1}}});
+  const claudeSettings={...settings,modelProvider:'anthropic'};
+  const first=result(await fake.start('main-1',claudeSettings));
+  await waitDelivered(fake.stateStore,first.messageId);
+  const denied=await fake.start('main-1',claudeSettings);
+  assert.equal(denied.status,'failed');
+  if(denied.status==='failed')assert.match(denied.error.message,/Provider anthropic capacity is exhausted/u);
+});
+
 test('safe eviction and maintenance cannot unload work reserved during native idle verification',async t=>{
   const fake=await harness(t,{maxInstances:1});
   const first=result(await fake.start());

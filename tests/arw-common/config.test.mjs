@@ -7,7 +7,7 @@ import {createTemporaryDirectory} from '../helpers/cleanup.mjs';
 import {
     convertConfiguration,
 } from '../../lib/common/configuration-conversion.mjs';
-import {BACKGROUND_AGENT_DEFAULTS, completeGlobalConfigurationBytes, GLOBAL_CONFIGURATION_RULES, loadConfig, validateConfig} from '../../lib/arw-common/config.mjs';
+import {BACKGROUND_AGENT_DEFAULTS, completeGlobalConfigurationBytes, GLOBAL_CONFIGURATION_RULES, loadConfig, PROVIDER_DEFAULTS, validateConfig, withProviderDefaults} from '../../lib/arw-common/config.mjs';
 import {defaultGlobalReviewers, resolveReviewerSettings} from '../../lib/arw-common/reviewer-configuration.mjs';
 
 test('global configuration loads through the scoped JSON file Interface', async t => {
@@ -21,7 +21,7 @@ test('global configuration loads through the scoped JSON file Interface', async 
     };
     await writeFile(join(directory, 'config.json'), `${JSON.stringify(value)}\n`, 'utf8');
 
-    assert.deepEqual(await loadConfig(directory), {...value, reviewers: defaultGlobalReviewers(), backgroundAgent: BACKGROUND_AGENT_DEFAULTS});
+    assert.deepEqual(await loadConfig(directory), {...value, reviewers: defaultGlobalReviewers(), backgroundAgent: {...BACKGROUND_AGENT_DEFAULTS, providers: PROVIDER_DEFAULTS}});
     await assert.rejects(loadConfig(join(directory, 'missing')), /could not be read/u);
 });
 
@@ -85,10 +85,10 @@ test('Global default completion preserves existing JSON text and rejects malform
     assert.deepEqual(validateConfig(JSON.parse(text)).reviewers?.['requirements-reviewer'], {
         model: 'custom', modelProvider: 'openai', reasoningEffort: 'xhigh', serviceTier: 'default',
     });
-    assert.deepEqual(validateConfig(JSON.parse(text)).backgroundAgent, BACKGROUND_AGENT_DEFAULTS);
+    assert.deepEqual(validateConfig(JSON.parse(text)).backgroundAgent, {...BACKGROUND_AGENT_DEFAULTS, providers: PROVIDER_DEFAULTS});
     assert.deepEqual(completeGlobalConfigurationBytes(completed.bytes), {bytes: completed.bytes, changed: false});
     const customCapacity = Buffer.from(original.toString('utf8').replace('"extension"', '"backgroundAgent": {"maxInstances": 2},\n  "extension"'));
-    assert.deepEqual(validateConfig(JSON.parse(completeGlobalConfigurationBytes(customCapacity).bytes.toString('utf8'))).backgroundAgent, {...BACKGROUND_AGENT_DEFAULTS, maxInstances: 2});
+    assert.deepEqual(validateConfig(JSON.parse(completeGlobalConfigurationBytes(customCapacity).bytes.toString('utf8'))).backgroundAgent, {...BACKGROUND_AGENT_DEFAULTS, maxInstances: 2, providers: PROVIDER_DEFAULTS});
     const invalid = Buffer.from(original.toString('utf8').replace('"model": "custom"', '"model": 7'));
     assert.throws(() => completeGlobalConfigurationBytes(invalid), /reviewers\.requirements-reviewer\.model/u);
     const retiredRole = Buffer.from(original.toString('utf8').replace('"requirements-reviewer"', '"code-spec-reviewer"'));
@@ -107,10 +107,10 @@ test('Background Agent timing defaults complete missing fields and preserve conf
     };
     const completed = completeGlobalConfigurationBytes(Buffer.from(`${JSON.stringify(value)}\n`));
     assert.deepEqual(JSON.parse(completed.bytes.toString('utf8')).backgroundAgent, {
-        ...BACKGROUND_AGENT_DEFAULTS, ...value.backgroundAgent,
+        ...BACKGROUND_AGENT_DEFAULTS, ...value.backgroundAgent, providers: PROVIDER_DEFAULTS,
     });
     assert.deepEqual(validateConfig(value).backgroundAgent, {
-        ...BACKGROUND_AGENT_DEFAULTS, ...value.backgroundAgent,
+        ...BACKGROUND_AGENT_DEFAULTS, ...value.backgroundAgent, providers: PROVIDER_DEFAULTS,
     });
     for (const key of Object.keys(BACKGROUND_AGENT_DEFAULTS)) {
         for (const invalid of [0, -1, 1.5, '5000', null, Number.MAX_SAFE_INTEGER + 1]) {
@@ -118,6 +118,33 @@ test('Background Agent timing defaults complete missing fields and preserve conf
                 new RegExp(`backgroundAgent\\.${key} must be a positive safe integer`, 'u'));
         }
     }
+});
+
+test('provider settings default to four instances for OpenAI and Anthropic and keep configured values', () => {
+    const value = {
+        configVersion: 3,
+        editor: {command: 'code', args: ['{file}']},
+        reviewEditor: {command: 'code', args: ['{file}']},
+        jira: {listLimit: 50},
+        backgroundAgent: {providers: {openai: {maxInstances: 7}, other: {maxInstances: 2}}},
+    };
+    assert.deepEqual(validateConfig(value).backgroundAgent?.providers, {
+        openai: {maxInstances: 7}, anthropic: {maxInstances: 4}, other: {maxInstances: 2},
+    });
+    assert.equal(validateConfig({...value, backgroundAgent: {}}).backgroundAgent?.providers.anthropic.maxInstances, 4);
+    assert.throws(() => validateConfig({...value, backgroundAgent: {providers: []}}), /providers must be an object/u);
+    assert.throws(() => validateConfig({...value, backgroundAgent: {providers: {openai: 1}}}), /providers must be an object/u);
+    const completed = completeGlobalConfigurationBytes(Buffer.from(JSON.stringify(value)));
+    assert.deepEqual(JSON.parse(completed.bytes.toString('utf8')).backgroundAgent.providers, {
+        openai: {maxInstances: 7}, anthropic: {maxInstances: 4}, other: {maxInstances: 2},
+    });
+});
+
+test('provider defaults keep a configured provider named __proto__', () => {
+    const merged = withProviderDefaults(JSON.parse('{"__proto__": {"maxInstances": 2}, "openai": {"maxInstances": 3}}'));
+    assert.deepEqual(Object.keys(merged).sort(), ['__proto__', 'anthropic', 'openai']);
+    assert.deepEqual(merged.openai, {maxInstances: 3});
+    assert.deepEqual(Object.getOwnPropertyDescriptor(merged, '__proto__')?.value, {maxInstances: 2});
 });
 
 test('global configuration rules support only published v1 and current v3', () => {

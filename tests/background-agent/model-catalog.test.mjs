@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
-import {chmod, mkdir, readFile, readdir, stat, symlink, writeFile} from 'node:fs/promises';
+import {chmod, mkdir, readFile, readdir, rm, stat, symlink, writeFile} from 'node:fs/promises';
 import {join, relative} from 'node:path';
 import test from 'node:test';
 
-import {createSharedModelCatalog, prepareCustomModelCatalog} from '../../lib/background-agent/model-catalog.mjs';
+import {PROVIDER_DEFAULTS} from '../../lib/arw-common/config.mjs';
+import {createSharedModelCatalog, readLegacyProviders} from '../../lib/background-agent/model-catalog.mjs';
 import {securePrivateStatePath} from '../../lib/background-agent/private-state.mjs';
 import {createTemporaryDirectory} from '../helpers/cleanup.mjs';
 
@@ -15,56 +16,25 @@ async function createPrivateRuntimeDirectory(home) {
   return directory;
 }
 
-test('installation prepares without writing, creates only a missing custom catalog, and preserves an existing file', async t => {
-  const home = await createTemporaryDirectory(t, 'arw-model-install-');
+test('legacy providers are read for migration without creating or changing a Codex home', async t => {
+  const home = await createTemporaryDirectory(t, 'arw-model-legacy-');
   const environment = {HOME: home, CODEX_HOME: ''};
-  const path = join(home, '.codex', 'models.custom.json');
-  const preparation = await prepareCustomModelCatalog({environment, platform: 'linux'});
-  await assert.rejects(readFile(path), {code: 'ENOENT'});
-  assert.equal(await preparation.apply(), true);
-  const initial = JSON.parse(await readFile(path, 'utf8'));
-  assert.deepEqual(initial.models, []);
-  assert.ok(Number.isSafeInteger(initial.providers.openai.maxInstances));
-  assert.ok(initial.providers.openai.maxInstances > 0);
-  const userBytes = Buffer.from('{ "models" : [{"slug":"user"}], "note": 1 }\n');
-  await writeFile(path, userBytes);
-  const existing = await prepareCustomModelCatalog({environment, platform: 'linux'});
-  assert.equal(await existing.apply(), true);
-  const completed = await readFile(path, 'utf8');
-  assert.ok(completed.startsWith('{ "models" : [{"slug":"user"}], "note": 1'));
-  assert.deepEqual(JSON.parse(completed), {...initial, models: [{slug: 'user'}], note: 1});
-  assert.equal(await (await prepareCustomModelCatalog({environment, platform: 'linux'})).apply(), false);
-  assert.equal(await readFile(path, 'utf8'), completed);
-  await assert.rejects(prepareCustomModelCatalog({environment: {CODEX_HOME: join(home, 'missing'), HOME: home}, platform: 'linux'}), /Codex home is unavailable/);
-  const windowsHome = join(home, 'windows-profile');
-  await mkdir(windowsHome);
-  const windowsPreparation = await prepareCustomModelCatalog({environment: {USERPROFILE: windowsHome}, platform: 'win32'});
-  assert.equal(await windowsPreparation.apply(), true);
-  assert.deepEqual(JSON.parse(await readFile(join(windowsHome, '.codex', 'models.custom.json'), 'utf8')), initial);
-});
-
-test('installation rejects a target that becomes a directory after preparation', async t => {
-  const home = await createTemporaryDirectory(t, 'arw-model-install-collision-');
-  const preparation = await prepareCustomModelCatalog({environment: {HOME: home}, platform: 'linux'});
+  assert.equal(await readLegacyProviders(environment, 'linux'), undefined);
+  assert.equal(await readLegacyProviders({CODEX_HOME: join(home, 'missing')}, 'linux'), undefined);
+  assert.deepEqual(await readdir(home), []);
+  await writeFile(join(home, 'file'), '');
+  await assert.rejects(readLegacyProviders({CODEX_HOME: join(home, 'file')}, 'linux'), /must be a directory/);
+  await rm(join(home, 'file'));
   await mkdir(join(home, '.codex'));
-  await mkdir(join(home, '.codex', 'models.custom.json'));
-  await assert.rejects(preparation.apply(), /regular file/);
-  assert.equal((await stat(join(home, '.codex', 'models.custom.json'))).isDirectory(), true);
-});
-
-test('catalog replacement refuses changed user bytes and removes its temporary file', async t => {
-  const home = await createTemporaryDirectory(t, 'arw-model-install-drift-');
-  const codexHome = join(home, '.codex');
-  const customPath = join(codexHome, 'models.custom.json');
-  await mkdir(codexHome);
-  await writeFile(customPath, '{"models":[]}');
-  const prepared = await prepareCustomModelCatalog({environment: {CODEX_HOME: codexHome}});
-  const changed = '{"models":[{"slug":"new-user-value"}]}';
-  await writeFile(customPath, changed);
-
-  await assert.rejects(prepared.apply(), /changed after preparation/u);
-  assert.equal(await readFile(customPath, 'utf8'), changed);
-  assert.deepEqual(await readdir(codexHome), ['models.custom.json']);
+  const path = join(home, '.codex', 'models.custom.json');
+  await writeFile(path, '{"models":[]}');
+  assert.equal(await readLegacyProviders(environment, 'linux'), undefined);
+  await writeFile(path, '{"models":[],"providers":{"openai":{"maxInstances":7}}}');
+  assert.deepEqual(await readLegacyProviders(environment, 'linux'), {openai: {maxInstances: 7}});
+  for (const content of ['{"models":[', '[]', '{"providers":null}', '{"providers":{"openai":null}}']) {
+    await writeFile(path, content);
+    await assert.rejects(readLegacyProviders(environment, 'linux'));
+  }
 });
 
 test('relative CODEX_HOME, linked Codex homes, and linked read-only sources follow native paths', async t => {
@@ -91,12 +61,7 @@ test('relative CODEX_HOME, linked Codex homes, and linked read-only sources foll
     await symlink(customSource, join(actualHome, 'models.custom.json'));
   }
   const environment = {CODEX_HOME: relative(process.cwd(), linkedHome)};
-  const prepared = await prepareCustomModelCatalog({environment});
-  assert.equal(await prepared.apply(), false);
-  const defaultEnvironment = process.platform === 'win32' ? {USERPROFILE: defaultHome} : {HOME: defaultHome};
-  const defaultPrepared = await prepareCustomModelCatalog({environment: defaultEnvironment});
-  assert.equal(await defaultPrepared.apply(), false);
-  const generated = createSharedModelCatalog({runtimeDirectory, environment: () => environment});
+  const generated = createSharedModelCatalog({runtimeDirectory, environment: () => environment, providers: {openai: {maxInstances: 5}}});
   assert.deepEqual(await generated.getProviders(), {openai: {maxInstances: 5}});
   assert.deepEqual(JSON.parse(await readFile(await generated.prepare(), 'utf8')), {
     models: [{slug: 'cached'}, {slug: 'custom'}],
@@ -115,21 +80,22 @@ test('a shared process uses a private merged catalog without changing either sou
   const cacheBytes = Buffer.from('{"cacheVersion":12,"models":[{"slug":"gpt","other":{"a":1}}]}');
   const strataDirectory = join(home, 'strata');
   await mkdir(strataDirectory);
+  const providers = JSON.parse(`{
+    "qwen_strata": {"driver": "strata", "installationDirectory": ${JSON.stringify(strataDirectory)}},
+    "another_strata": {"driver": "strata", "installationDirectory": ${JSON.stringify(strataDirectory)}, "maxInstances": 2},
+    "deepseek": {"maxInstances": 3},
+    "unlimited": {},
+    "__proto__": {"maxInstances": 2}
+  }`);
   const customBytes = Buffer.from(JSON.stringify({
     models: [{slug: 'strata', provider: 'local'}],
-    providers: {
-      qwen_strata: {driver: 'strata', installationDirectory: strataDirectory},
-      another_strata: {driver: 'strata', installationDirectory: strataDirectory, maxInstances: 2},
-      deepseek: {maxInstances: 3},
-      unlimited: {},
-      ['__proto__']: {maxInstances: 2},
-    },
+    providers: {ignored: {maxInstances: 1}},
     userNote: 'keep',
     authToken: 'must-not-copy',
   }));
   await writeFile(cachePath, cacheBytes);
   await writeFile(customPath, customBytes);
-  const catalog = createSharedModelCatalog({runtimeDirectory, environment: () => ({CODEX_HOME: codexHome}), maxInstances: 3});
+  const catalog = createSharedModelCatalog({runtimeDirectory, environment: () => ({CODEX_HOME: codexHome}), maxInstances: 3, providers});
   /** @type {Record<string, import('../../lib/background-agent/model-catalog.mjs').ProviderConfiguration>} */
   const expectedProviders = {
     qwen_strata: {driver: 'strata', installationDirectory: strataDirectory, maxInstances: 1},
@@ -140,7 +106,6 @@ test('a shared process uses a private merged catalog without changing either sou
   };
   assert.deepEqual(await catalog.getProviders(), expectedProviders);
   assert.equal(Object.hasOwn(await catalog.getProviders(), '__proto__'), true);
-  await writeFile(customPath, '{"models":[{"slug":"new"}],"providers":{"deepseek":{"maxInstances":2}}}');
   const generatedPath = await catalog.prepare();
   assert.equal(generatedPath, join(runtimeDirectory, 'models.json'));
   assert.deepEqual(JSON.parse(await readFile(generatedPath, 'utf8')), {
@@ -153,16 +118,16 @@ test('a shared process uses a private merged catalog without changing either sou
   assert.deepEqual(JSON.parse(await readFile(generatedPath, 'utf8')).models, [
     {slug: 'gpt', other: {a: 1}}, {slug: 'strata', provider: 'local'},
   ]);
+  await writeFile(customPath, '{"models":[{"slug":"new"}]}');
   await catalog.remove();
   await assert.rejects(readFile(generatedPath), {code: 'ENOENT'});
   await catalog.remove();
-  assert.deepEqual(await catalog.getProviders(), {deepseek: {maxInstances: 2}});
   assert.equal(await catalog.prepare(), generatedPath);
   assert.deepEqual(JSON.parse(await readFile(generatedPath, 'utf8')).models, [
     {slug: 'gpt', other: {a: 1}}, {slug: 'new'},
   ]);
   assert.deepEqual(await readFile(cachePath), cacheBytes);
-  assert.deepEqual(await readFile(customPath), Buffer.from('{"models":[{"slug":"new"}],"providers":{"deepseek":{"maxInstances":2}}}'));
+  assert.deepEqual(await readFile(customPath), Buffer.from('{"models":[{"slug":"new"}]}'));
 });
 
 test('provider configuration rejects invalid shape, limits, and Strata directories before writing the native catalog', async t => {
@@ -171,10 +136,8 @@ test('provider configuration rejects invalid shape, limits, and Strata directori
   const runtimeDirectory = await createPrivateRuntimeDirectory(home);
   await mkdir(codexHome);
   await writeFile(join(codexHome, 'models_cache.json'), '{"models":[]}');
-  const customPath = join(codexHome, 'models.custom.json');
-  const catalog = createSharedModelCatalog({runtimeDirectory, environment: () => ({CODEX_HOME: codexHome}), maxInstances: 2});
   const cases = [
-    [{providers: []}, /providers must be an object/],
+    [{providers: []}, /Providers must be an object/],
     [{providers: {generic: null}}, /object value/],
     [{providers: {generic: {driver: 'other'}}}, /unsupported driver/],
     [{providers: {generic: {installationDirectory: home}}}, /without the Strata driver/],
@@ -185,8 +148,8 @@ test('provider configuration rejects invalid shape, limits, and Strata directori
     [{providers: {qwen_strata: {driver: 'strata', installationDirectory: 'relative'}}}, /accessible absolute directory/],
     [{providers: {qwen_strata: {driver: 'strata', installationDirectory: join(home, 'missing')}}}, /unavailable/],
   ];
-  for (const [source, pattern] of cases) {
-    await writeFile(customPath, JSON.stringify({models: [], ...source}));
+  for (const [source, pattern] of /** @type {[{providers: unknown}, RegExp][]} */ (cases)) {
+    const catalog = createSharedModelCatalog({runtimeDirectory, environment: () => ({CODEX_HOME: codexHome}), maxInstances: 2, providers: source.providers});
     await assert.rejects(catalog.getProviders(), pattern);
   }
   await assert.rejects(readFile(join(runtimeDirectory, 'models.json')), {code: 'ENOENT'});
@@ -203,7 +166,6 @@ test('missing or invalid sources cannot produce a partial shared catalog', async
   const catalog = createSharedModelCatalog({runtimeDirectory, environment: () => ({CODEX_HOME: codexHome})});
   await assert.rejects(catalog.prepare(), /Cannot read models_cache.json/);
   await writeFile(cachePath, '{"models":[{"slug":"gpt"}]}');
-  await assert.rejects(catalog.prepare(), /Cannot read models.custom.json/);
   await writeFile(customPath, '{"models":"[]"}');
   await assert.rejects(catalog.prepare(), /valid JSON models array/);
   await writeFile(customPath, '{"models":[');
@@ -231,9 +193,10 @@ test('a generated catalog is never overwritten before its prior process exit is 
   assert.equal(await readFile(generatedPath, 'utf8'), 'prior process catalog');
 });
 
-test('a missing Codex home leaves no providers for Claude Reviewers but still fails the Codex catalog', async t => {
+test('a missing Codex home does not affect providers for Claude Reviewers but still fails the Codex catalog', async t => {
   const home = await createTemporaryDirectory(t, 'arw-model-no-codex-');
-  const catalog = createSharedModelCatalog({runtimeDirectory: await createPrivateRuntimeDirectory(home), environment: () => ({HOME: home}), platform: 'linux'});
-  assert.deepEqual(await catalog.getProviders(), {});
+  const catalog = createSharedModelCatalog({runtimeDirectory: await createPrivateRuntimeDirectory(home), environment: () => ({HOME: home}), platform: 'linux', providers: PROVIDER_DEFAULTS});
+  assert.deepEqual(await catalog.getProviders(), {openai: {maxInstances: 4}, anthropic: {maxInstances: 4}});
+  assert.deepEqual(await readdir(home), ['background-agent-state']);
   await assert.rejects(catalog.prepare(), /Codex home and model catalog sources are missing/);
 });

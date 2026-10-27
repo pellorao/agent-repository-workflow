@@ -338,7 +338,7 @@ Reviewer 运行程序拥有 `provider_work_json` 中原任务最近续做的已�
 
 | `providers` 字段 | 类型与含义 |
 | --- | --- |
-| `provider_id` | 非空文本主键, 与 `models.custom.json.providers` 的条目名称及原生 `modelProvider` ID 对应 |
+| `provider_id` | 非空文本主键, 与 `backgroundAgent.providers` 的条目名称及原生 `modelProvider` ID 对应 |
 | `controller_url` | 可空文本, 已取得 key 时非空, 保存领取该 key 所用的当次控制器地址; 服务入口尚未取得地址时为空 |
 | `lease_key` | 可空文本, 非空值是已领取且尚未确认归还的 Strata 独占 key; 准备失败且尚未取得 key 时为空 |
 | `last_error` | 可空文本, 该提供方最近一次服务准备或归还失败的具体原因; 准备成功时清除 |
@@ -355,7 +355,7 @@ Reviewer 运行程序拥有 `provider_work_json` 中原任务最近续做的已�
 
 ### Capacity and recovery
 
-同一用户全部 ARW 入口共用管理进程启动时确定的 `backgroundAgent.maxInstances` 上限; 来源, 默认值和配置生命周期由[后台 Agent 配置规则](../agent-repository-workflow-installation/spec.md#background-agent-configuration)拥有. 仓库配置或单次任务不能覆盖. 已配置的提供方可从[共享模型目录](../agent-repository-workflow-installation/spec.md#shared-model-catalog)取得独立的 `maxInstances`; 后台运行时读取所有提供方配置, 每个已设置的值必须是正安全整数且不大于有效的全局上限, 否则明确报错且不启动共享 App Server. 安装对高于有效全局上限的提供方只警告, 保留配置值, 由[安装配置规则](../agent-repository-workflow-installation/spec.md#background-agent-configuration)拥有. 管理进程对新建或恢复根线程串行准入: 先只检查目标提供方的容量, 满额时只按最近最少使用顺序回收该提供方可安全卸载的空闲根线程, 不在此阶段使用其他提供方的空闲名额; 通过后才检查全局容量, 满额时在全部提供方中回收可安全卸载的空闲根线程. 两阶段均通过才创建或恢复根线程; 任一阶段无法释放所需名额时返回容量不足. 名额计算已加载的独立根线程运行, 包括启动中, 停止中, 空闲及状态未知的运行; 原生子 Agent 随所属根线程管理, 不另占独立名额, Reviewer 仍不得创建子 Agent. 只有确认根线程及相关后代和工具实际卸载才释放该提供方及全局名额. 管理进程为同一原生线程只保留一个运行环境, 并将新任务接收, 回收和恢复串行协调, 避免关闭刚接到工作的运行环境.
+同一用户全部 ARW 入口共用管理进程启动时确定的 `backgroundAgent.maxInstances` 上限; 来源, 默认值和配置生命周期由[后台 Agent 配置规则](../agent-repository-workflow-installation/spec.md#background-agent-configuration)拥有. 仓库配置或单次任务不能覆盖. 已配置的提供方 (默认含 `openai` 与 `anthropic`, 上限各为 `4`) 可从[共享模型目录](../agent-repository-workflow-installation/spec.md#shared-model-catalog)取得独立的 `maxInstances`; 后台运行时读取所有提供方配置, 每个已设置的值必须是正安全整数且不大于有效的全局上限, 否则明确报错且不启动共享 App Server. 安装对高于有效全局上限的提供方只警告, 保留配置值, 由[安装配置规则](../agent-repository-workflow-installation/spec.md#background-agent-configuration)拥有. 管理进程对新建或恢复根线程串行准入: 先只检查目标提供方的容量, 满额时只按最近最少使用顺序回收该提供方可安全卸载的空闲根线程, 不在此阶段使用其他提供方的空闲名额; 通过后才检查全局容量, 满额时在全部提供方中回收可安全卸载的空闲根线程. 两阶段均通过才创建或恢复根线程; 任一阶段无法释放所需名额时返回容量不足. 名额按每个运行的 `modelProvider` 计算, 与执行后端无关: Claude 后端运行 (提供方 `anthropic`) 与 Codex 运行一样占用 `anthropic` 与全局名额, 按同一顺序回收或返回容量不足. Claude 后端运行以其回合进程的确认退出代替根线程卸载作为释放事实, 退出未知时继续占用名额. 提供方设置无效或超过全局上限时, 管理进程拒绝新建或恢复任何运行, 包括 Claude 后端. 名额计算已加载的独立根线程运行, 包括启动中, 停止中, 空闲及状态未知的运行; 原生子 Agent 随所属根线程管理, 不另占独立名额, Reviewer 仍不得创建子 Agent. 只有确认根线程及相关后代和工具实际卸载才释放该提供方及全局名额. 管理进程为同一原生线程只保留一个运行环境, 并将新任务接收, 回收和恢复串行协调, 避免关闭刚接到工作的运行环境.
 
 满额时, 管理进程按最近最少使用顺序选择可安全回收的空闲根线程运行. 主任务, 子 Agent, 工具调用或人工交互有任何仍未决事项时都不是空闲; 原线程身份和恢复所需事实尚未可靠保存时也不得回收. 只卸载选中的根线程及相关后代和工具, 确认实际卸载后才为新根线程释放名额, 不关闭其他根线程的工作; 全部占用者忙碌或安全空闲无法证明时立即返回容量不足, 不排队, 不终止忙碌运行. 已安全卸载的 Agent 收到所属 Main 的 `followup_task` 时自动取得名额, 沿准确原线程恢复后再交付; `send_message` 只排入消息, 查询也不启动 App Server. 单个根线程停止失败时保留未知状态与名额, 不自动终止共享 App Server 或其他根线程; 最后一个根线程确认卸载且相关工具确认退出后, 若连续 60 秒没有已加载的后台根线程或已接受且待启动的任务, 管理进程按下述 Strata 独占权规则完成归还后才关闭共享 App Server, 自身继续驻留. 等待期有新任务到达时取消本次关闭并复用共享 App Server; 后续再次满足空闲条件时重新计时. 管理进程以一次性计时事件触发空闲关闭. 已授权的安装, 更新和卸载维护可在确认安全后立即关闭共享 App Server, 无须等待这 60 秒.
 
@@ -803,7 +803,7 @@ flowchart TD
 | 权威来源 | 事实 | 使用者 | 最终更新者 |
 | --- | --- | --- | --- |
 | [入口自然所属 Engine 目录中的 `config.json`](../agent-repository-workflow-installation/spec.md#global-engine-configuration) | 用户自有的 Agent, 编辑器, Reviewer 和后台 Agent 设置, 各字段的消费方与生效范围由安装配置规格拥有 | CLI, Agent CLI Launch Module, 后台 Agent 客户端与管理 Module, 共享 Reviewer 运行 Module | 用户; 安装只执行安装目录配置受治理的结构生命周期 |
-| [共享模型目录](../agent-repository-workflow-installation/spec.md#shared-model-catalog) | 原生与自定义模型描述, ARW 专用提供方上限及 Strata 可变安装目录 | 后台 Agent 管理 Module 与共享 App Server | 给原生进程的生成目录只含模型数组; 提供方配置由管理进程读取, 不把独占 key 写回来源或生成目录 |
+| [共享模型目录](../agent-repository-workflow-installation/spec.md#shared-model-catalog) | 原生与自定义模型描述, ARW 专用提供方上限及 Strata 可变安装目录 | 后台 Agent 管理 Module 与共享 App Server | 给原生进程的生成目录只含模型数组; 提供方设置来自 ARW 全局配置, 由管理进程读取, 不把独占 key 写回来源或生成目录 |
 | [用户私有后台状态](../agent-repository-workflow-installation/spec.md#background-agent-management) | 单一管理进程的本机控制凭据, Agent, 消息与提供方当前事实共用的 SQLite 数据库及恢复所需事实 | 后台 Agent 管理 Module 与机器入口 | Agent, 消息与提供方当前错误先在内存更新并按需批存, 消息首次成功分发后保留 24 小时; Strata key 领取后立即保存, 确认归还后删除; 重启核对可证实的原生进程, 归属与未确认归还事实, 不放宽容量和回收保证 |
 | 已安装的 Workflow Distribution | 共享基线, Skill 和平台投影输入 | Platform Adapter, Repository Workflow | 安装过程复制 |
 | 目标 Git 仓库的当前字节 | 当前 Managed Content 和仓库自有状态 | Repository State Inspector, Repository Workflow | Repository Workflow 事务; 外部 Git 工作流提交 |
