@@ -21,6 +21,7 @@ disable-model-invocation: true
 - `node scripts/check-workflow-distribution.mjs`
 - `node scripts/generate-install-arw.mjs --check`
 - `node arw.mjs text check`, `node arw.mjs terms check --strict`
+- `node arw.mjs language inspect distribution`, 按 `docs/agents/writing.md` 的语言规则判断报告, 不合规时修复并提交新候选
 
 任一检查失败时, 修复后提交新候选, 并从本节重新开始.
 

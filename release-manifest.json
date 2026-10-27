@@ -42,7 +42,6 @@
     "lib/arw-common/identity.mjs",
     "lib/arw-common/installation-manifest.mjs",
     "lib/arw-common/issue-documents.mjs",
-    "lib/arw-common/language-checks.mjs",
     "lib/arw-common/language-composition-presentation.mjs",
     "lib/arw-common/platform-adapter.mjs",
     "lib/arw-common/platform-environment.mjs",

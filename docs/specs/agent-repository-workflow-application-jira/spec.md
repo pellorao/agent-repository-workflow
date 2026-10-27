@@ -62,7 +62,7 @@ Application Leader 仍可修改 Application spec, 在 Application Repository 中
 
 ## Repository application configuration
 
-仓库配置文件是仓库根目录的 `arw.config.json`, 由 `lib/arw-common/` 的通用仓库配置模块统一负责读取, 校验和运行时转换. 语言字段遵循[总长期规格](../agent-repository-workflow/spec.md)的合同, 本节只拥有 Application 字段语义. 它与 Engine 管理的 `arw-lock.json` 分离, 由用户拥有, 使用独立 `configVersion`.
+仓库配置文件是仓库根目录的 `arw.config.json`, 由 `lib/arw-common/` 的通用仓库配置模块统一负责读取, 校验和运行时转换. 本节只拥有 Application 字段语义. 它与 Engine 管理的 `arw-lock.json` 分离, 由用户拥有, 使用独立 `configVersion`.
 
 当前 Application 配置结构是:
 
@@ -96,7 +96,6 @@ Application Leader 仍可修改 Application spec, 在 Application Repository 中
 | 路径 | 必需 | 默认值 |
 | --- | --- | --- |
 | `configVersion` | true | `2` |
-| `languageChecks` | false | - |
 | `application` | false | - |
 | `application.name` | true | - |
 | `application.submoduleRemote` | true | `"origin"` |

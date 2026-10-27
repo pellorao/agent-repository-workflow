@@ -157,6 +157,21 @@ test('interactive workflow update shows the concise plan before confirmation and
     assert.deepEqual(await readFile(join(repository.root, 'AGENTS.md')), UPDATED_MANAGED_AGENTS);
 });
 
+test('workflow update reports removed deprecated config fields and is then a no-op', async t => {
+    const {repository, workflowDependencies} = await createInitializedWorkflowRepository(t, ORIGINAL_MANAGED_AGENTS);
+    await writeFile(join(repository.root, 'arw.config.json'), '{"configVersion":2,"languageChecks":{"a":{}}}\n');
+    await commitAll(repository.root, 'old config');
+
+    const updated = await run(['workflow', 'update', '--non-interactive'], repository, {workflowDependencies});
+    assert.deepEqual(updated.events.map(event => event.message), [
+        'Workflow update completed.',
+        'Removed deprecated fields from arw.config.json: languageChecks.',
+    ]);
+    await commitAll(repository.root, 'updated');
+    const again = await run(['workflow', 'update', '--non-interactive'], repository, {workflowDependencies});
+    assert.deepEqual(again.events.map(event => event.message), ['No changes.']);
+});
+
 test('interactive workflow update preserves cancellation after showing the concise plan', async t => {
     const {repository} = await createInitializedWorkflowRepository(t, ORIGINAL_MANAGED_AGENTS);
 
