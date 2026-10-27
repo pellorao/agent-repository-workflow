@@ -219,3 +219,20 @@ test('--wait follows each accepted Reviewer task until a completion or a program
     });
     assert.equal(io.responses.length, 5);
 });
+
+test('`--wait` keeps waiting after a stray cancelled wait result and ends on the real completion', async () => {
+    const io = capture();
+    const updates = [{cursor: 2, cancelled: true}, {cursor: 3, state: 'idle', completion: {status: 'ready', reportPath: '/r'}}];
+    const code = await runBackgroundAgent({
+        ...io,
+        input: Readable.from([request('a', 'spawn_agent')]),
+        runtime: {
+            async execute() {return /** @type {RuntimeResult} */ ({status: 'succeeded', result: {runId: 'run'}});},
+            async wait() {return /** @type {RuntimeResult} */ ({status: 'succeeded', result: updates.shift()});},
+            async close() {return {status: 'succeeded', result: null};},
+        },
+        waitForCompletion: true,
+    });
+    assert.equal(code, 0);
+    assert.deepEqual(io.responses.at(-1), {id: 'a:done', ok: true, result: {runId: 'run', state: 'idle', completion: {status: 'ready', reportPath: '/r'}, messages: [], providerError: null}});
+});

@@ -43,7 +43,7 @@ Spec Readiness 和提交审核的每一轮由所属工作流的 `prepare` 写出
 | `interrupt_agent` | `runId` 与当前 `turnId`; 中断活动工作或结束等待用户的暂停任务, 保留运行环境与原线程 |
 
 - 回执超时或连接失败时, 不自动重发: 用 `messages` 查询发给该 Reviewer 的最近消息, 再决定等待, 重发或报告结果不确定. 查不到记录不能单独证明发送失败.
-- 工具会话丢失后重新连接, 用 `list_agents` 和 `cursor` 观察, 再按需 `wait_agent`. 原线程或原有路径与设置无法恢复时明确失败, 不静默新建线程.
+- `--wait` 命令在输出 `<id>:done` 前返回 (读到回执后工具超时或进程被终止) 不表示审核结束, 审核仍在运行; 工具会话丢失后重新连接同理: 用回执中的 `runId` 调 `list_agents` 取 `cursor` 观察, 再按需 `wait_agent` 续等, 直到 `completion` 非空. 原线程或原有路径与设置无法恢复时明确失败, 不静默新建线程.
 - 从 `completion` 取得结果后读取绑定报告. 空报告或残留草稿不是有效结果; 收尾失败时按具体原因处理.
 
 ## Long-running and paused reviews
