@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0001:17",
+  "request": {
+    "digest": "35c4f899ff7106e800968a060aa9f6a4476368b644877cff585227b8dd4ba701",
+    "filePath": ".tmp/claude-code/06588b1e-7f07-4832-8933-107aaf5b5978/0001_17/spec-readiness/requests/request-2fc93453-97e2-4b31-a8a7-41e691fc2dec.json",
+    "id": "2fc93453-97e2-4b31-a8a7-41e691fc2dec"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "658f4283cabb570c22c4f8ad59eb3afc858a34bc9973c25f581ba324cd1561d3"
+  },
+  "inputs": [
+    {
+      "filePath": ".scratch/0001-claude-code-migration/spec.md",
+      "role": "governing-spec",
+      "sha256": "5feb5d45509ae4a7b16fec8c09f4e2d5b4041ae66ff6890bc8b53c579ec5545c"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow/spec.md",
+      "role": "architecture-evidence",
+      "sha256": "b6aea0d5e1d4b89827d4ace2fcddece154af4a5290fac44368999fb13308410b"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0001-claude-code-migration/issues/17-daily-core-reduction.md",
+    "sha256": "2a5be221df666a2364b693545816830439338cb6648b09eb605b7c7ce62f1526"
+  },
+  "result": "satisfied"
+}
