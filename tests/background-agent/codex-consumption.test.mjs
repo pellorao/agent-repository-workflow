@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {writeFile} from 'node:fs/promises';
+import {mkdir, writeFile} from 'node:fs/promises';
 import {join} from 'node:path';
 import test from 'node:test';
 
@@ -37,4 +37,19 @@ test('Main title prefers native title and otherwise uses the first user message 
     assert.equal(await readCodexMainTitle({ownerId, native: native(sessionPath)}), null);
     await writeFile(sessionPath, line(session('other-native-session')) + line(userMessage(firstUser)), 'utf8');
     assert.equal(await readCodexMainTitle({ownerId, native: native(sessionPath)}), null);
+});
+
+test('Main title falls back to the rollout file found by thread id when the native session knows no path', async t => {
+    const home = await createTemporaryDirectory(t, 'arw-main-title-home-');
+    const directory = join(home, 'sessions', '2026', '10', '27');
+    await mkdir(directory, {recursive: true});
+    const request = {type: 'response_item', payload: {type: 'message', role: 'user', content: [{type: 'input_text', text: 'real request'}]}};
+    await writeFile(join(directory, `rollout-2026-10-27T00-00-00-${ownerId}.jsonl`), line(session(ownerId)) + line(request), 'utf8');
+    assert.equal(await readCodexMainTitle({ownerId, native: native(/** @type {any} */ (null)), environment: {CODEX_HOME: home}}), 'real request');
+    // Several matches: the last by path wins; a mismatching session identity gives no title.
+    const other = {type: 'response_item', payload: {type: 'message', role: 'user', content: [{type: 'input_text', text: 'newer request'}]}};
+    await writeFile(join(directory, `rollout-2026-10-27T01-00-00-${ownerId}.jsonl`), line(session(ownerId)) + line(other), 'utf8');
+    assert.equal(await readCodexMainTitle({ownerId, native: native(/** @type {any} */ (null)), environment: {CODEX_HOME: home}}), 'newer request');
+    await writeFile(join(directory, `rollout-2026-10-27T02-00-00-${ownerId}.jsonl`), line(session('other-native-session')) + line(other), 'utf8');
+    assert.equal(await readCodexMainTitle({ownerId, native: native(/** @type {any} */ (null)), environment: {CODEX_HOME: home}}), null);
 });

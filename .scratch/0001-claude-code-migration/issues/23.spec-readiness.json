@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0001:23",
+  "request": {
+    "digest": "b2a3aaa7d98f55d02a1f809f676eee9f52260ea14a199ce3de003b0e15369f0a",
+    "filePath": ".tmp/claude-code/06588b1e-7f07-4832-8933-107aaf5b5978/0001_23/spec-readiness/requests/request-97f86942-b339-4494-a2e9-2e89cf04c0f6.json",
+    "id": "97f86942-b339-4494-a2e9-2e89cf04c0f6"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "658f4283cabb570c22c4f8ad59eb3afc858a34bc9973c25f581ba324cd1561d3"
+  },
+  "inputs": [
+    {
+      "filePath": "docs/specs/agent-repository-workflow/spec.md",
+      "role": "governing-spec",
+      "sha256": "6b352a3b9166cbf0e03085cc61b3b21cb3bcd34d5e09f0c68ee4c0d8ea834cd6"
+    },
+    {
+      "filePath": "lib/background-agent/codex-consumption.mjs",
+      "role": "architecture-evidence",
+      "sha256": "5e698b5c79e2ab4ccf9f2a97a4e2ac901bbab1e3180bb76bd45470d931f7f59d"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0001-claude-code-migration/issues/23-codex-main-wait-and-title.md",
+    "sha256": "ea847368a23213ffb90c38ae0103b8463c7ef5f3e24adaf9957d7a10c74e4a1e"
+  },
+  "result": "satisfied"
+}

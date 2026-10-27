@@ -260,7 +260,7 @@ ARW 等待进程退出并传播正常退出码. 启动失败或没有正常数�
 
 ### Machine entry
 
-`arw background-agent` 是 Main Agent 与后台 Agent 共用的通用完整后台 Agent 机器入口, 只接受可选的 `--wait`, 不接受其他位置参数或命令选项. `--wait` 对每个成功受理的 `spawn_agent` 或 `followup_task` 持续 `wait_agent`, 直到 Reviewer `completion` 非空, 收到程序产生 (来源 `provider-program`) 的[提前结束阈值](#reviewer-task-continuation)暂停通知, 运行环境退出或等待失败, 然后为该请求追加一行 `{id: "<请求 id>:done", ok, result: {runId, state, completion, messages, providerError}}`, 其中 `messages` 是期间收集的全部发给 Main 的消息编号, 来源与正文, Reviewer 自己发的消息不结束等待; 标准输入结束后等这些行都输出才退出. 已安装的 ARW 启动器定位随附实现, Agent 无需发现安装目录或为每项任务编写启动脚本. 它与 `arw agent start` 的前台外部 CLI 生命周期分离; 入口本身是命令客户端, 用户级后台管理进程持有原生运行环境, 客户端不承担进程所有权.
+`arw background-agent` 是 Main Agent 与后台 Agent 共用的通用完整后台 Agent 机器入口, 只接受可选的 `--wait`, 不接受其他位置参数或命令选项. `--wait` 对每个成功受理的 `spawn_agent` 或 `followup_task` 持续 `wait_agent`, 直到 Reviewer `completion` 非空, 收到程序产生 (来源 `provider-program`) 的[提前结束阈值](#reviewer-task-continuation)暂停通知, 运行环境退出或等待失败, 然后为该请求追加一行 `{id: "<请求 id>:done", ok, result: {runId, state, completion, messages, providerError}}`, 其中 `messages` 是期间收集的全部发给 Main 的消息编号, 来源与正文, Reviewer 自己发的消息不结束等待; 标准输入结束后等这些行都输出才退出; 调用方的工具在读到回执后, `<id>:done` 前提前返回时 (超时或进程被终止), 审核照常继续, 调用方用回执中的 `runId` 经 `list_agents` 取得 `cursor`, 再以 `wait_agent` 续等. 这里的等待失败指单次 `wait_agent` 返回失败响应 (`ok: false`). 除此之外只有调用方自己取消等待 (`SIGINT` 或 `SIGTERM`) 才按取消结束, 不因其他原因结束; 单次 `wait_agent` 等待超时或没有更新时, 以原 `cursor` 继续等待. 已安装的 ARW 启动器定位随附实现, Agent 无需发现安装目录或为每项任务编写启动脚本. 它与 `arw agent start` 的前台外部 CLI 生命周期分离; 入口本身是命令客户端, 用户级后台管理进程持有原生运行环境, 客户端不承担进程所有权.
 
 双方通过工具调用同一机器入口, 用 UTF-8 JSONL 标准输入和输出收发消息. 每行请求是 `{id, operation, input}`, `id` 为本进程内唯一的非空字符串, `input` 为对象. 成功响应是 `{id, ok: true, result}`, 失败响应是 `{id, ok: false, error: {code, message}}`, 按 `id` 关联请求; 无法取得有效请求身份时错误响应使用 `id: null`. 每项操作返回一行完整响应; 调用方读到完整合法回执后结束这次请求, 不等待模型执行或目标处理任务. 普通请求从客户端开始处理请求, 经必要的凭据读取, 管理进程启动或连接, 排队处理到完整回执, 共用客户端配置 `backgroundAgent.messageTimeoutMs` 的总等待预算, 来源和默认值由[后台 Agent 配置规则](../agent-repository-workflow-installation/spec.md#background-agent-configuration)拥有; 超时表示结果不确定, 不停止后台 Agent, 不自动重发, 也不能推断管理进程未接受请求. 该预算不限制 Reviewer 任务执行时长或 `wait_agent` 的独立等待预算. Reviewer 的完整报告写入绑定文件, 最终完成消息只返回现行状态与适用理由; 进度和通知仍由机器入口交付. 无法解析或不支持的请求返回错误, 不启动工作或把它改写成其他操作.
 
@@ -305,7 +305,7 @@ Main 发出的正文是工作指示, 后台 Agent 发出的正文是其角色允
 
 首次成功分发的消息从记录的分发时间起保留 24 小时, 供发送方在回执丢失后查询编号与分发状态. 同一消息经 `list_agents` 或 `wait_agent` 重复输出或后来再次发送失败都不刷新或清除首次分发时间. 管理进程运行期间到期自动删除完整正文及对应消息记录; 没有可证实首次分发时间的记录不按该期限删除, 即使当前分发结果为未知也不得抹去已有的分发时间. 管理进程空闲时保持事件等待, 为下一次到期清理安排定时事件, 不因保留历史而持续执行空操作. 卸载后管理进程不继续承担到期清理; 保留数据库并重新安装后, 管理进程运行时按同一到期规则处理已过期记录. `messages` 查询只返回短预览, 防止恢复判断把大量正文重新送入 Agent 上下文; 正常消息交付仍保留完整内容.
 
-发送方没有收到完整回执时, 用 `messages` 查询发给指定接收方的最近消息, 结合本次发送事实自行决定等待, 重发或报告不确定. 管理进程不依据正文推断重试, 不承诺恰好执行一次. 查询没有记录可能是从未接受, 已过保留期或最近批次尚未保存, 不能单独证明发送失败. 正常发送, 查询, 等待和到期清理不读取原生会话文件; 管理进程故障后的恢复才结合数据库与双方可取得的原生历史分析已发生事实, 无法核对时保持未知, 不盲目重放指示. 只在内存中登记而未保存的消息可能随管理进程崩溃丢失, 这一限制必须可观察.
+发送方没有收到完整回执时, 用 `messages` 查询发给指定接收方的最近消息, 结合本次发送事实自行决定等待, 重发或报告不确定. 管理进程不依据正文推断重试, 不承诺恰好执行一次. 查询没有记录可能是从未接受, 已过保留期或最近批次尚未保存, 不能单独证明发送失败. 正常发送, 查询, 等待和到期清理不读取原生会话文件 (环境打开时读取所属 Main 标题除外, 见 [listing 规则](#background-agent-listing)); 管理进程故障后的恢复才结合数据库与双方可取得的原生历史分析已发生事实, 无法核对时保持未知, 不盲目重放指示. 只在内存中登记而未保存的消息可能随管理进程崩溃丢失, 这一限制必须可观察.
 
 ### Background Agent State
 
@@ -377,7 +377,7 @@ Strata 驱动只从[共享模型目录](../agent-repository-workflow-installatio
 
 两个命令成功连接并取得列表时照常显示表格, 真实空列表仍显示普通空表; 其他配置, 鉴权和状态读取错误继续报告具体原因. 连接被拒绝, 或状态目录缺失, 或凭据与数据库同时缺失而无法取得列表时, 客户端只读观察当前用户的操作系统进程. 只有可靠确认管理进程不存在时, 才向标准输出显示 `The manager process is not running; there are no managed background Agents.`, 退出码为 `0`. 即使遗留模型或工具仍存活, 该消息也只说明当前没有被管理的后台 Agent; 安全维护仍须独立核对原生退出. 管理进程存在而列表不可取得, 或进程观察无法可靠确认其不存在时, 向标准错误显示 `The background Agent list is temporarily unavailable.`, 退出码为 `1`, 不显示普通空表. 进程观察在 Linux, Windows 和 macOS 上以准确启动入口和实参识别管理进程, 不凭命令行关键词匹配; 缺少状态目录, 凭据或数据库本身不能证明进程不存在. 查询不创建持久身份文件, 不取得启动或维护锁, 不启动管理进程或模型.
 
-输出使用与现有 `arw list` 命令相同的表格形式, 列为 `Status`, `Role`, `Main session`, `Elapsed`, 不显示工作目录. Reviewer 的 `Elapsed` 消费 [模型工作时间](#model-work-time), 不将原始墙钟直接呈现为审核工作耗时. `Main session` 始终同时显示完整 session ID 和会话标题. 标题优先使用所属 Main 的原生标题, 没有原生标题时使用其首条用户消息的前 40 个字符, 平台注入的仓库指令消息 (以 `# AGENTS.md instructions for` 开头) 不算用户消息. Claude Code 的所属 Main 以会话记录中的自定义标题为原生标题, 没有时用自动生成的标题; 其首条用户消息不计元记录和以 `<` 开头的命令或提醒记录. 两种来源都无法提供有效标题时, 标题位置以灰色文本显示 `N/A`, 表明标题未知, 同一行仍显示完整 session ID 和其他可取得的信息; 列表继续显示其他环境, 表格排版不受颜色控制字符影响. 两个命令的查询不启动或恢复 App Server, 不停止或中断后台任务, 不改变归属和控制权. Main 身份由控制层保存与核对, 不能从本轮 Reviewer 提示或报告反推.
+输出使用与现有 `arw list` 命令相同的表格形式, 列为 `Status`, `Role`, `Main session`, `Elapsed`, 不显示工作目录. Reviewer 的 `Elapsed` 消费 [模型工作时间](#model-work-time), 不将原始墙钟直接呈现为审核工作耗时. `Main session` 始终同时显示完整 session ID 和会话标题. 标题优先使用所属 Main 的原生标题, 没有原生标题时使用其首条用户消息的前 40 个字符, 平台注入的仓库指令消息 (以 `# AGENTS.md instructions for` 开头) 不算用户消息. Codex 的所属 Main 在 `readThreadMetadata` 没有返回会话记录路径时 (例如其后台 Agent 是 Claude 后端, 没有 Codex App Server 可询问), 按线程 ID 在 `CODEX_HOME` (默认 `~/.codex`) 的 `sessions` 目录下只读查找会话记录, 同样取首条用户消息, 此时没有原生标题可用; 有多个匹配记录时使用路径排序最后一个, 首条 `session_meta` 的线程身份与请求不符时标题为空. 标题在后台 Agent 环境打开 (首次受理任务, 或管理进程恢复后重新打开) 且尚未保存标题时读取, 保存到既有的 `owner_title` 字段, 之后不因原生标题变化而更新; 列表只显示已保存的标题. Claude Code 的所属 Main 以会话记录中的自定义标题为原生标题, 没有时用自动生成的标题; 其首条用户消息不计元记录和以 `<` 开头的命令或提醒记录. 两种来源都无法提供有效标题时, 标题位置以灰色文本显示 `N/A`, 表明标题未知, 同一行仍显示完整 session ID 和其他可取得的信息; 列表继续显示其他环境, 表格排版不受颜色控制字符影响. 两个命令的查询不启动或恢复 App Server, 不停止或中断后台任务, 不改变归属和控制权. Main 身份由控制层保存与核对, 不能从本轮 Reviewer 提示或报告反推.
 
 `Elapsed` 表示当前任务自开始以来的执行时长, 包含等待时间. Reviewer 优先消费同一工作计量的当前结果, 表格统一显示耗时值, 不添加估算前缀或表尾说明. 冷查询尚未取得绑定的工作计量时, 仅按已保存的任务起止跨度估算; 机器结果保留估算标记及停机与休眠边界不完整的依据. 非 Reviewer 保留原任务墙钟口径, 不把两者混成另一个计时权威. 同一活动回合的补充消息与列表查询不重置它; 任务结束后停止累计, 新任务从自身开始时重新计时. 它不表示 App Server 的存活时长. `Status` 使用已观测的运行事实, 未知不能显示为空闲. 确认退出的环境不在列表中, 已完成任务但环境仍空闲的实例继续显示. 该列表只提供运行概览, 不把后台 Agent 的完成状态当作 Reviewer 审核通过结论.
 
@@ -683,7 +683,7 @@ Main Agent 或用户负责语义决定. 独立 Reviewer 只返回结果. Module 
 
 `Temporary Workspace Module` 验证主机 Platform Adapter 提供的平台与会话身份, 从当前 Git 仓库根目录, 可选 issue ID 和用途创建 `.tmp/` 规范目录. 它不猜测身份, 不自动清理, 不创建锁文件, 不选择或启动后台 Agent.
 
-后台 Agent 管理 Module 是当前用户唯一持续驻留的非模型进程, 拥有单个 ARW 专用共享 App Server 的启动与各根线程的独立运行, 原线程恢复, 指示, 原生入站请求转交与准确答复, 消息转交, SQLite 保存, 最近消息查询与到期清理, 进程生命周期, 提供方和全局容量及 Strata 独占权. 它协调客户端断开后的运行, 名额预留, 空闲回收, 故障核对和同一原生线程的独占运行, 提供绑定准确线程与回合的通用占用保护, 并向 Reviewer 运行层提供后台终端操作与退出事实; 不解释四个 Reviewer Role, 报告绑定, 审核完成与持久化流程, 禁止协作或 Reviewer 的审批政策. 机器入口只转接现有 JSONL 操作并做本机鉴权, 不因客户端退出而关闭管理进程. 通用原生 Adapter 为 [模型阶段计量](#model-phase-measurement)提供正常审核已有事件的线程, 响应, 时间及数值观察, 不取得审核或评分权威.
+后台 Agent 管理 Module 是当前用户唯一持续驻留的非模型进程, 拥有单个 ARW 专用共享 App Server 的启动与各根线程的独立运行, 原线程恢复, 指示, 原生入站请求转交与准确答复, 消息转交, SQLite 保存, 最近消息查询与到期清理, 进程生命周期, 提供方和全局容量及 Strata 独占权. 它协调客户端断开后的运行, 名额预留, 空闲回收, 故障核对和同一原生线程的独占运行, 提供绑定准确线程与回合的通用占用保护, 并向 Reviewer 运行层提供后台终端操作与退出事实, 只读取所属 Main 的原生会话记录以取得列表标题; 不解释四个 Reviewer Role, 报告绑定, 审核完成与持久化流程, 禁止协作或 Reviewer 的审批政策. 机器入口只转接现有 JSONL 操作并做本机鉴权, 不因客户端退出而关闭管理进程. 通用原生 Adapter 为 [模型阶段计量](#model-phase-measurement)提供正常审核已有事件的线程, 响应, 时间及数值观察, 不取得审核或评分权威.
 
 共享 Reviewer 运行 Module 消费后台 Agent 管理 Module 的通用控制能力, 拥有四角色身份与设置合成, 单 Reviewer 运行事实核对, 整体任务结束后的后台终端收尾请求, 绑定报告完整性验证, 公共任务接续及提前结束计数与暂停协调, 本轮结果持久化与交接, 失败状态和同回合修复重查, 以及该线程的计量. 它在交接与持久化完成后释放通用占用保护. 它服务普通四角色审核及验证调用, 不重复保存进度消息, 不拥有审核语义, 场景构建, 评分, 正式结果提升或 Git 写入. 临时路径由调用方准备, 本 Module 不替代 Temporary Workspace 的身份与范围政策.
 
@@ -742,7 +742,7 @@ Agent CLI Launch Module 返回 `{kind: "exited", exitCode}` 或 `{kind: "failed"
 - `cleanupTurnTerminals` 结束准确根线程与回合的后台终端, 确认其退出后返回, 无法确认时明确失败; `readThreadMetadata` 按给定线程身份返回该线程的原生标题与会话记录路径, 取不到的值为空, 返回的线程身份不符时明确失败.
 - `stop` 与整体关闭在确认实际退出后返回.
 
-共享进程, 模型目录和进程身份文件等后端差异只存在于 Adapter 内部, 不改变这些结果. 列表的所属 Main 标题按 [listing 规则](#background-agent-listing)取得: Claude Code 的 Main 读取其会话记录; Codex 的 Main 使用 `readThreadMetadata` 对该 Main 返回的标题, 没有时读取返回的会话记录路径中的首条用户消息. 读取失败按空值处理, 不影响其他事实.
+共享进程, 模型目录和进程身份文件等后端差异只存在于 Adapter 内部, 不改变这些结果. 列表的所属 Main 标题按 [listing 规则](#background-agent-listing)取得: Claude Code 的 Main 读取其会话记录; Codex 的 Main 使用 `readThreadMetadata` 对该 Main 返回的标题, 没有标题时读取返回的会话记录路径中的首条用户消息; 没有路径时的会话记录回退见 listing 规则. 该回退由后台 Agent 管理 Module 的标题读取执行, 只读, 不经过 `readThreadMetadata`. 读取失败按空值处理, 不影响其他事实.
 
 ### Seams and Adapters
 
@@ -816,6 +816,7 @@ flowchart TD
 | 不可变 Git 对象与本轮完整输入副本 | Code Review 启动时固定的完整候选, 代码上下文, 治理来源和执行规则 | Gate 3 的独立双轴审核 | Main Agent 在启动前固定, 源工作树后续修改不替换本轮内容 |
 | 当前完整角色规则, 模型与提供方设置, 授权输入和报告绑定 | 角色与共同责任拥有审核行为, 调用工作流拥有本轮输入和授权范围 | 共享 Reviewer 运行 Module, 独立运行环境中的 Reviewer | 调用方先准备并冻结, Reviewer 亲自写入绑定报告, 运行入口不代写或提升 |
 | 原生线程身份, 实际上下文和累计用量 | Codex App Server 与原生会话事实 | 后台 Agent 管理 Module 控制原线程, 共享 Reviewer 运行 Module 核对本轮没有子 Agent 参与并计量该线程 | 恢复沿原身份继续观测和去重; 无法核对必要事实或违规时拒绝 Reviewer 结果; 未知计量保留未知 |
+| Claude Code 与 Codex 的 Main 原生会话记录 (`CODEX_HOME` 的 `sessions`) | 所属 Main 的原生标题与首条用户消息 | 后台 Agent 管理 Module 在环境打开时的标题读取 (结果保存供列表显示) | 对应平台; ARW 只读, 读不到时标题未知 |
 
 Reviewer 原生会话控制与正式结果生成分开: 调用方先准备完整冻结输入与报告绑定, 通用管理入口控制独立会话和消息交付, Reviewer 专属层核对审核限制, Reviewer 亲自将完整报告写入本轮绑定文件, 所属审核工作流再沿原有生成, 提升和验证边界消费. 进度, 完成状态和计量不成为第二份报告或授权来源, 原线程恢复也不恢复已经因输入漂移失效的结果.
 
@@ -879,6 +880,10 @@ issue 旁的 `<NN>.spec-readiness.json` 作为该 issue 的准备度结果和输
 
 Git 暂存区作为提交前 Gate 3 和 Commit Audit 的冻结候选来源, 优先让审核对象与将要提交的准确字节一致, 同时保留其他未暂存工作. 使用可变工作树会混入未经本轮审核的变化, 使用既有提交只能事后审核, 另建持久候选副本会增加同步状态. 当前选择接受提交前必须隔离已暂存范围, 替代版本须在旧轮完整结束后交接, 并按实际输入刷新受影响结果的成本.
 
+所属 Main 标题在环境打开时已读取并保存; 没有 Codex App Server 可询问时, 直接只读 Main 的原生会话记录, 因为 Claude 后端的 Agent 不运行 Codex App Server, 而打开环境又不得启动或恢复它. 被放弃的替代方案是保持 `N/A` (用户看不出 Main 是谁) 和另建 ARW 自己维护的标题来源 (新增持久权威与同步); 保存沿用既有的 `owner_title` 字段, 不是新的权威. 接受的成本是保存的标题不随原生标题变化而更新, 以及打开环境时对 "不读取原生会话文件" 原则增加这一只读例外, 标题可能与 App Server 的原生标题不同, 并依赖 Codex 会话文件的命名约定; 取不到时回到 `N/A`.
+
+`--wait` 提前返回时由调用方经 `list_agents` 与 `wait_agent` 续等, 因为调用方的命令工具超时或被终止发生在 ARW 之外, ARW 无法延长; 续等入口 (运行标识, `cursor`, `completion`) 本来就由管理进程保存并支持断线重连, 不需要新机制. 被放弃的替代方案是让结束行在重连后可重新取回, 或由 ARW 限制调用方工具的等待形式: 前者要新增持久的结果队列, 后者无法约束各平台工具. 接受的成本是调用方必须识别提前返回并显式续等, 由 `reviewer-launch` Skill 指引.
+
 ### ADR Evaluation
 
 [ADR-0002](../../adr/0002-use-repository-local-managed-distribution.md) 拥有 Managed Content, 仓库自有内容和初始化时相同字节采用边界. [ADR-0005](../../adr/0005-use-arw-version-and-distribution-digest.md) 拥有 ARW 产品身份. [ADR-0006](../../adr/0006-enforce-spec-readiness-with-independent-review.md) 拥有独立 Spec Readiness. [ADR-0008](../../adr/0008-use-explicit-repository-owned-code-maps.md) 拥有 Code Map. [ADR-0009](../../adr/0009-use-canonical-distribution-lock-contract.md) 拥有锁文件 v2. [ADR-0010](../../adr/0010-use-role-fenced-managed-region-markers.md) 拥有受管理区域. [ADR-0013](../../adr/0013-use-main-agent-single-writer-orchestration.md) 拥有 Main Agent 协调分工写入和可恢复基线的边界. [ADR-0014](../../adr/0014-use-operation-neutral-platform-adapters.md) 拥有操作中立平台 Adapter. [ADR-0017](../../adr/0017-use-operation-specific-recovery-baselines.md) 适用于 Repository Workflow 的操作特定恢复: Git 暂存区是外部恢复基线, ARW 不自动恢复, Agent 或用户恢复后完整重跑. [ADR-0023](../../adr/0023-separate-commit-audit-review-from-implementation.md) 拥有独立 Commit Audit 位置. [ADR-0025](../../adr/0025-use-root-only-repository-platform-discovery.md) 拥有只观察最近 Git 仓库根级平台目标的规则.
@@ -898,6 +903,8 @@ Document Repository Interface 不改变 ADR-0013 的 Agent 写入分工, 因为�
 `CLAUDE.md` 的准确引用和混合内容迁移只是 ADR-0002 内容归属边界在 Repository Workflow 中的固定应用. 它不建立新的内容所有者, 权威关系或恢复协议, 因此不需要新的 ADR.
 
 规则与文档候选的轻量提交流程只缩小 [ADR-0006](../../adr/0006-enforce-spec-readiness-with-independent-review.md) 的 Spec Readiness 与 [ADR-0023](../../adr/0023-separate-commit-audit-review-from-implementation.md) 的 Commit Audit 所适用的候选范围, 不改变二者对实施 issue 和实施提交的约束, 也不建立新的所有者, 权威关系, 持久状态, 信任边界或恢复协议, 因而不需要新 ADR.
+
+列表的 Main 标题回退只读取原生会话记录. 这些记录仍由对应平台拥有, 权威来源表中的行只记录既有事实的只读使用, 不建立新的所有者或权威关系; 记录位于同一用户的本机目录, 读不到时标题未知, 不扩大信任边界; 标题保存沿用既有的 `owner_title` 字段, 原生记录仍是唯一来源, 不新增持久状态或恢复协议, 例外只限所属 Main 标题, 因而不需要新 ADR.
 
 ## Requirement ownership
 
