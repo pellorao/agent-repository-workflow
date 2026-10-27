@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {mkdir, readFile, rename, writeFile} from 'node:fs/promises';
-import {join} from 'node:path';
+import {dirname, join} from 'node:path';
 import {test} from 'node:test';
 
 import {parseCommand, UsageError} from '../../lib/arw.mjs';
@@ -164,4 +164,19 @@ test('verify --non-implementation accepts planning records and rejects other or 
     const failures = (await verify()).events[0].message;
     for (const pattern of [/code\.mjs[^]*not eligible/u, /LF line endings/u, /terminal status/u]) assert.match(failures, pattern);
     assert.equal((await run(['commit-audit', 'verify', '--strict'], repository)).result, 2);
+});
+
+test('verify --non-implementation accepts a candidate of only Agent rule and documentation Markdown', async t => {
+    const repository = await createRepository(t);
+    const paths = ['AGENTS.md', 'docs/agents/rule.md', '.agents/skills/a/SKILL.md', '.claude/skills/a/SKILL.md', 'distribution/skills/a/SKILL.md'];
+    for (const path of paths) {
+        await mkdir(dirname(join(repository.root, path)), {recursive: true});
+        await writeFile(join(repository.root, path), '# Rule\n', 'utf8');
+    }
+    await runGit(repository.root, ['add', '.']);
+    assert.equal((await run(['commit-audit', 'verify', '--non-implementation'], repository)).result, 0);
+
+    await writeFile(join(repository.root, '.agents/skills/a/agents.yaml'), 'a: 1\n', 'utf8');
+    await runGit(repository.root, ['add', '.']);
+    assert.equal((await run(['commit-audit', 'verify', '--non-implementation'], repository)).result, 1);
 });
