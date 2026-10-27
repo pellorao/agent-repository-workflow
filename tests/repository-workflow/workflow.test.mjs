@@ -354,6 +354,23 @@ test('update moves repository-owned content of a removed rule document into AGEN
     assert.match(await readFile(join(root, 'AGENTS.md'), 'utf8'), /<!-- arw:repository-owned:start -->\n# 迁自 `docs\/agents\/old.md` 的仓库自有内容\n\nLocal rule.\n<!-- arw:repository-owned:end -->/u);
 });
 
+test('update removes deprecated arw.config.json fields and reports them', async t => {
+    const distribution = await createDistribution(t);
+    const root = await createRepository(t);
+    const initialized = await initWorkflow({distribution, repositoryRoot: root});
+    assert.equal(initialized.applied, true, JSON.stringify(initialized.diagnostics));
+    await writeFile(join(root, 'arw.config.json'), '{\n  "configVersion": 2,\n  "languageChecks": {"docs": {"language": "chinese"}}\n}\n', 'utf8');
+    await git(root, ['add', '.']);
+    await git(root, ['commit', '--quiet', '-m', 'initialized']);
+
+    const updated = /** @type {WorkflowResult & {removedConfigFields?: string[]}} */ (await runRepositoryWorkflow({distribution, operation: 'update', repositoryRoot: root}));
+    assert.equal(updated.applied, true, JSON.stringify(updated.diagnostics));
+    assert.deepEqual(updated.removedConfigFields, ['languageChecks']);
+    const config = JSON.parse(await readFile(join(root, 'arw.config.json'), 'utf8'));
+    assert.equal(Object.hasOwn(config, 'languageChecks'), false);
+    assert.ok(Object.keys(config.reviewers).length > 0);
+});
+
 test('update safely migrates a verified v1 repository-major document to baseline-major ownership', async t => {
     const distribution = await createDistribution(t);
     const oldDistribution = {

@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0001:20",
+  "request": {
+    "digest": "00667ceb7e653ca1e7c276b566c12789bbcd376788690a48a829ffa18c1b8fe6",
+    "filePath": ".tmp/claude-code/06588b1e-7f07-4832-8933-107aaf5b5978/0001_20/spec-readiness/requests/request-3be87270-355f-468f-a6dc-9df62321f9bb.json",
+    "id": "3be87270-355f-468f-a6dc-9df62321f9bb"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "658f4283cabb570c22c4f8ad59eb3afc858a34bc9973c25f581ba324cd1561d3"
+  },
+  "inputs": [
+    {
+      "filePath": "docs/adr/0027-separate-repository-configuration-from-workflow-lock.md",
+      "role": "adr",
+      "sha256": "90c659f086ee334bf81a272b488b331d32b0a8432232cdb331fc522bbda012c3"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow-application-jira/spec.md",
+      "role": "governing-spec",
+      "sha256": "cd0aa06337fc194ed365708808df3408ff823f82d1e2cec20f309219884600bc"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow/spec.md",
+      "role": "governing-spec",
+      "sha256": "8a34487298862f4432d6fb766bd3818e9fd5a58ff7dfe5fc81a127fd4153669f"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0001-claude-code-migration/issues/20-language-check-on-demand.md",
+    "sha256": "a069678c4375ec51bddebfa83b179505c8138eb40b0146d2de7f2b947518f75c"
+  },
+  "result": "satisfied"
+}

@@ -47,6 +47,6 @@ Governing requirements:
 - 本 ticket 同时处理了 ticket 10 和 11 的记录: 两者 Status 都改为 `ready-for-human`. 11 剩一项需要用户实跑 `$upstream-sync`; 10 的 4 项验收均已勾选, 但它没有 Spec Readiness 记录且 `## Spec Requirement` 格式不合要求 (列表后有说明文字), 无法通过 Commit Audit 的新终态授权, 如何正式关闭由用户决定 (见 ticket 10 的 `## Comments`). 这两项是跟踪记录修正, 不在本 ticket 审核对象内 (Spec Readiness 第 4 轮指出长期规格没有规定它们的状态条件, 因此从 What to build 移出).
 - 过程偏差 (协调者已接受): 先改了实现文件, 后跑 Spec Readiness, 违反 `implement` Entry 顺序. 原因是 Claude Reviewer 额度门禁曾暂停, 改动本身与审核结论无关.
 - Spec Readiness 共 8 轮 (haiku high): 前几轮指出 `## Spec Requirement` 原先只引用迁移顺序一节, 没有覆盖交付内容, 已改为引用长期规格各节, 并把长期规格的同步写入验收条件; 之后对引用范围反复摇摆 (去掉安装规格得 "缺输入", 加入得 "既有 `backgroundAgent` 缺理由"). 后一问题按质疑规则指出它与本 issue 交付无关, 随后得到 `No problems.`.
-- 7 篇术语密集文档 (ADR 0001, 0003, 0004, 0012, 0032, application-jira 规格, `upstream/sources/mattpocock-skills/adoptions.md`) 的中文比例仍为 69.6% 至 75%, `arw terms check` 只报告不失败, 协调者确认保持信息性报告, 不新增 `languageChecks`.
+- 7 篇术语密集文档 (ADR 0001, 0003, 0004, 0012, 0032, application-jira 规格, `upstream/sources/mattpocock-skills/adoptions.md`) 的中文比例仍为 69.6% 至 75%, `arw terms check` 只报告不失败, 由 ticket 20 取消语言门槛, 不再需要.
 - 解析器对 Blocked by 的报错指出文件和值, 不含行号, 保持现状.
 

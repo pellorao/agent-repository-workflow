@@ -25,7 +25,7 @@ const NO_COMMAND_MESSAGE = [
     '  arw migrate artifacts',
     '  arw code-map verify',
     '  arw text check | arw text fix',
-    '  arw terms check [--strict] [--include <repository-relative-directory>]... [--verbose] [--language-threshold <name>=<percentage>]...',
+    '  arw terms check [--strict] [--include <repository-relative-directory>]...',
     '  arw language inspect <repository-relative-path>...',
     '  arw jira list [--limit <positive-integer>] | arw jl [--limit <positive-integer>]',
     '  arw jira open <issue-key> | arw jo <issue-key>',

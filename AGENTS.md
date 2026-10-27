@@ -98,7 +98,7 @@ ARW 必须在 Codex 和 Claude Code 中都完整可用, 包括 `arw background-a
 
 - 测试命令: `pnpm test`, `pnpm typecheck`, `node scripts/check-workflow-distribution.mjs`. 确定性覆盖和完整验证命令见 `docs/agents/source-checkout-validation.md`; Reviewer 能力测试只在维护者显式调用 `$reviewer-capability` Skill 时进行; 发布验证和发布只在维护者显式调用 `$release` Skill 时进行.
 - 单个测试回调耗时阈值为 100 毫秒.
-- 非发布流程不判断 `distribution/**` 中分发副本的语言结果; 发布流程仍检查候选分发文档.
+- 分发副本的语言由发布流程中 `release` Skill 调用 `arw language inspect` 检查, 其他流程不判断.
 - 不对本仓库运行 `arw workflow init|update|verify|remove`; 它是 Workflow Distribution 的创作源. Source Checkout 验证使用 Workflow Distribution 的生产检查, Repository Workflow 验证使用隔离的目标仓库.
 - 安装: `node install.mjs` (相关 issue 授权时从克隆安装), 卸载: 在安装目录运行 `node uninstall.mjs`.
 

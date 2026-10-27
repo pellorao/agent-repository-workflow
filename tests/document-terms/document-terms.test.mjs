@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import {mkdir, writeFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
 import test from 'node:test';
-import {renderLanguageChecks} from '../../lib/arw-common/language-composition-presentation.mjs';
 
 import {
     checkDocumentTerms,
@@ -83,7 +82,7 @@ const checkContents = async (/** @type {Array<[string, string | Buffer | {kind: 
 };
 
 const assertClosedResult = (/** @type {Awaited<ReturnType<typeof checkDocumentTerms>>} */ result) => {
-    assert.deepEqual(Object.keys(result).sort(), ['contexts', 'diagnostics', 'languageChecks', 'languageComposition', 'source', 'status']);
+    assert.deepEqual(Object.keys(result).sort(), ['contexts', 'diagnostics', 'source', 'status']);
     assert.equal(['failed', 'passed'].includes(result.status), true);
     for (const context of result.contexts) {
         assert.deepEqual(Object.keys(context).sort(), ['context', 'diagnostics', 'status', 'summary']);
@@ -92,38 +91,12 @@ const assertClosedResult = (/** @type {Awaited<ReturnType<typeof checkDocumentTe
     }
 };
 
-test('Document Terms preserves complete overlapping checks independently of presentation', async () => {
-    const config = {configVersion: 2, languageChecks: {
-        english: {language: 'english', minPercentage: 100, include: ['docs/']},
-        chinese: {language: 'chinese', minPercentage: 80, include: ['docs/**/*.md']},
-        empty: {language: 'english', minPercentage: 0, include: ['absent/']},
-    }};
-    const {result} = await checkContents([
-        ['arw.config.json', JSON.stringify(config)], ['CONTEXT.md', '# Context\n\n## Language\n'],
-        ['docs/a.md', '# Heading\n\nEnglish words.\n'], ['docs/empty.md', '# Heading\n'],
-    ]);
-    assert.equal(result.status, 'passed');
-    assert.deepEqual(result.languageChecks.checks.map(check => check.summary), [
-        {passed: 1, failed: 0, indeterminate: 1}, {passed: 0, failed: 1, indeterminate: 1}, {passed: 0, failed: 0, indeterminate: 0},
-    ]);
-    assert.deepEqual(result.languageChecks.uncovered, ['CONTEXT.md']);
-    const before = structuredClone(result);
-    const concise = renderLanguageChecks(result);
-    const verbose = renderLanguageChecks(result, {verbose: true});
-    assert.equal(concise.split('docs/a.md').length - 1, 1);
-    assert.equal(verbose.split('docs/a.md').length - 1, 2);
-    assert.match(concise, /No documents selected/);
-    assert.match(concise, /indeterminate/);
-    assert.deepEqual(result, before);
-});
-
 test('Document Terms Module 把 Repository 和完整 batch 失败关闭到顶层', async () => {
     for (const openDocumentRepository of [async () => null, async () => { throw new Error('unavailable'); }]) {
         const check = createDocumentTermsChecker({openDocumentRepository});
         assert.deepEqual(await check({repositoryRoot, request: immediateRequest}), {
             contexts: [],
             diagnostics: [{code: 'repository-read-failed', path: '.'}],
-            languageComposition: [], languageChecks: {checks: [], status: 'unconfigured', uncovered: []},
             source: immediateRequest,
             status: 'failed',
         });
@@ -144,7 +117,6 @@ test('Document Terms Module 把 Repository 和完整 batch 失败关闭到顶层
     assert.deepEqual(invalidPolicy.result, {
         contexts: [],
         diagnostics: [{code: 'agent-scope-policy-invalid', path: '.arwignore'}],
-        languageComposition: [], languageChecks: {checks: [], status: 'unconfigured', uncovered: []},
         source: immediateRequest,
         status: 'failed',
     });
@@ -164,13 +136,6 @@ test('Document Terms Module 按 map 声明顺序独立检查 sibling context', a
     assert.deepEqual(result.contexts.map(context => context.context), ['packages(v1)/CONTEXT.md', 'apps/CONTEXT.md']);
     assert.deepEqual(result.contexts.map(context => context.summary.documents), [2, 2]);
     assert.deepEqual(result.contexts.map(context => context.summary.uses), [1, 1]);
-    assert.deepEqual(result.languageComposition.map(row => row.path), [
-        'CONTEXT-MAP.md',
-        'apps/CONTEXT.md',
-        'apps/README.md',
-        'packages(v1)/CONTEXT.md',
-        'packages(v1)/README.md',
-    ]);
     assert.deepEqual(source.calls, {list: 1, read: 2});
 });
 
@@ -355,18 +320,12 @@ test('Document Terms Module 收集完整 include 失败集合并阻止 context �
     assert.equal(result.status, 'failed');
 });
 
-test('Document Terms Module 没有术语表时只在配置了语言检查时失败, 且不产生 include finding', async () => {
+test('Document Terms Module 没有术语表时通过, 且不产生 include finding', async () => {
     const {result: fresh} = await checkContents([
         ['README.md', '# Reader\n'],
     ], {...immediateRequest, include: ['missing']});
     assert.equal(fresh.status, 'passed');
     assert.deepEqual(fresh.contexts, []);
-
-    const config = {configVersion: 2, languageChecks: {english: {language: 'english', minPercentage: 100, include: ['docs/']}}};
-    const {result} = await checkContents([
-        ['arw.config.json', JSON.stringify(config)], ['README.md', '# Reader\n'],
-    ], {...immediateRequest, include: ['missing']});
-    assert.deepEqual(result.diagnostics, [{code: 'terms-glossary-missing', path: '.'}]);
 });
 
 test('Document Terms Module 不读取默认排除 scratch 中的 Markdown', async () => {
@@ -375,7 +334,7 @@ test('Document Terms Module 不读取默认排除 scratch 中的 Markdown', asyn
         async readEntries(paths) {
             assert.ok(Array.isArray(paths));
             if (paths.includes('.scratch/broken.md')) throw new Error('excluded blob must not be read');
-            return paths.map(path => (path === '.arwignore' || path === 'arw.config.json')
+            return paths.map(path => path === '.arwignore'
                 ? {kind: /** @type {'missing'} */ ('missing'), path}
                 : entryFrom(path, '# Context\n\n## Language\n'));
         },
@@ -404,12 +363,10 @@ test('Document Terms Module 对绑定 candidate tree 忽略漂移 working tree',
     await writeFile(resolve(repositoryRoot, 'CONTEXT.md'), validContext(), 'utf8');
     await writeFile(resolve(repositoryRoot, 'README.md'), '# Reader\n\nAmber Compass. Amber Compass. Amber Compass.\n', 'utf8');
     await writeFile(resolve(repositoryRoot, 'docs/guide.md'), '# Guide\n\nAmber Compass. Amber Compass.\n', 'utf8');
-    await writeFile(resolve(repositoryRoot, 'arw.config.json'), JSON.stringify({configVersion: 2, languageChecks: {candidate: {language: 'english', minPercentage: 100, include: ['**/*.md']}}}));
     await commitAll(repositoryRoot, 'candidate terms');
     const candidateTree = (await runGit(repositoryRoot, ['rev-parse', 'HEAD^{tree}'])).stdout.trim();
 
     await writeFile(resolve(repositoryRoot, 'README.md'), '# Reader\n\namber compass.\n', 'utf8');
-    await writeFile(resolve(repositoryRoot, 'arw.config.json'), JSON.stringify({configVersion: 2, languageChecks: {working: {language: 'chinese', minPercentage: 80, include: ['**/*.md']}}}));
     /** @type {{mode: 'release', source: {candidateTree: string, kind: 'candidate-tree'}}} */
     const request = {mode: 'release', source: {candidateTree, kind: 'candidate-tree'}};
     const candidateResult = await checkDocumentTerms({repositoryRoot, request});
@@ -417,10 +374,6 @@ test('Document Terms Module 对绑定 candidate tree 忽略漂移 working tree',
 
     assert.deepEqual(candidateResult.source, request);
     assert.equal(candidateResult.status, 'passed');
-    assert.equal(candidateResult.languageChecks.checks[0].name, 'candidate');
-    assert.equal(candidateResult.languageChecks.checks[0].summary.failed, 0);
-    assert.equal(workingResult.languageChecks.checks[0].name, 'working');
-    assert.ok(workingResult.languageChecks.checks[0].summary.failed > 0);
     assert.equal(workingResult.status, 'failed');
     assert.equal(workingResult.contexts[0].diagnostics.some(({code}) => code === 'term-spelling-invalid'), true);
 });

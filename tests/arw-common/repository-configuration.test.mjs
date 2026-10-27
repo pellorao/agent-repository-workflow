@@ -14,7 +14,6 @@ test('Application Configuration resolves a Repository without application as App
         value: {configVersion: 2},
     }), {
         context: {role: 'member'},
-        languageChecks: [],
         reviewers: {},
         diagnostics: [],
         status: 'succeeded',
@@ -63,7 +62,6 @@ test('Application Configuration resolves a complete Application Leader context',
             role: 'leader',
             submodule: {distributionBranch: 'dev', remote: 'origin'},
         },
-        languageChecks: [],
         reviewers: {},
         diagnostics: [],
         status: 'succeeded',
@@ -76,12 +74,18 @@ test('Repository Reviewer completion creates empty role overrides and preserves 
     assert.deepEqual(JSON.parse(created.bytes.toString('utf8')).reviewers, {
         'code-standards-reviewer': {}, 'requirements-reviewer': {}, 'spec-readiness-reviewer': {},
     });
-    const source = Buffer.from('{"configVersion":2,"languageChecks":{"doc":{"language":"chinese","minPercentage":1e2,"include":["docs/**"]}},"reviewers":{"requirements-reviewer":{"serviceTier":"fast"}}}\n');
-    const completed = completeRepositoryConfigurationBytes(source);
+    const source = Buffer.from('{"configVersion":2,"languageChecks":{"doc":{"minPercentage":1e2}},"reviewers":{"requirements-reviewer":{"serviceTier":"fast"}}}\n');
+    const completed = completeRepositoryConfigurationBytes(source, {removeDeprecated: true});
     assert.equal(completed.changed, true);
-    assert.ok(completed.bytes.toString('utf8').includes('"minPercentage":1e2'));
+    assert.deepEqual(completed.removedFields, ['languageChecks']);
+    assert.ok(!completed.bytes.toString('utf8').includes('languageChecks'));
+    assert.ok(completed.bytes.toString('utf8').includes('"reviewers":{"requirements-reviewer"'));
+    const pretty = completeRepositoryConfigurationBytes(Buffer.from('{\n  "languageChecks": {"a": 1},\n  "configVersion": 2,\n  "reviewers": {"requirements-reviewer": {}}\n}\n'), {removeDeprecated: true});
+    assert.ok(pretty.bytes.toString('utf8').startsWith('{\n  "configVersion": 2,\n  "reviewers"'));
+    const last = completeRepositoryConfigurationBytes(Buffer.from('{"configVersion":2,"reviewers":{},"languageChecks":{"a":[1]}}'), {removeDeprecated: true});
+    assert.equal(JSON.parse(last.bytes.toString('utf8')).languageChecks, undefined);
     assert.deepEqual(JSON.parse(completed.bytes.toString('utf8')).reviewers['requirements-reviewer'], {serviceTier: 'fast'});
-    assert.deepEqual(completeRepositoryConfigurationBytes(completed.bytes), {bytes: completed.bytes, changed: false});
+    assert.deepEqual(completeRepositoryConfigurationBytes(completed.bytes), {bytes: completed.bytes, changed: false, removedFields: []});
     assert.throws(() => completeRepositoryConfigurationBytes(Buffer.from('{"configVersion":2,"reviewers":{"requirements-reviewer":{"serviceTier":null}}}')), /serviceTier/u);
 });
 
@@ -124,28 +128,5 @@ test('Application Configuration blocks invalid v2 fields without returning a con
         assert.equal(result.status, 'blocked');
         assert.equal(Object.hasOwn(result, 'context'), false);
         assert.ok(result.diagnostics.some(diagnostic => diagnostic.code === expectedCode), JSON.stringify(result));
-    }
-});
-
-test('Repository configuration validates named language rules and preserves native dictionary order', () => {
-    const repositoryRoot = resolve('language-repository');
-    const rule = {language: 'chinese', minPercentage: 80, include: ['docs/**/*.md']};
-    const languageChecks = {z: rule, '2': {...rule, minPercentage: 0}, a: {...rule, language: 'english', minPercentage: 100, exclude: ['docs/generated/']}};
-    const result = resolveRepositoryConfiguration({repositoryRoot, value: {configVersion: 2, languageChecks}});
-    assert.equal(result.status, 'succeeded');
-    if (result.status !== 'succeeded') assert.fail();
-    assert.deepEqual(result.languageChecks.map(check => check.name), Object.keys(languageChecks));
-    assert.deepEqual(result.languageChecks[1].exclude, []);
-    assert.deepEqual(languageChecks.z, rule);
-    for (const invalid of [[], {bad: {...rule, name: 'bad'}}, {bad: {...rule, language: 'french'}},
-        {bad: {...rule, minPercentage: -1}}, {bad: {...rule, minPercentage: 101}},
-        {bad: {...rule, minPercentage: NaN}}, {bad: {...rule, include: []}},
-        {bad: {...rule, include: ['../escape']}}, {bad: {...rule, exclude: ['/absolute']}},
-        {bad: {...rule, include: ['docs\\file.md']}}, {bad: {...rule, include: ['docs/a**b.md']}},
-        {bad: {...rule, include: ['./../escape']}}, {bad: {...rule, include: ['.//']}},
-        {bad: {...rule, include: ['./docs//file.md']}}]) {
-        const blocked = resolveRepositoryConfiguration({repositoryRoot, value: {configVersion: 2, languageChecks: invalid}});
-        assert.equal(blocked.status, 'blocked', JSON.stringify(invalid));
-        assert.equal('context' in blocked, false);
     }
 });

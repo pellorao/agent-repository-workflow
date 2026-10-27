@@ -198,7 +198,7 @@ arw commit-audit verify [--non-implementation]
 arw code-map verify
 arw text check
 arw text fix
-arw terms check [--strict] [--include <repository-relative-directory>]... [--verbose] [--language-threshold <name>=<percentage>]...
+arw terms check [--strict] [--include <repository-relative-directory>]...
 arw language inspect <path>...
 arw workflow init [--non-interactive (--reuse-profile | --platform <platform>... --domain-layout <layout> --code-map-root [<root>]... --code-map-include [<glob>]... --code-map-exclude [<glob>]...) --transform-existing-agent-docs <true|false> --orphan-code-map-readmes <delete|demote>]
 arw workflow update [--non-interactive] [--dry-run] [--transform-existing-agent-docs <true|false>]
@@ -563,11 +563,11 @@ Code Map 根目录额外接受准确一个末尾 `/`. `src` 与 `src/` 在任何
 
 交互式 `workflow update` 在请求最终确认前把计划显示为人类可读摘要. `workflow update --dry-run` 显示同一摘要后结束, 不写任何仓库字节或锁文件. 每项操作只显示操作类型和仓库相对路径. 存在问题时, 标准错误的每个条目只显示诊断代码和人类可读消息, 不序列化诊断对象. 没有操作且没有问题时, 两种命令向标准输出写入准确的 `No workflow updates needed.`. 交互式命令在摘要后请求确认, 并输出适用的取消结果或完成结果.
 
-显式使用 `workflow update --non-interactive` 且不同时使用 `--dry-run` 时, 命令不显示计划也不请求确认; 没有操作时输出 `No changes.`, 否则成功后输出 `Workflow update completed.`. 命令不提供 `--json` 或其他机器可读公开输出模式. 上述更新摘要规则不用于 `workflow init`, `workflow verify` 或 `workflow remove`. `workflow verify` 只读验证锁文件, Profile, Managed Content, 仓库自有种子结构, 平台投影和已配置的 Code Map. `workflow remove` 按明确的 `retain | delete` 选择处理 `.arwignore`, Code Map 和混合 Agent 文档, 最后处理锁文件.
+显式使用 `workflow update --non-interactive` 且不同时使用 `--dry-run` 时, 命令不显示计划也不请求确认; 没有操作时输出 `No changes.`, 否则成功后输出 `Workflow update completed.`. 更新完成后 (非交互, 或交互式确认后) 若删除了已废弃字段, 另向标准输出写入一行准确的 `Removed deprecated fields from arw.config.json: <names>.`, `<names>` 以 `, ` 分隔. 命令不提供 `--json` 或其他机器可读公开输出模式. 上述更新摘要规则不用于 `workflow init`, `workflow verify` 或 `workflow remove`. `workflow verify` 只读验证锁文件, Profile, Managed Content, 仓库自有种子结构, 平台投影和已配置的 Code Map. `workflow remove` 按明确的 `retain | delete` 选择处理 `.arwignore`, Code Map 和混合 Agent 文档, 最后处理锁文件.
 
-仓库根目录的 `arw.config.json` 由用户拥有, 格式使用 `configVersion: 2`. `workflow init` 和 `workflow update` 在同一计划与事务中验证配置并补入缺失的 `reviewers` 或角色对象, 四角色默认为空对象. 文件缺失时创建版本字段和四角色空覆盖对象; 已有用户字段与无关文本保留, 不复制全局模型设置. `workflow verify` 只读验证结构, 不持久补入默认值. Reviewer 字段格式及全局默认值由 [安装配置规格](../agent-repository-workflow-installation/spec.md#reviewer-configuration) 拥有, 仓库按字段覆盖全局, 空对象继承全局. 普通审核读取缺省只在内存中处理, 不写用户配置.
+仓库根目录的 `arw.config.json` 由用户拥有, 格式使用 `configVersion: 2`. `workflow init` 和 `workflow update` 在同一计划与事务中验证配置并补入缺失的 `reviewers` 或角色对象, 四角色默认为空对象. 文件缺失时创建版本字段和四角色空覆盖对象; 已有用户字段与无关文本保留, 不复制全局模型设置. `workflow verify` 只读验证结构, 不持久补入默认值. Reviewer 字段格式及全局默认值由 [安装配置规格](../agent-repository-workflow-installation/spec.md#reviewer-configuration) 拥有, 仓库按字段覆盖全局, 空对象继承全局. 普通审核读取缺省只在内存中处理, 不写用户配置. 通用仓库配置责任维护一份已废弃字段列表, 当前只有 `languageChecks`: 读取与验证时忽略列表中的字段, `workflow update` 在同一计划与事务中删除它们, 保留其余文本, 并在更新结果中报告已删除的字段名.
 
-配置有效 Application 的仓库由 Application Leader 通过 Application Source Issue 协调 Module Repository 中的实施状态. 创建缺失的 Reviewer 覆盖配置不为 Application Member 推导或创建 Application 成员字段. 这些仓库配置生命周期操作不读取 `JIRA_ACCESS_TOKEN`, 不调用 JIRA, 也不检查配置远端, 当前分支或真实子模块. 通用仓库配置责任统一读取, 校验并形成运行上下文, 不支持其他版本或迁移. Application 字段行为由 [Application 与 JIRA 长期规格](../agent-repository-workflow-application-jira/spec.md#repository-application-configuration) 拥有.
+配置有效 Application 的仓库由 Application Leader 通过 Application Source Issue 协调 Module Repository 中的实施状态. 创建缺失的 Reviewer 覆盖配置不为 Application Member 推导或创建 Application 成员字段. 这些仓库配置生命周期操作不读取 `JIRA_ACCESS_TOKEN`, 不调用 JIRA, 也不检查配置远端, 当前分支或真实子模块. 通用仓库配置责任统一读取, 校验并形成运行上下文, 不支持其他版本, 也不做版本迁移; 删除已废弃字段不是版本迁移. Application 字段行为由 [Application 与 JIRA 长期规格](../agent-repository-workflow-application-jira/spec.md#repository-application-configuration) 拥有.
 
 选择 Codex 时, Repository Workflow 从分发载荷取得 `.codex/config.toml` 默认内容. 初始化和更新在既有观察, 计划, 授权, 状态重验和事务中补入缺失的根级 `include_collaboration_mode_instructions = false` 与说明注释. 文件不存在时创建; 设置已是合法 `true` 或 `false` 时保留整个文件字节. 设置缺失时保留全部无关原始内容, 不把子表, 注释或多行字符串中的同名文字当作根设置. 无效 TOML, 重复设置, 非布尔值或无法可靠解析均在写入前阻断整个操作. `--dry-run` 只返回计划. 验证只读要求根设置存在且合法, 移除保留整个文件; 该文件不进入 Managed Content 归属, 不维护字段历史. 仅 Claude Code 不读取或处理它, 双平台只处理一次. 默认内容独立于用户与全局配置, 不增加运行时依赖.
 
@@ -603,6 +603,8 @@ Main Agent 删除或替换与当前 Workflow Distribution 冲突的仓库自有�
 
 `CLAUDE.md` 迁移只支持当前规定的模式, 因为它只负责把现有有意义内容保留到 `AGENTS.md` 并收敛为准确引用, 不承担通用 Markdown 合并. 当前选择接受无法安全处理的其他格式需要用户决定的成本.
 
+已废弃的配置字段在用户运行 `workflow update` 前被所有读取方忽略, 因为这样旧配置不会因升级而失效. `workflow update` 把它们删除, 因为永久保留无效的用户可见配置会误导读者; 删除只发生在用户显式调用的更新中, 只针对已列出的字段名, 保留其余全部文本, 在输出中报告, 并是用户可以用 Git 还原的普通差异. 当前选择拒绝永远忽略这些字段的做法, 并接受更新会修改用户拥有文件的成本. 不需要新 ADR: `arw.config.json` 仍由用户拥有 (与 update 补入缺失字段同属既有的计划与事务授权), 配置格式版本和公开 Interface 的责任不变, 与 [ADR-0027](../../adr/0027-separate-repository-configuration-from-workflow-lock.md) 一致.
+
 初始化后审核由 Main Agent 处理语义冲突, 因为 Engine 只能报告机械观察结果, 无法判断仓库自有规则的意图. 当前选择接受初始化后仍需一次人工审核的成本, 不让 Engine 自动覆盖无法判断的规则.
 
 ## Code Map and text operations
@@ -615,9 +617,9 @@ Main Agent 删除或替换与当前 Workflow Distribution 冲突的仓库自有�
 
 ### Document terms
 
-`arw terms check [--strict] [--include <repository-relative-directory>]... [--verbose] [--language-threshold <name>=<percentage>]...` 是任意 Git 仓库中可用的只读命令. 不带 `--strict` 时使用 `immediate` 模式; 准确的单个 `--strict` 使用 `release` 模式. `--include` 可以出现任意多次, 每次必须紧跟一个目录, 并且可以与 `--strict` 使用任意顺序. 它不提供短别名, `fix`, 候选树参数或其他公开 `release` 操作, 不要求 Repository Profile, `arw-lock.json`, `.scratch` 或已执行 `workflow init`. CLI 从当前目录发现最近的 Git 仓库根; Git 仓库外返回退出码 `1`, 重复 `--strict`, 缺少纳入目录, 多余参数或未知参数返回完整用法说明和退出码 `2`.
+`arw terms check [--strict] [--include <repository-relative-directory>]...` 是任意 Git 仓库中可用的只读命令. 不带 `--strict` 时使用 `immediate` 模式; 准确的单个 `--strict` 使用 `release` 模式. `--include` 可以出现任意多次, 每次必须紧跟一个目录, 并且可以与 `--strict` 使用任意顺序. 它不提供短别名, `fix`, 候选树参数或其他公开 `release` 操作, 不要求 Repository Profile, `arw-lock.json`, `.scratch` 或已执行 `workflow init`. CLI 从当前目录发现最近的 Git 仓库根; Git 仓库外返回退出码 `1`, 重复 `--strict`, 缺少纳入目录, 多余参数或未知参数返回完整用法说明和退出码 `2`.
 
-Document Terms 从仓库根目录发现术语表. 根 `CONTEXT-MAP.md` 存在时只使用 map, 不回退到根 `CONTEXT.md`; map 不存在时使用根 `CONTEXT.md`; 两者都不存在时不返回上下文: `arw.config.json` 没有语言检查时没有可检查内容, 结果通过 (新初始化的仓库就是这种状态); 配置了语言检查时返回顶层 `terms-glossary-missing`, `path` 是 `.`, 退出码 `1`. `CONTEXT-MAP.md` 必须有且只有一个准确 `## Contexts` 章节. 该章节只接受以 `- [<nonempty-label>](<target>)` 开始的列表项, 链接后可以有说明文字. 目标不接受链接标题, 查询参数, 片段, 百分号转义或空白, 可以有一个会被删除的开头 `./`; 其余路径组件必须非空且不能是 `.` 或 `..`. 目标不能是绝对路径, 反斜杠路径, NUL 路径或符号链接, 必须位于仓库内, 使用准确文件名 `CONTEXT.md`, 并在规范化后唯一且存在.
+Document Terms 从仓库根目录发现术语表. 根 `CONTEXT-MAP.md` 存在时只使用 map, 不回退到根 `CONTEXT.md`; map 不存在时使用根 `CONTEXT.md`; 两者都不存在时不返回上下文, 没有可检查内容, 结果通过 (新初始化的仓库就是这种状态). `CONTEXT-MAP.md` 必须有且只有一个准确 `## Contexts` 章节. 该章节只接受以 `- [<nonempty-label>](<target>)` 开始的列表项, 链接后可以有说明文字. 目标不接受链接标题, 查询参数, 片段, 百分号转义或空白, 可以有一个会被删除的开头 `./`; 其余路径组件必须非空且不能是 `.` 或 `..`. 目标不能是绝对路径, 反斜杠路径, NUL 路径或符号链接, 必须位于仓库内, 使用准确文件名 `CONTEXT.md`, 并在规范化后唯一且存在.
 
 上下文路径的规范形式是使用 `/` 且没有开头 `./` 的仓库相对路径. Map 声明顺序按该规范形式保留, 标准输出, 标准错误和 Module 结果通过 `JSON.stringify` 表达该值. 缺失或重复 `## Contexts`, 空清单或章节内存在非空非列表内容时产生一个无位置 `context-map-invalid`. 非法, 重复, 缺失或不受支持的列表目标在对应行产生 `column=1` 的 `context-map-invalid`. Module 收集全部 map 发现项后结束发现, 不返回部分上下文结果. Map 发现项省略 `context`, 并使用 `path="CONTEXT-MAP.md"` 定位来源.
 
@@ -639,17 +641,9 @@ Document Terms 从仓库根目录发现术语表. 根 `CONTEXT-MAP.md` 存在时
 
 `immediate` 与 `release` 请求都统计实际规范名称使用, 并检查定义语法, 规范拼写, 避免名称和局部名称保留条件. 每个有效局部名称必须在自己的定义条目之外至少使用 2 次. 只有 `release` 请求检查上下文名称保留条件. 名称保留判断从本次完整受检集合排除仓库相对路径准确为 `CONTEXT.md` 或 `CONTEXT-MAP.md`, 以及以 `/CONTEXT.md` 或 `/CONTEXT-MAP.md` 结尾的文件. 每个上下文名称必须在其余至少 2 份受检文档中合计至少有 5 次定义外使用, 且每份计入文档至少有 1 次使用. `immediate` 仍返回实际使用次数, 但不产生 `global-term-use-insufficient`.
 
-Document Repository 对一次检查只观察一次完整 Git 可见的路径清单, `.arwignore`, `arw.config.json`, 发现来源和全部上下文所需 Markdown 字节. 仓库打开, 清单或完整批次失败产生唯一顶层 `repository-read-failed`, 不返回部分上下文; `.arwignore` 无效时也返回顶层失败. 纳入目录验证失败时, 顶层诊断信息收集完整纳入目录集合中的全部发现项. 不存在的目录产生 `include-directory-missing`; 普通文件, 符号链接, 不可读目录或其他不支持条目产生 `include-directory-unsupported`; 不属于任何上下文的目录产生 `include-directory-outside-context`. 每项使用规范仓库相对目录作为 `path`. 任一纳入目录发现项都阻止全部上下文结果并返回失败. 单个上下文来源或作用域内单份 Markdown 的 `missing | symbolic-link | unreadable | unsupported` 封闭条目只产生该上下文的来源发现项, 并继续其他上下文. 重叠作用域中的同一条目分别进入每个适用结果. 修复来源后完整重跑, 不恢复或复用部分结果.
+Document Repository 对一次检查只观察一次完整 Git 可见的路径清单, `.arwignore`, 发现来源和全部上下文所需 Markdown 字节. 仓库打开, 清单或完整批次失败产生唯一顶层 `repository-read-failed`, 不返回部分上下文; `.arwignore` 无效时也返回顶层失败. 纳入目录验证失败时, 顶层诊断信息收集完整纳入目录集合中的全部发现项. 不存在的目录产生 `include-directory-missing`; 普通文件, 符号链接, 不可读目录或其他不支持条目产生 `include-directory-unsupported`; 不属于任何上下文的目录产生 `include-directory-outside-context`. 每项使用规范仓库相对目录作为 `path`. 任一纳入目录发现项都阻止全部上下文结果并返回失败. 单个上下文来源或作用域内单份 Markdown 的 `missing | symbolic-link | unreadable | unsupported` 封闭条目只产生该上下文的来源发现项, 并继续其他上下文. 重叠作用域中的同一条目分别进入每个适用结果. 修复来源后完整重跑, 不恢复或复用部分结果.
 
 单上下文通过时术语摘要准确为 `Document terms check passed. Documents: <N>; global terms: <N>; local terms: <N>; uses: <N>.`; 术语失败时不输出该摘要. 多上下文按 map 声明顺序串行呈现. 通过项摘要准确为 `Document terms check passed. Context: <JSON context path>; Documents: <N>; global terms: <N>; local terms: <N>; uses: <N>.`; 失败项摘要准确为 `Document terms check failed. Context: <JSON context path>; Diagnostics: <N>; Documents: <N>; global terms: <N>; local terms: <N>; uses: <N>.`. 某项失败不阻止后续项. 多上下文不输出最终术语摘要, 上下文总数或跨上下文诊断信息总数.
-
-一次 Document Terms 请求对已经安全读取的逻辑 Markdown 文档各形成一行语言组成, 即使嵌套上下文让同一文档参加多次术语检查也不重复. 行按规范仓库相对路径去重并排序. 术语发现项不抑制仍能安全形成的语言行. 仓库或纳入目录失败使文档集合无法确定时返回空语言结果; 单份来源无法读取或不是有效 UTF-8 时不为该路径猜测比例. 语言结果不产生术语发现项, 不改变 Document Terms `status` 或 CLI 退出码.
-
-`arw terms check` 先输出上述既有术语摘要, 然后用共享呈现函数显示语言检查. 每个检查项保留名称, 预期语言, 生效最低比例及通过, 未通过, 无法判断数量. 默认只列未通过和无法判断的文档; `--verbose` 列出全部实际比例, 包括通过与未覆盖文档. 空正文以 `-` 显示并计为无法判断. 没有规则明确显示未配置, 没有匹配文档明确显示未选中, 未命中任何规则的文档明确列为未覆盖. 重叠规则独立判断和显示, 没有优先级覆盖. 这些状态不改变术语退出码. 配置, 来源和术语错误返回 `1`, 用法错误返回 `2`.
-
-仓库根 `arw.config.json` 的可选 `languageChecks` 是以名称为键的字典, 值准确包含必需的 `language`, `minPercentage`, `include` 和可选 `exclude`, 不重复 `name`. `language` 是 `chinese` 或 `english`, `minPercentage` 是有限的 `0` 到 `100` 数值, `include` 是非空安全仓库相对路径或通配符数组, `exclude` 是同类可选数组. 检查项遵循原生对象键顺序. 精确文件, 递归目录, 单段内的 `*` 和 `?`, 以及独立路径段 `**` 的零个或多个目录匹配都在既有 Git, `.arwignore` 和 `.scratch` 选择边界内生效. 缺失配置文件或空字典不产生默认规则.
-
-`--language-threshold <name>=<percentage>` 可重复覆盖不同名称的本次最低比例, 保留未指定项, 不写配置. 未知名称, 重复名称, 缺失值或格式错误是用法错误, 不提供 `--threshold` 别名. `--verbose` 只影响显示, 不传入检查函数. 原始比例和全部规则判断始终保留, 使日常命令和发布验证消费相同的完整结果. `arw language inspect` 继续使用自己的原始比例表格, 不读取这些规则.
 
 发现项保留 `document-terms-finding:` 以及 `path`, `line`, `column`, `code`, `name`, `related` 顺序. 多上下文发现项在 `path` 前增加必需 `context=<JSON context path>`. 单上下文, map 和顶层纳入目录发现项省略 `context`. 重叠检查产生的相同位置发现项不跨上下文去重.
 
@@ -703,7 +697,7 @@ Main Agent 或用户负责语义决定. 独立 Reviewer 只返回结果. Module 
 
 `Code Map Module` 拥有 Code Map 结构, 覆盖范围, 归属和生命周期. `Text Policy Module` 拥有目标 Git 仓库中的文本候选文件与字节策略. 两者不取得仓库工作流事务.
 
-`Document Terms Module` 唯一拥有通用 Git 仓库中的术语表发现, map 验证, 上下文作用域, Markdown 路径政策, 上下文与文档局部定义, 可见文字匹配, 规范拼写, 避免名称, 使用次数, 逻辑文档去重, 请求模式差异, 纳入目录, 稳定诊断和最终结果. 它通过内部 Document Repository Interface 取得来源路径和准确条目, 并把已经解析的正文文本流交给公共 Document Language Analysis Module. 调用方只选择封闭的 `immediate | release` 模式, `working-tree | candidate-tree` 来源和可选纳入目录, 不提供来源 Adapter, 名称登记表, 上下文选择, 保留政策或语言阈值.
+`Document Terms Module` 唯一拥有通用 Git 仓库中的术语表发现, map 验证, 上下文作用域, Markdown 路径政策, 上下文与文档局部定义, 可见文字匹配, 规范拼写, 避免名称, 使用次数, 逻辑文档去重, 请求模式差异, 纳入目录, 稳定诊断和最终结果. 它通过内部 Document Repository Interface 取得来源路径和准确条目. 调用方只选择封闭的 `immediate | release` 模式, `working-tree | candidate-tree` 来源和可选纳入目录, 不提供来源 Adapter, 名称登记表, 上下文选择 或保留政策.
 
 `language inspect` CLI Adapter 只拥有显式参数验证, 文件与目录展开, 仓库边界内的安全读取和共享表格渲染. 它直接组合公共 Repository, Filesystem, Markdown Visible Text Module 与 Document Language Analysis Module, 不取得 Document Terms 的 Git 清单, 上下文, `.arwignore`, 模式或诊断信息政策.
 
@@ -723,9 +717,7 @@ Profile 规范化返回完整规范 Profile 或验证诊断. 无效结果不包�
 
 Document Repository Interface 只包含 `listPaths() -> Promise<string[]>` 和 `readEntries(paths) -> Promise<DocumentEntry[]>`. `listPaths()` 返回稳定排序且无重复的规范仓库相对路径. `readEntries(paths)` 只接受排序且无重复的路径, 返回数量相同且保持请求顺序的封闭条目. 普通文件条目包含准确 `path`, Git 模式和 `bytes`; 其他条目只把该路径分类为 `missing | symbolic-link | unreadable | unsupported`. Adapter 无法形成完整清单或完整请求结果时抛出异常, Document Terms Module 把它转换为现有关闭式结果, 不从部分条目继续分析.
 
-产品公开的 `checkDocumentTerms(...)` 接受绝对 `repositoryRoot` 和封闭请求. 合法请求使用 `{mode: "immediate", source: {kind: "working-tree"}}`, `{mode: "release", source: {kind: "working-tree"}}` 或 `{mode: "release", source: {candidateTree, kind: "candidate-tree"}}`; 每种请求都可以增加可选 `include` 目录数组和 `languageThresholds` 数组, 后者每项是 `{name, minPercentage}`; 省略与空数组等价. `candidateTree` 是规范完整 Git 树对象 ID. `mode: "immediate"` 与候选树的组合无效. Document Terms Module 对合法请求只打开一个与 `{repositoryRoot, request}` 绑定的完整 Document Repository. 有效结果准确包含 `{contexts, diagnostics, languageComposition, languageChecks, source, status}`, 其中结果 `source` 是已验证请求的独立副本. `languageComposition` 是按 `path` 排序且无重复的行数组, 每行准确包含 `{path, chinese, english, other}`. 三个比例字段是已经舍入到一位小数的数值, 或在没有可统计字符时共同为 `null`. 顶层 `diagnostics` 只保存仓库, `arw.config.json`, `.arwignore`, 术语表发现, map 或纳入目录级发现项. `contexts` 按 map 声明顺序排列, 每项准确包含 `{context, diagnostics, status, summary}`; `context` 是规范仓库相对 `CONTEXT.md` 路径, `summary` 准确包含 `{diagnostics, documents, globalTerms, localTerms, uses}`. 顶层 `status` 只在顶层或任一上下文有发现项时为 `failed`. 根 `CONTEXT-MAP.md` 和 `CONTEXT.md` 同时缺失时返回空 `contexts` 和空 `languageComposition`: 没有语言检查时 `status: "passed"` 且没有诊断信息; 有语言检查时 `status: "failed"` 和准确的 `[{code: "terms-glossary-missing", path: "."}]` 诊断信息. 模式, 来源与纳入目录选择不成为用户配置或持久状态; CLI 只能选择工作树来源.
-
-`languageChecks` 准确包含 `{checks, status, uncovered}`. `status` 是 `configured` 或 `unconfigured`, `uncovered` 是未覆盖文档的规范路径数组. 每个 `checks` 项完整保存 `{name, language, minPercentage, include, exclude, effectiveMinPercentage, documents, summary}`. `documents` 按路径排序, 每项是 `{path, status}`, 状态为 `passed`, `failed` 或 `indeterminate`; `summary` 是对应的 `{passed, failed, indeterminate}` 计数. 缺省 `exclude` 形成空数组. 实际比例由同一对象的 `languageComposition` 按路径提供, 与是否详细显示无关. 候选树请求从该树同时取得配置和文档, 不回退工作树配置.
+产品公开的 `checkDocumentTerms(...)` 接受绝对 `repositoryRoot` 和封闭请求. 合法请求使用 `{mode: "immediate", source: {kind: "working-tree"}}`, `{mode: "release", source: {kind: "working-tree"}}` 或 `{mode: "release", source: {candidateTree, kind: "candidate-tree"}}`; 每种请求都可以增加可选 `include` 目录数组, 省略与空数组等价. `candidateTree` 是规范完整 Git 树对象 ID. `mode: "immediate"` 与候选树的组合无效. Document Terms Module 对合法请求只打开一个与 `{repositoryRoot, request}` 绑定的完整 Document Repository. 有效结果准确包含 `{contexts, diagnostics, source, status}`, 其中结果 `source` 是已验证请求的独立副本. 顶层 `diagnostics` 只保存仓库, `.arwignore`, 术语表发现, map 或纳入目录级发现项. `contexts` 按 map 声明顺序排列, 每项准确包含 `{context, diagnostics, status, summary}`; `context` 是规范仓库相对 `CONTEXT.md` 路径, `summary` 准确包含 `{diagnostics, documents, globalTerms, localTerms, uses}`. 顶层 `status` 只在顶层或任一上下文有发现项时为 `failed`. 根 `CONTEXT-MAP.md` 和 `CONTEXT.md` 同时缺失时返回空 `contexts`, `status: "passed"` 且没有诊断信息. 模式, 来源与纳入目录选择不成为用户配置或持久状态; CLI 只能选择工作树来源.
 
 Agent CLI Launch Module 返回 `{kind: "exited", exitCode}` 或 `{kind: "failed", code, message}`. 公开 CLI 保留子进程退出码或映射稳定失败.
 
@@ -865,7 +857,7 @@ Code Map Module 保留独立结构, 覆盖与生命周期, 因为这些规则同
 
 Document Terms Module 直接消费 map, 每个上下文的名称定义和每份文档的局部定义, 优先让文档自己成为名称合同的唯一权威来源. 在实现或测试中保存另一份允许名称清单会形成只能证明自身副本的检查, 合并不同上下文又会破坏各术语表的独立语义. 当前选择共享一次来源观察, 但按目录子树独立检查每个上下文. 该选择接受嵌套上下文会重复检查同一文档的成本, 避免引入范围路径匹配模式, 优先级, 遮蔽或第二份术语权威.
 
-Document Language Analysis Module 保持为公共确定性能力, 因为 Document Terms 的发现范围与显式路径命令不同, 但两者必须使用同一种 Markdown 正文边界, 字符分类, 权重和舍入. 把语言计算放入 Document Terms 会迫使显式检查复制算法或继承不适用的上下文与 Git 清单; 把预期语言和阈值放入公共 Module 又会把可演进的 Agent 流程政策变成运行时配置. 当前选择只公开实际比例, 并接受拉丁字母文字语言按 English 近似统计以及独立舍入总和可能不等于 `100.0%` 的成本.
+Document Language Analysis Module 保持为公共确定性能力, 因为显式路径命令需要不依赖术语表上下文与 Git 清单的语言比例. 把预期语言和阈值放入公共 Module 会把可演进的 Agent 流程政策变成运行时配置, 因此语言规则只写在 `docs/agents/writing.md`, 由 Agent 在需要时调用 `arw language inspect` 后判断. 当前选择只公开实际比例, 并接受拉丁字母文字语言按 English 近似统计以及独立舍入总和可能不等于 `100.0%` 的成本.
 
 局部术语章节使用文档中的第一个 H2, 优先兼容 H1 后由其他文档合同要求的元数据, 同时用固定且容易发现的位置防止定义任意推迟. 任意 H2 位置会让正文先使用尚未解释的名称, 因而不采用. 该选择接受普通文字也可以出现在 H1 与第一个 H2 之间的成本.
 
@@ -899,7 +891,7 @@ Document Repository Interface 不改变 ADR-0013 的 Agent 写入分工, 因为�
 
 局部术语章节位置和围栏代码块结束行为是本文直接拥有的文档语法与可见文字政策. 两项选择都不建立新的所有者, 权威关系, 持久状态, 信任边界或恢复协议, 可以在本文中独立演进, 因而不需要 ADR.
 
-必要术语表入口和 `terms-glossary-missing` 是本文直接拥有的文档验证政策. 它们不建立新的所有者, 权威关系, 持久状态, 信任边界或恢复协议, 可以与其他 Document Terms 发现和诊断合同在本文中独立演进, 因而不需要 ADR.
+必要术语表入口是本文直接拥有的文档验证政策. 它们不建立新的所有者, 权威关系, 持久状态, 信任边界或恢复协议, 可以与其他 Document Terms 发现和诊断合同在本文中独立演进, 因而不需要 ADR.
 
 [ADR 0033](../../adr/0033-run-each-claude-turn-as-a-stream-json-process.md) 拥有非 Reviewer Claude 后台 Agent 按 Claude Code 原生方式运行的选择: 被放弃的替代方案是保留 ARW 放行列表与 `--safe-mode`, 接受的成本是用户或项目设置可授予超出调用方读写路径的工具与写入, 调用方路径对该角色不是安全边界, 只有 Reviewer 的受限放行是. 该选择已记入 ADR 0033, 不需要新 ADR. Codex 调用方在平台审批界面选择会话内总是允许 `arw background-agent`, 只是该调用方对既有提权要求的审批选择, 不改变 ARW 的授权主体, 持久状态或信任边界, 因而不需要 ADR.
 

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {mkdir, readFile, writeFile} from 'node:fs/promises';
+import {mkdir, writeFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
 import test from 'node:test';
 
@@ -21,11 +21,8 @@ test('arw terms check 固定 grammar 并拒绝无效 include', async t => {
         ['terms'],
         ['terms', 'unknown'],
         ['terms', 'check', '--threshold', 'docs=80'],
-        ['terms', 'check', '--verbose', '--verbose'],
-        ['terms', 'check', '--language-threshold'],
-        ['terms', 'check', '--language-threshold', 'docs=101'],
-        ['terms', 'check', '--language-threshold', 'docs=NaN'],
-        ['terms', 'check', '--language-threshold', 'docs=80', '--language-threshold', 'docs=90'],
+        ['terms', 'check', '--verbose'],
+        ['terms', 'check', '--language-threshold', 'docs=80'],
         ['terms', 'check', '--unknown'],
         ['terms', 'check', '--strict', '--strict'],
         ['terms', 'check', '--strict', 'extra'],
@@ -55,7 +52,6 @@ test('arw terms check 传递 mode 和规范化 include request', async t => {
     /** @type {Array<[string[], {include?: string[], mode: 'immediate' | 'release', source: {kind: 'working-tree'}}]>} */
     const validCases = [
         [['terms', 'check'], {mode: 'immediate', source: {kind: 'working-tree'}}],
-        [['terms', 'check', '--verbose'], {mode: 'immediate', source: {kind: 'working-tree'}}],
         [['terms', 'check', '--strict'], {mode: 'release', source: {kind: 'working-tree'}}],
         [
             ['terms', 'check', '--include', './.scratch/current/', '--strict', '--include', '.', '--include', './'],
@@ -71,7 +67,6 @@ test('arw terms check 传递 mode 和规范化 include request', async t => {
                     return {
                         contexts: [passedContext()],
                         diagnostics: [],
-                        languageComposition: [], languageChecks: {checks: [], status: /** @type {'unconfigured'} */ ('unconfigured'), uncovered: []},
                         source: termsInput(input).request,
                         status: 'passed',
                     };
@@ -83,7 +78,7 @@ test('arw terms check 传递 mode 和规范化 include request', async t => {
         assert.deepEqual(output.events, [{
             channel: 'stdout',
             message: 'Document terms check passed. Documents: 4; global terms: 1; local terms: 0; uses: 3.',
-        }, {channel: 'stdout', message: ''}, {channel: 'stdout', message: 'Language checks: unconfigured.'}]);
+        }]);
     }
 });
 
@@ -106,7 +101,6 @@ test('arw terms check 保持单 context finding 兼容格式', async t => {
                 summary: {diagnostics: 1, documents: 2, globalTerms: 1, localTerms: 0, uses: 0},
             }],
             diagnostics: [],
-            languageComposition: [], languageChecks: {checks: [], status: /** @type {'unconfigured'} */ ('unconfigured'), uncovered: []},
             source: termsInput(input).request,
             status: 'failed',
         })},
@@ -116,7 +110,7 @@ test('arw terms check 保持单 context finding 兼容格式', async t => {
     assert.deepEqual(output.events, [{
         channel: 'stderr',
         message: 'document-terms-finding: path="docs/example.md" line=12 column=4 code="term-disallowed" name="Ar\\"tifact" related=[{"path":"README.md","line":3,"column":2}]',
-    }, {channel: 'stdout', message: 'Language checks: unconfigured.'}]);
+    }]);
 });
 
 test('arw terms check 按 map 顺序串行显示多 context 结果和归属', async t => {
@@ -134,7 +128,6 @@ test('arw terms check 按 map 顺序串行显示多 context 结果和归属', as
                 },
             ],
             diagnostics: [],
-            languageComposition: [], languageChecks: {checks: [], status: /** @type {'unconfigured'} */ ('unconfigured'), uncovered: []},
             source: termsInput(input).request,
             status: 'failed',
         })},
@@ -145,8 +138,6 @@ test('arw terms check 按 map 顺序串行显示多 context 结果和归属', as
         {channel: 'stdout', message: 'Document terms check passed. Context: "packages/CONTEXT.md"; Documents: 2; global terms: 1; local terms: 0; uses: 1.'},
         {channel: 'stdout', message: 'Document terms check failed. Context: "apps/CONTEXT.md"; Diagnostics: 1; Documents: 3; global terms: 1; local terms: 0; uses: 0.'},
         {channel: 'stderr', message: 'document-terms-finding: context="apps/CONTEXT.md" path="apps/README.md" line=3 column=2 code="term-spelling-invalid" name="App Name"'},
-        {channel: 'stdout', message: ''},
-        {channel: 'stdout', message: 'Language checks: unconfigured.'},
     ]);
 });
 
@@ -156,13 +147,12 @@ test('arw terms check 直接显示 map finding 并返回 Exit 1', async t => {
         documentTermsDependencies: {check: async input => ({
             contexts: [],
             diagnostics: [{code: 'context-map-invalid', path: 'CONTEXT-MAP.md'}],
-            languageComposition: [], languageChecks: {checks: [], status: /** @type {'unconfigured'} */ ('unconfigured'), uncovered: []},
             source: termsInput(input).request,
             status: 'failed',
         })},
     });
     assert.equal(output.result, 1);
-    assert.deepEqual(output.events, [{channel: 'stderr', message: 'document-terms-finding: path="CONTEXT-MAP.md" code="context-map-invalid"'}, {channel: 'stdout', message: 'Language checks: unconfigured.'}]);
+    assert.deepEqual(output.events, [{channel: 'stderr', message: 'document-terms-finding: path="CONTEXT-MAP.md" code="context-map-invalid"'}]);
 });
 
 test('arw terms check 真实入口默认排除 scratch 并按 include 重新加入', async t => {
@@ -181,35 +171,6 @@ test('arw terms check 真实入口默认排除 scratch 并按 include 重新加�
         {
             channel: 'stderr',
             message: 'document-terms-finding: path=".scratch/current/work.md" line=3 column=1 code="term-spelling-invalid" name="Amber Compass"',
-        },
-        {
-            channel: 'stdout',
-            message: [
-                'Language checks: unconfigured.',
-                '',
-                'Uncovered documents: 3.',
-                '.scratch/current/work.md',
-                'CONTEXT.md',
-                'README.md',
-            ].join('\n'),
-        },
+        }
     ]);
-});
-
-test('arw terms check applies named overrides without changing configuration or check status', async t => {
-    const repository = await createRepository(t);
-    const config = JSON.stringify({configVersion: 2, languageChecks: {docs: {language: 'chinese', minPercentage: 80, include: ['CONTEXT.md']}}});
-    await writeFile(resolve(repository.root, 'arw.config.json'), config);
-    await writeFile(resolve(repository.root, 'CONTEXT.md'), '# Context\n\nEnglish prose.\n\n## Language\n');
-    const failedLanguage = await run(['terms', 'check'], repository);
-    assert.equal(failedLanguage.result, 0);
-    assert.match(failedLanguage.events.map(event => event.message).join('\n'), /CONTEXT\.md/u);
-    const overridden = await run(['terms', 'check', '--language-threshold', 'docs=0'], repository);
-    assert.equal(overridden.result, 0);
-    assert.doesNotMatch(overridden.events.map(event => event.message).join('\n'), /CONTEXT\.md/u);
-    const verbose = await run(['terms', 'check', '--language-threshold', 'docs=0', '--verbose'], repository);
-    assert.equal(verbose.result, 0);
-    assert.match(verbose.events.map(event => event.message).join('\n'), /CONTEXT\.md/u);
-    assert.equal(await readFile(resolve(repository.root, 'arw.config.json'), 'utf8'), config);
-    assert.equal((await run(['terms', 'check', '--language-threshold', 'missing=0'], repository)).result, 2);
 });
