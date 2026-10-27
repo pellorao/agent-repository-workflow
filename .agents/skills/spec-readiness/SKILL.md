@@ -22,7 +22,7 @@ subject 是连续的 `## What to build`, `## Spec Requirement` 和 `## Acceptanc
 `## Spec Requirement` 的格式和范围见 [Issue requirements](../issue-tracking/SKILL.md#issue-requirements). Module Design 只影响实施工作流中的条件检查, 按正式运行时行为而不是目录, 扩展名或语言判断, 不添加独立的适用性布尔值:
 
 - 工作不修改非测试运行时代码时, 治理 spec 或 PRD 省略 `## Module Design`.
-- 修改非测试运行时代码, 但不改变 Module 责任, Interface, Seam, 依赖方向, 权威来源或数据流时, 包含一个完整内容只是一个 `Not required:` 段落的 `## Module Design`.
+- 修改非测试运行时代码, 但不改变 Module 责任, Interface (包括已有字段所表示含义的改变), Seam, 依赖方向, 权威来源或数据流时, 包含一个完整内容只是一个 `Not required:` 段落的 `## Module Design`.
 - 任何一项此类设计变化时, 使用完整格式: `Modules`, `Interfaces`, `Seams and Adapters`, `Dependencies and Data Flow`, `Module Design Rationale` 和 `ADR Evaluation`. 使用旧 `Design Rationale` 标题但其他方面完整的现有输入仍然有效; 新建或修改的格式使用 `Module Design Rationale`.
 
 ## Prepare and review
@@ -39,7 +39,7 @@ subject 是连续的 `## What to build`, `## Spec Requirement` 和 `## Acceptanc
 
 ## Respond to findings
 
-Main Agent 在修改 issue 前独立验证每个问题. 问题有效时修正设计或 `## Spec Requirement`: 要求修改 spec 或 PRD 的问题按 `rule-and-design-changes` Skill 的 [Reviewer-proposed changes](../rule-and-design-changes/SKILL.md#reviewer-proposed-changes) 由 Main Agent 与独立 subagent 共同决定, 只有分歧交用户. 然后对新内容执行完整工作流.
+Main Agent 在修改 issue 前独立验证每个问题. 问题有效时修正设计或 `## Spec Requirement`: 要求修改 spec 或 PRD 的问题按 `rule-and-design-changes` Skill 的 [Reviewer-proposed changes](../rule-and-design-changes/SKILL.md#reviewer-proposed-changes) 由 Main Agent 与独立 subagent 共同决定, 只有分歧交用户. 然后对新内容执行完整工作流. 按 [来源分流](../../../docs/agents/subagent-findings.md#triage-by-origin) 属于既有缺口的问题记入后续 issue, 并按下段质疑, 理由是本次交付不引入, 不改变也不依赖该缺口; Reviewer 指出交付对缺失事实的具体依赖而保留它时, 它不是既有缺口, 按本次影响的问题修正; 提交审核只修改代码时就绪记录仍有效, 不重跑.
 
 结果符合 `docs/agents/subagent-findings.md` 的质疑条件时, 用未变的 subject 和 Input 重新 `prepare`, 通过 `followup_task` 把新请求, 每个受质疑问题的具体证据和推理错误交给原 Reviewer. 质疑消息只是提示, 不是 Input, 证据或授权. 有争议的结果在替代结果完成 `generate -> promote` 前继续阻断提交. subject 或 Input 已改变时改用普通的新请求.
 

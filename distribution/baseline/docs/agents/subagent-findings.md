@@ -22,6 +22,14 @@
 
 如果用户拒绝问题, 或决定其影响不足以证明变更和重复关卡是合理的, 则不根据该问题更改候选内容. 用户决定修正 Agent 指令或持久设计或治理文档, 不等于批准具体差异. 编辑前遵循 `rule-and-design-changes` Skill.
 
+## Triage by origin
+
+按问题的来源而不是严重程度分流:
+
+- 指向本次变更既未引入也未影响的既有缺口的问题, 记入 issue (同一 effort 合并为一张后续 ticket), 不阻断当前就绪或提交. 对这类问题不适用上文 "影响可能不足以证明更改" 的用户决定.
+- 本次变更引入或影响的问题不论严重程度都在本 ticket 修复; 只有修复本身很大且超出 ticket 范围时才记入 issue.
+- Reviewer 按自身角色范围不报告的既有内容不产生问题, 无需记录.
+
 ## Authorization results
 
 Main Agent 不得覆盖独立的 Spec Readiness 或 Commit Audit 授权结果. 有争议的就绪结果按 `spec-readiness` Skill 的最终授权时点阻断对应的完成, 审计和提交, 不自动停止不依赖该结果的已授权工作. 有争议的 Commit Audit 结果仍阻断对应提交. 替代结论由负责的 Reviewer 按完整受审版本重新判断, 当前版本的正式授权还须完成所属工作流的生成, 提升和验证.
