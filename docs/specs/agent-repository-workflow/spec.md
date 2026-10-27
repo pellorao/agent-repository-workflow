@@ -287,7 +287,7 @@ Platform Adapter 在运行环境的 `CLAUDECODE` 为 `1` 时判定调用方平�
 
 这项归属检查信任 Codex 正常提供的调用环境, 防止不同 Main 会话把指示交给不属于自己的工作. 当前用户的私密凭据负责控制连接鉴权, 不证明具体 Main 会话身份; ARW 不承担防止同一操作系统用户主动伪造环境身份或绕过正常入口直接发送控制请求的保证.
 
-后台管理进程在首次需要后台服务时自动启动, 空闲或客户端断开后继续驻留, 正常运行至关机; 安装, 更新, 卸载维护以及明确终止或故障另按实际生命周期处理. 客户端连接管理进程, 或在启动前写入用户私有状态目录时, 若因操作系统权限拒绝 (`EPERM`, `EACCES` 或 `EROFS`) 而失败, 视为调用方所在平台沙盒的限制: 不在沙盒内启动或接入管理进程, 以既有失败响应明确失败, 消息为 `Background Agent control is blocked by the sandbox. Rerun this same command with escalated permissions outside the sandbox.`; ARW 不自行绕过沙盒, 也不要求用户预先启动管理进程. 它至多持有一个 ARW 专用共享 App Server, 在不同原生根线程中承载各后台 Agent, 不共用或关闭用户前台 Codex CLI 的 App Server. 各根线程的模型, 提供方, 推理强度, 服务档位, 工作目录, 权限和环境独立绑定; 原生请求与通知按准确线程, 回合及运行身份路由, 并发工作不能串入其他根线程. 模型目录属于共享 App Server 的进程级启动配置, 由[安装共享模型目录规则](../agent-repository-workflow-installation/spec.md#shared-model-catalog)拥有来源, 生成与清理; 根线程或单次请求不能通过 `model_catalog_json` 切换目录, 尝试覆盖时明确拒绝并说明原因. 跨仓库, Main Agent 会话以及源码与安装入口共用同一根线程容量. 各调用方仍保留准确绑定的任务恢复记录, 管理进程的用户私有共享运行状态属于[安装长期规格](../agent-repository-workflow-installation/spec.md#background-agent-management). 客户端与管理进程在所有受支持系统上只通过显式绑定 `127.0.0.1` 的本机 TCP 通信, 监听地址不可配置, 并以当前用户私密凭据鉴权; 控制连接不决定 Agent 的模型网络权限. 后台管理进程以尽量减少 CPU 与内存占用为设计目标. 空闲运行的验收以可观察行为为准: 没有待处理工作时保持事件等待, 连接, 原生通知或进程退出等事件到达后执行对应工作; 消息正文的释放遵循下方通信合同. Main Agent 每次调用 `wait_agent` 取得一次更新后可以继续工作, 随后按需再次等待; 消息已接受与任务已完成分别表示.
+后台管理进程在首次需要后台服务时自动启动, 空闲或客户端断开后继续驻留, 正常运行至关机; 安装, 更新, 卸载维护以及明确终止或故障另按实际生命周期处理. 客户端连接管理进程, 或在启动前写入用户私有状态目录时, 若因操作系统权限拒绝 (`EPERM`, `EACCES` 或 `EROFS`) 而失败, 视为调用方所在平台沙盒的限制: 不在沙盒内启动或接入管理进程, 以既有失败响应明确失败, 消息为 `Background Agent control is blocked by the sandbox. Rerun this same command with escalated permissions outside the sandbox.`; ARW 不自行绕过沙盒, 也不要求用户预先启动管理进程. Codex 调用方可提权时, 首次提权宜选择本会话内总是允许该命令 (沙盒禁网时每次调用都要提权), 之后不再逐次批准; 不能提权时按上述失败响应停止. 它至多持有一个 ARW 专用共享 App Server, 在不同原生根线程中承载各后台 Agent, 不共用或关闭用户前台 Codex CLI 的 App Server. 各根线程的模型, 提供方, 推理强度, 服务档位, 工作目录, 权限和环境独立绑定; 原生请求与通知按准确线程, 回合及运行身份路由, 并发工作不能串入其他根线程. 模型目录属于共享 App Server 的进程级启动配置, 由[安装共享模型目录规则](../agent-repository-workflow-installation/spec.md#shared-model-catalog)拥有来源, 生成与清理; 根线程或单次请求不能通过 `model_catalog_json` 切换目录, 尝试覆盖时明确拒绝并说明原因. 跨仓库, Main Agent 会话以及源码与安装入口共用同一根线程容量. 各调用方仍保留准确绑定的任务恢复记录, 管理进程的用户私有共享运行状态属于[安装长期规格](../agent-repository-workflow-installation/spec.md#background-agent-management). 客户端与管理进程在所有受支持系统上只通过显式绑定 `127.0.0.1` 的本机 TCP 通信, 监听地址不可配置, 并以当前用户私密凭据鉴权; 控制连接不决定 Agent 的模型网络权限. 后台管理进程以尽量减少 CPU 与内存占用为设计目标. 空闲运行的验收以可观察行为为准: 没有待处理工作时保持事件等待, 连接, 原生通知或进程退出等事件到达后执行对应工作; 消息正文的释放遵循下方通信合同. Main Agent 每次调用 `wait_agent` 取得一次更新后可以继续工作, 随后按需再次等待; 消息已接受与任务已完成分别表示.
 
 多个客户端同时进入时只能有一个管理进程取得该用户的所有权; 无法确认唯一所有者时不启动 App Server. 运行标识持续绑定原任务和原生线程, 使新连接不会把相同标识解释为另一任务.
 
@@ -739,7 +739,7 @@ Agent CLI Launch Module 返回 `{kind: "exited", exitCode}` 或 `{kind: "failed"
 
 原生会话 Interface 是管理 Module 内部的 Seam, 两种生产 Adapter 与离线 Adapter 满足同一操作与结果合同:
 
-- 打开会话时绑定角色设置, 工作目录, 授权范围与运行标识.
+- 打开会话时绑定角色设置, 工作目录, 授权范围与运行标识. 授权范围的绑定是记录并交给 Adapter 的输入; 执行强度由 Adapter 依平台原生权限模型决定: Codex 根线程按绑定强制执行, 非 Reviewer 的 Claude 角色只追加范围 (见生产 Claude Adapter).
 - `start` 与 `resume` 返回准确线程身份, `startTurn` 返回回合身份.
 - `steer` 只把指示交给仍在进行的准确回合, 成功即为分发事实, 回合已结束时明确失败.
 - `respond` 与 `rejectRequest` 只作用于仍待决的准确请求, 请求已失效时明确失败.
@@ -758,7 +758,7 @@ Document Terms 的生产工作树 Adapter 一次取得 Git 可见的路径清单
 
 原生会话控制是后台 Agent 管理 Module 的 Seam. 生产 App Server Adapter 通过原生协议与进程生命周期实现启动, 恢复, 指示, 请求答复, 观测, 中断和停止, 并提供原生身份, 会话上下文, 公开消息与累计用量. 它还提供按准确根线程核对的后台终端清单, 终止和实际退出事实, 供管理 Module 在 Reviewer 层请求后完成终端收尾; 等待退出不占用管理进程的全局串行队列, 仍可处理其他根线程及原生事件. 共享模型目录在进程启动前准备, Adapter 拒绝根线程或请求中的 `model_catalog_json` 覆盖, 不把该字段传入原生线程配置. 管理 Module 的正常消息分发不扫描原生会话文件; 原生指示协议的合法成功回复可以证明向该通道分发成功, 会话历史仅在故障恢复分析时用于核对不确定事实. 单个运行的停止结果以对应根线程及相关后代和工具实际卸载为依据, 中断接受状态不表示运行退出; 共享 App Server 的进程退出用于[空闲关闭及故障恢复规则](#capacity-and-recovery)的进程生命周期核对, 意外退出本身不触发 key 归还或身份文件删除. 确定性离线 Adapter 通过同一 Interface 提供脚本化回合, 通知, 待处理请求, 故障, 根线程卸载, 共享进程退出和用量; Reviewer 层消费相同原生事实, 另行核对其专用规则, 不复制通用进程控制.
 
-生产 Claude Adapter 通过同一 Interface 提供上述操作与事实: 每个回合运行一个保持标准输入打开的 `claude -p` 进程, 指示写入标准输入成功即为分发事实, 权限请求经同一标准输入输出成为待决原生请求, 中断与停止结束回合进程并等待其退出. 它不使用共享 App Server 或模型目录, 以每个回合进程的身份文件提供[故障恢复](#capacity-and-recovery)所需的退出核对事实. 确定性测试用脚本化的 `claude` 可执行文件经同一 Adapter 提供回合, 回显, 权限请求与故障.
+生产 Claude Adapter 通过同一 Interface 提供上述操作与事实: 每个回合运行一个保持标准输入打开的 `claude -p` 进程, 指示写入标准输入成功即为分发事实, 权限请求经同一标准输入输出成为待决原生请求, 中断与停止结束回合进程并等待其退出. 它不使用共享 App Server 或模型目录, 以每个回合进程的身份文件提供[故障恢复](#capacity-and-recovery)所需的退出核对事实. 非 Reviewer 的 Claude 后台 Agent 按 Claude Code 原生方式运行: 默认工具集, 加载项目 CLAUDE.md 与用户级, 项目级设置 (权限规则, 权限模式, MCP), 不使用 `--safe-mode` 或 ARW 自定义放行列表; ARW 只追加公共功能必需的放行 (`arw background-agent`, 获准写入目录的编辑与 `--add-dir`) 和环境变量, 设置未允许的工具请求作为待决请求交给所属 Main. 非 Reviewer 的调用方读写路径只通过 `--add-dir` 和编辑放行加入, 不收窄设置已允许的工具与写入. Reviewer 维持隔离设置与受限放行. 确定性测试用脚本化的 `claude` 可执行文件经同一 Adapter 提供回合, 回显, 权限请求与故障.
 
 Strata 控制服务是后台 Agent 管理 Module 的独立 Seam. 其 Interface 提供连接并取得当次控制器与 Responses 地址, 领取独占 key, 核对模型与持有状态, 按固定模型映射启动, 停止及归还的操作. 管理 Module 负责先确认共享进程启动再领取 key, 在正常关闭前归还, 并处理即时保存, 故障恢复与提供方错误; Adapter 不取得 SQLite 或根线程容量的权威. 生产 Adapter 使用安装目录中的固定脚本及当次控制器 HTTP 接口, 离线 Adapter 通过同一 Interface 提供领取拒绝, 状态, 变体切换, 归还和传输失败事实.
 
@@ -896,6 +896,8 @@ Document Repository Interface 不改变 ADR-0013 的 Agent 写入分工, 因为�
 局部术语章节位置和围栏代码块结束行为是本文直接拥有的文档语法与可见文字政策. 两项选择都不建立新的所有者, 权威关系, 持久状态, 信任边界或恢复协议, 可以在本文中独立演进, 因而不需要 ADR.
 
 必要术语表入口和 `terms-glossary-missing` 是本文直接拥有的文档验证政策. 它们不建立新的所有者, 权威关系, 持久状态, 信任边界或恢复协议, 可以与其他 Document Terms 发现和诊断合同在本文中独立演进, 因而不需要 ADR.
+
+[ADR 0033](../../adr/0033-run-each-claude-turn-as-a-stream-json-process.md) 拥有非 Reviewer Claude 后台 Agent 按 Claude Code 原生方式运行的选择: 被放弃的替代方案是保留 ARW 放行列表与 `--safe-mode`, 接受的成本是用户或项目设置可授予超出调用方读写路径的工具与写入, 调用方路径对该角色不是安全边界, 只有 Reviewer 的受限放行是. 该选择已记入 ADR 0033, 不需要新 ADR. Codex 调用方在平台审批界面选择会话内总是允许 `arw background-agent`, 只是该调用方对既有提权要求的审批选择, 不改变 ARW 的授权主体, 持久状态或信任边界, 因而不需要 ADR.
 
 `CLAUDE.md` 的准确引用和混合内容迁移只是 ADR-0002 内容归属边界在 Repository Workflow 中的固定应用. 它不建立新的内容所有者, 权威关系或恢复协议, 因此不需要新的 ADR.
 

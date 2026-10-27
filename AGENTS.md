@@ -79,6 +79,8 @@ ARW Artifact 操作使用最近的 Git 仓库中的 `.scratch`.
 
 ARW 必须在 Codex 和 Claude Code 中都完整可用, 包括 `arw background-agent` 系列命令. 改动与平台相关的行为时, 两个平台都要验证.
 
+平台原则: 各平台先完整实现规范要求的公共功能, 不打折扣; 公共功能之外尽量使用该平台的原生工作方式 (设置, 权限, 指令文件), 不为与另一平台一致而模仿其机制.
+
 # Autonomous Working Mode
 
 作为 `Important Decisions` 的 Baseline 例外, 本仓库按待办自主推进:

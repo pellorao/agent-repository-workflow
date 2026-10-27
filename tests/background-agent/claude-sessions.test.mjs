@@ -108,6 +108,11 @@ test('a running Claude turn takes instructions and pending permission requests t
     assert.equal(snapshot.members[0].usage.totalTokens, 38);
     const calls = await f.calls();
     assert.deepEqual(calls.find(call => call.control).control, {updatedInput: {command: 'git status'}, behavior: 'allow'});
+    // An ordinary agent runs natively: settings, CLAUDE.md and the permission mode stay in force, and requests outside them still reach the manager.
+    const {args} = calls[0];
+    for (const flag of ['--safe-mode', '--setting-sources', '--strict-mcp-config', '--permission-mode']) assert.ok(!args.includes(flag), flag);
+    assert.equal(args[args.indexOf('--permission-prompt-tool') + 1], 'stdio');
+    assert.equal(args[args.indexOf('--allowedTools') + 1], 'Bash(arw background-agent:*)');
     assert.ok(!calls[0].args.includes('--json-schema') && !calls[0].args.includes('--tools'));
 });
 
