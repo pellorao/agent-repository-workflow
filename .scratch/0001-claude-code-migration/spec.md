@@ -2,12 +2,13 @@
 
 ## Problem Statement
 
-ARW 由 Codex 开发和维护, 现在改由 Claude Code 维护, 并且今后 ARW 管理的仓库要同时在 Codex 和 Claude Code 中运行. 目前存在四个问题:
+ARW 由 Codex 开发和维护, 现在改由 Claude Code 维护, 并且今后 ARW 管理的仓库要同时在 Codex 和 Claude Code 中运行. 目前存在五个问题:
 
 1. **Claude Code 下功能不全.** Claude Code 只能取得静态内容 (`CLAUDE.md` 引入 `AGENTS.md`, `.claude/skills/`). 独立 Reviewer 只能经 `arw background-agent` 由 Codex App Server 运行, ADR 0016 把 Claude Code 的 Reviewer 执行定为暂停; 调用者会话身份只认 `CODEX_THREAD_ID`, 因而 Spec Readiness 准备, 临时工作区和所有审核门禁在 Claude Code 中都无法完成.
 2. **规则臃肿, Agent 经常遗忘规则.** `docs/agents/` 约 14 万 token. 一次 "实现一个 issue 并提交" 要加载约 7 万 token 的规则, 每个 Reviewer 会话还要另加. 同一要求在入口文件, 文档和 Skill 中重复出现, 大部分流程文档由读取型触发条件强制加载, 而不是按任务按需加载.
 3. **审核流程重复.** 一次包含 issue 完成的提交要运行 Code Standards, Code Spec 和 Commit Audit Gate 1 三个 Reviewer, 其中 Code Spec 与 Gate 1 都在对照 issue 要求检查代码; 任何修改都可能触发完整重审.
 4. **过度设计.** GPT 生成的代码约 5.1 万行, 其中只服务源码仓库维护的 release VM 验证, Reviewer 能力一致性与 benchmark, Upstream Sync 合计约占 `lib/` 的 35-40%. 大量手写校验链校验程序自己产生的数据, `isRecord`, `sha256`, `exactKeys` 等工具函数在多个模块重复定义. 现有 "最小充分合同" 条文留有 "具体可预见的风险", "不削弱必要保证" 等出口, 也没有体积约束, 无法阻止过度设计.
+5. **流程太重.** ARW 的目的是给其他人用, 规范他们的开发流程并保持高质量产出. 质量目标基本达到, 但就绪审核和提交审核的多轮往返让一张 ticket 的开发时间大大拉长 (如 ticket 26 就绪审核 8 轮, 提交审核 6 轮, 约 42 分钟). 近期主要目标是在基本不影响产出质量的前提下提升开发效率 (用户 2026-10-28), 工作不限于已排的 ticket.
 
 ## Solution
 
@@ -18,6 +19,7 @@ ARW 由 Codex 开发和维护, 现在改由 Claude Code 维护, 并且今后 ARW
 - 常驻规则最前面是 "效率与精简" 最高原则, 让 Agent 每做一件事前都对照它. 体积预算和 Code Standards 审核的删减职责把它落到每张 ticket 上.
 - 每次提交最多两个并行 Reviewer; 修改后只复核改动部分; 证据记录只保留最少的机械校验.
 - 现有代码中只服务源码维护的重型功能和重复的校验代码被删除或大幅压缩, 行为保持不变.
+- 开发效率持续优化: 定期分析各 ticket 的耗时与审核往返, 找出并消除拖慢开发的环节. 质量以 Reviewer 能力基准的盲裁分数和真实缺陷检出为准, 不得下降; 效率以一个 issue 完整流程的墙钟为准.
 
 ## User Stories
 
