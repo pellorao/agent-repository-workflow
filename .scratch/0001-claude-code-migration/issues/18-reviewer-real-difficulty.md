@@ -151,3 +151,7 @@ Spec Readiness 复核: 独立 Agent (opus) 先不看 worker 结论, 逐条复核
 偏离: 盲裁模型为 haiku high 而非 benchmark 的 Opus high; 墙钟只测 1 次, Main 用 sonnet (日常 Main 的模型因人而异).
 
 遗留: 本仓库历史提交场景; Strata 正规模式; 另三个场景的盲裁重评.
+
+### 2026-10-27 ticket 26 的审核往返 (收敛优化证据)
+
+ticket 26 按旧规则走: Spec Readiness 8 轮 (第 9 到 12 轮因提交审核修复改 spec 作废重跑), 提交审核 6 轮, 共约 42 分钟. 主要往返来自本 ticket 之前就存在的 Module Design 缺口 (`arw commit-audit verify` 的 Module 责任, Interface 合同, 文本检查归属 Text Policy): 每补一处, Reviewer 就在另一处追问同一既有缺口. 第 7 轮对 "超出复审范围" 的质疑, Reviewer 回复原文: "该条是上一轮已报告的问题; 本轮相邻变化只改动了 `docs/specs/agent-repository-workflow/spec.md:860`, 没有补充该边界理由, 因而问题仍然成立." 没有回答 "检查归属是既有设计" 的证据. 收敛优化应让角色区分本次引入与既有缺口, 并按复审规则限定范围.
