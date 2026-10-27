@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0001:25",
+  "request": {
+    "digest": "da794df8547ff870f38a831d8eb8cce67348dc0ae1ee7296adaa91776cae19e0",
+    "filePath": ".tmp/claude-code/06588b1e-7f07-4832-8933-107aaf5b5978/0001_25/spec-readiness/requests/request-dfaed972-aa4a-4ddd-8a4a-5b020e56fe65.json",
+    "id": "dfaed972-aa4a-4ddd-8a4a-5b020e56fe65"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "658f4283cabb570c22c4f8ad59eb3afc858a34bc9973c25f581ba324cd1561d3"
+  },
+  "inputs": [
+    {
+      "filePath": "docs/adr/0032-run-claude-reviewers-through-headless-claude.md",
+      "role": "adr",
+      "sha256": "584feaf31e78a6c4c48ff54c423b70a2797897a26589b5bf45f5b9d7a278317b"
+    },
+    {
+      "filePath": "docs/adr/0033-run-each-claude-turn-as-a-stream-json-process.md",
+      "role": "adr",
+      "sha256": "3089f531daa10f4f30f94371f7e0807cbc564ca9902123d847be563aa45cc5b6"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow/spec.md",
+      "role": "governing-spec",
+      "sha256": "512d8c6879d045117e706c155dbc054ae462747468d3cd3b25794d8dca928f65"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0001-claude-code-migration/issues/25-claude-ordinary-agent-native-mode.md",
+    "sha256": "d8dbbf261cc6d29375067f97e76e633e38ad2efc4853ac0d391f22b3926257e6"
+  },
+  "result": "satisfied"
+}
