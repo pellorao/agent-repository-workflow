@@ -8,7 +8,7 @@
 
 独立审查所提供的治理文档是否已经具备开始实施所需的设计就绪. 只使用一个由 ARW Engine 生成的 Reviewer Request, 判断治理设计是否完整, 一致, 可实现且可验证. Module Design 是该审查中有条件适用的一部分, 不是审查目的.
 
-审查前, 阅读并遵循 `docs/agents/reviewer.md`. 同时阅读 `issue-tracking` Skill, `docs/agents/writing.md` 和 `domain-modeling` Skill 的 Long-term specification boundary 章节. 将长期规范边界应用于每项检查.
+审查前, 阅读并遵循 `docs/agents/reviewer.md`. 同时阅读 `issue-tracking` Skill, `docs/agents/writing.md` 和 `domain-modeling` Skill 的 Long-term specification boundary 章节. 将长期规范边界应用于每项检查; 但 spec 对调用方不可见的内部算法, 数据结构或实现策略提出的要求是有效的交付要求, 不因长期规范边界成为就绪缺口.
 
 ## Inputs
 
@@ -41,11 +41,11 @@ Reviewer Request 为响应绑定精确的绝对 `draftPath`.
 
 ### `SPEC-READINESS-INPUTS`
 
-把 subject 中每个治理引用与请求内提供的 Input 快照进行比较, 并判断完整集合是否支持语义判断. Inputs 中不存在的所选引用是 `gap`. 未选择的 Input 不得扩大实施范围, 但其声明的角色可以允许它支持当前合同或责任归属证据. 对长期规范变更, 要求具有足够的当前合同证据和文档责任规则, 以判断稳定内容是否得到保留. 分别检查适用权威, 来源, 新鲜度边界和持续时间, 先确认当前选定要求或适用权威确实要求该事实. 必要 Input 明确缺失时使用 `gap`; 已建立的义务所需的事实在完整请求中仍未知时使用 `uncertain`.
+把 subject 中每个治理引用与请求内提供的 Input 快照进行比较, 并判断完整集合是否支持语义判断. Inputs 中不存在的所选引用是 `gap`. 未选择的 Input 不得扩大实施范围, 但其声明的角色可以允许它支持当前合同或责任归属证据. 对长期规范变更, 要求具有足够的当前合同证据和文档责任规则, 以判断稳定内容是否得到保留. 只为当前选定要求或适用权威确实要求的事实报告缺失或未知; 设计可以自行选择的内容不是缺失的 Input 事实; 设计是否已定义它由对应检查判断. 必要 Input 明确缺失时使用 `gap`; 已建立的义务所需的事实在完整请求中仍未知时使用 `uncertain`.
 
 ### `SPEC-READINESS-REQUIREMENTS`
 
-使用 `## What to build` 和 `## Acceptance criteria` 清点 `## Spec Requirement` 选择的每个引用. 独立判断每个引用是否直接定义由该 issue 实现的输入要求. 无关文档或章节, 只提供辅助信息的 Input, 或仅作为未来输出创建或重写的文档都是 `gap`, 且不能扩大或授权范围. 如果完整请求仍无法确定某项选择是否属于交付内容, 使用 `uncertain`.
+使用 `## What to build` 和 `## Acceptance criteria` 清点 `## Spec Requirement` 选择的每个引用. 独立判断每个引用是否直接定义由该 issue 实现的输入要求. 无关文档或章节, 只提供辅助信息的 Input, 或仅作为未来输出创建或重写的文档都是 `gap`, 且不能扩大或授权范围. 所选治理 spec 中约束该交付的理由, Module Design, ADR Evaluation 和 Testing Decisions 章节不是辅助信息. 如果完整请求仍无法确定某项选择是否属于交付内容, 使用 `uncertain`.
 
 如果治理设计修正在该请求前已经完成, 且其请求快照能够独立表述 issue 将实现的行为, 它可以继续作为 Input. 不得仅因同一个 issue 执行后续实施, 就把它错误分类为未来输出.
 
@@ -61,11 +61,13 @@ Reviewer Request 为响应绑定精确的绝对 `draftPath`.
 
 ### `MODULE-DESIGN-APPLICABILITY`
 
-判断每个治理 spec 或 PRD 是否使用正确的 Module Design 格式. 不要求更改非测试运行时代码的文档省略该章节. 更改非测试运行时代码, 但不更改 Module 责任, Interface, Seam, 依赖方向, 权威来源或数据流的文档, 使用一个 `Not required:` 段落. 具有任何此类模块相关变更的文档使用完整格式. 判断运行时行为, 而不是目录, 扩展名或实施语言. 只有该检查负责判断格式选择错误. 不得把该缺陷转换为缺少例外说明或完整格式问题.
+判断每个治理 spec 或 PRD 是否使用正确的 Module Design 格式. 不要求更改非测试运行时代码的文档省略该章节. 更改非测试运行时代码, 但不更改 Module 责任, Interface (包括已有字段所表示含义的改变; 只改说明文字而含义不变的值不属于此类), Seam, 依赖方向, 权威来源或数据流的文档, 使用一个 `Not required:` 段落. 具有任何此类模块相关变更的文档使用完整格式. 判断运行时行为, 而不是目录, 扩展名或实施语言. 只有该检查负责判断格式选择错误. 不得把该缺陷转换为缺少例外说明或完整格式问题.
 
 ## Coverage and attribution
 
-覆盖完整请求所支持的每个已注册检查和每个独立语义缺陷. 完成一项检查前, 清点它负责的独立字段, 结果分支, 状态, 权威, 理由和责任边界, 确认每份相关 Input 的当前判断有效. 后续可按公共复审规则保留未受影响的自身覆盖, 并处理变化, 旧问题和未完成检查. 一个问题不能代替该检查的其余覆盖.
+覆盖完整请求所支持的每个已注册检查和每个影响本 issue 交付的独立语义缺陷. 完成一项检查前, 清点它负责的独立字段, 结果分支, 状态, 权威, 理由和责任边界, 确认每份相关 Input 的当前判断有效. 后续可按公共复审规则保留未受影响的自身覆盖, 并处理变化, 旧问题和未完成检查. 一个问题不能代替该检查的其余覆盖.
+
+交付范围是本 issue 实现, 新增或修改的选定要求, 以及所在 spec 中约束它们的章节, 不论文字是本次新写还是已有. 既有合同只有在实施或验证这些交付必须用到其中缺失或冲突的事实时才进入范围; 其他既有设计即使不完整也不报告. 该限制不改变 `SPEC-READINESS-INPUTS` 和 `SPEC-READINESS-REQUIREMENTS` 对 subject 选择本身的判断.
 
 对每个疑似问题, 在当前审查过程中依次核实:
 

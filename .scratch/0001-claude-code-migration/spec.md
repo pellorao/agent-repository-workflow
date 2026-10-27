@@ -33,13 +33,12 @@ ARW 由 Codex 开发和维护, 现在改由 Claude Code 维护, 并且今后 ARW
 10. 作为 Agent, 我希望同一要求只在一个地方定义, 以便不必在多份文档之间核对冲突.
 11. 作为使用者, 我希望 Spec Readiness 只在 spec 定稿时审核一次, 不通过时修改后只复核改动部分, 以便缩短 "修改 -> 审核" 循环.
 12. 作为使用者, 我希望提交审核合并为 "要求符合审核" 和 "代码质量审核" 两个并行 Reviewer, 以便减少重复审核又不让单个 Reviewer 上下文过大.
-13. 作为使用者, 我希望观察 Haiku 在 Gate 2 effort 级审计中的漏报, 以便决定是否需要更强的模型.
-14. 作为维护者, 我希望 release VM 验证, Reviewer 能力一致性与 benchmark, Upstream Sync 改为只在我要求时才使用的 Skill, 由 Agent 执行并达成各自目标, 以便它们不再占用日常上下文.
-15. 作为维护者, 我希望删除重复工具函数和手写校验链, 以便代码量更小, 更容易维护.
-16. 作为维护者, 我希望每张 ticket 预估净增行数, 超出一倍时 Agent 停下说明, 以便及早发现过度设计.
-17. 作为维护者, 我希望 Code Standards Reviewer 专门检查可删除的代码, 以便在 Codex 和 Claude Code 中都能拦住过度设计.
-18. 作为 ARW 源码仓库维护者, 我希望本仓库用 ARW 自己的投影生成 `.claude/skills/`, 以便同时检验 Claude 投影.
-19. 作为使用者, 我希望 ARW 规则与我的用户级规则冲突时以用户级规则为准, 以便个人工作方式不被仓库规则覆盖.
+13. 作为维护者, 我希望 release VM 验证, Reviewer 能力一致性与 benchmark, Upstream Sync 改为只在我要求时才使用的 Skill, 由 Agent 执行并达成各自目标, 以便它们不再占用日常上下文.
+14. 作为维护者, 我希望删除重复工具函数和手写校验链, 以便代码量更小, 更容易维护.
+15. 作为维护者, 我希望每张 ticket 预估净增行数, 超出一倍时 Agent 停下说明, 以便及早发现过度设计.
+16. 作为维护者, 我希望 Code Standards Reviewer 专门检查可删除的代码, 以便在 Codex 和 Claude Code 中都能拦住过度设计.
+17. 作为 ARW 源码仓库维护者, 我希望本仓库用 ARW 自己的投影生成 `.claude/skills/`, 以便同时检验 Claude 投影.
+18. 作为使用者, 我希望 ARW 规则与我的用户级规则冲突时以用户级规则为准, 以便个人工作方式不被仓库规则覆盖.
 
 ## Implementation Decisions
 
@@ -122,7 +121,6 @@ ARW 由 Codex 开发和维护, 现在改由 Claude Code 维护, 并且今后 ARW
   - 实测结论 (ticket 10): luna xhigh 和 haiku high 在最轻一档下检出率不低于清单格式, 采用最轻一档, 两个模型都不需要复述要求. 场景较易, 证据偏弱, 后续实际审核中继续观察.
 - Main Agent 每轮自选一两处 Reviewer 应当检查的要求或代码位置抽查; 发现漏检时, 该轮结果作废并重审.
   - 三个 Reviewer (要求符合, 代码质量, Spec Readiness) 都使用 txt 报告, 无问题时写 `No problems.` (ticket 14).
-- Haiku Gate 2 观察: Main Agent 发现某个问题本应在已通过的 Gate 2 中被发现时, 在该 effort 的 spec 末尾记录一行. 累计记录作为调整 Reviewer 模型的依据, 不建立额外机制.
 - Claude 后端 Reviewer 只用 `haiku`, 不用其他 Claude 模型; 推理强度可调, 默认 `high` (用户决定, 2026-10-26). 这是规则约定, 程序不强制.
 
 #### Program-prepared review rounds
@@ -252,6 +250,5 @@ Claude Code Reviewer 执行和后台管理范围由 ADR-0032 记录, 它取代 A
 
 ## Further Notes
 
-- Haiku 作为 Gate 2 effort 级审计模型可能漏掉跨 issue 的问题, 按上文 "Haiku Gate 2 观察" 记录.
 - Claude Code 会话身份的来源需要实测, 见 Platform and reviewer runtime 一节.
 - 本 spec 未经 Spec Readiness 审核: Claude 侧 Reviewer 运行正是本次迁移要建立的能力, 迁移期间按临时 `CLAUDE.md` 由独立 agent 审查.

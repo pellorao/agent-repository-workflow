@@ -155,3 +155,42 @@ Spec Readiness 复核: 独立 Agent (opus) 先不看 worker 结论, 逐条复核
 ### 2026-10-27 ticket 26 的审核往返 (收敛优化证据)
 
 ticket 26 按旧规则走: Spec Readiness 8 轮 (第 9 到 12 轮因提交审核修复改 spec 作废重跑), 提交审核 6 轮, 共约 42 分钟. 主要往返来自本 ticket 之前就存在的 Module Design 缺口 (`arw commit-audit verify` 的 Module 责任, Interface 合同, 文本检查归属 Text Policy): 每补一处, Reviewer 就在另一处追问同一既有缺口. 第 7 轮对 "超出复审范围" 的质疑, Reviewer 回复原文: "该条是上一轮已报告的问题; 本轮相邻变化只改动了 `docs/specs/agent-repository-workflow/spec.md:860`, 没有补充该边界理由, 因而问题仍然成立." 没有回答 "检查归属是既有设计" 的证据. 收敛优化应让角色区分本次引入与既有缺口, 并按复审规则限定范围.
+
+### 2026-10-28 第三批 (worker)
+
+体积预估 (不含基准夹具): 净增约 +45 行. Spec Readiness 角色收紧与收敛 (含分发副本) 约 +6, `$reviewer-capability` 盲裁模型一句 +1, 删除 "Gate 2 漏报记一行" (commit Skill 及投影, 分发副本, effort spec) 约 -6, 本记录约 +45. 基准夹具单独报告.
+
+已做:
+
+- Spec Readiness 角色: 应用 `.tmp/t18-sr-role.patch`; 长期规范边界句改为 "spec 对调用方不可见的内部算法, 数据结构或实现策略提出的要求是有效的交付要求"; APPLICABILITY 的 Interface 包含已有字段含义的改变; 覆盖句限定为影响本 issue 交付的缺陷, 并新增交付范围段 (既有合同只在实施或验证必须用到其缺失事实时进入范围). 分发副本同步.
+- 删除 "Gate 2 漏报记一行": commit Skill 及投影, 分发副本; effort spec 用户故事 13 (其后重新编号), Review workflow 和 Further Notes 各一条. 长期 spec 中没有该规则.
+- 来源分流 (用户 2026-10-28 批准): `docs/agents/subagent-findings.md` 新增 `Triage by origin`, 本次变更既未引入也未影响的既有缺口记入该 effort 的一张后续 issue, 不阻断就绪和提交, 对它不适用 "影响可能不足以证明更改" 的用户决定; 本次引入的问题不论严重度当场修正, 只有超出 ticket 范围的大修正才转 issue. `reviewer.md` 复审只看本轮变化, 仍成立的旧问题写明本轮变化为何没解决, 不重复前轮原文, 报告对既有问题注明 `既有`. commit Skill 和 spec-readiness Skill 引用分流, 只改代码的修复不使就绪记录失效. 质疑规则要求保留既有问题须指出交付对缺失事实的具体依赖.
+- `$reviewer-capability` Skill: 盲裁模型至少 sonnet high, 只有本 issue 迁移对比可用 haiku.
+
+Spec Readiness 盲分 (benchmark v2 spec-readiness v4.5 场景, Reviewer haiku high ×2, 裁决 haiku high, 两轮盲池共 69 候选, 锚点 100%, 合成对照全对):
+
+| 运行 | 检出 | clean 误报 | runtime | artifact |
+| --- | --- | --- | --- | --- |
+| a41 | 19/23 | 3 | 0.64 | 0.773 |
+| a42 | 18/23 | 7 | 0.937 | 0.577 |
+| 本批合计 | 37/46 | 10 | 0.79 | 0.675 |
+| 第二批收紧后 | 33/46 | 6 | 0.90 | 0.48 |
+
+结论: 噪声范围内未下降, 检出和 artifact 上升, clean 误报略增.
+
+完整流程墙钟 (方法同第二批, Main 为 sonnet high, Reviewer haiku high):
+
+- A (只改角色): 第二段 19.7 分钟, Spec Readiness 2 轮 (31, 9 条) 后 Main 停下交 5 项用户决定, 多为既有 spec 缺口. 被来源分流取代, 未继续.
+- B (角色 + 来源分流): 第一段 0.5 分钟 (问布局); 第二段 31.1 分钟, Spec Readiness 6 轮 (10, 1, 1, 12, 3, 0 条), 提交审核 2 轮后 Main 停下交 2 项决定; 第三段 4.7 分钟, 第 3 轮两个 Reviewer 均无问题, 场景仓库提交 `90aaa6f`. Agent 墙钟合计约 36.3 分钟 (第二批 34.7), 合格 (≤60) 未达优秀 (≤30).
+- 报告中没有出现 `既有` 标记: 该场景实施整份 spec, 来源分流可作用的既有缺口很少, 本次测量不能说明分流节省的时间; 需要在只实施部分 spec 的场景 (如 ticket 26 那类) 上再测.
+- 收敛瓶颈: 第 4 轮跳到 12 条, 原因是前 3 轮在 REQUIREMENTS 缺口处提前返回, Module Design 检查到第 4 轮才首次运行, 发现被串行化. 取消提前返回需要改 `lib/spec-readiness` 或角色检查顺序, 列为后续.
+
+范围 1 (替换仓库内 Reviewer 能力套件) 按交接要求停下待定: v2 完整套件体积为 4 个计划物化夹具 273 文件约 754 KB (ARW 布局的变更夹具 263 文件 452 KB), brief 59 KB, 裁决与判断文件约 26 KB, 锚点 459 KB; 评分依赖冻结的 Node 评分器约 5k 行 (与冻结 ARW 耦合), 盲池依赖 qwen_strata 的 Python 工具约 3.1k 行. 现有旧夹具 84 文件 155 KB. 选项: A 按路径和 SHA 引用 qwen_strata v2, 删除旧夹具 (不增体积, 维护者专用, 依赖 qwen_strata 与 Python; 推荐); B 只复制数据约 1.3 MB, 不带评分器; C 全部复制 (约 1.3 MB 加约 8k 行和 Python). 逐文件对比和删除旧夹具等待决定后进行.
+
+偏离: 盲裁用 haiku high (与第二批基线可比); 流程 A 未跑完; "未改 spec 时跳过 Gate 2" 未落地, 因为 `lib/commit-audit` 在 Gate 2 文档非空时拒绝 `gate2Exception`, 需要引擎修改, 列为后续.
+
+遗留: 范围 1 的决定与执行; Gate 2 跳过的引擎修改; Spec Readiness 提前返回导致的串行发现; 部分实施场景上的分流时间测量; 本仓库历史提交场景; Strata 正规模式; 另三个场景的盲裁重评 (按新规则须 sonnet high 以上).
+
+提交审核 (`requirements-reviewer` haiku high, 一轮): 运行时拒绝空 `issueIds`, 与 commit Skill 规则例外冲突, 改用 `issue:0001:18` 身份. 6 个问题都属本次引入, 处理如下.
+- 已修正: 分流 (b) 改为 "引入或影响"; Reviewer 按角色范围不报告的既有内容 (Code Standards 的历史问题, Spec Readiness 交付范围外的既有设计) 不产生问题; Reviewer 以具体依赖保留的既有问题按本次影响的问题修正, 避免 `gap` 无法解除; spec-readiness Skill 的 Module Design 适用性写明 Interface 含字段含义改变.
+- 未改: 长期 spec 第 164 行同步同一说明会改变其 sha256, 使绑定它的未完成就绪记录失效, 列为后续; 第 525, 856 行 "问题都已处理" 已涵盖记入后续 issue; domain-modeling 第 92 行约束作者不写实现细节, 角色第 11 行只规定 spec 已写的此类要求不算就绪缺口, 两者不冲突.

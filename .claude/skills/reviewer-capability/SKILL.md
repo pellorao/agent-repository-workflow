@@ -29,7 +29,7 @@ disable-model-invocation: true
 
    它输出一行 `spawn_agent` input (角色指令, 交接, 空报告, 恢复目录). 实例目录必须是新路径. 比较别的报告格式时, 改写场景仓库中的角色文件和 input 的 `instructions`, `handoff`, `reportPath`, `writePaths`.
 3. 按 `reviewer-launch` Skill 通过 `arw background-agent` 启动: 给 input 加上 `settings`, 例如 Codex `{"model":"gpt-6-luna","modelProvider":"openai","reasoningEffort":"xhigh","serviceTier":"default"}`, Claude `{"model":"haiku","modelProvider":"anthropic","reasoningEffort":"high","serviceTier":"default"}`. 用 `wait_agent` 等到完成, 记录 `measurement`.
-4. Main Agent 逐份阅读 `reportPath`, 对照 `expected.md` 裁决: 一条发现与某个 Problem 指同一缺陷即命中, 位置可不同; 命中 Clean 项记误报; 其他发现核对候选后判真实或误报.
+4. Main Agent 逐份阅读 `reportPath`, 对照 `expected.md` 裁决: 一条发现与某个 Problem 指同一缺陷即命中, 位置可不同; 命中 Clean 项记误报; 其他发现核对候选后判真实或误报. 交给独立裁决者盲裁时, 裁决模型至少用 sonnet high, 不用 haiku (唯一例外: issue 18 迁移验收与已有 haiku 基线的对比).
 5. 在活动 issue 中写结果表: 每个模型 × 场景 (× 格式) 的召回 (命中数/Problem 数), 误报和偷懒迹象 (未检查却声称满足, 批量填写, 错误定位, 格式损坏). 说明样本量和天花板效应.
 
 Strata 提供方先读 [Strata 程序合同](../../../docs/specs/agent-repository-workflow/strata.md). 直接启动的 `claude -p` 不在本流程内.
