@@ -27,6 +27,18 @@
 
 共享文件由所属运行环境的 Main Agent 在授权范围内安排串行修改. 该 Main Agent 也可以先确认原写入者停止并交接当前结果, 再转交文件, 让接收者明确当前内容和基线. 不引入文件锁或任务领取命令.
 
+## Issue concurrency
+
+默认串行: 同一时间只实施一个 issue, 在主工作区进行. 上一个 issue 提交后, 或停在不留未提交修改的状态后, 再开始下一个. 不写已跟踪文件的工作 (研究, 审核, 测量) 可以与之并行.
+
+用户可以把默认改为并行实施多个 issue. 并行时:
+
+- 每个 issue 使用一个独立的 Git worktree, 一个 worktree 只承载一个 issue. worktree 由与用户沟通的 Main Agent 创建, 合并和删除.
+- 各 worktree 内的写入, 测试和提交审核只针对本 issue. Git 写入, 包括 worktree 内的暂存, 提交和合并回主分支, 仍只由与用户沟通的 Main Agent 执行.
+- 预计改动同一文件的 issue 尽量不并行. 合并冲突由该 Main Agent 解决, 合并后在主分支重跑完整验证.
+- 删除 worktree 前用 `arw list background-agents` 确认没有从该 worktree 启动且仍加载的后台 Agent, 否则其恢复记录随目录丢失.
+- 并行不提高 Reviewer 和后台 Agent 的容量上限, 名额不足时排队等待.
+
 ## Git and recovery
 
 所有 Git 写入命令, 包括 `git add`, 取消暂存和恢复, 都只由与用户沟通的 Main Agent 执行, 子 Agent 和独立 Reviewer 也不得通过脚本或其他工具间接改变实际仓库的 Git 状态. 必要的只读 Git 操作允许 subagent 执行, 包括获取历史内容和准确的审查比较; subagent 不承担仓库状态管理职责.
