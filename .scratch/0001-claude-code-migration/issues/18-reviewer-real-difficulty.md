@@ -14,7 +14,7 @@ ticket 10 定 txt 格式所用场景过小 (候选 72 到 82 行, 每 5 到 10 �
 - Spec Readiness 另测 haiku xhigh, 在同一冒烟场景与 haiku high 比较收敛轮数 (15 冒烟中 haiku high 5 到 9 轮才收敛). 日常 Reviewer 不考虑 sonnet, 成本过高.
 - 盲裁裁判模型 (用户 2026-10-27): 迁移验收 (改动后与基线对比) 沿用 haiku high, 与已有基线可比; 此后正式测量和 `$reviewer-capability` 的盲裁至少用 sonnet high, 不再用 haiku. 写进 `$reviewer-capability` Skill.
 - 删除 commit Skill 中 "Gate 2 漏报记一行" 的规定: Reviewer 已固定为 haiku high, 不再需要调整模型的依据 (用户 2026-10-27).
-- 用 qwen_strata benchmark v2 的整套 (v4.5 等版本的夹具, 原始答案键与判例覆盖, 盲裁 brief 与评分方法) 替换仓库内 `tests/fixtures/reviewer-capability/` 和 `$reviewer-capability` 的场景, 答案键与评分, 不再保留 ARW 旧版夹具和 ticket 10 简化的 `expected.md`; 基准内容不修改, ARW 角色与答案键口径不一致时改角色 (用户 2026-10-25 要求 "直接搬过来采用", 2026-10-27 确认).
+- (2026-10-28 移到 issue 29: 套件在 ARW 内自成一体, 去掉补丁链, 盲裁工具改写为 Node) 用 qwen_strata benchmark v2 的整套 (v4.5 等版本的夹具, 原始答案键与判例覆盖, 盲裁 brief 与评分方法) 替换仓库内 `tests/fixtures/reviewer-capability/` 和 `$reviewer-capability` 的场景, 答案键与评分, 不再保留 ARW 旧版夹具和 ticket 10 简化的 `expected.md`; 基准内容不修改, ARW 角色与答案键口径不一致时改角色 (用户 2026-10-25 要求 "直接搬过来采用", 2026-10-27 确认).
 - 本地 Strata 审查改为正规模式: 用户级配置把 Strata 设为 Reviewer 模型, 经 `arw background-agent` 的 Codex 后端启动, 与 benchmark v2 一致 (关闭搜索, 角色作为系统指令, 管理进程的压缩, 重复命令和时长处理). 审查范围按目录拆成几批, 可并行的模型并行跑.
 - 用 benchmark v2 场景计一个 issue 的完整流程墙钟: 60 分钟以内为合格, 30 分钟以内为优, 达到优即停止流程优化 (用户 2026-10-26).
 - 格式或模型需要调整时, 在本 ticket 中写明并修改.
@@ -30,7 +30,7 @@ Governing requirements:
 
 - [ ] 三个角色在真实难度场景上的召回和误报已测出, 记入 `## Comments`.
 - [ ] 格式和默认模型的结论有数据支持, 必要的调整已完成.
-- [ ] 仓库内 Reviewer 能力验证的场景, 答案键和评分与 qwen_strata benchmark v2 逐文件比对一致 (差异清单为空), 旧版夹具与简化答案键已删除; 基准内容未修改.
+- [ ] (移到 issue 29) 仓库内 Reviewer 能力验证的场景, 答案键和评分与 qwen_strata benchmark v2 逐文件比对一致 (差异清单为空), 旧版夹具与简化答案键已删除; 基准内容未修改.
 - [ ] Spec Readiness 角色按用户决定修改: 第 11 行长期边界句与基准答案键口径一致 (不改基准); APPLICABILITY 的 Interface 包含已有字段的取值语义.
 - [ ] "Gate 2 漏报记一行" 已从 `commit` Skill (含投影和分发副本), 本 effort spec (用户故事 13, Review workflow, Further Notes) 和长期规范中删除.
 - [ ] 本仓库历史中被独立审查抓到问题的真实提交已做成场景并测量, 结果记入 `## Comments`.
