@@ -29,7 +29,12 @@ Governing requirements:
 
 - [ ] 三个角色在真实难度场景上的召回和误报已测出, 记入 `## Comments`.
 - [ ] 格式和默认模型的结论有数据支持, 必要的调整已完成.
-- [ ] 仓库内 Reviewer 能力验证的场景, 答案键和评分与 qwen_strata benchmark v2 一致, 旧版夹具与简化答案键已删除.
+- [ ] 仓库内 Reviewer 能力验证的场景, 答案键和评分与 qwen_strata benchmark v2 逐文件比对一致 (差异清单为空), 旧版夹具与简化答案键已删除; 基准内容未修改.
+- [ ] Spec Readiness 角色按用户决定修改: 第 11 行长期边界句与基准答案键口径一致 (不改基准); APPLICABILITY 的 Interface 包含已有字段的取值语义.
+- [ ] "Gate 2 漏报记一行" 已从 `commit` Skill (含投影和分发副本), 本 effort spec (用户故事 13, Review workflow, Further Notes) 和长期规范中删除.
+- [ ] 本仓库历史中被独立审查抓到问题的真实提交已做成场景并测量, 结果记入 `## Comments`.
+- [ ] 本地 Strata 审查已按正规模式运行 (Codex 后端, 关闭搜索, 按目录拆批并行), 结果记入 `## Comments`.
+- [ ] Spec Readiness 收敛优化后, benchmark v2 场景的完整流程墙钟 ≤30 分钟; 优化手段和测量记入 `## Comments`.
 
 ## Blocked by
 
@@ -117,7 +122,7 @@ Spec Readiness 复核: 独立 Agent (opus) 先不看 worker 结论, 逐条复核
 - 自写匹配器与盲裁的差距说明它不能作为正式分数; 今后以盲裁为准.
 - Code Spec, Code Standards, Commit Audit 未做盲裁重评: 第一批改动条件把这三个场景交给 `requirements-reviewer`, 其 txt 报告没有冻结角色的逐行格式, 转换需要另写适配; 第一批结论已是 "不低于基线", 投入产出比低, 留作后续.
 
-"Gate 2 漏报记一行": ticket 08 已落实, 见 `.agents/skills/commit/SKILL.md` (Main Agent 发现本应在已通过的 Gate 2 中发现的问题时, 在该 effort 的 spec 末尾记一行) 及 spec 第 125 行, 无需改动.
+"Gate 2 漏报记一行": ~~ticket 08 已落实, 无需改动~~. 用户决定 (2026-10-27) 删除该规则, 见 What to build.
 
 工具拒绝: 收紧后 haiku 4 个会话共 116 次工具调用, 只有 1 次拒绝: Bash 中的 `python3 -c` 不在只读允许范围, 拒绝消息说明了原因和可用工具, Reviewer 改用 Read 继续完成. 第一批那种 Read/Bash 的偶发拒绝未再出现.
 
@@ -134,9 +139,9 @@ Spec Readiness 复核: 独立 Agent (opus) 先不看 worker 结论, 逐条复核
 
 待决定事项 (未改动, 交 Main Agent):
 
-- P3: APPLICABILITY 中 "Interface" 是否只指形状; 已有字段的取值变化算不算 Interface 变化; "Module 间数据流" 的措辞. 影响若干误报与漏报的归类.
-- P4/K5: spec 中对内部缓存或解析算法的长期要求 (调用方不可见) 是否属于就绪缺口 (6 条). 二选一: 改角色第 11 行的长期边界句, 或改答案键与夹具.
-- K3/K4: 夹具问题: `promotion-runtime.md:97` 依赖验收标准; 保留期起点未定义. 可能是夹具本身的缺陷.
+- (已决定 2026-10-27: Interface 包含字段取值语义) P3: APPLICABILITY 中 "Interface" 是否只指形状; 已有字段的取值变化算不算 Interface 变化; "Module 间数据流" 的措辞. 影响若干误报与漏报的归类.
+- (已决定 2026-10-27: 改角色, 不改基准) P4/K5: spec 中对内部缓存或解析算法的长期要求 (调用方不可见) 是否属于就绪缺口 (6 条). 二选一: 改角色第 11 行的长期边界句, 或改答案键与夹具.
+- (已核实 2026-10-27: 不是夹具缺陷, qwen_strata 的 SR v4.5 brief 已有判例, 是 worker 复核时未读 brief) K3/K4: 夹具问题: `promotion-runtime.md:97` 依赖验收标准; 保留期起点未定义. 可能是夹具本身的缺陷.
 - 答案键外的疑似真实缺陷: `persistence-precondition-failed` 的前提条件未定义; 不可变请求对象. 盲裁已判 supported, 不影响分数.
 - 覆盖句 (第 68 行) 的修改可能减弱覆盖压力, 本批未改.
 
