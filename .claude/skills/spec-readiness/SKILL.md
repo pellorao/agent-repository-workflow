@@ -11,7 +11,7 @@ Spec Readiness 针对每个实施 issue 运行, 不针对 Application Source Iss
 
 - Spec Readiness 在 spec 和 issue 设计定稿时审核一次, 不在报告完成或提交审核时重复. 修改实现文件前须取得 `satisfied` 或例外记录 (`implement` Skill 的 Entry 检查 `verify`).
 - 不通过时修正后复审: 重新执行 `prepare -> review -> generate -> promote`, Reviewer 按 [复审规则](../../../docs/agents/reviewer.md#re-review) 只看改动部分及其影响范围. 治理 Input 字节, Reviewer Role 或 subject 变化后旧记录不授权新版本, 新鲜度检查不放宽. `architecture-evidence` 是 issue 本身会修改的实现事实, 不受新鲜度检查: 实施改动它不需要复审.
-- `arw spec-readiness verify --issue issue:<NNNN>:<NN>` 在开始实施前和提交前运行, 必须取得退出码 `0`; `1` 表示记录缺失, 格式错误, 过期, 语义未满足或对该 issue 无效, `2` 表示命令用法无效. 缺失, 过期或 `gap` 结果阻断实施和提交, 不阻断不依赖该结果的其他工作.
+- `arw spec-readiness verify --issue issue:<NNNN>:<NN>` 在开始实施前和实施提交前运行, 必须取得退出码 `0`; `1` 表示记录缺失, 格式错误, 过期, 语义未满足或对该 issue 无效, `2` 表示命令用法无效. 缺失, 过期或 `gap` 结果阻断实施和提交, 不阻断不依赖该结果的其他工作.
 
 ## Subject
 

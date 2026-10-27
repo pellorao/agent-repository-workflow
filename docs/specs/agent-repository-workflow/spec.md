@@ -36,7 +36,7 @@ ARW 是本地仓库工作流管理器. 它不自主发起 Agent 编码工作, �
 
 | 工作记录 | 责任 | Spec Readiness |
 | --- | --- | --- |
-| 实施 issue | 通过 issue 门禁, 当前阻断问题和必要设计确认取得实施授权, 在完成与提交前满足独立就绪检查. | 每个 issue 都运行. |
+| 实施 issue | 通过 issue 门禁, 当前阻断问题和必要设计确认取得实施授权, 在完成与实施提交前满足独立就绪检查. | 每个 issue 都运行. |
 | Application Source Issue | 只镜像关联 Module 实施 issue 的状态, 不执行本地实施. | 不运行. |
 | Wayfinder issue | 记录研究或设计问题, 不替代实施 issue. | 不运行. |
 
@@ -50,7 +50,7 @@ Gate 3 由 `code-review` Skill Package 拥有 Standards 与 Requirements 两个�
 
 当前有效 Spec Readiness, 必要实施验证和真实完整的最终候选齐备后, Code Standards 与适用 Commit Audit 可以对同一候选并行. 任何正式验收条件实际要求取得另一审核的完成事实时, 仍须等待该事实, 运行中结果不能作为通过. Main Agent 按[公共 Reviewer 规则](../../agents/reviewer.md#review-versions-and-concurrency)协调固定版本, 已授权源工作树写入及替代版本, 最终核对实际暂存字节与各轮受审版本, 再取得当前有效的全部适用结果和提交授权.
 
-完全由封闭分类中不属于当前仓库实施产物的内容组成的已暂存候选内容使用轻量提交流程, 并且同样只属于一个 effort. 适用内容包括该 effort 的本地 `spec.md`, `map.md`, Application Source Issue, Wayfinder issue, 本次不进入 `completed | wontfix` 的实施 issue, `research/**` 和 `prototype/**` 下的安全普通文件, 以及按实际语义归入该 effort 的安全 gitlink. Gitlink 只记录当前仓库引用的子模块提交状态, 不属于当前仓库的实施产物. 该流程只检查准确已暂存范围, effort 归属, 安全路径, 条目模式与对象身份, ARW Artifact 基本格式, 实施 issue 终态转换, 适用文本格式, Git 差异和候选内容不变性, 这些检查由 `arw commit-audit verify --non-implementation` 一条命令完成. 它不做语义或跨文件关系检查, 不运行 Spec Readiness, Commit Audit, Gate 1, Gate 2, Gate 3 或独立 Reviewer. 候选包含当前仓库的实施产物时, 完整候选内容使用实施提交流程. 不能归入任一分类的内容先停止并明确责任, 不因为它尚未进入轻量流程的封闭分类就推定为实施产物.
+完全由封闭分类中不属于当前仓库实施产物的内容组成的已暂存候选内容使用轻量提交流程, 并且同样只属于一个 effort (下述规则与文档候选除外). 适用内容包括该 effort 的本地 `spec.md`, `map.md`, Application Source Issue, Wayfinder issue, 本次不进入 `completed | wontfix` 的实施 issue, `research/**` 和 `prototype/**` 下的安全普通文件, 以及按实际语义归入该 effort 的安全 gitlink. 只改 Agent 规则与文档 Markdown (`AGENTS.md`, `docs/**`, Skill 及其 `.claude/skills` 投影和 `distribution/` 副本) 的候选同样适用, 不属于任何 effort, 由 Main Agent 另行检查投影, 分发, 文本格式和跨文档引用, 不要求就绪记录. 改动审核系统本身或长期规范合同条款时, 提交前由 Main Agent 按 `reviewer-launch` 的 Other reviews 手工准备并启动一个 `requirements-reviewer` (`issueIds` 为空, 受审版本为已暂存树与 HEAD 的差异, 治理输入为被改文本及其所属长期规范), 不使用 Commit Audit `prepare`, 最多一轮, 不运行 Spec Readiness. 提交门槛是该 Reviewer 正常结束 (`ready`) 且报告中的问题都已处理, 处理后不复审; 返回 `incomplete` 或问题未处理时不提交. Gitlink 只记录当前仓库引用的子模块提交状态, 不属于当前仓库的实施产物. 该流程只检查准确已暂存范围, effort 归属, 安全路径, 条目模式与对象身份, ARW Artifact 基本格式, 实施 issue 终态转换, 适用文本格式, Git 差异和候选内容不变性, 这些检查由 `arw commit-audit verify --non-implementation` 一条命令完成. 它不做语义或跨文件关系检查, 不运行 Spec Readiness, Commit Audit, Gate 1, Gate 2, Gate 3 或独立 Reviewer (上述 `requirements-reviewer` 例外除外). 候选包含当前仓库的实施产物时, 完整候选内容使用实施提交流程. 不能归入任一分类的内容先停止并明确责任, 不因为它尚未进入轻量流程的封闭分类就推定为实施产物.
 
 ## Runtime baseline
 
@@ -695,7 +695,7 @@ Main Agent 或用户负责语义决定. 独立 Reviewer 只返回结果. Module 
 
 `Spec Readiness Module` 拥有准备, Reviewer Request, 草稿绑定, 生成, 提升和特定 issue 验证. 它机械验证身份, 字节, 摘要, 结构, 路径与证据, 不判断开放语义, 原生会话控制由共享 Reviewer 运行责任承担.
 
-`Commit Audit Module` 复用 Repository State Inspector, 通过 Git Runner 读取实时已暂存候选及 HEAD, 验证单 effort 授权范围并推导 Gate 1 和 Gate 2 范围, 准备 Reviewer Request 和空报告. 它不判断语义, 不选择暂存范围, 不承担原生会话控制, 不写受 Git 跟踪文件. Main Agent 协调版本与准确记录差异, 独立 Reviewer 判断当前语义及历史覆盖.
+`Commit Audit Module` 复用 Repository State Inspector, 通过 Git Runner 读取实时已暂存候选及 HEAD, 验证单 effort 授权范围并推导 Gate 1 和 Gate 2 范围, 准备 Reviewer Request 和空报告. 它还承担 `arw commit-audit verify` 的机械检查, 额外复用 ARW Artifact 清单和文本策略. 它不判断语义, 不选择暂存范围, 不承担原生会话控制, 不写受 Git 跟踪文件. Main Agent 协调版本与准确记录差异, 独立 Reviewer 判断当前语义及历史覆盖.
 
 `Agent CLI Launch Module` 接受已经验证的 Agent 配置, 本次参数, 当前目录和子进程 Adapter. 它稳定拼接固定参数与本次参数, 直接启动可执行文件, 等待结束并返回 `exited | failed`. 它不读取全局配置, 不解析公开命令, 不发现当前 Git 仓库, 不创建命令解释器或会话登记表.
 
@@ -712,6 +712,8 @@ Main Agent 或用户负责语义决定. 独立 Reviewer 只返回结果. Module 
 ### Interfaces
 
 Issue Documents 要求操作接受完整 issue UTF-8 文本与相对当前 Git 仓库根目录的 issue 路径, 返回准确审核对象内容, 审核对象身份内容和规范化要求. 两份审核对象内容都使用 LF; 身份内容只规范 `## Acceptance criteria` 中围栏代码外实际列表项开头的任务列表标记. 位置, 路径或锚点无效时不返回部分结果.
+
+Commit Audit `verify` 操作接受仓库根目录和 `--non-implementation` 标志, 读取实时已暂存候选及 HEAD, 返回 `errors` 列表, 每项含 `filePath` 和 `message` 并按两者排序; 列表为空表示通过 (退出码 `0`), 否则退出码 `1`. 含代码的候选在 `--non-implementation` 下作为不符合条件的路径报告.
 
 Repository Workflow 提示 Interface 是 `prompt(question) -> Promise<answer>`. `question` 包含稳定 `id`, 非空英文 `description`, 可选 `example`, 简短 `message` 和可选的封闭 `choices`. 终端与注入的 Adapter 使用同一对象. `description` 字节不进入 Profile, 计划或摘要.
 
@@ -855,6 +857,8 @@ Commit Audit Module 独立于实施 Module 和 Reviewer, 优先从实时 Git 暂
 
 差异复审保留原 Reviewer 自己已经完成且未受影响的覆盖, 可以减少重复判断, 同时每轮完整输入和完整报告保持当前结果的可核对性. 把历史覆盖判断留给 Reviewer, 把候选及记录差异比较留给 Main Agent, 可以避免 Engine 伪装成任意代码语义检查器. 明确记录章节的非要求身份使正常收尾不反复触发审核, 但新的真实失败仍削弱相应结论, 不成为降低证据责任的例外. 这些边界复用已有请求, 临时材料及 Git 对象, 不需要调度器, 覆盖登记或新增持久格式.
 
+规则与文档候选走轻量提交流程, 不运行 Spec Readiness 和 Commit Audit Reviewer, 优先降低这类改动的审核成本: 实际运行中两类 Reviewer 的多轮往返远超其收益, 发现的多为流程材料问题, 真正的跨文档语义缺口少见, 且用户按 ticket 复核整体 diff. 保留单个 Reviewer 仍会给每个小改动增加一轮往返, 因而只用于改动审核系统本身或长期规范合同条款的情形, 此时限一轮且处理后不复审, 避免审核循环. 轻量流程同样允许未进入终态的实施 issue, `spec.md` 和 `map.md` 免就绪记录提交, 因为就绪审核在设计定稿时审核一次, 实施 issue 的终态转换仍由 `verify` 拒绝, 提交时不重复审核. `verify` 的机械检查放在 Commit Audit Module, 因为它们复用该 Module 已读取的暂存候选; 被拒绝的替代方案是拆到 Artifact 或 Text Policy Module, 代价是 Commit Audit 依赖二者. 被拒绝的替代方案是提交时要求有效就绪记录, 它与设计定稿时的就绪审核重复, 而用户按 ticket 复核整体 diff; 接受的成本是这类改动不经就绪审核即提交, 由上述 `requirements-reviewer` 例外兜住审核系统和长期规范合同条款的高风险部分. 当前选择接受规则与文档之间的语义或跨文档错误只由 Main Agent 的投影, 分发, 文本和引用检查及用户复核发现, 以及例外中的修正无人复核的成本.
+
 Code Map Module 保留独立结构, 覆盖与生命周期, 因为这些规则同时被只读验证和 Repository Workflow 使用. 把它嵌入 Repository Workflow 会让独立验证依赖完整写入事务, 把它当作 `Artifact Module` 管理的普通记录又无法表达目录覆盖和归属. 当前选择接受仓库工作流调用另一个 Module, 并分别报告 Code Map 诊断的成本.
 
 目标仓库 Text Policy Module 独立选择文本候选并验证准确字节, 优先让仓库工作流之外的 `arw text` 操作复用同一政策. 让每个写入方自行检查会复制 UTF-8 和换行规则, 把所有文件都交给 Text Policy 又会错误处理二进制内容. 当前选择接受调用方必须先取得适用文件范围, 文本检查与业务事务分别返回诊断的成本.
@@ -898,6 +902,8 @@ Document Repository Interface 不改变 ADR-0013 的 Agent 写入分工, 因为�
 必要术语表入口和 `terms-glossary-missing` 是本文直接拥有的文档验证政策. 它们不建立新的所有者, 权威关系, 持久状态, 信任边界或恢复协议, 可以与其他 Document Terms 发现和诊断合同在本文中独立演进, 因而不需要 ADR.
 
 `CLAUDE.md` 的准确引用和混合内容迁移只是 ADR-0002 内容归属边界在 Repository Workflow 中的固定应用. 它不建立新的内容所有者, 权威关系或恢复协议, 因此不需要新的 ADR.
+
+规则与文档候选的轻量提交流程只缩小 [ADR-0006](../../adr/0006-enforce-spec-readiness-with-independent-review.md) 的 Spec Readiness 与 [ADR-0023](../../adr/0023-separate-commit-audit-review-from-implementation.md) 的 Commit Audit 所适用的候选范围, 不改变二者对实施 issue 和实施提交的约束, 也不建立新的所有者, 权威关系, 持久状态, 信任边界或恢复协议, 因而不需要新 ADR.
 
 ## Requirement ownership
 

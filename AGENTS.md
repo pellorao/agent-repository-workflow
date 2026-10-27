@@ -88,7 +88,7 @@ ARW 必须在 Codex 和 Claude Code 中都完整可用, 包括 `arw background-a
 - `Efficiency First` 中要求交用户决定或取得同意的事项 (投入产出比, 稳健性复杂度, 体积超出预算), 同样列入 `decide` 后继续其他工作.
 - 状态页由用户级配置定义. 当前环境没有状态页时, 按 `Important Decisions` 交用户决定.
 - 作为 `commit` Skill 的 Baseline 例外, 每张 ticket 实施完成后 (不是每个小改动) 提交一次: Main Agent 不等用户要求, 在当前分支按 `commit` Skill 提交, 视同用户已请求提交; 不 push. 提交前对本 ticket 的改动做一次只删减与合并的自查 (Claude Code 中用 `/simplify`). 提交审核进行期间, 可以开始不依赖它的下一张 ticket.
-- 只含非实施内容 (规划记录, issue 状态等) 的改动按 `commit` Skill 的非实施工作流随时提交, 不启动 Reviewer.
+- 只含非实施内容 (规划记录, issue 状态等, 以及只改 Agent 规则和文档) 的改动按 `commit` Skill 的非实施工作流随时提交, 不启动 Reviewer (例外见 `commit` Skill).
 - 每张 ticket 提交后在状态页加 `know` 条目 (结论, 偏离, 遗留, 提交号), 供用户事后复核.
 - 作为 `rule-and-design-changes` Skill 的 Baseline 例外, 本仓库的 Agent 指令和设计文档修改不逐处预先确认, 由用户按 ticket 在状态页复核整体 diff.
 

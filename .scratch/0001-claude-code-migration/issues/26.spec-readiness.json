@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0001:26",
+  "request": {
+    "digest": "62627c370563b2d7d724d6e56c03be397e68b192aaccfa54c657af5a0ef205a6",
+    "filePath": ".tmp/claude-code/06588b1e-7f07-4832-8933-107aaf5b5978/0001_26/spec-readiness/requests/request-750d80d5-2906-4c02-8039-374360b075a6.json",
+    "id": "750d80d5-2906-4c02-8039-374360b075a6"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "658f4283cabb570c22c4f8ad59eb3afc858a34bc9973c25f581ba324cd1561d3"
+  },
+  "inputs": [
+    {
+      "filePath": "docs/specs/agent-repository-workflow/spec.md",
+      "role": "governing-spec",
+      "sha256": "fa35fa24bb8539f9dfe4c6eff9033195e477998b080fb645352277e4cbb583de"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0001-claude-code-migration/issues/26-rule-changes-mechanical-commit.md",
+    "sha256": "cee68350250dcc6046ee0f9ec8b330ccbe84bd3a32506bd3376b8319d933310b"
+  },
+  "result": "satisfied"
+}
