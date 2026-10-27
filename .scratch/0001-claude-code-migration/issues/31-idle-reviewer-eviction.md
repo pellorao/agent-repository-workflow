@@ -12,6 +12,7 @@ Status: needs-triage
 
 - 复现并确认原因 (如: 启动 Reviewer 后删除其仓库或 worktree, 再让名额满额).
 - 用户 2026-10-28 决定: 不放宽回收条件 (不采用 "记录不存在就可以回收"), 而是保证恢复记录在运行被回收或停止之前一直存在. 需要找出并堵住记录在运行仍加载时被删除的途径 (如 Main Agent 删除 worktree 或清理 `.tmp`), 例如: 删除前先确认没有加载中的运行引用该目录并先卸载它们, 或把记录放到不会随工作区删除的位置; 方案由实施时复核决定.
+- `docs/agents/agent-writes.md` 的 `Issue concurrency` 要求删除 worktree 前用 `arw list background-agents` 确认没有从该 worktree 启动且仍加载的后台 Agent, 但列表目前不显示启动目录, 无法据此确认; 一并补上可确认的方式.
 - 用户还问到 Strata 只有 1 个名额却 "占满 16 个": 提供方名额只限 Strata 自身, 本次 16 个都是 Claude 后端 Reviewer, 占的是全局名额. 若 `arw lba` 的输出容易让人误解为同一提供方, 顺带确认列表是否显示了提供方或模型.
 
 ## Spec Requirement
