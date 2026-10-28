@@ -29,7 +29,7 @@
 
 ## Issue concurrency
 
-默认串行写入: 同一时间只有一个 Agent 有权修改工程内的已跟踪文件, 即只实施一个 issue, 在主工作区进行. 上一个 issue 提交后, 或停在不留未提交修改的状态后, 下一个 issue 才开始写入. 限制的是同时写工程文件, 不是同时运行: 不写已跟踪文件的工作可以与之并行, 有空余额度和名额时应当并行, 包括研究, 审核, 测量, 日常检查等非 issue 任务中不写已跟踪文件的部分, 以及后续 issue 的前期准备和纯分析 (设计分析, 方案复核, issue 草稿, 实施计划; 结果作为报告返回或写在 `.tmp/` 下, 轮到该 issue 写入时再落盘). 相关且改动范围相近的小 issue 可以合并为一个 issue 一起实施, 以减少审核轮次; 开始下一个 issue 前检查待办中是否有可合并的 issue.
+默认串行写入: 同一时间只有一个 Agent 有权修改工程内的已跟踪文件, 即只实施一个 issue, 在主工作区进行. 上一个 issue 提交后, 或停在不留未提交修改的状态后, 下一个 issue 才开始写入. 限制的是同时写工程文件, 不是同时运行: 不写已跟踪文件的工作可以与之并行, 有空余额度和名额时应当并行, 包括研究, 审核, 测量, 日常检查等非 issue 任务中不写已跟踪文件的部分, 以及后续 issue 的前期准备和纯分析 (设计分析, 方案复核, issue 草稿, 实施计划; 结果作为报告返回或写在 `.tmp/` 下, 轮到该 issue 写入时再落盘). 小 issue 尽量合并为一个 issue 一起实施, 以减少审核轮次: 合并后的工作能在一个上下文中完成即可, 内容不相关也可以合并, 相关的优先归入同一个 issue; 开始下一个 issue 前检查待办中是否有可合并的 issue.
 
 用户可以把默认改为并行实施多个 issue. 并行时:
 
@@ -54,5 +54,5 @@
 独立 Reviewer 的结果由与用户沟通的 Main Agent 按 [Subagent 问题处理](subagent-findings.md) 独立核对, 完成必要的用户决定后再分派修复. 交接前重新确认范围和基线. 实现者不组织这些审查, 不审核自己的候选内容. 提交只在用户请求后按 `commit` Skill 进行.
 <!-- arw:managed:end -->
 <!-- arw:repository-owned:start -->
-作为 Baseline 例外, 本仓库遵循根 `AGENTS.md` 的 `Autonomous Working Mode`: Main Agent 在实施 issue 完成后不等用户请求即按 `commit` Skill 提交, 取代 `Delivery and review` 中提交只在用户请求后进行的规定; 提交审核进行期间可以开始不依赖它的下一个实施 issue 的写入, 放宽 `Issue concurrency` 中上一个 issue 提交后才开始下一个的规定.
+作为 Baseline 例外, 本仓库遵循根 `AGENTS.md` 的 `Autonomous Working Mode`: Main Agent 在实施 issue 完成后不等用户请求即按 `commit` Skill 提交, 取代 `Delivery and review` 中提交只在用户请求后进行的规定; 提交审核进行期间可以开始不依赖它的下一个实施 issue 的写入; 当前 issue 实施期间, 也可以写入下一个 issue 的 issue 文件并完成其 Spec Readiness (只写 `.scratch` 中该 issue 的文件和就绪记录), 使就绪审核不占关键路径. 二者都放宽 `Issue concurrency` 中上一个 issue 提交后才开始下一个的规定.
 <!-- arw:repository-owned:end -->
