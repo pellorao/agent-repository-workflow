@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0001:43",
+  "request": {
+    "digest": "027a3626b2b5fc7fcb1d7a3ef9a1a0e4a05b36c494f6f31eb4aec4c73da49f4a",
+    "filePath": ".tmp/claude-code/06588b1e-7f07-4832-8933-107aaf5b5978/0001_43/spec-readiness/requests/request-946023b1-b733-4002-8b94-f14ae0416ab8.json",
+    "id": "946023b1-b733-4002-8b94-f14ae0416ab8"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "9803a9120632ba201ecccc1996b3e3cc75c13faf7b5cdedb5d4e518dc6d8ebd0"
+  },
+  "inputs": [
+    {
+      "filePath": "docs/adr/0031-use-github-and-local-validation-sources.md",
+      "role": "adr",
+      "sha256": "e82e5c8ab4b309fbc5f40e8156498d7df12cfe37c034a773e968a217b9642248"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow-release/spec.md",
+      "role": "governing-spec",
+      "sha256": "a853a0ea8af4758994b445d3ad420b23391170b85f1c01e7d3b5ea5dd1e685ee"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow/spec.md",
+      "role": "governing-spec",
+      "sha256": "ce3b30c7bd28e7462dd64ca4ecd0106e2900d0440c04b6a44a9cf112cda67ce5"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0001-claude-code-migration/issues/43-release-recovery.md",
+    "sha256": "d068ad5ff4184136f73363131c08ccb0402119a0a7c0a33a7df8a925abeacb22"
+  },
+  "result": "satisfied"
+}

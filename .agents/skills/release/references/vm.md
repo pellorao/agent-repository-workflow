@@ -50,7 +50,7 @@ VMware 运行在 Windows 宿主上, 而 Agent 位于 WSL 时, 使用 Windows 的
 
 ```text
 NODE_WIN="$(wslpath -u "$(powershell.exe -NoProfile -NonInteractive -Command '(Get-Command node).Source' | tr -d '\r')")"
-"$NODE_WIN" scripts/release-vm.mjs check 'C:\path\vm.json' 'Windows 11' "$(wslpath -w .tmp/release/candidate.bundle)"
+"$NODE_WIN" scripts/release-vm.mjs check 'C:\path\vm.json' 'Windows 11' "$(wslpath -w <tmp>/candidate.bundle)"
 ```
 
 - 配置文件和其中的路径都使用 Windows 本地绝对路径. bundle 可以用 `wslpath -w` 转成 UNC 路径, 脚本会先把它复制到 Windows 临时目录再传给 `scp`.

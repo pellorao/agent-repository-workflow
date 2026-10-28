@@ -1,12 +1,12 @@
 # 发布参考
 
-以下步骤都在 VM 验证全部通过之后进行. 每个外部写入前, 都先向维护者说明准确的项目, `origin`, 分支, 版本和 commit, 并取得授权.
+以下步骤都在 VM 验证全部通过之后进行. 每个外部写入前, 都先向维护者说明准确的项目, `origin`, 分支, 版本和 commit, 并取得授权. 回滚同一版本 tag 与 Release 的授权见 Skill 开头. `<tmp>` 见 Skill 第 3 节.
 
 ## Push and tag
 
 1. 确认 `git rev-parse HEAD` 等于 VM `PASS` 行中的 commit, 且工作树干净. 如果候选之后又有改动, 回到 Skill 第 2 节.
 2. `git push origin <branch>`, 然后用 `git ls-remote origin refs/heads/<branch>` 确认远端分支指向该 commit. 推送前确认 `git remote get-url origin` 等于 `release-validation.json` 中的规范 HTTPS 地址, 不一致时停止.
-3. `git tag <version> <commit>`, 然后 `git push origin refs/tags/<version>`. tag 名就是 `MAJOR.MINOR.PATCH`, 不加 `v` 前缀. 推送后用 `git ls-remote --tags origin <version>` 确认 tag 指向该 commit. 规范远端第一次看到的 tag 就必须指向正式 commit, 已推送的 tag 绝不移动.
+3. `git tag <version> <commit>`, 然后 `git push origin refs/tags/<version>`. tag 名就是 `MAJOR.MINOR.PATCH`, 不加 `v` 前缀. 推送后用 `git ls-remote --tags origin <version>` 确认 tag 指向该 commit. 规范远端第一次看到的 tag 就必须指向正式 commit, 已推送的 tag 绝不原地移动, 只能按回滚步骤整体删除后重建.
 
 ## Publish the GitHub announcement
 
@@ -42,6 +42,13 @@ HOME=<tmp>/home node <tmp>/install-arw.mjs --version <version> --non-interactive
 
 最后一条命令必须输出 `<version>`. 验证完成后删除 `<tmp>`.
 
-## Failures after the tag
+## Rollback after the tag
 
-压缩包生成, Release 的创建, 核对或公开 Bootstrap 验证失败发生在 tag 推送之后. 保留 tag, 记录远端 Release 的准确状态后停止. 后续的创建, 更新或删除都需要维护者重新决定.
+压缩包生成, Release 的创建, 核对或公开 Bootstrap 验证失败发生在 tag 推送之后. 回滚边界和公告后的处理见 [release spec](../../../../docs/specs/agent-repository-workflow-release/spec.md#failure-recovery-and-authorization), 本 Skill 运行期间一律视为尚未公告.
+
+1. 运行 `gh release view <version> --repo <project> --json tagName,url,assets`, 把准确状态记入发布准备 issue 的 `## Comments`. 输出 Release 不存在是有效的 "无 Release" 状态 (压缩包生成或创建前失败); 认证, 网络等其他读取失败时停止.
+2. 只删除本次运行创建的对象: `git ls-remote --tags origin <version>` 指向本次验证 commit, 且 Release (若存在) 由本次运行的 `gh release create` 创建. 不满足时 (包括 Release 已存在而停止的情形) 停止, 不删除.
+3. Release 存在时运行 `gh release delete <version> --repo <project> --yes --cleanup-tag`, 否则运行 `git push origin :refs/tags/<version>`. 然后 `git tag -d <version>`.
+4. 核对 `gh release view` 报告不存在, `git ls-remote --tags origin <version>` 与 `git tag -l <version>` 都为空. 不动已推送的分支. 第 1 步的真实读取失败, 或任一删除, 核对失败时停止并报告准确状态, 不继续重建.
+5. 修复根因. 修复产生新 commit 时回到 Skill 第 2 节, 新候选重新验证 (含 VM); 候选不变 (`gh`, 网络, 临时目录, 压缩包环境问题) 时不重跑 VM, 回到 `Push and tag` 第 3 步重建 tag 并继续.
+6. 同一版本连续回滚 2 次仍失败时停止, 报告并列入待决定.

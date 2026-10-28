@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # Release
 
-只有维护者在 ARW Source Checkout 中显式调用本 Skill 时才使用. 它不进入 Workflow Distribution. 推送分支, 推送 tag 和创建 GitHub Release 都是外部写入, 每次都要取得维护者对准确项目, 分支和版本的明确授权. 版本确认本身不授权发布.
+只有维护者在 ARW Source Checkout 中显式调用本 Skill 时才使用. 它不进入 Workflow Distribution. 推送分支, 推送 tag 和创建 GitHub Release 都是外部写入, 每次都要取得维护者对准确项目, 分支和版本的明确授权. 版本确认本身不授权发布. 发布授权同时覆盖失败时回滚同一版本的 tag 与 Release.
 
 ## 1. Confirm the version
 
@@ -30,7 +30,7 @@ disable-model-invocation: true
 本节证明候选在每台 Windows 和 Linux VM 上都能完成以下流程: 安装, PATH 登记 (新开终端能解析到 `arw`), `arw workflow init` 和 `arw workflow verify`, 以及卸载. guest 检查用 `scripts/pack-release.mjs` 把候选打成安装压缩包, 解压后用其中的 `install.mjs` 和发布标签安装.
 
 1. 向维护者索取本次 VM 配置 JSON 的绝对路径. 配置格式和受验系统要求见 [VM 参考](references/vm.md). 配置内容, VM 身份和凭据不写入仓库, issue 或报告.
-2. `mkdir -p .tmp/release`, 然后 `git bundle create .tmp/release/candidate.bundle HEAD`.
+2. `<tmp>` 是会话工作区 (见 `docs/agents/environment.md`) 下的 `release` 目录, 本 Skill 与各参考文件都用该占位符. `mkdir -p <tmp>`, 然后 `git bundle create <tmp>/candidate.bundle HEAD`.
 3. 对配置中的每台机器运行 `node scripts/release-vm.mjs check <config> <machine> <bundle>`. 脚本依次还原快照, 启动 VM, 传入 bundle, 运行 `scripts/release-guest-check.mjs`, 最后硬关机并还原快照. 不同机器之间互不依赖, 可以并行, 但不超过配置的 `maxParallelMachines`. 从 WSL 操作 Windows 宿主上的 VM 时, 按 [VM 参考](references/vm.md#wsl-and-windows-host) 使用 Windows 的 `node.exe` 运行.
 4. 只有每台机器的最后一行都是 `<machine>: PASS` 才算通过. 记录 guest 为每个 Node.js 输出的 `PASS <platform> node <node-version> <version> <commit>` 行.
 
@@ -43,7 +43,7 @@ disable-model-invocation: true
 
 ## 4. Publish
 
-全部机器通过, 且维护者授权发布后, 按 [发布参考](references/publication.md) 推送分支, 推送 tag, 发布带 `arw.tar.gz` 资产的 GitHub Release, 然后验证公开 Bootstrap. 任一步骤失败时, 按该文件处理.
+全部机器通过, 且维护者授权发布后, 按 [发布参考](references/publication.md) 推送分支, 推送 tag, 发布带 `arw.tar.gz` 资产的 GitHub Release, 然后验证公开 Bootstrap. 推送分支或推送 tag 失败时停止并报告; tag 推送之后的步骤失败时, 按该文件的回滚步骤处理.
 
 ## Records
 
