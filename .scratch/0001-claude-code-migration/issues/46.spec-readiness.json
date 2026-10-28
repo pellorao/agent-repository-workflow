@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0001:46",
+  "request": {
+    "digest": "6ed5a913a4cc102060c5233dc70ef567f3d6edecb5add67280a686064d40c987",
+    "filePath": ".tmp/claude-code/06588b1e-7f07-4832-8933-107aaf5b5978/0001_46/spec-readiness/requests/request-72713b05-cbf2-4d6e-a8fa-445e8734f7fd.json",
+    "id": "72713b05-cbf2-4d6e-a8fa-445e8734f7fd"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "6dcc2d47ebd13fb7d6de3e845765d84572686dfc4a3d8132945d820502bc9ef9"
+  },
+  "inputs": [
+    {
+      "filePath": "docs/specs/agent-repository-workflow-application-jira/spec.md",
+      "role": "governing-spec",
+      "sha256": "1b2412cb77b38e26fc48af888c2fea853ec027b53ad57771b6fda4c908af114c"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow-development/spec.md",
+      "role": "governing-spec",
+      "sha256": "3c7c0d2fc05c605c76ac6ae62b01e6ab9a8846ea2fa9866eb62119c06dcfdd03"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow/spec.md",
+      "role": "governing-spec",
+      "sha256": "cb1cda2d4b0615036fa7b403de4f7d3b1c89476e1d63fc292117cb0ca02395b8"
+    },
+    {
+      "filePath": "lib/arw-common/issue-documents.mjs",
+      "role": "architecture-evidence",
+      "sha256": "055038cde11e90da1ee50b4630ba97c9a20a2e51caeb004ab418a6c0db196497"
+    },
+    {
+      "filePath": "lib/background-agent/manager.mjs",
+      "role": "architecture-evidence",
+      "sha256": "a8dfcde788ecde73965011ddbd7d5b2a61e8e63f07717ace4fefc899cdfb7619"
+    },
+    {
+      "filePath": "lib/reviewer-capability/scenario.mjs",
+      "role": "architecture-evidence",
+      "sha256": "ad1512684c03b8b406596df719a81c994acd5a7bebd6952821a1c34f27644e92"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0001-claude-code-migration/issues/46-strata-t6-dead-code.md",
+    "sha256": "1a7849a7d0a56054ead9e8e713caff08f715d1b3a6b4616c2ea24978dd65b526"
+  },
+  "result": "satisfied"
+}

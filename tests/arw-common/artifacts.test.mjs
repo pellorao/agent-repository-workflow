@@ -5,7 +5,6 @@ import test from 'node:test';
 
 import {createRepository as createGitRepository} from '../helpers/repository-fixture.mjs';
 import {
-    compareCanonicalArtifactIds,
     formatArtifactIdentityKey,
     formatCanonicalArtifactId,
     listArtifacts,
@@ -63,9 +62,6 @@ test('canonical artifact IDs have one numeric parse and format contract', () => 
     for (const text of invalid) {
         assert.throws(() => parseCanonicalArtifactId(text), /Canonical ID/);
     }
-
-    assert.equal(compareCanonicalArtifactIds('issue:0007:02', 'map:0007') < 0, true);
-    assert.equal(compareCanonicalArtifactIds('map:0007', 'spec:0007') < 0, true);
 });
 
 test('registered paths project numeric workflow identities without copying slugs', () => {
