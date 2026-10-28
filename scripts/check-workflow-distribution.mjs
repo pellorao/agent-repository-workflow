@@ -8,7 +8,7 @@ import {
     createCodexPlatformAdapter,
 } from '../lib/arw-common/platform-adapter.mjs';
 import {composePlatformResults} from '../lib/repository-workflow/workflow.mjs';
-import {buildWorkflowDistribution} from '../lib/workflow-distribution/workflow-distribution.mjs';
+import {buildWorkflowDistribution, checkDistributionSelfContained} from '../lib/workflow-distribution/workflow-distribution.mjs';
 
 const SOURCE_ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 /** @typedef {'claude-code' | 'codex'} CliPlatform */
@@ -45,6 +45,11 @@ export const checkWorkflowDistributionProduction = async ({
             ),
             status: 'failed',
         };
+    }
+
+    const selfContained = checkDistributionSelfContained(distribution.payload);
+    if (selfContained.length > 0) {
+        return {diagnostics: selfContained, status: 'failed'};
     }
 
     /** @type {CliPlatform[]} */

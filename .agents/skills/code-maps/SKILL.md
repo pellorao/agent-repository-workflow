@@ -15,7 +15,7 @@ name: code-maps
 
 仓库负责每个 Code Map README. Main Agent 根据当前仓库源码和已经确认的设计文档编写其散文. ARW 命令只验证覆盖范围和结构, 不生成, 重写, 迁移, 降级或删除 Code Map 散文.
 
-把 Repository Profile 作为已配置根目录, 包含路径匹配模式和排除路径匹配模式的权威来源. 不得根据语言, 框架, 测试配置或较早的 Workflow Distribution 副本推断 Code Map 范围.
+把 Repository Profile 作为已配置根目录, 包含路径匹配模式和排除路径匹配模式的权威来源. 不得根据语言, 框架, 测试配置或较早安装的规则副本推断 Code Map 范围.
 
 Code Map 描述当前源码树. 它包含:
 

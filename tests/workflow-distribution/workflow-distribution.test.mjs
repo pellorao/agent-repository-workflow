@@ -11,7 +11,7 @@ import {
     createCodexPlatformAdapter,
     validateProjectionConfig,
 } from '../../lib/arw-common/platform-adapter.mjs';
-import {buildWorkflowDistribution, validateDistributionConfig} from '../../lib/workflow-distribution/workflow-distribution.mjs';
+import {buildWorkflowDistribution, checkDistributionSelfContained, validateDistributionConfig} from '../../lib/workflow-distribution/workflow-distribution.mjs';
 import {checkWorkflowDistributionProduction} from '../../scripts/check-workflow-distribution.mjs';
 
 /** @param {Awaited<ReturnType<typeof buildWorkflowDistribution>>} result */
@@ -513,4 +513,32 @@ test('production check rejects a managed target that collides with a seed from a
         }],
         status: 'failed',
     });
+});
+
+/** @param {Record<string, string>} files */
+const payloadOf = files => Object.entries(files).map(([path, text]) => ({bytes: Buffer.from(text), path}));
+
+test('self-contained check accepts resolvable links, target-owned paths and fenced examples', () => {
+    const diagnostics = checkDistributionSelfContained(payloadOf({
+        'baseline/docs/agents/a.md': 'See [b](b.md#x), [skill](../../.agents/skills/s/SKILL.md), [ctx](../../CONTEXT.md), `docs/agents/b.md`, `docs/agents/`.\n```\n[example](./src/x/CONTEXT.md)\n```\n',
+        'baseline/docs/agents/b.md': 'text',
+        'skills/s/SKILL.md': 'Back to [a](../../../docs/agents/a.md) and `.claude/skills/s/SKILL.md`.',
+    }));
+
+    assert.deepEqual(diagnostics, []);
+});
+
+test('self-contained check reports dangling links, paths and ARW-internal names', () => {
+    const diagnostics = checkDistributionSelfContained(payloadOf({
+        'baseline/docs/agents/a.md': '[gone](missing.md) `docs/agents/none.md` run node scripts/x.mjs.\n```\nSource Checkout\n```',
+        'skills/s/SKILL.md': 'Uses [other](../t/SKILL.md) and [titled](<gone.md> "t") and [ok](../../../.claude/skills/s/SKILL.md "t") [q](gone2.md \'t\' ) [p](<gone3.md> (t)) [s](../../baseline/docs/agents/a.md).',
+    }));
+
+    assert.deepEqual(diagnostics.map(entry => [entry.path, entry.code]), [
+        ['baseline/docs/agents/a.md', 'distribution-internal-reference'],
+        ['baseline/docs/agents/a.md', 'distribution-internal-reference'],
+        ['baseline/docs/agents/a.md', 'distribution-reference-unresolved'],
+        ['baseline/docs/agents/a.md', 'distribution-reference-unresolved'],
+        ...Array(5).fill(['skills/s/SKILL.md', 'distribution-reference-unresolved']),
+    ]);
 });

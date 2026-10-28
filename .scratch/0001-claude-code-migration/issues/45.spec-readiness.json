@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0001:45",
+  "request": {
+    "digest": "c060adb92b63bfcef1e63fc9fe3e9e44037e46718bc27fe15361301544806992",
+    "filePath": ".tmp/claude-code/06588b1e-7f07-4832-8933-107aaf5b5978/0001_45/spec-readiness/requests/request-6752bfad-89ce-4352-af76-8be16b7a4e52.json",
+    "id": "6752bfad-89ce-4352-af76-8be16b7a4e52"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "6dcc2d47ebd13fb7d6de3e845765d84572686dfc4a3d8132945d820502bc9ef9"
+  },
+  "inputs": [
+    {
+      "filePath": "docs/specs/agent-repository-workflow-development/spec.md",
+      "role": "governing-spec",
+      "sha256": "3c7c0d2fc05c605c76ac6ae62b01e6ab9a8846ea2fa9866eb62119c06dcfdd03"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow/spec.md",
+      "role": "governing-spec",
+      "sha256": "cb1cda2d4b0615036fa7b403de4f7d3b1c89476e1d63fc292117cb0ca02395b8"
+    },
+    {
+      "filePath": "lib/arw-common/issue-documents.mjs",
+      "role": "architecture-evidence",
+      "sha256": "6e0d753290f9d3451579adee32ad20b289ea8cddcc8c858efcb7db8059f70648"
+    },
+    {
+      "filePath": "lib/workflow-distribution/workflow-distribution.mjs",
+      "role": "architecture-evidence",
+      "sha256": "e83e1ef284f1b09d828368f52a3137b933241e534422818fbc1841b383aa2010"
+    },
+    {
+      "filePath": "scripts/check-workflow-distribution.mjs",
+      "role": "architecture-evidence",
+      "sha256": "1c8d2bd1b92d776c323d730155c661f73c15a9d3dc2a8a66f7afdca0ecbf9f3c"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0001-claude-code-migration/issues/45-distribution-self-contained.md",
+    "sha256": "f769ad56d579301ceeeb35b6dc288d69097540a9d082d3bf715ea05a5e9fbb74"
+  },
+  "result": "satisfied"
+}

@@ -11,7 +11,7 @@
 4. 代码保持直白. 只用一次的逻辑直接写在调用处, 不提前抽成函数, 除非它会复用或确实封装了一块复杂逻辑; 一个函数能写清的不拆成多个.
 5. 不以理论稳健性扩大范围. 为推测性或极不可能发生的竞态, 安全极端情况增加复杂度前, 先向用户说明故障模式, 发生概率和复杂度成本, 取得同意后再做.
 6. 先删后加. 新增实现前先看能否删除或合并已有实现; 不保留一次性脚本, 已放弃路线的代码和没有价值的测试.
-7. 体积预算. 开工前估算本任务的净增行数 (新增减删除, 只算为完成本任务所做的改动, 含被替换的旧代码; 有 issue 时写进 issue); 实际净增超出一倍时停下, 向用户说明原因再继续. 无关的冗余代码删除鼓励, 但不抵扣净增, 在交付说明中单独列出, 能分开时单独提交.
+7. 体积预算. 开工前估算本任务的净增行数 (新增减删除, 只算为完成本任务所做的改动, 含被替换的旧代码; 有 issue 时写进 issue 的 `## What to build`); 实际净增超出一倍时停下, 向用户说明原因再继续. 无关的冗余代码删除鼓励, 但不抵扣净增, 在交付说明中单独列出, 能分开时单独提交.
 
 ## Work Dependencies
 
@@ -89,17 +89,16 @@ ARW 必须在 Codex 和 Claude Code 中都完整可用, 包括 `arw background-a
 - 重要决策先由一个智能水平和推理强度不低于 Main Agent 的独立 Agent 分析, Main Agent 综合双方意见后执行. 双方仍拿不准的, 写成自成一体的待决定事项 (背景, 选项, 建议) 列入状态页 `decide`, 先推进不依赖它的其他待办.
 - `Efficiency First` 中要求交用户决定或取得同意的事项 (投入产出比, 稳健性复杂度, 体积超出预算), 同样列入 `decide` 后继续其他工作.
 - 状态页由用户级配置定义. 当前环境没有状态页时, 按 `Important Decisions` 交用户决定.
-- 作为 `commit` Skill 的 Baseline 例外, 每张 ticket 实施完成后 (不是每个小改动) 提交一次: Main Agent 不等用户要求, 在当前分支按 `commit` Skill 提交, 视同用户已请求提交; 不 push. 提交前对本 ticket 的改动做一次只删减与合并的自查 (Claude Code 中用 `/simplify`). 提交审核进行期间, 可以开始不依赖它的下一张 ticket.
-- 只含非实施内容 (规划记录, issue 状态等, 以及只改 Agent 规则和文档) 的改动按 `commit` Skill 的非实施工作流随时提交, 不启动 Reviewer (例外见 `commit` Skill).
-- 每张 ticket 提交后在状态页加 `know` 条目 (结论, 偏离, 遗留, 提交号), 供用户事后复核.
-- 作为 `rule-and-design-changes` Skill 的 Baseline 例外, 本仓库的 Agent 指令和设计文档修改不逐处预先确认, 由用户按 ticket 在状态页复核整体 diff.
+- 作为 `commit` Skill 的 Baseline 例外, 每个实施 issue 完成后 (不是每个小改动) 提交一次: Main Agent 不等用户要求, 在当前分支按 `commit` Skill 提交, 视同用户已请求提交; 不 push. 提交前对本实施 issue 的改动做一次只删减与合并的自查 (Claude Code 中用 `/simplify`). 提交审核进行期间, 可以开始不依赖它的下一个实施 issue.
+- 作为 `commit` Skill 的 Baseline 例外, 只含非实施内容 (规划记录, issue 状态等, 以及只改 Agent 规则和文档) 的改动按 `commit` Skill 的非实施工作流随时提交, 不启动 Reviewer (例外见 `commit` Skill).
+- 每个实施 issue 提交后在状态页加 `know` 条目 (结论, 偏离, 遗留, 提交号), 供用户事后复核.
+- 作为 `rule-and-design-changes` Skill 的 Baseline 例外, 本仓库的 Agent 指令和设计文档修改不逐处预先确认, 由用户按实施 issue 在状态页复核整体 diff.
 
 # Source Checkout Validation
 
-- 测试命令: `pnpm test`, `pnpm typecheck`, `node scripts/check-workflow-distribution.mjs`. 确定性覆盖和完整验证命令见 `docs/agents/source-checkout-validation.md`; Reviewer 能力测试只在维护者显式调用 `$reviewer-capability` Skill 时进行; 发布验证和发布只在维护者显式调用 `$release` Skill 时进行.
+- 测试命令: `pnpm test`, `pnpm typecheck`, `node scripts/check-workflow-distribution.mjs`, `node scripts/project-claude-skills.mjs --check`, `node scripts/generate-install-arw.mjs --check`. 只含 Agent 规则与文档的提交也运行这三个脚本, 作为 `commit` Skill 非实施分类的补充, 此类提交的分类另含 `distribution/` 副本与根 `README.zh-CN.md` 中的 Markdown. 确定性覆盖和完整验证命令见 `docs/agents/source-checkout-validation.md`; Reviewer 能力测试只在维护者显式调用 `$reviewer-capability` Skill 时进行; 发布验证和发布只在维护者显式调用 `$release` Skill 时进行.
 - 单个测试回调耗时阈值为 100 毫秒.
-- 分发副本的语言由发布流程中 `release` Skill 调用 `arw language inspect` 检查, 其他流程不判断.
-- 不对本仓库运行 `arw workflow init|update|verify|remove`; 它是 Workflow Distribution 的创作源. Source Checkout 验证使用 Workflow Distribution 的生产检查, Repository Workflow 验证使用隔离的目标仓库.
+- 不对本仓库运行 `arw workflow init|update|verify|remove`; 它是 Workflow Distribution 的创作源, 各 Skill 中 `arw workflow verify` 的回退在本仓库不适用. Source Checkout 验证使用 Workflow Distribution 的生产检查, Repository Workflow 验证使用隔离的目标仓库.
 - 安装: `node install.mjs` (相关 issue 授权时从克隆安装), 卸载: 在安装目录运行 `node uninstall.mjs`.
 
 # Source Checkout Workflow Triggers

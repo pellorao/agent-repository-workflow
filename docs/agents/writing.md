@@ -5,7 +5,7 @@
 
 仓库自己编写的文档默认使用中文普通自然语言, Agent 规则文档也必须使用中文. 每份文档的普通自然语言必须完整使用中文或英文之一, 不得混用.
 
-新建或大幅改写文档后, 运行 `arw language inspect <文件或目录>` 查看各文档的 Chinese, English 和 Other 字符比例. 该命令只报告比例, 不判定是否合格; 由 Agent 对照上述规则判断, 精确文字会降低主要语言的比例, 属正常现象, 比例明显偏离该文档应使用的语言时修正. Upstream 来源合同继续决定内容是否允许改写; 允许改写时, 修改后的普通自然语言仍须统一使用同一种语言.
+新建或大幅改写文档后, 运行 `arw language inspect <文件或目录>` 查看各文档的 Chinese, English 和 Other 字符比例. 该命令只报告比例, 不判定是否合格; 由 Agent 对照上述规则判断, 精确文字会降低主要语言的比例, 属正常现象, 比例明显偏离该文档应使用的语言时修正. 外部原样拷贝文档的来源合同继续决定内容是否允许改写; 允许改写时, 修改后的普通自然语言仍须统一使用同一种语言.
 
 长期文档必须独立表达当前有效的规则, 设计和必要理由. 不得把 `.scratch` 下的短期工作记录作为引用目标, 依据或理解其含义所必需的上下文 (长期文档可以描述 `.scratch` 的通用结构, 路径语法和操作合同, 也可以使用不对应真实工作记录的示例路径). 如果短期工作记录中的决定需要长期保留, 把该决定及其必要理由写入拥有相应责任的长期文档, 不保留指向短期记录的引用.
 
@@ -15,7 +15,7 @@
 
 这些精确文字不决定文档语言, 也不构成中英文混写. 文档语言选择与标题合同相互独立. 模板或公共标题合同要求的精确英文标题不会使中文文档变成混合语言文档.
 
-对于由 Workflow Distribution 投射的规则, 以目标仓库内安装的版本为准. 投射后的 Agent 指引必须能够独立使用, 不得依赖 Source Checkout 或仓库外的全局文档, 也不得为每份文档重复记录来源信息. Repository-owned 区域只记录本仓库新增的规则或对 Baseline 的明确例外, 不得重复 Baseline 内容.
+对于由 ARW 安装的规则, 以目标仓库内安装的版本为准. 安装后的 Agent 指引必须能够独立使用, 不得依赖仓库外的全局文档, 也不得为每份文档重复记录来源信息. Repository-owned 区域只记录本仓库新增的规则或对 Baseline 的明确例外, 不得重复 Baseline 内容.
 
 除非有明确的仓库例外, 所有由 Agent 管理的文本必须是没有 BOM 的有效 UTF-8, 并使用 LF 换行符.
 
@@ -100,6 +100,10 @@ Repository-owned 规则可以增加, 收紧或专门化 Baseline. 任何放宽 B
 编写根 `README.md` 或 `docs/manuals/` 下的任何文档前, 读取 `docs/specs/arw-reader-documentation/spec.md`. 这份只适用于 Source Checkout 的规范定义读者文档责任和路由关系. 每个目标文档继续负责自己的详细内容.
 
 根 `README.md`, 根 `README.zh-CN.md` 和 `docs/manuals/` 下文档按读者文档规范同步维护中英文版本. 默认入口和不带语言后缀的手册使用英文, 中文对应文件使用 `.zh-CN.md`. 每个版本在主标题后提供语言切换链接, 导航标签不属于普通正文混写. 作为 Baseline 例外, 本节用户文档的全部普通标题跟随文档语言; 模板固定标题和已建立的精确名称保持原文. 这些约定仅适用于 Source Checkout 用户文档, 不改变其他文档的默认语言.
+
+# Source Checkout 分发副本
+
+`distribution/` 下的文件会安装到目标仓库, 必须自包含: 不含 `distribution/`, `node scripts/`, `README.zh-CN.md`, `readIssueRequirement` 以及 Source Checkout 和 Workflow Distribution 这两个名称; Markdown 链接和 `docs/agents/`, `.agents/skills/` 路径须在分发载荷内解析, 目标仓库自有约定 (清单见开发规范的 `Workflow Distribution` 一节) 除外. `node scripts/check-workflow-distribution.mjs` 的生产检查强制这条规则. 作为 Baseline 例外, 分发副本的语言只由发布流程中 `release` Skill 调用 `arw language inspect` 检查, 改写这些副本时不运行该命令.
 
 # Source Checkout JavaScript 样式
 

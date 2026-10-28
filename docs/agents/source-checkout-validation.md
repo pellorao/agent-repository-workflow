@@ -47,6 +47,8 @@ Module 修正覆盖包括每个软锁, Acceptance 任务列表标记归一化, �
 - `pnpm typecheck` - 运行完整的严格 JavaScript 检查, 不输出文件.
 - `pnpm test` - 运行完整 Node.js 内置测试套件, 隐藏成功条目, 保留测试日志, 失败诊断和完整最终统计. 需要逐项结果时改用 `pnpm test:verbose`, 无需重复运行两种模式; 两种模式都不自动保存日志.
 - `node scripts/check-workflow-distribution.mjs` - 验证生产 Workflow Distribution 投射.
+- `node scripts/project-claude-skills.mjs --check` - 比较 `.claude/skills/` 与 `.agents/skills/` 的投影, 不一致时退出码为 `1`.
+- `node scripts/generate-install-arw.mjs --check` - 检查生成的安装引导脚本是否与源码一致.
 - `node --check <file>` - 只检查本次受影响的 JavaScript 或 ESM 文件的语法, 不执行文件; 没有适用文件时跳过.
 - `node arw.mjs text check` - 验证 `.arwignore` 选定的当前 Git 可见文本.
 - `node arw.mjs terms check --include .scratch/<NNNN>-<effort-slug>/` - 在即时模式下根据术语表验证当前工作树和当前 issue 的实际 effort 目录.

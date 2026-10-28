@@ -163,7 +163,7 @@ issue 的元数据字段 (`Status:`, `Type:`, 关联行) 只在 Markdown 围栏�
 
 迁移只规范跟踪记录元数据, H1 前置内容, 阻断问题结构和旧 `PRD.md` 路径. 它保留 issue 正文, 检查清单, Validation, Comments, Answer 和其他未被模板固定的章节. `.scratch` 下的 `map`, `spec` 和 `issue` 使用中文普通自然语言, 并直接遵循仓库默认标题合同: H1 使用中文描述性标题, H2 和更深标题使用英文. 字段名, 状态值, 路径, 命令和标识符保持准确拼写.
 
-治理 spec 或 PRD 不修改非测试正式运行时代码时省略 `## Module Design`. 修改正式运行时代码但不改变 Module 责任, Interface (包括已有字段所表示含义的改变), Seam, 依赖方向, 权威来源或数据流时, 保留章节并只写具体 `Not required:` 段落. 发生任一 Module 相关变化时使用完整 Module Design. Spec Readiness 在所有形式下都执行, 章节形式是唯一适用性来源.
+治理 spec 或 PRD 不修改非测试正式运行时代码时省略 `## Module Design`. 修改正式运行时代码但不改变 Module 责任, Interface (包括已有字段所表示含义的改变; 只改说明文字而含义不变的值不属于此类), Seam, 依赖方向, 权威来源或数据流时, 保留章节并只写具体 `Not required:` 段落. 发生任一 Module 相关变化时使用完整 Module Design. Spec Readiness 在所有形式下都执行, 章节形式是唯一适用性来源.
 
 ### Canonical ID
 

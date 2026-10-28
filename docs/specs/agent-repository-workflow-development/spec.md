@@ -62,6 +62,8 @@ Workflow Distribution 不使用 `distribution/manifest.json`, 平台专用投影
 
 Workflow Distribution Module 递归枚举固定安全树. 每个安全普通文件自动成为载荷. 符号链接, 目录联接, 非常规文件, 不安全相对路径, 大小写冲突, 越界解析和无法完整枚举的树关闭式失败. 枚举顺序必须稳定, 但文件进入载荷不依赖额外登记.
 
+载荷中的 Markdown 必须自包含: 它们原样安装到目标仓库, 引用 ARW 源码仓库内部文档会在那里悬空. 检查对象是 `baseline/` 与 `skills/` 下的 `.md` 载荷, 并按安装路径解析: `baseline/` 去掉前缀, `skills/<name>/` 对应 `.agents/skills/<name>/`, `.claude/skills/` 路径视同 `.agents/skills/`. 围栏代码之外的行内链接 `[文本](目标)` (外部 URL 和纯锚点除外) 以及以 `docs/agents/`, `.agents/skills/`, `.claude/skills/` 开头的反引号路径 (含 `<`, `>`, `*`, `{`, `}` 或空白的视为占位符而不检查) 须在载荷内解析, 或属于目标仓库自有约定 `AGENTS.md`, `CLAUDE.md`, `README.md`, `CONTEXT.md`, `CONTEXT-MAP.md`, `docs/adr/`, `docs/specs/`, `.scratch/`; 参考式链接和 HTML 不检查. 全文 (含围栏内) 不得含 `distribution/`, `node scripts/`, `Source Checkout`, `readIssueRequirement`, `Workflow Distribution`, `README.zh-CN.md`. 围栏内的链接和路径一律不检查; 围栏的识别复用 issue 文档已有的围栏规则 (`lib/arw-common/issue-documents.mjs` 的 `findUnfencedLineIndexes`: 允许缩进的三个反引号或波浪号行成对切换围栏, 未闭合时其后全部视为围栏内), 不另建 Markdown 结构解析. 检查是 Workflow Distribution Module 的直接值操作 `checkDistributionSelfContained(payload)`: 输入 `buildWorkflowDistribution` 成功结果的 `payload` 条目, 返回稳定排序的诊断数组 (码为 `distribution-internal-reference` 或 `distribution-reference-unresolved`, 空数组表示通过), 不使用 `status`. 它不在构建中执行, 而由源码仓库的生产检查脚本在构建成功后调用, 有诊断即失败: 布局或配置错误因此先于内容错误报告, 构建结果也仍可用于不要求自包含的测试夹具.
+
 ### Workflow Distribution configuration
 
 `distribution/config.json` 使用以下封闭结构:
@@ -284,7 +286,7 @@ Skill 身份保持小写 ASCII 字母与单个连字符的统一范围, 优先�
 
 ### Modules
 
-`Workflow Distribution Module` 只读构建和验证当前 Workflow Distribution. 它拥有固定布局, 安全枚举, `distribution/config.json` 解释和稳定载荷. 它不写源码仓库, 不投影目标仓库, 不执行安装.
+`Workflow Distribution Module` 只读构建和验证当前 Workflow Distribution. 它拥有固定布局, 安全枚举, `distribution/config.json` 解释, 稳定载荷和载荷 Markdown 的自包含检查. 它不写源码仓库, 不投影目标仓库, 不执行安装.
 
 `Workflow Distribution Sync Module` 拥有发布前同步的实际来源读取, 受管理区域提取, Skill 引用审核结果消费, 输入与重建范围绑定, 生成范围替换和 Projection 配置更新. 它通过只读状态 Adapter 核对同步所需的 Git 状态, 不执行 Git 写入或恢复, 也不取得源码仓库发布责任.
 
@@ -371,6 +373,8 @@ File Transaction Module Interface 接收一个限定范围的文件系统和完�
 #### Distribution and platform projection
 
 `buildWorkflowDistribution({distributionDirectory})` 是 Workflow Distribution 的最高层只读构建和验证入口. 成功结果准确包含 `status`, 已解析的 `distributionConfig`, 已解析的 `projectionConfig`, 按规范仓库相对路径稳定排序的 `payload` 条目, 以及空 `diagnostics`. 每个条目只包含 `path` 和 `bytes`; `path` 是规范仓库相对路径, `bytes` 是必须保持不变的准确字节序列. `payload` 是只供调用方在内存中按顺序消费的语义合同, 不规定 `Map`, Node.js `Buffer` 或 JSON 序列化. 下游投影与文件写入保持条目顺序并原样消费 `bytes`; 需要展示或持久化时由对应责任方定义另一种表示. 不安全目录, 配置或验证阻断问题返回 `blocked` 与完整 `diagnostics`, 不返回部分载荷. 文件读取失败返回 `failed`, `stage` 和 `diagnostics`. 该 Interface 不写文件, 不返回规范清单字节或清单声明清单.
+
+`checkDistributionSelfContained(payload)` 是直接值操作, 合同见 [Layout](#layout) 末段; 生产检查脚本只负责调用它并映射退出值.
 
 `adapter.evaluate(intent)` 是配置驱动的 Platform Adapter 的单一只读行为入口. 意图只包含所选平台, 统一载荷, Projection 配置, Repository Profile 和当前初始文件目标字节. `succeeded` 结果准确包含 `status: "succeeded"`, 按目标路径稳定排序的 `managedTargets`, 按目标路径稳定排序的 `repositoryOwnedSeeds` 和空 `diagnostics`. 每个受管目标准确包含目标仓库相对 `path`, 原样目标 `bytes` 和规范来源 `source`. 每个仓库自有初始文件准确包含 `action: "create" | "compatible"`, 目标仓库相对 `path`, 规范来源 `source`, 原样预期 `bytes` 和 `strategy: "regular-file"`. 输入冲突或不可投影内容返回 `blocked` 与完整 `diagnostics`, 不返回两个部分数组; Adapter 依赖失败返回 `failed`, `stage` 和 `diagnostics`. 结果不包含运行时证据, 发现清单, 优先级证明或冲突授权字段.
 
@@ -520,9 +524,13 @@ File Transaction Module 与业务编排和 Filesystem Module 分离, 因为多�
 
 Text Policy Module 独立拥有规范仓库文本的编码与换行政策, 优先让需要规范字节的 Markdown, JSON 和其他文本共享同一保证. JSON 解析自身只要求严格 UTF-8 与有效 JSON, 因而可以接受用户配置中的 CRLF; 要求无 BOM 的 UTF-8 与 LF 的调用方显式组合 Text Policy Module. 把政策嵌入 Filesystem Module 会让普通二进制操作承担文本责任, 分散到各格式 Module 又会重复实现. 当前选择接受适用调用方在读写规范文本时显式组合一次验证或生成操作的成本.
 
+自包含检查是载荷内容的词法检查, 不解析 Markdown 结构, 只复用已有围栏规则跳过示例, 因此不与 Markdown Visible Text Module 形成第二个结构权威. 豁免只列目标仓库自有的约定文件与目录, 使新增的内部引用默认被拒绝; 只检查名称会漏掉悬空链接, 只检查链接会漏掉无链接的内部名称, 两者都需要. 当前选择接受围栏内示例中的悬空链接和路径不被发现的成本.
+
 Markdown Visible Text Module 与 Document Language Analysis Module 保持独立, 因为前者拥有可由术语和语言等消费者共同使用的 Markdown 结构边界, 后者只拥有与文档选择无关的字符计算. 如果语言分析重新解析 Markdown, Document Terms 与显式语言检查可能对同一文本选择不同正文; 如果解析器直接计算比例, 它会取得单一消费方的字符分类政策. 当前边界让每份文档只需解析一次并由调用方选择正文文本流, 同时接受文本流需要携带 `heading | body` 分类的成本.
 
 ### ADR Evaluation
+
+载荷 Markdown 的自包含检查只是对 ADR-0026 所定分发文件的内容检查, 不改变授权主体, 持久格式, 信任根或分发边界, 因此不需要新的 ADR.
 
 Reviewer Capability Module 是源码专用维护工具, 不改变授权主体, 持久格式, 信任根或分发边界, 也不重新决定 ADR-0026 的分发权威, 因此不需要新的 ADR. `pool anchor-add` 对夹具只读的例外只限维护者显式运行的一个命令和 `anchors.json` 一个文件, 其结果经 Git 提交审核, 不扩大任何授权主体; 裁决库是该 Module 内部的持久状态, 位于调用方给出的盲池目录, 不进入分发, 不被其他 Module 读取, 两者都不构成需要 ADR 的跨 Module 持久决定.
 
@@ -556,7 +564,7 @@ Reviewer Capability Module 是源码专用维护工具, 不改变授权主体, �
 
 ## Validation strategy
 
-固定验证覆盖 Workflow Distribution 构建与配置, 规范 Role 与按需读取文档的布局和准确字节, 只选择固定 `LICENSE.<source-id>` 许可证来源, 仓库自有初始文件的准确目标, 两个平台的准确投影, Skill 引用分析与转换, 发布前同步直接重建, 以及公共 Module 的路径, Markdown 可见文字, 文档语言, JSON, 配置转换, 文本和文件事务边界. Workflow Distribution 测试夹具使用许可证文件而不是通用 NOTICE 文件证明实际来源选择和额外直接文件排除. 测试通过生产 Module Interface 观察行为, 并覆盖正常结果, 删除前输入或状态阻断, 删除开始后的稳定失败阶段, 完整生成范围替换, 独立初始文件保留, I/O 失败, 稳定排序和准确字节. Filesystem 测试分别覆盖相对与绝对范围操作的准确公开结果, 范围本身, 范围内外目标, 尚不存在的路径, 输入形式错误和零 I/O; 限定范围的操作另外覆盖目标链接, 嵌套现有祖先的符号链接或目录联接, 缺失前缀, 以及祖先状态变化后的下一次操作重新阻断. 这些测试断言公开路径, 状态与诊断信息, 不把内部祖先遍历步骤作为合同. Platform Adapter 测试直接断言 `managedTargets` 与 `repositoryOwnedSeeds` 的准确条目字段, `action`, `strategy` 和顺序. 平台投影不使用静态预期结果或第二份完整预期清单; 发布前同步不测试内部回滚, 失败后只保留外部 Git 恢复与完整重跑责任.
+固定验证覆盖 Workflow Distribution 构建与配置, 规范 Role 与按需读取文档的布局和准确字节, 只选择固定 `LICENSE.<source-id>` 许可证来源, 仓库自有初始文件的准确目标, 两个平台的准确投影, Skill 引用分析与转换, 发布前同步直接重建, 以及公共 Module 的路径, Markdown 可见文字, 文档语言, JSON, 配置转换, 文本和文件事务边界. 自包含检查以内存载荷覆盖可解析的链接, 目标仓库自有路径, 代码围栏内的示例, 悬空链接与路径和内部名称. Workflow Distribution 测试夹具使用许可证文件而不是通用 NOTICE 文件证明实际来源选择和额外直接文件排除. 测试通过生产 Module Interface 观察行为, 并覆盖正常结果, 删除前输入或状态阻断, 删除开始后的稳定失败阶段, 完整生成范围替换, 独立初始文件保留, I/O 失败, 稳定排序和准确字节. Filesystem 测试分别覆盖相对与绝对范围操作的准确公开结果, 范围本身, 范围内外目标, 尚不存在的路径, 输入形式错误和零 I/O; 限定范围的操作另外覆盖目标链接, 嵌套现有祖先的符号链接或目录联接, 缺失前缀, 以及祖先状态变化后的下一次操作重新阻断. 这些测试断言公开路径, 状态与诊断信息, 不把内部祖先遍历步骤作为合同. Platform Adapter 测试直接断言 `managedTargets` 与 `repositoryOwnedSeeds` 的准确条目字段, `action`, `strategy` 和顺序. 平台投影不使用静态预期结果或第二份完整预期清单; 发布前同步不测试内部回滚, 失败后只保留外部 Git 恢复与完整重跑责任.
 
 最终 Skill Package 与平台投射结果用于证明调用元数据保留, 源码限定 Skill 未进入分发, 普通 Reviewer 规则仍可分发及 Claude 静态支持保留. 这些观察不以文档句子断言替代实际载荷, 不证明原生 Reviewer 能力; 运行与能力测试沿产品共享入口和既有能力验证边界进行.
 

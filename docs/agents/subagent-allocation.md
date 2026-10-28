@@ -75,4 +75,6 @@ Claude Code 使用以下映射; 用户级规则另有模型选择要求时以用
 | 高 | `opus` | `medium` | `high` | `xhigh` |
 
 当前创建非预定义 subagent 的 Interface 不能逐次设置 Fast 参数. 表中的模型和推理强度是当前可传递的配置; Standard 主会话下的实际 Fast 状态由平台决定, 不属于本映射的承诺.
+
+根 `AGENTS.md` 的 `Autonomous Working Mode` 要求分析重要决策的独立 Agent 的智力水平和推理强度不低于 Main Agent, 不按上表降级.
 <!-- arw:repository-owned:end -->

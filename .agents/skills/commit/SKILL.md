@@ -11,7 +11,7 @@ name: commit
 
 - 每个提交只包含一个 effort, Main Agent 只暂存该 effort 的内容. 共享文件中的改动按实际语义归属判断, 不按路径猜测.
 - 检查精确的已暂存路径集合. 每一项都符合 [非实施分类](#non-implementation-commit-workflow) 时使用非实施工作流; 任何一项属于当前仓库的实施工作时, 对完整候选使用 [实施 issue 工作流](#implementation-issue-commit-workflow); 某项无法分类时先停止并解决归属, 不推断它是实施工作.
-- 只改 Agent 规则与文档 (`AGENTS.md`, `docs/**`, Skill 及其 `.claude/skills` 投影和 `distribution/` 副本中的 Markdown, 以及仓库根目录的 `README.md`, `README.zh-CN.md`, `CONTEXT.md`, `CLAUDE.md`) 的候选属于非实施分类, 不要求 effort. 代码仍是实施工作.
+- 只改 Agent 规则与文档 (`AGENTS.md`, `docs/**`, Skill 及其 `.claude/skills` 投影中的 Markdown, 以及仓库根目录的 `README.md`, `CONTEXT.md`, `CLAUDE.md`) 的候选属于非实施分类, 不要求 effort. 代码仍是实施工作.
 - 同一实施授权覆盖完整候选时, 符合条件的非实施内容可以与实施工作保留在一起, 不因一项原子变更同时更新规划记录或仓库状态而拆分它. 授权范围外的内容先取得自己的授权, 才能加入候选.
 
 ## Implementation issue commit workflow
@@ -33,7 +33,7 @@ name: commit
 - Gate 1 覆盖本次每个新进入 `completed` 或 `wontfix` 的 issue, 它必须在授权范围内. Engine 拒绝遗漏授权和跨 effort 的变化.
 - Gate 2 是 effort 级 Spec Audit, 在当前 effort 的每个实施 issue 都处于终态时适用. 文档是授权 issue 有效 `## Spec Requirement` 引用的 spec, PRD 和 ADR 的并集, 审核范围是整份文档.
 - 适用 Gate 2 的文档并集为空时, 停止并取得用户明确确认, 在输入中写入包含具体 `reason` 和 UTC 秒级 `confirmedAt` 的 `gate2Exception`.
-- 整个 effort 的提交都没有改动并集内的文档时, 可以跳过 Gate 2: Main Agent 用 `git log` 核对后写入 `gate2Exception` (`reason` 写明核对结果, 不需用户确认), Request 的 Gate 2 文档为空. 并集内文档在本次候选中有改动时引擎拒绝.
+- 并集非空且整个 effort 的提交都没有改动并集内的文档时, 可以跳过 Gate 2: Main Agent 用 `git log` 核对后写入 `gate2Exception` (`reason` 写明核对结果, 不需用户确认), Request 的 Gate 2 文档为空. 并集内文档在本次候选中有改动时引擎拒绝.
 
 ### Run
 
@@ -49,7 +49,7 @@ Main Agent 负责暂存, Request, 审核协调和处理问题, 不代写语义�
 - `.scratch/<NNNN>-<effort-slug>/spec.md` 和 `.scratch/<NNNN>-<effort-slug>/map.md`.
 - ARW 解析为实施, Application Source 或 Wayfinder issue 的 `.scratch/<NNNN>-<effort-slug>/issues/<NN>-<issue-slug>.md`.
 - `.scratch/<NNNN>-<effort-slug>/research/**` 或 `.scratch/<NNNN>-<effort-slug>/prototype/**` 下的安全普通文件, 可以使用任何扩展名, 不要求其他文件链接它们.
-- 只含上述规则与文档 Markdown 的改动, 不要求就绪记录. 运行 `node scripts/project-claude-skills.mjs --check`, `node scripts/check-workflow-distribution.mjs` 和 `arw text check`, Main Agent 用 grep 自查跨文档引用和副本一致性. 例外: 改动审核系统本身 (Reviewer 角色, 关卡语义) 或长期规范合同条款时, 由 Main Agent 按 `reviewer-launch` 的 Other reviews 手工准备并启动一个 `requirements-reviewer` (普通身份, `issueIds` 为空数组, 再次审核按 `reviewer-launch` 复用原线程, 不用 `commit-audit prepare`), 最多一轮, 不运行 Spec Readiness; Main Agent 处理报告问题后提交, 不复审.
+- 只含上述规则与文档 Markdown 的改动, 不要求就绪记录. 运行 `arw text check`, Main Agent 用 grep 自查跨文档引用和副本一致性. 例外: 改动审核系统本身 (Reviewer 角色, 关卡语义) 或长期规范合同条款时, 由 Main Agent 按 `reviewer-launch` 的 Other reviews 手工准备并启动一个 `requirements-reviewer` (普通身份, `issueIds` 为空数组, 再次审核按 `reviewer-launch` 复用原线程, 不用 `commit-audit prepare`), 最多一轮, 不运行 Spec Readiness; Main Agent 处理报告问题后提交, 不复审.
 - 安全的 `gitlink`. 它把子模块提交记录为当前仓库状态, 是否符合条件不取决于 Application 配置, 自身路径或其他已暂存项; Main Agent 仍按实际语义把它归入本次 effort.
 
 候选可以删除该 effort 的辅助文件, 但必须保留每个已提交的 ARW Artifact 身份; 类型和编号不变的重命名属于身份保留. 候选使实施 issue 新进入 `completed` 或 `wontfix` (包括从另一个终态转换) 时不符合条件; `HEAD` 中已处于相同终态的 issue 不因其他字节变化而再次进入该状态.

@@ -25,7 +25,7 @@ name: issue-tracking
 - Application Source Issue: 沿用实施 issue 结构, 由精确的 `Module implementation issue:` 关联字段标识. 它镜像 Module 状态, 状态只来自 Application 同步, 不执行本地实施, Spec Readiness, 验证或 Commit Audit, 也不添加本地完成证据.
 - Wayfinder issue: H1 后使用 `Type:`, 可选的 `Status:` 和 `Blocked by:` 元数据, 正文使用 `##### Question`. 这里的 `Type:` 是 Wayfinder 字段.
 
-已发布的 Module 实施 issue 的受保护内容存在真实问题, 导致已同意的范围无法继续时, 说明问题并请求用户授权精确修正. 获准后只遵循 `application-workflow` Skill 的 `references/module-correction.md`, 不更改或建议更改已关联的 Application issue.
+已发布的 Module 实施 issue 的受保护内容存在真实问题, 导致已同意的范围无法继续时, 说明问题并请求用户授权精确修正. 获准后只遵循 `application-workflow` Skill 的 [module-correction.md](../application-workflow/references/module-correction.md), 不更改或建议更改已关联的 Application issue.
 
 ## Triage labels
 
@@ -51,13 +51,13 @@ Governing requirements:
 
 - 每行是连字符, 空格和反引号包裹的精确路径, 可以附带 `#ascii-heading-anchor`. 路径相对于最近 Git 仓库根目录, 与 Spec Readiness Input 的 `filePath` 相同, 永远不相对于 issue 目录. Markdown 超链接不是有效列表项. 只有没有 ATX 标题, 或恰好一个 H1 且没有其他 ATX 标题的文档可以只写路径. 不引用本地跟踪器 issue.
 - 只列 issue 实际实现的现有治理要求. 只有 effort 的存在目的就是实现长期规范时, 该规范才是要求; effort 把修改长期规范作为输出时, 把所需变更写进验收标准. 相关文档, 背景, 交付目标, 方案构想或实施指引都不是治理要求. `## What to build` 负责交付结果, `## Acceptance criteria` 负责可验证的完成条件.
-- 发布 issue 前确定该章节. 普通 `arw print` 成功不证明引用有效: 编写后确认要求解析入口接受章节和列表项, 且目标文件和锚点存在 (Source Checkout 可以定向调用 `readIssueRequirement`). Spec Readiness 和 Commit Audit 独立审查该格式. 不另建 effort 级要求清单.
+- 发布 issue 前确定该章节. 普通 `arw print` 成功不证明引用有效: 编写后确认要求解析入口接受章节和列表项, 且目标文件和锚点存在. Spec Readiness 和 Commit Audit 独立审查该格式. 不另建 effort 级要求清单.
 
 ## Issue lifecycle
 
 - issue 终态与 Commit Audit 相互独立: 实施 issue 可以进入 `completed`, Application Source Issue 可以镜像 `completed | wontfix`, Wayfinder issue 可以进入 `resolved`, 都不需要审计伴随文件.
 - 实施完成证据写在精确的 `## Validation` 标题下, 内容非空; 其他标题不满足生命周期要求. Wayfinder issue 记录所需的解决证据, 工作实际完成时才更新状态.
-- 已取得代码审查结果后补记 `Status` 或验收勾选时, 按 `code-review` 的完成记录规则判断结果是否仍有效.
+- 已取得代码审查结果后补记 `Status` 或验收勾选时, 按 `code-review` Skill 的[完成记录规则](../code-review/result-reuse.md#completion-records)判断结果是否仍有效.
 - 每个实施 issue 在 `.scratch/<NNNN>-<effort-slug>/issues/<NN>.spec-readiness.json` 拥有自己的就绪记录, 只授权该 issue, 不通过 effort 根目录共享. 就绪 subject 及其失效规则见 `spec-readiness` Skill.
 
 ## Issue record sections
