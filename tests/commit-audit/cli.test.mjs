@@ -172,7 +172,8 @@ test('verify --non-implementation accepts planning records and rejects other or 
 
 test('verify --non-implementation accepts a candidate of only Agent rule and documentation Markdown', async t => {
     const repository = await createRepository(t);
-    const paths = ['AGENTS.md', 'docs/agents/rule.md', '.agents/skills/a/SKILL.md', '.claude/skills/a/SKILL.md', 'distribution/skills/a/SKILL.md'];
+    const paths = ['AGENTS.md', 'docs/agents/rule.md', '.agents/skills/a/SKILL.md', '.claude/skills/a/SKILL.md', 'distribution/skills/a/SKILL.md',
+        'README.md', 'README.zh-CN.md', 'CONTEXT.md', 'CLAUDE.md'];
     for (const path of paths) {
         await mkdir(dirname(join(repository.root, path)), {recursive: true});
         await writeFile(join(repository.root, path), '# Rule\n', 'utf8');
@@ -183,4 +184,10 @@ test('verify --non-implementation accepts a candidate of only Agent rule and doc
     await writeFile(join(repository.root, '.agents/skills/a/agents.yaml'), 'a: 1\n', 'utf8');
     await runGit(repository.root, ['add', '.']);
     assert.equal((await run(['commit-audit', 'verify', '--non-implementation'], repository)).result, 1);
+
+    await runGit(repository.root, ['rm', '-q', '-f', '.agents/skills/a/agents.yaml']);
+    await mkdir(join(repository.root, 'tests/fixtures'), {recursive: true});
+    await writeFile(join(repository.root, 'tests/fixtures/README.md'), '# Fixture\n', 'utf8');
+    await runGit(repository.root, ['add', '.']);
+    assert.match((await run(['commit-audit', 'verify', '--non-implementation'], repository)).events[0].message, /tests\/fixtures\/README\.md/u);
 });

@@ -451,19 +451,7 @@ ARW does not generate `.claude/settings.json`. To let Claude Code run these `arw
 
 ## Included Skills
 
-`arw workflow init` installs applicable Skills for the platforms selected by the user. Codex uses `.agents/skills` in the target repository; Claude Code uses `.claude/skills`. A Skill is a set of task-specific operating instructions. You can name one directly in a conversation, for example, `Use $grill-with-docs to confirm the requirements with me`.
-
-In the current Source Checkout, Skills are grouped below by their main purpose. A Skill may also be called by another Skill; these groups help you find an entry point and do not change the Skill's instructions:
-
-- Discussion and clarification: `grill-me`, `grilling`, `grill-with-docs`, `wait-what`, `to-questionnaire`.
-- Investigation and design: `wayfinder`, `research`, `prototype`, `domain-modeling`, `codebase-design`, `improve-codebase-architecture`.
-- Planning and implementation: `to-spec`, `to-tickets`, `triage`, `implement`, `tdd`, `diagnosing-bugs`, `resolving-merge-conflicts`.
-- Review and cross-repository coordination: `code-review`, `application-workflow`.
-- Handoff, setup, and learning: `handoff`, `wizard`, `teach`, `writing-for-agents`.
-
-Choose a Skill based on your current goal. Use `grilling` or `grill-with-docs` to test important choices; use `wayfinder` to save unknowns that span more than one session; use `to-spec` to organize existing agreement into a specification; use `implement` when an implementation issue already exists; and explicitly use `application-workflow` after deciding to follow the multi-repository and JIRA path.
-
-This directory is a reader-facing discovery entry point, not a machine inventory or the full contract for every Skill. Actual steps come from the relevant `SKILL.md` in the target repository and applicable `docs/agents/**`. `distribution/` is the installation payload synchronized and reviewed before release, not the place to edit this content during ordinary Source Checkout work.
+`arw workflow init` installs applicable Skills for the platforms selected by the user. Codex uses `.agents/skills` in the target repository; Claude Code uses `.claude/skills`. A Skill is a set of task-specific operating instructions. Most are used automatically when a task matches; the rest never trigger on their own, so you name them in a conversation, for example `Use $grill-with-docs to confirm the requirements with me`. To see every Skill, whether it is automatic or must be named, and when to use it, read the [Skills manual](docs/manuals/skills.md).
 
 ## Develop ARW
 
@@ -483,6 +471,7 @@ That balance will change as Agent intelligence improves. When a mechanical check
 - [Agent CLI Guide](docs/manuals/agent-cli.md): When you have decided to save and start an external Agent CLI configuration with ARW, read about configuration, argument forwarding, and process and session boundaries.
 - [Everyday commands for Agent conversations](docs/manuals/daily-agent-conversation-commands.md): When you are already in an Agent conversation and want to choose a request to send, use this quick reference with decision prompts.
 - [Developer Guide](docs/manuals/development.md): When you have cloned ARW Source Checkout and are preparing to maintain implementation, documentation, Workflow Distribution, or a release candidate, use this to choose a maintenance path and validation entry point.
+- [Skills manual](docs/manuals/skills.md): When you want to know which Skills ARW installs, which ones the Agent uses automatically, and which ones you must name, use this list with a purpose and trigger for each.
 - [ARW long-term specification](docs/specs/agent-repository-workflow/spec.md): For stable product behavior, security boundaries, and long-term responsibilities (in Chinese).
 - [Installation long-term specification](docs/specs/agent-repository-workflow-installation/spec.md): For Bootstrap, global configuration, installation directory, PATH ownership, upgrades, and uninstall contracts (in Chinese).
 - [Reader documentation specification](docs/specs/arw-reader-documentation/spec.md): For the long-term responsibilities and routing boundaries of the root README and manuals (in Chinese).

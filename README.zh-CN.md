@@ -451,19 +451,7 @@ ARW 不生成 `.claude/settings.json`. 要让 Claude Code 像 Codex 的 `.codex/
 
 ## 附带技能
 
-`arw workflow init` 根据用户选择的平台安装适用 Skills. Codex 使用目标仓库中的 `.agents/skills`, Claude Code 使用 `.claude/skills`. Skill 是 Agent 在特定任务中遵循的操作说明; 用户可以在对话中直接点名, 例如 `使用 $grill-with-docs 和我确认需求`.
-
-当前 Source Checkout 中的 Skill 身份按主要用途如下. 同一个 Skill 可能被其他 Skill 调用, 这里的分组只帮助发现入口, 不改变它的实际说明:
-
-- 讨论和澄清: `grill-me`, `grilling`, `grill-with-docs`, `wait-what`, `to-questionnaire`.
-- 调查和设计: `wayfinder`, `research`, `prototype`, `domain-modeling`, `codebase-design`, `improve-codebase-architecture`.
-- 规划和实施: `to-spec`, `to-tickets`, `triage`, `implement`, `tdd`, `diagnosing-bugs`, `resolving-merge-conflicts`.
-- 审核和跨仓库协调: `code-review`, `application-workflow`.
-- 交接, 设置和学习: `handoff`, `wizard`, `teach`, `writing-for-agents`.
-
-选择 Skill 时先从当前目标出发. 需要检验重要选择时用 `grilling` 或 `grill-with-docs`; 需要保存超过一个 session 的未知问题时用 `wayfinder`; 要把既有共识整理为规范时用 `to-spec`; 已有实施 issue 时用 `implement`; 已经决定进入多仓库与 JIRA 路线时显式使用 `application-workflow`.
-
-这份目录是面向读者的发现入口, 不是机器清单或每个 Skill 的完整合同. 实际步骤以目标仓库中对应的 `SKILL.md` 和适用 `docs/agents/**` 为准. `distribution/` 是发布前同步并审核的安装载荷, 不是 Source Checkout 日常编写这些内容的位置.
+`arw workflow init` 根据用户选择的平台安装适用 Skills. Codex 使用目标仓库中的 `.agents/skills`, Claude Code 使用 `.claude/skills`. Skill 是 Agent 在特定任务中遵循的操作说明. 多数 Skill 在任务匹配时自动使用, 其余不会自动触发, 需要你在对话中点名, 例如 `使用 $grill-with-docs 和我确认需求`. 想看全部 Skill, 它们是自动使用还是需要点名, 以及何时用, 请阅读 [Skill 手册](docs/manuals/skills.zh-CN.md).
 
 ## 开发 ARW
 
@@ -483,6 +471,7 @@ ARW 不生成 `.claude/settings.json`. 要让 Claude Code 像 Codex 的 `.codex/
 - [Agent CLI 指南](docs/manuals/agent-cli.zh-CN.md): 当你已经决定用 ARW 保存并启动外部 Agent CLI 配置时, 查阅配置, 参数透传以及进程和会话边界.
 - [与 Agent 对话的日常命令](docs/manuals/daily-agent-conversation-commands.zh-CN.md): 当你已经处于 Agent 对话中并希望快速选择可发送内容时, 使用带判断提示的速查内容.
 - [开发者指南](docs/manuals/development.zh-CN.md): 当你已经克隆 ARW Source Checkout 并准备维护实现, 文档, Workflow Distribution 或发布候选时, 选择维护路线和验证入口.
+- [Skill 手册](docs/manuals/skills.zh-CN.md): 当你想了解 ARW 安装了哪些 Skill, 哪些由 Agent 自动使用, 哪些需要你点名时, 查看带用途和触发时机的清单.
 - [ARW 长期规格](docs/specs/agent-repository-workflow/spec.md): 查证稳定产品行为, 安全边界和长期责任.
 - [安装长期规格](docs/specs/agent-repository-workflow-installation/spec.md): 查证 Bootstrap, 全局配置, 安装目录, PATH 归属, 升级和卸载合同.
 - [读者文档规范](docs/specs/arw-reader-documentation/spec.md): 查看根 README 与各手册的长期分工和路由边界.

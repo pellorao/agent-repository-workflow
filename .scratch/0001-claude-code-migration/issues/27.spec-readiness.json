@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0001:27",
+  "request": {
+    "digest": "f28fbc43a4e12f74f196ebe388b844eb537dcfd1dc2de89cf45c60dfc0695c1d",
+    "filePath": ".tmp/claude-code/06588b1e-7f07-4832-8933-107aaf5b5978/0001_27/spec-readiness/requests/request-3cc8fa39-7bcc-45c1-9707-792c7b2dfd33.json",
+    "id": "3cc8fa39-7bcc-45c1-9707-792c7b2dfd33"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "9803a9120632ba201ecccc1996b3e3cc75c13faf7b5cdedb5d4e518dc6d8ebd0"
+  },
+  "inputs": [
+    {
+      "filePath": "docs/specs/agent-repository-workflow/spec.md",
+      "role": "governing-spec",
+      "sha256": "48e106a969b39e109e65ff04a7a10f97def7af4a0ad1806262daefdd9acea896"
+    },
+    {
+      "filePath": "docs/specs/arw-reader-documentation/spec.md",
+      "role": "governing-spec",
+      "sha256": "09affa79a65b92eee4755b3c63ef59bd872506c7abec2134f0629b5b023d3ac9"
+    },
+    {
+      "filePath": "lib/commit-audit/commit-audit.mjs",
+      "role": "architecture-evidence",
+      "sha256": "27f6ae06117c9473a72f46d77656d73025df62815d68cdf490697b95982919dd"
+    },
+    {
+      "filePath": "upstream/sources/mattpocock-skills/source.json",
+      "role": "architecture-evidence",
+      "sha256": "e25da58c453cc37c41a177c043b62323a429cabd2987666ad3a29d0a973d066e"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0001-claude-code-migration/issues/27-skills-manual.md",
+    "sha256": "b8f20998977a7351427eb6a42a3e66bd6c487cc8cfd06c1760db5bb1b5ec0b25"
+  },
+  "result": "satisfied"
+}
