@@ -18,7 +18,7 @@ node install-arw.mjs --non-interactive --register-path true
 
 规范来源没有稳定 tag 时, 引导脚本明确失败, 不自动安装默认分支. 此时使用克隆 Source Checkout 后执行 `node install.mjs` 的本地安装路线和相应 `-pre` 身份.
 
-引导安装脚本默认选择最高稳定 SemVer 标签. `--version MAJOR.MINOR.PATCH` 只接受远端存在的精确稳定标签, 并明确授权安装历史版本和降级. 单文件引导安装脚本生成时, 从根 `release-validation.json` 投影规范 HTTPS 远端. 生成物可以包含该派生值, 但不成为第二权威来源. 运行时不读取当前目录的 Git 配置, 也不提供远端覆盖选项. 它建立临时检出目录, 解析标签对应的提交, 验证检出目录 `HEAD`, 调用该版本根目录的 `install.mjs`, 再清理临时检出目录.
+引导安装脚本默认选择最高稳定 SemVer 标签. `--version MAJOR.MINOR.PATCH` 只接受远端存在的精确稳定标签, 并明确授权首次安装历史版本. ARW 不提供降级: 已安装版本高于目标版本时安装报错且零安装写入, 无论是否使用 `--version`; 需要旧版本时先卸载再安装. 单文件引导安装脚本生成时, 从根 `release-validation.json` 投影规范 HTTPS 远端. 生成物可以包含该派生值, 但不成为第二权威来源. 运行时不读取当前目录的 Git 配置, 也不提供远端覆盖选项. 它建立临时检出目录, 解析标签对应的提交, 验证检出目录 `HEAD`, 调用该版本根目录的 `install.mjs`, 再清理临时检出目录.
 
 维护者也可以从源码仓库根直接运行:
 
@@ -28,9 +28,9 @@ node install.mjs
 
 没有任何发布身份参数时, 安装程序从当前工作树执行本地安装, 不读取 Git 元数据, 不访问远端, 也不要求干净工作树, Git 提交或标签. 本地身份从根 `package.json.version` 机械派生为固定 `<version>-pre`. 用户不能提供另一个本地版本或后缀.
 
-任一 `--release-tag`, `--release-commit` 或 `--selection-mode` 出现时都进入正式发布路径. 三项必须完整, 未重复且有效. 部分或无效的证据不退回本地安装.
+任一 `--release-tag` 或 `--release-commit` 出现时都进入正式发布路径. 两项必须完整, 未重复且有效. 部分或无效的证据不退回本地安装.
 
-`--selection-mode` 只接受 `latest` 或 `explicit`. `latest` 表示 Bootstrap 选择了最高稳定版本, `explicit` 表示用户向 Bootstrap 提供了 `--version`. `--version` 只属于 Bootstrap, Installer 不接受它. `--release-tag` 必须是没有 `v` 前缀的规范稳定 `MAJOR.MINOR.PATCH`, `--release-commit` 必须是完整的 40 或 64 位小写十六进制 Git 对象 ID. Installer 验证标签与 `package.json.version` 一致, 标签解析结果, 检出副本 `HEAD` 和传入提交完全相同, 并验证载荷字节属于该提交.
+Installer 不接受选择方式参数, 版本策略不区分默认最高版本与 `--version`. `--version` 只属于 Bootstrap, Installer 不接受它. `--release-tag` 必须是没有 `v` 前缀的规范稳定 `MAJOR.MINOR.PATCH`, `--release-commit` 必须是完整的 40 或 64 位小写十六进制 Git 对象 ID. Installer 验证标签与 `package.json.version` 一致, 标签解析结果, 检出副本 `HEAD` 和传入提交完全相同, 并验证载荷字节属于该提交.
 
 源码仓库和 ARW 安装目录都提供 `arw.mjs`, `arw.cmd` 和无扩展名 `arw` 启动器. PowerShell, CMD, Git Bash 和 Linux Bash 使用同一个日常 CLI `arw`. Bootstrap 与 Installer 在加载 Installation Implementation 或开始 Git, 网络, 临时资源, 提示和安装写入前检查运行时. Node.js 低于 24 或无法解析时写入明确错误并以退出码 1 结束. 普通 `arw` 与 Uninstaller 不执行显式版本检查. 启动器每次从当前 PATH 解析 `node`, 不固定安装时的运行时绝对路径.
 
@@ -200,7 +200,7 @@ ARW 自己的提供方设置保存在全局 `config.json` 的 `backgroundAgent.p
 
 Codex 自定义模型记录 `models.custom.json` 是 Codex 用户目录 (默认 `~/.codex`, 非空 `CODEX_HOME` 时为该准确目录) 中由用户拥有的可选文件, 只在启动 Codex App Server 时读取其 `models` 数组, 必须是 JSON 数组, 缺失视为空数组. ARW 不创建, 不补缺, 不改写它, 卸载时保留, 其中的 `providers` 不再被 ARW 读取.
 
-安装已有 Codex 时代遗留的 `models.custom.json.providers` 时一次性迁移: 当要写入或已有的 `config.json` 尚无 `backgroundAgent.providers` 时, 安装读取该文件的 `providers` 并与默认值合并后写入同一配置事务, 以文件中的值为准, 保留全部提供方与字段, 并提示已迁移的提供方; `backgroundAgent.providers` 一旦存在即为唯一来源, 之后不再读取旧文件, 不覆盖用户在配置中的修改. 本字段不增加配置版本, 较早的 ARW 版本会以未知字段拒绝含 `backgroundAgent.providers` 的配置, 降级安装前须先从 `config.json` 删除该字段. 旧文件不存在, Codex 用户目录不存在或没有 `providers` 时视为无需迁移; 文件存在但无法解析或 `providers` 结构无效且需要迁移时, 在任何安装写入前报错, 不丢失其中的值.
+安装已有 Codex 时代遗留的 `models.custom.json.providers` 时一次性迁移: 当要写入或已有的 `config.json` 尚无 `backgroundAgent.providers` 时, 安装读取该文件的 `providers` 并与默认值合并后写入同一配置事务, 以文件中的值为准, 保留全部提供方与字段, 并提示已迁移的提供方; `backgroundAgent.providers` 一旦存在即为唯一来源, 之后不再读取旧文件, 不覆盖用户在配置中的修改. 本字段不增加配置版本, 较早的 ARW 版本会以未知字段拒绝含 `backgroundAgent.providers` 的配置. 旧文件不存在, Codex 用户目录不存在或没有 `providers` 时视为无需迁移; 文件存在但无法解析或 `providers` 结构无效且需要迁移时, 在任何安装写入前报错, 不丢失其中的值.
 
 默认全局上限 `16` 为不同提供方的独立根线程并行留出空间, 同时约束共享 App Server 加载的根线程总数; OpenAI 与 Anthropic 默认上限 `4` 分别收紧这两个提供方的并发预算, 使 Claude 后端的 Reviewer 也不会占满全局名额. 更多并行会增加本机内存和处理器占用及提供方请求负载; 名额耗尽且无法安全回收时, 新请求按容量规则被拒绝. 用户可依据机器资源和实际服务配额调整这些上限.
 
@@ -249,7 +249,7 @@ Strata 配置示例 (`config.json` 片段):
 
 安装清单缺失或损坏时不能证明残留归属. 目录可以保留有效配置, 未知文件和安全真实父目录, 但所有计划中的受管理目标都必须缺失. 即使残留字节与载荷相同, 安装程序也不覆盖, 删除或自动清理. 不提供 `--take-over`, 接管提示或残留清理. 旧 `.local-tracker` 安装不自动迁移或接管.
 
-默认最高稳定发布允许首次安装, 同版本修复和升级, 但拒绝降级. 显式 `--version` 授权精确历史发布和降级. 本地固定 `-pre` 可以覆盖核心版本较低的稳定版或固定 `-pre`, 以及相同的 `-pre`; 它不能覆盖相同核心版本的稳定版或任何更高版本. 相同核心版本的正式稳定版可以覆盖本地 `-pre`. 其他预发布标签和格式错误的版本关闭式失败.
+版本策略不区分 Bootstrap 的选择方式: 没有已安装版本时允许首次安装 (显式 `--version` 可选择精确历史发布), 同版本修复和升级允许, 已安装版本高于目标版本时拒绝降级. 本地固定 `-pre` 可以覆盖核心版本较低的稳定版或固定 `-pre`, 以及相同的 `-pre`; 它不能覆盖相同核心版本的稳定版或任何更高版本. 相同核心版本的正式稳定版可以覆盖本地 `-pre`. 其他预发布标签和格式错误的版本关闭式失败.
 
 替换在完整的写入前检查后移除当前受管理运行时, 再全新复制, 最后写安装清单. 它不维护旧运行时回滚. 未知文件和用户配置保留.
 
@@ -350,9 +350,9 @@ Module 返回 `unchanged | removed | partial | unknown`, 阶段, 诊断信息和
 
 `Installation Payload Module` 独占 `release-manifest.json` 验证, 平台启动器选择, 运行时清单, 完整 Workflow Distribution 组合, 安全来源验证和载荷字节读取. 它不写安装目录. Engine Installation Module 通过一个内部 Installation Payload Seam 消费该 Module 的完整结果, 使生产 Adapter 和确定性测试 Adapter 不改变 Engine 的载荷消费责任.
 
-`Identity Module` 拥有产品身份, 稳定版与固定 `-pre` 的版本规则, 软件包身份和当前 `arwVersion` 权威来源选择. 它不拥有载荷或事务.
+`Identity Module` 拥有产品身份, 稳定版与固定 `-pre` 的版本语法与解析, 软件包身份和当前 `arwVersion` 权威来源选择. 它不拥有载荷或事务.
 
-`Engine Installation Module` 选择 Local Source Adapter 或 Release Source Adapter, 再让两种来源共用同一个安装生命周期. 它编排后台管理进程的互斥关闭, 载荷, 配置, PATH 或配置文件和运行时写入. Release Source Adapter 消费 Git, Installation Payload 和 Scoped Filesystem Interface, 但不让产品调用方选择这些依赖.
+`Engine Installation Module` 选择 Local Source Adapter 或 Release Source Adapter, 再让两种来源共用同一个安装生命周期. 它编排后台管理进程的互斥关闭, 载荷, 配置, PATH 或配置文件和运行时写入. Release Source Adapter 消费 Git, Installation Payload 和 Scoped Filesystem Interface, 但不让产品调用方选择这些依赖. 它在收集阶段拥有版本顺序 (数值核心版本, 同核心时固定 `-pre` 低于稳定版), 经 Identity 的 `parseArwVersion` 解析后比较已验证的目标 `arwVersion` 与 Installation Contract Module 验证的已安装清单版本, 执行版本策略, 违反时在任何安装写入前阻断.
 
 `Uninstallation Module` 验证当前受管理安装, 确认后台管理进程, 所有受管根线程及单个共享 App Server 可以安全退出, 再按用户配置选择和有效清单证明编排平台登记, 受管理文件, 残留枚举与清单最后删除. 它不取得安装来源, 构建载荷或升级已有配置.
 
@@ -370,11 +370,11 @@ Bootstrap Module Interface 接受 [Public entry points](#public-entry-points) �
 
 `Bootstrap Artifact Module` Interface 接受源码仓库根目录和 `write | check` 模式. 它读取当前规范 Bootstrap 行为, Runtime Compatibility 行为和已验证的发布配置, 再确定性形成完整单文件生成物. `write` 只在完整构建成功后写入规范生成物; `check` 只读比较现有生成物且不写文件. 成功结果只包含 `status: "succeeded"`, `changed` 和空 `diagnostics`; `check` 成功固定使用 `changed: false`. 输入或配置无效, 规范行为无法唯一组成或 `check` 发现字节不一致时返回 `blocked` 与完整 `diagnostics`. 配置读取或生成物 I/O 失败返回 `failed`, `stage` 和 `diagnostics`. 非成功结果不返回部分生成物, Interface 也不公开组成过程. 生成物只投影规范远端和行为, 不成为其权威来源.
 
-Identity Module Interface 根据当前运行目录的来源布局或完整有效安装清单返回唯一规范产品身份. 成功结果只包含 `status: "succeeded"`, 固定 `product: "agent-repository-workflow"`, 规范 `arwVersion` 和空 `diagnostics`. 源码布局只接受根 `package.json.version`; 安装布局只接受清单 `arwVersion`. 两种来源同时存在, 同时缺失, 身份无效或版本不规范时返回 `blocked` 与完整 `diagnostics`, 不回退到另一来源. 来源读取失败返回 `failed`, `stage` 和 `diagnostics`. 非成功结果不返回身份, 载荷, 安装计划或来源特有的额外记录.
+Identity Module Interface 根据当前运行目录的来源布局或完整有效安装清单返回唯一规范产品身份. 成功结果只包含 `status: "succeeded"`, 固定 `product: "agent-repository-workflow"`, 规范 `arwVersion` 和空 `diagnostics`. 源码布局只接受根 `package.json.version`; 安装布局只接受清单 `arwVersion`. 两种来源同时存在, 同时缺失, 身份无效或版本不规范时返回 `blocked` 与完整 `diagnostics`, 不回退到另一来源. 来源读取失败返回 `failed`, `stage` 和 `diagnostics`. 非成功结果不返回身份, 载荷, 安装计划或来源特有的额外记录. Identity 另导出 `parseArwVersion(value)`: 对稳定版或固定 `-pre` 字符串返回数值核心版本与预发布标记, 其他输入抛出 `Error`; 它不提供比较操作, 版本顺序由 Engine 拥有.
 
 Installation Payload Module Interface 接受已经固定的来源根目录和目标平台, 自行读取并验证该来源的 `release-manifest.json` 与完整 Workflow Distribution. 无效调用形状同步抛出 `TypeError`. 成功结果只包含 `status: "succeeded"`, 空 `diagnostics`, 完整 `configSeedBytes`, 按目标路径字节序排序的完整 `{path, bytes}` `payload`, 以及按来源路径字节序排序且无重复的 `verificationPaths`. `verificationPaths` 包含清单, `configSeed` 来源路径和形成完整载荷所依赖的每个来源文件; 它不包含由正式来源 Adapter 单独验证的软件包身份. 输入, 清单, Workflow Distribution, 安全路径或载荷冲突返回 `blocked` 与完整 `diagnostics`; 来源读取失败返回 `failed`, `stage` 和 `diagnostics`. 两种非成功结果都不返回 `configSeedBytes`, 载荷, 验证路径或其他部分候选, 并且不写安装目录. Engine 的内部 Installation Payload Seam 使用相同输入和完整结果形状, 不向产品调用方增加可选择的 Adapter 或部分载荷 Interface.
 
-Release Source Interface 接受准确的 `{evidence, platform, sourceDirectory}`. `evidence` 只包含完整提交对象 ID, `explicitVersion: boolean` 和规范稳定 `tag`; `platform` 与 `sourceDirectory` 都是字符串. 输入对象缺失或包含额外字段时抛出 `TypeError`, 证据内容无效时返回 `blocked` 与唯一 `release-evidence-invalid` 诊断信息. 成功结果准确为 `{arwVersion, diagnostics: [], sourceDirectory, status: "succeeded"}`. 其他来源阻断问题返回 `{diagnostics, status: "blocked"}`, 观察失败返回 `{diagnostics, stage, status: "failed"}`; 非成功结果不返回部分来源.
+Release Source Interface 接受准确的 `{evidence, platform, sourceDirectory}`. `evidence` 只包含完整提交对象 ID 和规范稳定 `tag`; `platform` 与 `sourceDirectory` 都是字符串. 输入对象缺失或包含额外字段时抛出 `TypeError`, 证据内容无效时返回 `blocked` 与唯一 `release-evidence-invalid` 诊断信息. 成功结果准确为 `{arwVersion, diagnostics: [], sourceDirectory, status: "succeeded"}`. 其他来源阻断问题返回 `{diagnostics, status: "blocked"}`, 观察失败返回 `{diagnostics, stage, status: "failed"}`; 非成功结果不返回部分来源.
 
 Release Git Adapter 只包含 3 个异步操作. `readHead(directory)` 返回 `{status: "succeeded", commit}` 或 `{status: "failed", message}`. `resolveTagCommit(directory, tag)` 使用相同结果形状. 两者的 `commit` 必须是当前仓库对象格式的完整小写十六进制提交 ID. `assertFilesMatch(directory, commit, paths)` 接受稳定排序且无重复的安全仓库相对路径, 并返回 `{status: "succeeded"}`, `{status: "blocked", message}` 或 `{status: "failed", message}`. `blocked` 只表示树清单含不支持条目, 路径集合不匹配或检出副本字节与提交不同; Git 启动, 退出, 输出解析或其他观察错误使用 `failed`. 每个非成功结果只包含非空 `message`, 不返回提交, 匹配路径或部分观察. 无效调用形状抛出 `TypeError`.
 
@@ -470,6 +470,7 @@ flowchart TD
 | `backgroundAgent.providers`, Codex 原生 `models_cache.json`, 用户 `models.custom.json` 与安装私有 `models.json` | ARW 配置拥有提供方设置, Codex 拥有原生缓存, 用户拥有自定义记录, Shared Model Catalog Module 拥有提供方核对, 启动时合并及生成文件生命周期 | Installer 补入默认提供方 (`openai` 与 `anthropic` 上限 `4`), 并把遗留 `models.custom.json.providers` 一次性迁移入尚无 `providers` 的配置, 不创建或改写 Codex 用户目录, 对高于有效全局上限的提供方只警告; 后台管理进程在启动共享 App Server 前校验所有提供方并生成进程级目录 | 需要迁移的遗留文件无法解析或结构无效时在任何安装写入前报错; 来源或生成失败不启动 App Server, 存活或退出未知时不重写, 实际退出后删除生成文件; 用户已设置的模型, 提供方及显式限额和原生缓存保留 |
 | 当前 `config.install.json` 初始文件 | Installation 源码与 Installation Payload | Engine Installation Module 只在配置缺失或明确重新初始化时创建完整配置 | 初始文件无效时在安装写入前阻断; 普通升级不读取它; Installation 事务是创建或替换点 |
 | 当前 Windows Registry `Path` 或 Linux 配置文件状态 | 平台归属 Adapter 和 Installation Contract Module | 归属计划计算变更, 通知和卸载所需证明 | 写入前观察失败时阻断; 部分写入准确返回影响和仍能证明的归属; 平台写入成功后才允许最后提交安装清单, 后续任一失败留下的未证明新登记按准确提示人工清理 |
+| 目标 `arwVersion` 与已安装清单版本的比较 | Identity Module 拥有版本语法, Engine Installation Module 拥有版本顺序与策略 | Engine 在收集阶段比较来源成功结果与已验证清单 | 已安装版本高于目标时在任何安装写入前阻断; 需要旧版本时先卸载再安装 |
 | ARW 安装目录中的安装清单 | Installation Contract Module | 已安装身份验证, 更新和卸载 | 清单最后写入表示本次安装归属完整; 旧清单证明全部残留时幂等向前重试, 否则人工清理未证明残留后完整重跑; 卸载最后删除清单 |
 
 `release-manifest.json` 只拥有安装载荷清单. `distribution/config.json` 只拥有 Workflow Distribution 规则. 安装归属清单只拥有已经完成的安装身份与归属. 三者不重复彼此字段.
@@ -504,13 +505,17 @@ Engine Installation Module 在来源 Adapter 完成固定来源验证后统一�
 
 提供方设置放在 ARW 全局配置而不是随 Codex 目录迁移, 因为只用 Claude 后端的机器没有 Codex 目录, 而提供方容量是 ARW 自己的准入合同. 放弃的替代方案是继续保留在 `models.custom.json` (使每台机器依赖 Codex 目录, 安装还需创建它) 和另建独立文件 (要另写读取, 补缺与卸载保留逻辑). 同一合同也让 Claude 回合与 Codex 根线程共用提供方与全局名额, 并在提供方设置无效或超限时一并拒绝: 只约束 Codex 或为 Claude 单独计数会让 Claude Reviewer 占满全局名额且出现第二套容量规则. 接受的成本是配置错误会暂时阻止包括 Claude 在内的新运行, 名额满时返回容量不足, 以及较早 ARW 版本不接受含 `backgroundAgent.providers` 的配置.
 
+ARW 拒绝降级, 因为较新版本可能写入较早版本无法读取的配置或清单格式 (例如 `backgroundAgent.providers`), 而较早版本不能迁移回去, 所以不存在安全的原地降级路径; ARW 不保证旧版本能读取新版本留下的状态, 所以不把降级作为受支持操作; 需要旧版本的用户先卸载再安装, 并自行处理保留配置与旧版本的兼容性. 放弃的替代方案是保留显式 `--version` 的降级授权: 它让用户一个参数就能把不兼容的状态交给旧版本, 却无法由安装保证旧版本可用. 接受的成本是用户必须先卸载 (配置默认保留) 再安装旧版本. 版本策略由 Engine 执行而不是 Identity 或 Installation Contract: Identity 只拥有版本语法与解析, 不读取安装状态; Installation Contract 只验证清单, 不决定安装前置阻断; 接受 Engine 同时依赖两者的成本. 版本顺序同样留在 Engine: 它只有版本策略一个调用点, 让 Identity 导出比较操作会增加一个单调用方的公开 Interface; 放弃的替代方案是由 Identity 导出比较, 接受的成本是顺序规则与版本语法分处两个 Module.
+
 全局配置规则对象而不是配置初始文件拥有版本字段, 默认值, 验证器和转换, 因为已有用户配置升级需要可测试的旧版本语义. 初始文件只表示新安装的完整当前值; 让它同时参与迁移会使用户调整过的初始文件位置和字段顺序成为第二升级权威. 当前选择接受规则对象与初始文件都要通过各自测试保持当前版本语义一致的成本.
 
 Runtime Compatibility Module 与 Bootstrap 和 Installer 生命周期分离, 因为两个入口必须在任何副作用前使用同一最低版本和稳定消息, 而版本判断本身不需要 I/O 或安装状态. 分别在两个入口内联会复制解析与消息政策, 让 Module 执行退出或接收生命周期模式又会混合判断与进程控制. 当前选择接受两个入口必须消费同一纯结果的成本. 普通 `arw` 与 Uninstaller 不承担安装前来源或写入责任, 当前也没有必须提前拒绝其运行的实际要求, 因而不扩大显式检查范围.
 
 ### ADR Evaluation
 
-提供方设置的持久权威从 Codex 用户目录移到全局 `config.json`, 经评估不需要新 ADR: 它只改变 ARW 自有设置的存放位置, 不改变 ADR 0030 的架构选择, 安全或授权边界. 一次性迁移保留全部旧值且不改动旧文件, 所以回退到旧位置是一次有限的代码改动而不丢数据; 代价是降级时须删除 `backgroundAgent.providers`, 且迁移后在 `config.json` 中对提供方所做的修改不会回到旧文件, 降级者需自行抄回, 该后果记录在此. 取舍已在 Module Design Rationale 中说明.
+拒绝降级收回了 `--version` 的降级授权, 这是调用方可见的结果变化, 已记录在公共入口条款; 它属于 ADR 0017 已拥有的完整写入前检查, 不改变信任根, 授权边界或持久状态责任, 因而不需要新 ADR.
+
+提供方设置的持久权威从 Codex 用户目录移到全局 `config.json`, 经评估不需要新 ADR: 它只改变 ARW 自有设置的存放位置, 不改变 ADR 0030 的架构选择, 安全或授权边界. 一次性迁移保留全部旧值且不改动旧文件, 所以回退到旧位置是一次有限的代码改动而不丢数据; 代价是迁移后在 `config.json` 中对提供方所做的修改不会回到旧文件, 回退者需自行抄回, 该后果记录在此. 取舍已在 Module Design Rationale 中说明.
 
 [ADR-0020](../../adr/0020-use-external-nodejs-source-delivery.md) 继续拥有外部 Node.js, 稳定发布检出目录和复制式安装. [ADR-0031](../../adr/0031-use-github-and-local-validation-sources.md) 拥有公开 HTTPS 来源的边界. 当前规范远端值由[发布长期规格](../agent-repository-workflow-release/spec.md#release-validation-configuration)和根 `release-validation.json` 拥有. [ADR-0022](../../adr/0022-place-source-checkout-scripts-under-scripts.md) 继续拥有引导安装脚本, 根目录安装程序和内部 Module 布局. [ADR-0005](../../adr/0005-use-arw-version-and-distribution-digest.md) 继续拥有 ARW 版本的产品身份责任. [ADR-0026](../../adr/0026-use-source-checkout-workflow-files-as-distribution-authority.md) 说明安装消费派生后的完整 Workflow Distribution, 不让安装取得编写责任.
 

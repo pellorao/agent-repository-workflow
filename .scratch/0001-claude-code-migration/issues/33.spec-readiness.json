@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0001:33",
+  "request": {
+    "digest": "f2d813f01193e7b0fba33b2e07f8d6725beaae192169a29215157a5b7e18f038",
+    "filePath": ".tmp/claude-code/06588b1e-7f07-4832-8933-107aaf5b5978/0001_33/spec-readiness/requests/request-370066c9-f667-4d76-b11b-554792fe3877.json",
+    "id": "370066c9-f667-4d76-b11b-554792fe3877"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "9803a9120632ba201ecccc1996b3e3cc75c13faf7b5cdedb5d4e518dc6d8ebd0"
+  },
+  "inputs": [
+    {
+      "filePath": "docs/specs/agent-repository-workflow-installation/spec.md",
+      "role": "governing-spec",
+      "sha256": "d977df86d2afccf8b0013311e057a76134ab3eab06bc3eedc673863206d79aa2"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0001-claude-code-migration/issues/33-remove-downgrade.md",
+    "sha256": "15752fe8f913275806b6c8b82df446798fa9682141fabb75e8dc4a311ea2d515"
+  },
+  "result": "satisfied"
+}

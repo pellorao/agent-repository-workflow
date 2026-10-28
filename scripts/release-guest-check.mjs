@@ -55,7 +55,7 @@ if (!run('git', ['rev-parse', '--verify', '--quiet', `refs/tags/${VERSION}`], {c
 }
 const commit = step('读取候选 commit', run('git', ['rev-parse', 'HEAD'], {cwd: ROOT}));
 step('安装候选', run(process.execPath, [
-    'install.mjs', '--release-tag', VERSION, '--release-commit', commit, '--selection-mode', 'explicit',
+    'install.mjs', '--release-tag', VERSION, '--release-commit', commit,
     '--non-interactive', '--register-path', 'true',
 ], {cwd: ROOT}));
 

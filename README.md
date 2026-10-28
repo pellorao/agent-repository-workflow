@@ -83,7 +83,7 @@ After a stable tag exists, to install the highest stable version without interac
 node install-arw.mjs --non-interactive --register-path true
 ```
 
-After a stable tag exists, choose an exact stable version present on the remote only when you explicitly want a historical version or downgrade:
+After a stable tag exists, choose an exact stable version present on the remote only when you explicitly want a historical version for a first installation. ARW does not downgrade: if the installed version is higher than the target, installation fails and writes nothing, so uninstall first if you need an older version.
 
 ```text
 node install-arw.mjs --version MAJOR.MINOR.PATCH

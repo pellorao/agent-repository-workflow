@@ -36,7 +36,7 @@ const runInstaller = (args, options = {}) => productionRunInstaller(args, {
 /** @typedef {NonNullable<InstallerOptions['release']>} ReleaseSource */
 /** @typedef {Omit<InstallerOptions, 'release'> & {release?: ReleaseSource}} NonInteractiveOverrides */
 /** @typedef {{channel: 'stderr' | 'stdout', message: string}} InstallerMessage */
-/** @typedef {{registerPath?: boolean, reinitializeConfig?: boolean, selectionMode?: 'explicit' | 'latest'}} NonInteractiveDecisions */
+/** @typedef {{registerPath?: boolean, reinitializeConfig?: boolean}} NonInteractiveDecisions */
 /** @typedef {NonNullable<InstallerOptions['windowsPath']>} WindowsPathAdapter */
 /** @typedef {Parameters<WindowsPathAdapter['write']>[0]} WindowsPathUpdate */
 
@@ -87,8 +87,6 @@ const RELEASE_ARGUMENTS = [
     ARW_VERSION,
     '--release-commit',
     RELEASE_COMMIT,
-    '--selection-mode',
-    'latest',
 ];
 const createHome = async (/** @type {test.TestContext} */ t) => {
     const home = await createTemporaryDirectory(t, 'agent-repository-workflow-home-');
@@ -174,17 +172,13 @@ test('Installer arguments select local only when every Release identity option i
         'false',
     ]);
     assert.deepEqual(release.sourceRequest, {
-        evidence: {commit: RELEASE_COMMIT, explicitVersion: false, tag: ARW_VERSION},
+        evidence: {commit: RELEASE_COMMIT, tag: ARW_VERSION},
         kind: 'release',
     });
 
     for (const releaseOptions of [
         ['--release-tag', ARW_VERSION],
         ['--release-commit', RELEASE_COMMIT],
-        ['--selection-mode', 'latest'],
-        ['--release-tag', ARW_VERSION, '--release-commit', RELEASE_COMMIT],
-        ['--release-tag', ARW_VERSION, '--selection-mode', 'latest'],
-        ['--release-commit', RELEASE_COMMIT, '--selection-mode', 'latest'],
     ]) {
         assert.throws(
             () => parseInstallArguments([
@@ -233,8 +227,6 @@ const runNonInteractive = async (/** @type {string} */ home, /** @type {NonInter
             releaseTag,
             ...RELEASE_ARGUMENTS.slice(2, 3),
             releaseCommit,
-            ...RELEASE_ARGUMENTS.slice(4, 5),
-            decisions.selectionMode ?? 'latest',
             '--non-interactive',
             '--reinitialize-config',
             String(decisions.reinitializeConfig ?? false),
@@ -338,7 +330,7 @@ test('Installation consumes a closed source failure without entering the common 
         nonInteractive: true,
         registerPath: false,
         reinitializeConfig: false,
-        sourceRequest: {evidence: {commit: RELEASE_COMMIT, explicitVersion: false, tag: ARW_VERSION}, kind: 'release'},
+        sourceRequest: {evidence: {commit: RELEASE_COMMIT, tag: ARW_VERSION}, kind: 'release'},
     }, {
         environment: {HOME: home},
         loadReleaseSource: async () => ({
@@ -546,7 +538,7 @@ test('installation writes the captured launcher payload and the completed config
         nonInteractive: true,
         registerPath: false,
         reinitializeConfig: false,
-        sourceRequest: {evidence: {commit: RELEASE_COMMIT, explicitVersion: false, tag: '0.2.0'}, kind: 'release'},
+        sourceRequest: {evidence: {commit: RELEASE_COMMIT, tag: '0.2.0'}, kind: 'release'},
     }, {
         environment: {HOME: home},
         loadInstallationPayload: async () => ({
@@ -638,7 +630,7 @@ test('a residual planned-target collision is not adopted even when its bytes mat
     assert.ok(messages.some(event => event.message.includes('arw.mjs')));
 });
 
-test('default latest rejects downgrade while explicit release selection authorizes it', async t => {
+test('installation rejects downgrade without writing', async t => {
     const home = await createHome(t);
     assert.equal((await runNonInteractive(home)).result, 0);
     const manifestPath = join(home, '.agent-repository-workflow', 'manifest.json');
@@ -646,21 +638,18 @@ test('default latest rejects downgrade while explicit release selection authoriz
     const newerVersion = `${parseArwVersion(ARW_VERSION).core[0] + 1n}.0.0`;
     newer.arwVersion = newerVersion;
     await writeFile(manifestPath, `${JSON.stringify(newer, null, 2)}\n`, 'utf8');
+    const before = await readFile(manifestPath, 'utf8');
+    const configPath = join(home, '.agent-repository-workflow', 'config.json');
+    const configBefore = await readFile(configPath);
 
     const rejected = await runNonInteractive(home);
     assert.equal(rejected.result, 1);
-    assert.equal(JSON.parse(await readFile(manifestPath, 'utf8')).arwVersion, newerVersion);
-    assert.ok(rejected.messages.some(event => event.message.includes('downgrade')));
-
-    const installed = await runNonInteractive(home, {}, {selectionMode: 'explicit'});
-    assert.equal(installed.result, 0);
-    const downgraded = JSON.parse(await readFile(manifestPath, 'utf8'));
-    assert.equal(downgraded.arwVersion, ARW_VERSION);
-    assert.equal(Object.hasOwn(downgraded, 'releaseCommit'), false);
-    assert.equal(Object.hasOwn(downgraded, 'releaseTag'), false);
+    assert.equal(await readFile(manifestPath, 'utf8'), before);
+    assert.deepEqual(await readFile(configPath), configBefore);
+    assert.ok(rejected.messages.some(event => event.message.includes('uninstall first')));
 });
 
-test('installation orders stable and fixed pre versions without weakening default downgrade protection', async t => {
+test('installation orders stable and fixed pre versions and rejects downgrade', async t => {
     /** @type {Array<[string, string, string, boolean]>} */
     const cases = [
         ['new-pre-over-older-stable', '0.2.0', '0.2.1-pre', true],
@@ -1178,8 +1167,6 @@ test('interactive installation refuses an unowned noncanonical Linux marker', as
         ARW_VERSION,
         '--release-commit',
         RELEASE_COMMIT,
-        '--selection-mode',
-        'latest',
     ], {
         environment: {HOME: home},
         loadInstallationPayload: loadTestInstallationPayload,
@@ -1729,24 +1716,9 @@ test('installer rejects unsupported and incomplete argument shapes before writin
         [...RELEASE_ARGUMENTS, '--release-tag', ARW_VERSION, '--non-interactive', '--reinitialize-config', 'false', '--register-path', 'false'],
         [
             '--release-tag',
-            ARW_VERSION,
-            '--release-commit',
-            RELEASE_COMMIT,
-            '--selection-mode',
-            'automatic',
-            '--non-interactive',
-            '--reinitialize-config',
-            'false',
-            '--register-path',
-            'false',
-        ],
-        [
-            '--release-tag',
             `${ARW_VERSION}-pre`,
             '--release-commit',
             RELEASE_COMMIT,
-            '--selection-mode',
-            'latest',
             '--non-interactive',
             '--reinitialize-config',
             'false',
@@ -1758,8 +1730,6 @@ test('installer rejects unsupported and incomplete argument shapes before writin
             ARW_VERSION,
             '--release-commit',
             'abc',
-            '--selection-mode',
-            'latest',
             '--non-interactive',
             '--reinitialize-config',
             'false',

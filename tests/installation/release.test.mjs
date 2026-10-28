@@ -65,7 +65,6 @@ test('Release Source Adapter validates the fixed checkout and returns only the c
     const release = await loadRelease({
         evidence: {
             commit,
-            explicitVersion: false,
             tag: packageVersion,
         },
         platform: 'win32',
@@ -115,7 +114,7 @@ test('release loading derives identity from the selected checkout package', asyn
         }),
     });
     const release = await loader({
-        evidence: {commit, explicitVersion: true, tag: '1.2.3'},
+        evidence: {commit, tag: '1.2.3'},
         platform: 'linux',
         sourceDirectory: checkout,
     });
@@ -177,7 +176,7 @@ test('Release Source Adapter closes package observation failures and identity bl
             loadInstallationPayload: async () => payload,
         });
         const result = await loader({
-            evidence: {commit, explicitVersion: false, tag: packageVersion},
+            evidence: {commit, tag: packageVersion},
             platform: 'linux',
             sourceDirectory,
         });
@@ -199,7 +198,7 @@ test('Release Source Adapter returns a closed blocker when checkout bytes differ
     await writeFile(packagePath, changed, 'utf8');
 
     const result = await loadRelease({
-        evidence: {commit, explicitVersion: false, tag: packageVersion},
+        evidence: {commit, tag: packageVersion},
         platform: 'linux',
         sourceDirectory: checkout,
     });
@@ -220,7 +219,7 @@ test('Release Source Adapter closes Git observation failures without returning a
         loadInstallationPayload,
     });
     const result = await loader({
-        evidence: {commit: '0'.repeat(40), explicitVersion: false, tag: packageVersion},
+        evidence: {commit: '0'.repeat(40), tag: packageVersion},
         platform: 'linux',
         sourceDirectory,
     });

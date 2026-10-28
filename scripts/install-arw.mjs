@@ -21,9 +21,6 @@ const loadReleaseValidationConfiguration = async () => ({
  * @returns {UnsupportedNodeRuntime | SupportedNodeRuntime}
  */
 const evaluateNodeRuntime = version => {
-    if (typeof version !== 'string') {
-        throw new TypeError('Node.js runtime version must be a string.');
-    }
     const match = /^(0|[1-9][0-9]*)\./.exec(version);
     if (match === null) {
         return {
@@ -50,7 +47,7 @@ const COMMIT_PATTERN = /^(?:[0-9a-f]{40}|[0-9a-f]{64})$/;
 const INSTALLER_RUNTIME_HANDOFF = 'data:text/javascript,globalThis%5BSymbol.for(%22agent-repository-workflow.runtime-recommendation-shown%22)%5D%3Dtrue';
 
 /** @typedef {{tag: string, version: bigint[]}} StableRelease */
-/** @typedef {{arguments: string[], checkoutDirectory: string, commit: string, explicitVersion: boolean, tag: string}} InstallerLaunchInput */
+/** @typedef {{arguments: string[], checkoutDirectory: string, commit: string, tag: string}} InstallerLaunchInput */
 /** @typedef {{checkoutCommit: (directory: string, commit: string) => Promise<unknown>, fetchRelease: (directory: string, remote: string, tag: string) => Promise<unknown>, initialize: (directory: string) => Promise<unknown>, listRemoteTags: (directory: string, remote: string) => Promise<string[]>, readHead: (directory: string) => Promise<string>, resolveTagCommit: (directory: string, tag: string) => Promise<string>}} BootstrapGit */
 /** @typedef {{status: string, value?: {repositories?: {sourceCheckout?: {url?: string}}}}} ReleaseConfiguration */
 /** @typedef {{createTemporaryDirectory: () => Promise<string>, git: BootstrapGit, launchInstaller: (input: InstallerLaunchInput) => Promise<number>, loadReleaseConfiguration: () => Promise<ReleaseConfiguration>, removeTemporaryDirectory: (directory: string) => Promise<unknown>, runtimeVersion: string, stderr: (message: string) => void, stdout: (line: string) => void}} BootstrapOptions */
@@ -176,7 +173,7 @@ const defaultGit = {
 };
 
 /** @param {InstallerLaunchInput} input @returns {Promise<number>} */
-const launchInstaller = ({arguments: installerArguments, checkoutDirectory, commit, explicitVersion, tag}) => new Promise((resolve, reject) => {
+const launchInstaller = ({arguments: installerArguments, checkoutDirectory, commit, tag}) => new Promise((resolve, reject) => {
     const child = spawn('node', [
         '--import',
         INSTALLER_RUNTIME_HANDOFF,
@@ -185,8 +182,6 @@ const launchInstaller = ({arguments: installerArguments, checkoutDirectory, comm
         tag,
         '--release-commit',
         commit,
-        '--selection-mode',
-        explicitVersion ? 'explicit' : 'latest',
         ...installerArguments,
     ], {
         stdio: 'inherit',
@@ -258,7 +253,6 @@ const runBootstrap = async (args, options = {}) => {
             arguments: installerArguments,
             checkoutDirectory,
             commit,
-            explicitVersion: requestedTag !== undefined,
             tag,
         });
     } finally {

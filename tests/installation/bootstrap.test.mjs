@@ -11,7 +11,7 @@ import {generateBootstrapArtifact} from '../../lib/installation/bootstrap-artifa
 import {BootstrapUsageError, runBootstrap, selectStableRelease} from '../../lib/installation/bootstrap.mjs';
 import {loadReleaseValidationConfiguration} from '../../lib/release/release-validation-config.mjs';
 
-/** @typedef {{arguments: string[], checkoutDirectory: string, commit: string, explicitVersion: boolean, tag: string}} InstallerLaunchInput */
+/** @typedef {{arguments: string[], checkoutDirectory: string, commit: string, tag: string}} InstallerLaunchInput */
 
 const SOURCE_DIRECTORY = dirname(dirname(dirname(fileURLToPath(import.meta.url))));
 const releaseConfiguration = await loadReleaseValidationConfiguration();
@@ -292,7 +292,6 @@ test('bootstrap acquires an exact release from the fixed remote and hands it to 
             arguments: ['--non-interactive', '--register-path', 'false'],
             checkoutDirectory,
             commit,
-            explicitVersion: false,
             tag: '0.2.0',
         }],
         remotes: [CANONICAL_REMOTE],

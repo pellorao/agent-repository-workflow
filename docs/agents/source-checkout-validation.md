@@ -14,7 +14,7 @@ Repository Workflow 覆盖使用注入的提示 Adapter 验证每项适用的说
 
 Windows PATH 覆盖使用公开责任归属操作实际检验安装写入, 等效空操作结果, 禁用注册, 卸载重写, 整值删除, 通知成功, 返回零, 超时和异常. 断言持久 Registry 变更在通知前完成, 且通知警告不会更改责任归属, 清单顺序或最终操作结果. 真实 Windows 验证在安装和卸载后, 从正在运行的 Explorer 启动新 PowerShell 进程, 然后验证 Installation 目录是否按要求参与 `arw` 解析.
 
-软件包身份覆盖根据适用的 `package.json` 推导当前稳定预期, 并包含有效解析, 缺失或不可读输入, 非 UTF-8 字节, 格式错误的 JSON, 产品名称不匹配, 缺失版本和无效的稳定 SemVer. 进程身份覆盖包括仅有软件包权威的 Source Checkout, 仅有清单权威的 Installation, 两个权威都存在, 两者都不存在, 以及所选权威损坏且不使用后备路径. 没有 Git 证据的本地安装程序集成证明当前运行时字节得到复制, 固定的 `-pre` 身份得到报告和记录, 且 Installation 中没有 `package.json`. Installation 覆盖包括本地和严格发布输入边界, 稳定版本和固定 `-pre` 的顺序, 降级保护, 写入前的载荷失败, 以及事务恢复. 发布载荷覆盖验证精确的清单字段, 从运行时和受管理清单中排除 `package.json`, 检测软件包和标签不匹配, 独立验证 Git 树中的软件包, 并使每项软件包检查在 Installation 写入前失败. 发布升级测试从候选历史中低于候选版本的最近稳定 Release tag 建立真实旧版本 checkout, 并在安装写入前验证 tag, commit 和软件包版本身份一致.
+软件包身份覆盖根据适用的 `package.json` 推导当前稳定预期, 并包含有效解析, 缺失或不可读输入, 非 UTF-8 字节, 格式错误的 JSON, 产品名称不匹配, 缺失版本和无效的稳定 SemVer. 进程身份覆盖包括仅有软件包权威的 Source Checkout, 仅有清单权威的 Installation, 两个权威都存在, 两者都不存在, 以及所选权威损坏且不使用后备路径. 没有 Git 证据的本地安装程序集成证明当前运行时字节得到复制, 固定的 `-pre` 身份得到报告和记录, 且 Installation 中没有 `package.json`. Installation 覆盖包括本地和严格发布输入边界, 稳定版本和固定 `-pre` 的顺序, 降级拒绝, 写入前的载荷失败, 以及事务恢复. 发布载荷覆盖验证精确的清单字段, 从运行时和受管理清单中排除 `package.json`, 检测软件包和标签不匹配, 独立验证 Git 树中的软件包, 并使每项软件包检查在 Installation 写入前失败. 发布升级测试从候选历史中低于候选版本的最近稳定 Release tag 建立真实旧版本 checkout, 并在安装写入前验证 tag, commit 和软件包版本身份一致.
 
 ### Issue and readiness integration
 

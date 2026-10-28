@@ -81,7 +81,7 @@ node install-arw.mjs
 node install-arw.mjs --non-interactive --register-path true
 ```
 
-有稳定 tag 后, 只有明确要安装历史版本或降级时, 才选择远端存在的准确稳定版本:
+有稳定 tag 后, 只有明确要首次安装历史版本时, 才选择远端存在的准确稳定版本. ARW 不提供降级: 已安装版本高于目标版本时安装报错且不写入任何文件, 需要旧版本请先卸载:
 
 ```text
 node install-arw.mjs --version MAJOR.MINOR.PATCH
