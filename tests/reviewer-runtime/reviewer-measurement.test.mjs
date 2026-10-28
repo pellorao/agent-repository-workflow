@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import {createUsage} from '../../lib/background-agent/usage.mjs';
 import {cloneJsonValue} from '../../lib/common/json.mjs';
 import {estimateNativeSleepInterval, mergeNativeResponseMeasurement} from '../../lib/background-agent/native-measurement.mjs';
 import {
-    checkpointReviewerMeasurement,createReviewerMeasurement, createUsage, observeReviewerMeasurement, reviewerMeasurementResult,
+    checkpointReviewerMeasurement,createReviewerMeasurement, observeReviewerMeasurement, reviewerMeasurementResult,
 } from '../../lib/reviewer-runtime/reviewer-measurement.mjs';
 
 /** @typedef {import('../../lib/background-agent/codex-app-server.mjs').NativeMember} NativeMember */

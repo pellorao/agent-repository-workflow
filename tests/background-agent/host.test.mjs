@@ -7,7 +7,7 @@ import test from 'node:test';
 
 import {createBackgroundAgentHost, daemonEntryPoint, listBackgroundAgents, runBackgroundAgentMachine} from '../../lib/arw-background-agent-host.mjs';
 import {isJsonObject} from '../../lib/common/json.mjs';
-import {createUsage} from '../../lib/reviewer-runtime/reviewer-measurement.mjs';
+import {createUsage} from '../../lib/background-agent/usage.mjs';
 import {createScriptedReviewerSessions} from '../helpers/reviewer-runtime-adapter.mjs';
 import {createTemporaryDirectory} from '../helpers/cleanup.mjs';
 

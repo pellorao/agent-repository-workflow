@@ -7,7 +7,7 @@ import {backgroundAgentRecoveryPath} from '../../lib/background-agent/recovery-r
 import {createBackgroundAgentManager,createManagedNativeSessions} from '../../lib/background-agent/manager.mjs';
 import {createBackgroundAgentStateStore} from '../../lib/background-agent/state-store.mjs';
 import {createReviewerRuntime} from '../../lib/reviewer-runtime/reviewer-runtime.mjs';
-import {createUsage} from '../../lib/reviewer-runtime/reviewer-measurement.mjs';
+import {createUsage} from '../../lib/background-agent/usage.mjs';
 import {readReviewerSessionRecord, saveReviewerSessionRecord} from '../../lib/reviewer-runtime/reviewer-session-record.mjs';
 import {createTemporaryDirectory} from '../helpers/cleanup.mjs';
 import {createReviewerRuntimeFixture, createReviewerTestClock, createScriptedReviewerSessions, reviewerHandoff} from '../helpers/reviewer-runtime-adapter.mjs';

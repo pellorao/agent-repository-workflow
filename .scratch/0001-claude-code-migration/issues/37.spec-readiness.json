@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0001:37",
+  "request": {
+    "digest": "d51278626efc0528de2717cba0d1bcce2530f6ba7f401c3c4fe9d4703f36cb68",
+    "filePath": ".tmp/claude-code/06588b1e-7f07-4832-8933-107aaf5b5978/0001_37/spec-readiness/requests/request-d7ae2750-6a05-4d6c-ba0a-01d6a0b62369.json",
+    "id": "d7ae2750-6a05-4d6c-ba0a-01d6a0b62369"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "9803a9120632ba201ecccc1996b3e3cc75c13faf7b5cdedb5d4e518dc6d8ebd0"
+  },
+  "inputs": [
+    {
+      "filePath": "docs/specs/agent-repository-workflow/spec.md",
+      "role": "governing-spec",
+      "sha256": "d681531d9b75a48a58554bbffc1ea0c07215c18bc352ffbecaade4f00a2a51c3"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0001-claude-code-migration/issues/37-managed-sessions-forwarding-cleanup.md",
+    "sha256": "39496b39ffbf50019fbf0bd4f3fec614eabe491ce07fe8f9588da19cc9a61c09"
+  },
+  "result": "satisfied"
+}
