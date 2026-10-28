@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0001:31",
+  "request": {
+    "digest": "303032611de05ab0b0cd9cd8629bf6e6015d7f01acbaf36a92c637592d061ae6",
+    "filePath": ".tmp/claude-code/06588b1e-7f07-4832-8933-107aaf5b5978/0001_31/spec-readiness/requests/request-53ffc424-dc58-45b0-8d1b-6f6b7f8f76db.json",
+    "id": "53ffc424-dc58-45b0-8d1b-6f6b7f8f76db"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "9803a9120632ba201ecccc1996b3e3cc75c13faf7b5cdedb5d4e518dc6d8ebd0"
+  },
+  "inputs": [
+    {
+      "filePath": "docs/specs/agent-repository-workflow/spec.md",
+      "role": "governing-spec",
+      "sha256": "e1983ebe25f24025807c80b4f8c8b0df1e9188bb5b3e5e92d4a9b841e01766f6"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0001-claude-code-migration/issues/31-idle-reviewer-eviction.md",
+    "sha256": "7ece0840af4ca7a8f94f622289c6dd30f84bc2525e666570812f915208d29d93"
+  },
+  "result": "satisfied"
+}

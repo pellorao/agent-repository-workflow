@@ -168,6 +168,7 @@ test('Host applies provider capacity to generic background work and keeps anothe
     assert.equal(firstActive.state, 'running');
     const rejected = failed(await spawn('limited'));
     assert.match(String(rejected.message), /Provider limited capacity is exhausted/);
+    assert.match(String(failed(await f.dispatch('unload_agent', {runId: first.runId})).message), /not safely idle/);
     assert.equal(f.scripted.sessions.length, 1);
     const third = succeeded(await spawn('other'));
     await f.host.manager.owned(String(third.runId), 'main-session', 'main-session').work;

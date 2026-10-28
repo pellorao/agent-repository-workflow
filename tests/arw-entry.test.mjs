@@ -91,9 +91,9 @@ test('global background list preserves title and full session identity without M
         const result = await run(args,repository,{
             cwd:outside,
             backgroundAgentList:async () => [
-                {role:'reviewer',ownerId,ownerTitle:'中文标题 with long visible text',state:'idle',taskElapsedMs:3_723_000},
-                {role:'requirements-reviewer',ownerId:unknownId,ownerTitle:null,state:'running',taskElapsedMs:2_000},
-                {role:'code-standards-reviewer',ownerId:'main-blank',ownerTitle:' \t ',state:'unknown',taskElapsedMs:null},
+                {role:'reviewer',cwd:'/w/a',ownerId,ownerTitle:'中文标题 with long visible text',state:'idle',taskElapsedMs:3_723_000},
+                {role:'requirements-reviewer',cwd:'/w/a',ownerId:unknownId,ownerTitle:null,state:'running',taskElapsedMs:2_000},
+                {role:'code-standards-reviewer',cwd:'/w/a',ownerId:'main-blank',ownerTitle:' \t ',state:'unknown',taskElapsedMs:null},
             ],
         });
         assert.equal(result.result,0);
@@ -104,6 +104,7 @@ test('global background list preserves title and full session identity without M
         assert.ok(result.events[0].message.includes('requirements-reviewer'));
         assert.ok(result.events[0].message.includes('running'));
         assert.ok(result.events[0].message.includes('main-blank'));
+        assert.ok(result.events[0].message.includes('/w/a'));
         assert.equal((result.events[0].message.match(/\u001b\[90mN\/A\u001b\[0m/gu) ?? []).length, 2);
         assert.match(result.events[0].message,/1:02:03/u);
         assert.ok(!result.events[0].message.includes(repository.root));

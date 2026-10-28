@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtemp, rm} from 'node:fs/promises';
+import {mkdir, mkdtemp, rm, writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {createBackgroundAgentManager} from '../../lib/background-agent/manager.mjs';
@@ -112,8 +112,8 @@ async function harness(t,options={}){
     stateStore,clock,modelCatalog:options.providers?{getProviders:async()=>options.providers??{}}:undefined,
     createStrataDriver:options.createStrataDriver});
   t.after(async()=>{try{await manager.close();}finally{await rm(directory,{recursive:true,force:true});}});
-  const start=(ownerId='main-1',runSettings=settings)=>manager.execute({ownerId,controllerId:ownerId,operation:'spawn_agent',input:{
-    role:'generic',settings:runSettings,cwd:directory,stateDirectory:directory,readPaths:[],writePaths:[],
+  const start=(ownerId='main-1',runSettings=settings,stateDirectory=directory)=>manager.execute({ownerId,controllerId:ownerId,operation:'spawn_agent',input:{
+    role:'generic',settings:runSettings,cwd:directory,stateDirectory,readPaths:[],writePaths:[],
     instructions:'instructions',handoff:'initial work',
   }});
   /** @param {string} runId @param {string} operation @param {Record<string,unknown>} [input] @param {string} [ownerId] */
@@ -1166,4 +1166,51 @@ test('missing command results break repetition without hiding complete zero-exit
     const delivered=hints();assert.equal(delivered.length,1);
     assert.equal(delivered[0].deliveryStatus,'delivered');assert.equal(delivered[0].threadId,observed.threadId);
   } finally {policy.close();}
+});
+
+test('an idle run whose recovery directory was deleted is not reclaimed, while unload_agent before deletion frees its slot',async t=>{
+  const fake=await harness(t,{maxInstances:1});
+  const lost=join(fake.directory,'lost');
+  await mkdir(lost);
+  const first=result(await fake.start('main-1',settings,lost));
+  await waitDelivered(fake.stateStore,first.messageId);
+  fake.native.finish(first.runId);
+  await tick();
+  assert.equal(result(await fake.manager.execute({ownerId:'main-2',controllerId:'main-2',operation:'list_agents',input:{}})).agents[0].cwd,fake.directory);
+  await rm(lost,{recursive:true,force:true});
+  const denied=await fake.start();
+  assert.equal(denied.status,'failed');
+  assert.match(denied.error.message,/capacity is exhausted/u);
+});
+
+test('unload_agent unloads only a safely idle run for its owner and the slot is reusable after the directory is deleted',async t=>{
+  const fake=await harness(t,{maxInstances:1});
+  const directory=join(fake.directory,'worktree');
+  await mkdir(directory);
+  const first=result(await fake.start('main-1',settings,directory));
+  await waitDelivered(fake.stateStore,first.messageId);
+  const busy=await fake.execute(first.runId,'unload_agent');
+  assert.equal(busy.status,'failed');
+  assert.match(busy.error.message,/not safely idle/u);
+  fake.native.finish(first.runId);
+  await tick();
+  assert.equal((await fake.execute(first.runId,'unload_agent',{},'main-2')).status,'failed');
+  assert.deepEqual(result(await fake.execute(first.runId,'unload_agent')),{runId:first.runId,unloaded:true});
+  assert.equal(fake.native.rootStops,1);
+  assert.deepEqual(result(await fake.manager.execute({ownerId:'main-1',controllerId:'main-1',operation:'list_agents',input:{}})).agents,[]);
+  await rm(directory,{recursive:true,force:true});
+  assert.equal((await fake.start()).status,'succeeded');
+});
+
+test('unload_agent refuses a run whose recovery record no longer matches it',async t=>{
+  const fake=await harness(t,{maxInstances:1});
+  const directory=join(fake.directory,'worktree');
+  await mkdir(directory);
+  const first=result(await fake.start('main-1',settings,directory));
+  await waitDelivered(fake.stateStore,first.messageId);
+  fake.native.finish(first.runId);
+  await tick();
+  await writeFile(join(directory,`background-agent-${first.runId}.json`),'{}\n');
+  assert.equal((await fake.execute(first.runId,'unload_agent')).status,'failed');
+  assert.equal(fake.native.rootStops,0);
 });
