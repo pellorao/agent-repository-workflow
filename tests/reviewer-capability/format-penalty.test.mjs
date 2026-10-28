@@ -3,6 +3,7 @@ import {mkdir, readdir, readFile, writeFile} from 'node:fs/promises';
 import {extname, join} from 'node:path';
 import test from 'node:test';
 
+import {sha256} from '../../lib/common/json.mjs';
 import {loadScenario} from '../../lib/reviewer-capability/scenario.mjs';
 import {baseline, combine, repair, score} from '../../lib/reviewer-capability/operations.mjs';
 import {candidateFingerprint} from '../../lib/reviewer-capability/pool.mjs';
@@ -37,7 +38,7 @@ const write = async (/** @type {string} */ path, /** @type {string} */ text) => 
 const matched = async (/** @type {{directory: string, root: string, run: Function}} */ {directory, root, run}, report = '- `src/a.mjs:3` default export.\n', extra = {}) => {
     const path = await write(join(root, 'report.md'), report);
     const [candidate] = (await run({instance: 'i', report: path})).candidates;
-    const store = await write(join(root, 'decisions.json'), JSON.stringify({decisions: {[candidate.candidateId]: {decision: 'matched', fingerprint: candidateFingerprint(candidate)}}}));
+    const store = await write(join(root, 'decisions.json'), JSON.stringify({decisions: {[candidate.candidateId]: {brief_sha256: sha256(''), decision: 'matched', fingerprint: candidateFingerprint(candidate)}}}));
     return run({decisions: [store], instance: 'i', report: path, ...extra});
 };
 

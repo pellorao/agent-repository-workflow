@@ -1,0 +1,2122 @@
+{
+ "pools": {
+  "limit": 40,
+  "candidates": [
+   {
+    "record": "arm/code-spec-v5.1/m-high-a1",
+    "stable_id": "e0-5",
+    "candidateId": "e0-5",
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Expectation 0.",
+    "finding": "Finding text 0/5.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "a.mjs",
+      "line": 6
+     }
+    ]
+   },
+   {
+    "record": "arm/code-spec-v5.1/m-high-a1",
+    "stable_id": "f0",
+    "candidateId": "f0",
+    "kind": "finding",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "unsupported",
+     "supported",
+     "problem-1"
+    ],
+    "finding": "Unmatched finding 0.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "b.mjs",
+      "line": 1
+     }
+    ],
+    "problemOptions": [
+     {
+      "decision": "problem-1",
+      "expectation": "P"
+     }
+    ],
+    "cleanTargets": []
+   },
+   {
+    "record": "arm/code-spec-v5.1/m-high-a1",
+    "stable_id": "e1-4",
+    "candidateId": "e1-4",
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Expectation 1.",
+    "finding": "Finding text 1/4.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "a.mjs",
+      "line": 5
+     }
+    ]
+   },
+   {
+    "record": "arm/code-spec-v5.1/m-high-a1",
+    "stable_id": "e3-0",
+    "candidateId": "e3-0",
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Expectation 3.",
+    "finding": "Finding text 3/0.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "a.mjs",
+      "line": 1
+     }
+    ]
+   },
+   {
+    "record": "arm/code-spec-v5.1/m-high-a1",
+    "stable_id": "e2-1",
+    "candidateId": "e2-1",
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Expectation 2.",
+    "finding": "Finding text 2/1.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "a.mjs",
+      "line": 2
+     }
+    ]
+   },
+   {
+    "record": "arm/code-spec-v5.1/m-high-a1",
+    "stable_id": "e1-2",
+    "candidateId": "e1-2",
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Expectation 1.",
+    "finding": "Finding text 1/2.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "a.mjs",
+      "line": 3
+     }
+    ]
+   },
+   {
+    "record": "arm/code-spec-v5.1/m-high-a1",
+    "stable_id": "e5-2",
+    "candidateId": "e5-2",
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Expectation 5.",
+    "finding": "Finding text 5/2.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "a.mjs",
+      "line": 3
+     }
+    ]
+   },
+   {
+    "record": "arm/code-spec-v5.1/m-high-a1",
+    "stable_id": "e3-2",
+    "candidateId": "e3-2",
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Expectation 3.",
+    "finding": "Finding text 3/2.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "a.mjs",
+      "line": 3
+     }
+    ]
+   },
+   {
+    "record": "arm/code-spec-v5.1/m-high-a1",
+    "stable_id": "e1-0",
+    "candidateId": "e1-0",
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Expectation 1.",
+    "finding": "Finding text 1/0.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "a.mjs",
+      "line": 1
+     }
+    ]
+   },
+   {
+    "record": "arm/code-spec-v5.1/m-high-a1",
+    "stable_id": "e1-3",
+    "candidateId": "e1-3",
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Expectation 1.",
+    "finding": "Finding text 1/3.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "a.mjs",
+      "line": 4
+     }
+    ]
+   },
+   {
+    "record": "arm/code-spec-v5.1/m-high-a1",
+    "stable_id": "f4",
+    "candidateId": "f4",
+    "kind": "finding",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "unsupported",
+     "supported",
+     "problem-1"
+    ],
+    "finding": "Unmatched finding 4.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "b.mjs",
+      "line": 5
+     }
+    ],
+    "problemOptions": [
+     {
+      "decision": "problem-1",
+      "expectation": "P"
+     }
+    ],
+    "cleanTargets": []
+   },
+   {
+    "record": "arm/code-spec-v5.1/m-high-a1",
+    "stable_id": "e0-0",
+    "candidateId": "e0-0",
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Expectation 0.",
+    "finding": "Finding text 0/0.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "a.mjs",
+      "line": 1
+     }
+    ]
+   },
+   {
+    "record": "arm/code-spec-v5.1/m-high-a1",
+    "stable_id": "e5-0",
+    "candidateId": "e5-0",
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Expectation 5.",
+    "finding": "Finding text 5/0.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "a.mjs",
+      "line": 1
+     }
+    ]
+   },
+   {
+    "record": "arm/code-spec-v5.1/m-high-a1",
+    "stable_id": "e2-0",
+    "candidateId": "e2-0",
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Expectation 2.",
+    "finding": "Finding text 2/0.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "a.mjs",
+      "line": 1
+     }
+    ]
+   },
+   {
+    "record": "arm/code-spec-v5.1/m-high-a1",
+    "stable_id": "f3",
+    "candidateId": "f3",
+    "kind": "finding",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "unsupported",
+     "supported",
+     "problem-1"
+    ],
+    "finding": "Unmatched finding 3.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "b.mjs",
+      "line": 4
+     }
+    ],
+    "problemOptions": [
+     {
+      "decision": "problem-1",
+      "expectation": "P"
+     }
+    ],
+    "cleanTargets": []
+   },
+   {
+    "record": "arm/code-spec-v5.1/m-high-a1",
+    "stable_id": "e2-4",
+    "candidateId": "e2-4",
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Expectation 2.",
+    "finding": "Finding text 2/4.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "a.mjs",
+      "line": 5
+     }
+    ]
+   },
+   {
+    "record": "arm/code-spec-v5.1/m-high-a1",
+    "stable_id": "e3-3",
+    "candidateId": "e3-3",
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Expectation 3.",
+    "finding": "Finding text 3/3.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "a.mjs",
+      "line": 4
+     }
+    ]
+   },
+   {
+    "record": "arm/code-spec-v5.1/m-high-a1",
+    "stable_id": "e6-0",
+    "candidateId": "e6-0",
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Expectation 6.",
+    "finding": "Finding text 6/0.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "a.mjs",
+      "line": 1
+     }
+    ]
+   },
+   {
+    "record": "arm/code-spec-v5.1/m-high-a1",
+    "stable_id": "e4-3",
+    "candidateId": "e4-3",
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Expectation 4.",
+    "finding": "Finding text 4/3.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "a.mjs",
+      "line": 4
+     }
+    ]
+   },
+   {
+    "record": "arm/code-spec-v5.1/m-high-a1",
+    "stable_id": "e4-0",
+    "candidateId": "e4-0",
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Expectation 4.",
+    "finding": "Finding text 4/0.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "a.mjs",
+      "line": 1
+     }
+    ]
+   },
+   {
+    "record": "arm/code-spec-v5.1/m-high-a1",
+    "stable_id": "e2-3",
+    "candidateId": "e2-3",
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Expectation 2.",
+    "finding": "Finding text 2/3.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "a.mjs",
+      "line": 4
+     }
+    ]
+   },
+   {
+    "record": "arm/code-spec-v5.1/m-high-a1",
+    "stable_id": "e6-1",
+    "candidateId": "e6-1",
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Expectation 6.",
+    "finding": "Finding text 6/1.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "a.mjs",
+      "line": 2
+     }
+    ]
+   },
+   {
+    "record": "arm/code-spec-v5.1/m-high-a1",
+    "stable_id": "e0-7",
+    "candidateId": "e0-7",
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Expectation 0.",
+    "finding": "Finding text 0/7.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "a.mjs",
+      "line": 8
+     }
+    ]
+   },
+   {
+    "record": "arm/code-spec-v5.1/m-high-a1",
+    "stable_id": "e4-2",
+    "candidateId": "e4-2",
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Expectation 4.",
+    "finding": "Finding text 4/2.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "a.mjs",
+      "line": 3
+     }
+    ]
+   },
+   {
+    "record": "arm/code-spec-v5.1/m-high-a1",
+    "stable_id": "f2",
+    "candidateId": "f2",
+    "kind": "finding",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "unsupported",
+     "supported",
+     "problem-1"
+    ],
+    "finding": "Unmatched finding 2.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "b.mjs",
+      "line": 3
+     }
+    ],
+    "problemOptions": [
+     {
+      "decision": "problem-1",
+      "expectation": "P"
+     }
+    ],
+    "cleanTargets": []
+   },
+   {
+    "record": "arm/code-spec-v5.1/m-high-a1",
+    "stable_id": "e1-5",
+    "candidateId": "e1-5",
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Expectation 1.",
+    "finding": "Finding text 1/5.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "a.mjs",
+      "line": 6
+     }
+    ]
+   },
+   {
+    "record": "arm/code-spec-v5.1/m-high-a1",
+    "stable_id": "e0-2",
+    "candidateId": "e0-2",
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Expectation 0.",
+    "finding": "Finding text 0/2.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "a.mjs",
+      "line": 3
+     }
+    ]
+   },
+   {
+    "record": "arm/code-spec-v5.1/m-high-a1",
+    "stable_id": "e0-1",
+    "candidateId": "e0-1",
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Expectation 0.",
+    "finding": "Finding text 0/1.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "a.mjs",
+      "line": 2
+     }
+    ]
+   },
+   {
+    "record": "arm/code-spec-v5.1/m-high-a1",
+    "stable_id": "e7-0",
+    "candidateId": "e7-0",
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Expectation 7.",
+    "finding": "Finding text 7/0.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "a.mjs",
+      "line": 1
+     }
+    ]
+   },
+   {
+    "record": "arm/code-spec-v5.1/m-high-a1",
+    "stable_id": "e2-2",
+    "candidateId": "e2-2",
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Expectation 2.",
+    "finding": "Finding text 2/2.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "a.mjs",
+      "line": 3
+     }
+    ]
+   },
+   {
+    "record": "arm/code-spec-v5.1/m-high-a1",
+    "stable_id": "e5-1",
+    "candidateId": "e5-1",
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Expectation 5.",
+    "finding": "Finding text 5/1.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "a.mjs",
+      "line": 2
+     }
+    ]
+   },
+   {
+    "record": "arm/code-spec-v5.1/m-high-a1",
+    "stable_id": "f1",
+    "candidateId": "f1",
+    "kind": "finding",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "unsupported",
+     "supported",
+     "problem-1"
+    ],
+    "finding": "Unmatched finding 1.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "b.mjs",
+      "line": 2
+     }
+    ],
+    "problemOptions": [
+     {
+      "decision": "problem-1",
+      "expectation": "P"
+     }
+    ],
+    "cleanTargets": []
+   },
+   {
+    "record": "arm/code-spec-v5.1/m-high-a1",
+    "stable_id": "e3-4",
+    "candidateId": "e3-4",
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Expectation 3.",
+    "finding": "Finding text 3/4.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "a.mjs",
+      "line": 5
+     }
+    ]
+   },
+   {
+    "record": "arm/code-spec-v5.1/m-high-a1",
+    "stable_id": "e0-6",
+    "candidateId": "e0-6",
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Expectation 0.",
+    "finding": "Finding text 0/6.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "a.mjs",
+      "line": 7
+     }
+    ]
+   },
+   {
+    "record": "arm/code-spec-v5.1/m-high-a1",
+    "stable_id": "e8-0",
+    "candidateId": "e8-0",
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Expectation 8.",
+    "finding": "Finding text 8/0.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "a.mjs",
+      "line": 1
+     }
+    ]
+   },
+   {
+    "record": "arm/code-spec-v5.1/m-high-a1",
+    "stable_id": "e0-4",
+    "candidateId": "e0-4",
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Expectation 0.",
+    "finding": "Finding text 0/4.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "a.mjs",
+      "line": 5
+     }
+    ]
+   },
+   {
+    "record": "arm/code-spec-v5.1/m-high-a1",
+    "stable_id": "e0-3",
+    "candidateId": "e0-3",
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Expectation 0.",
+    "finding": "Finding text 0/3.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "a.mjs",
+      "line": 4
+     }
+    ]
+   },
+   {
+    "record": "arm/code-spec-v5.1/m-high-a1",
+    "stable_id": "e4-1",
+    "candidateId": "e4-1",
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Expectation 4.",
+    "finding": "Finding text 4/1.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "a.mjs",
+      "line": 2
+     }
+    ]
+   },
+   {
+    "record": "arm/code-spec-v5.1/m-high-a1",
+    "stable_id": "e1-1",
+    "candidateId": "e1-1",
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Expectation 1.",
+    "finding": "Finding text 1/1.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "a.mjs",
+      "line": 2
+     }
+    ]
+   },
+   {
+    "record": "arm/code-spec-v5.1/m-high-a1",
+    "stable_id": "e3-1",
+    "candidateId": "e3-1",
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Expectation 3.",
+    "finding": "Finding text 3/1.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "a.mjs",
+      "line": 2
+     }
+    ]
+   }
+  ],
+  "pools": [
+   {
+    "pool": "g-1",
+    "real": 15,
+    "controls": 25,
+    "items": [
+     {
+      "id": "g-1-001",
+      "group": "E01",
+      "fingerprint": "592e8509ef3e729bda42d0503fa8d88de56d678693a932e06b5ab30a033a3a95",
+      "source": "instance",
+      "ref": "e0-5"
+     },
+     {
+      "id": "g-1-002",
+      "group": "E01",
+      "fingerprint": "9e7219d79bdb358bf798d76f6af9a9cfd36326311b5d2098b8b81ed13d02d9a9",
+      "source": "instance",
+      "ref": "e0-1"
+     },
+     {
+      "id": "g-1-003",
+      "group": "E01",
+      "fingerprint": "a2acf16d6d0153fe46644fa55cafc3f8cc98f1bd9bdee81c080050a4e5ea2140",
+      "source": "instance",
+      "ref": "e0-6"
+     },
+     {
+      "id": "g-1-004",
+      "group": "E01",
+      "fingerprint": "5042f9da77fa11a393bca21edc99817e6017622a766cd630447ab84ae48c81d3",
+      "source": "instance",
+      "ref": "e0-0"
+     },
+     {
+      "id": "g-1-005",
+      "group": "E01",
+      "fingerprint": "4ea2c2aa30ee11d4e3afd2067919074c851aade0d9eb26ca50253f5fdbc63714",
+      "source": "instance",
+      "ref": "e0-4"
+     },
+     {
+      "id": "g-1-006",
+      "group": "E01",
+      "fingerprint": "ac220bf5b558673088b547eb66a4f19596919e4485c668af6336965e152126a8",
+      "source": "instance",
+      "ref": "e0-3"
+     },
+     {
+      "id": "g-1-007",
+      "group": "E01",
+      "fingerprint": "d583131563b7dcd8dbddc18d3088ced3c32c272e8cdaaa2ec6a42eb57584162e",
+      "source": "instance",
+      "ref": "e0-7"
+     },
+     {
+      "id": "g-1-008",
+      "group": "E01",
+      "fingerprint": "b4bc668968ed7b4782c2501888504ab35eed474ee3f0143e94af784c4103a53a",
+      "source": "instance",
+      "ref": "e0-2"
+     },
+     {
+      "id": "g-1-009",
+      "group": "E02",
+      "fingerprint": "1b30ba389f8554fb032a2eba3bf4946544c5c68eddd30063015da28661e4f2b8",
+      "source": "anchor",
+      "ref": "a13"
+     },
+     {
+      "id": "g-1-010",
+      "group": "E02",
+      "fingerprint": "a7fc1ec12eb46b9901ddf21b977106f5a2360ce93fa3ff2a7d67f03465bf7cca",
+      "source": "anchor",
+      "ref": "a14"
+     },
+     {
+      "id": "g-1-011",
+      "group": "E03",
+      "fingerprint": "43409a1ff05a996439b3b8fb1132421df3ad145ededa04e6fd6be2ea87e8ea6c",
+      "source": "instance",
+      "ref": "e1-1"
+     },
+     {
+      "id": "g-1-012",
+      "group": "E03",
+      "fingerprint": "f0d84c9f386e9895db97040a88da273d1b765fc3844752f09e7fcfc50828f024",
+      "source": "instance",
+      "ref": "e1-3"
+     },
+     {
+      "id": "g-1-013",
+      "group": "E03",
+      "fingerprint": "9ac76b111cc33148f933da691e3283eb0d811f9b69dab44c1f1bdbfd66ffb319",
+      "source": "instance",
+      "ref": "e1-5"
+     },
+     {
+      "id": "g-1-014",
+      "group": "E03",
+      "fingerprint": "62ea45581f8068db66360f155cff633e7404d6f7fb123c2d50f723f96fc17334",
+      "source": "instance",
+      "ref": "e1-4"
+     },
+     {
+      "id": "g-1-015",
+      "group": "E03",
+      "fingerprint": "ca65460e570956107f4b0647edc3c15eee615e99d4ab53281567888af0646fe4",
+      "source": "instance",
+      "ref": "e1-0"
+     },
+     {
+      "id": "g-1-016",
+      "group": "E03",
+      "fingerprint": "4dc1df868369fda3be36b7f345ed0fb71359efdc4bd03d34f4f4aa17bc2be454",
+      "source": "instance",
+      "ref": "e1-2"
+     },
+     {
+      "id": "g-1-017",
+      "group": "E04",
+      "fingerprint": "e3646784f9b0b47cf1c07f20ae26673308bacd88f2e6ebb4a3071e5ccb449180",
+      "source": "anchor",
+      "ref": "a09"
+     },
+     {
+      "id": "g-1-018",
+      "group": "E04",
+      "fingerprint": "dac53d3b91f5c583c19a4a25b853d4354dfa25af0f92a453fa6c2a7d7e3e077d",
+      "source": "synthetic",
+      "ref": "s03"
+     },
+     {
+      "id": "g-1-019",
+      "group": "E05",
+      "fingerprint": "c6afc653cf92e020d7456e7ff51391c1c8b51dfa610cd51ac46b906197fdcca1",
+      "source": "synthetic",
+      "ref": "s01"
+     },
+     {
+      "id": "g-1-020",
+      "group": "E05",
+      "fingerprint": "42c862e164aca0e20045d5af32c393bab8dae8208d7546eaf1db3646fbe73b88",
+      "source": "anchor",
+      "ref": "a15"
+     },
+     {
+      "id": "g-1-021",
+      "group": "E05",
+      "fingerprint": "25586bbd21ea8d8c1084a0e807d044c173df9b6ebb2dcfa3ea8ace1edcf53b17",
+      "source": "anchor",
+      "ref": "a02"
+     },
+     {
+      "id": "g-1-022",
+      "group": "E06",
+      "fingerprint": "fa2dac96f23db2baf0be2d1ae7f889adf310fd778e1617a58e03bb32a18289fa",
+      "source": "synthetic",
+      "ref": "s02"
+     },
+     {
+      "id": "g-1-023",
+      "group": "E07",
+      "fingerprint": "f0ca95ce815130a21774a243438cac9ee4fb637726b857b2b4de8a23499a1f41",
+      "source": "anchor",
+      "ref": "a12"
+     },
+     {
+      "id": "g-1-024",
+      "group": "E07",
+      "fingerprint": "5ffb386dbcfb021680ba335a6d82d60a977e151287445f2dc175803d40d77f66",
+      "source": "synthetic",
+      "ref": "s04"
+     },
+     {
+      "id": "g-1-025",
+      "group": "E07",
+      "fingerprint": "93b45f24bdef88334896ea62d37a8bdaf0f741b490c8ac13086e03e7f73272b5",
+      "source": "anchor",
+      "ref": "a24"
+     },
+     {
+      "id": "g-1-026",
+      "group": "E08",
+      "fingerprint": "4a024d8b53ea9b4389e34390dc4e2b825cc95323bf804ab965577cf15fb9f8b4",
+      "source": "anchor",
+      "ref": "a04"
+     },
+     {
+      "id": "g-1-027",
+      "group": "E09",
+      "fingerprint": "58d5eafee31e7ea4c9a79e10bdcd3c5f4b3ad85dc4f0242f257781975839363b",
+      "source": "anchor",
+      "ref": "a20"
+     },
+     {
+      "id": "g-1-028",
+      "group": "E10",
+      "fingerprint": "6a9e21f323bba8ff2ec612fee10f5a8f3957d6982ed34de9d9891845b42c98eb",
+      "source": "anchor",
+      "ref": "a05"
+     },
+     {
+      "id": "g-1-029",
+      "group": "E11",
+      "fingerprint": "85cbf325781133b9aca9c70f192aae035aae174a749da5728a4cec80edd2e9be",
+      "source": "anchor",
+      "ref": "a23"
+     },
+     {
+      "id": "g-1-030",
+      "group": "E12",
+      "fingerprint": "e7603364a94898f92a0332acce205b19d83287234bc7e81e38446fbc63b62738",
+      "source": "anchor",
+      "ref": "a16"
+     },
+     {
+      "id": "g-1-031",
+      "group": "F01",
+      "fingerprint": "00809d373ed2632f384df10f575b979460856788671644f3a676a65b082fe55b",
+      "source": "synthetic",
+      "ref": "s13"
+     },
+     {
+      "id": "g-1-032",
+      "group": "F02",
+      "fingerprint": "87a7d679b4bfc8502c642aa507441d3f820f37a558fbc2257c22148ffea2f124",
+      "source": "synthetic",
+      "ref": "s05"
+     },
+     {
+      "id": "g-1-033",
+      "group": "F03",
+      "fingerprint": "1e00b6e26f54fd4b952fcad5accffc8c47c52ff6ba82f9d519601cb79e2e523d",
+      "source": "synthetic",
+      "ref": "s06"
+     },
+     {
+      "id": "g-1-034",
+      "group": "F04",
+      "fingerprint": "923f56cb332592d7c5b67ddd7283684b9c4b8efbb6a4fdd6dfd6c7d76ce3ef34",
+      "source": "synthetic",
+      "ref": "s07"
+     },
+     {
+      "id": "g-1-035",
+      "group": "F05",
+      "fingerprint": "6b1de2abacfa233b7f06c1dff33386e00ebb99c6f64167069db4886731562ae6",
+      "source": "synthetic",
+      "ref": "s12"
+     },
+     {
+      "id": "g-1-036",
+      "group": "F06",
+      "fingerprint": "841f87272504e15085336a70f6eee77c8de37b64dcd4a34e5a8a3587fc2baaad",
+      "source": "synthetic",
+      "ref": "s09"
+     },
+     {
+      "id": "g-1-037",
+      "group": "F07",
+      "fingerprint": "7b23151d7f0ca67954503a40ef2ed75170407b758e3f4ea4d615b1d491b17433",
+      "source": "synthetic",
+      "ref": "s10"
+     },
+     {
+      "id": "g-1-038",
+      "group": "F08",
+      "fingerprint": "98115917b6a9cd71004b794de6735389387b5a73346b397b5facdb574a80ee00",
+      "source": "synthetic",
+      "ref": "s11"
+     },
+     {
+      "id": "g-1-039",
+      "group": "F09",
+      "fingerprint": "309757b4e4aab5f4f7f7d8ad8dad442294315ff0b46fa3893f7bcaae71513c45",
+      "source": "instance",
+      "ref": "f0"
+     },
+     {
+      "id": "g-1-040",
+      "group": "F10",
+      "fingerprint": "ba54033c193f7f394337237e93acc7cb49afe92a958dc7e35fb432da45f3bd7d",
+      "source": "synthetic",
+      "ref": "s08"
+     }
+    ]
+   },
+   {
+    "pool": "g-2",
+    "real": 15,
+    "controls": 25,
+    "items": [
+     {
+      "id": "g-2-001",
+      "group": "E01",
+      "fingerprint": "e3646784f9b0b47cf1c07f20ae26673308bacd88f2e6ebb4a3071e5ccb449180",
+      "source": "anchor",
+      "ref": "a09"
+     },
+     {
+      "id": "g-2-002",
+      "group": "E01",
+      "fingerprint": "dac53d3b91f5c583c19a4a25b853d4354dfa25af0f92a453fa6c2a7d7e3e077d",
+      "source": "synthetic",
+      "ref": "s03"
+     },
+     {
+      "id": "g-2-003",
+      "group": "E02",
+      "fingerprint": "6a9e21f323bba8ff2ec612fee10f5a8f3957d6982ed34de9d9891845b42c98eb",
+      "source": "anchor",
+      "ref": "a05"
+     },
+     {
+      "id": "g-2-004",
+      "group": "E03",
+      "fingerprint": "f0ca95ce815130a21774a243438cac9ee4fb637726b857b2b4de8a23499a1f41",
+      "source": "anchor",
+      "ref": "a12"
+     },
+     {
+      "id": "g-2-005",
+      "group": "E03",
+      "fingerprint": "93b45f24bdef88334896ea62d37a8bdaf0f741b490c8ac13086e03e7f73272b5",
+      "source": "anchor",
+      "ref": "a24"
+     },
+     {
+      "id": "g-2-006",
+      "group": "E03",
+      "fingerprint": "5ffb386dbcfb021680ba335a6d82d60a977e151287445f2dc175803d40d77f66",
+      "source": "synthetic",
+      "ref": "s04"
+     },
+     {
+      "id": "g-2-007",
+      "group": "E04",
+      "fingerprint": "27ce312f1dd2625c3d3e84c4a1957e2ace0c58a3013edce40ccdf7279fc8ce98",
+      "source": "instance",
+      "ref": "e2-2"
+     },
+     {
+      "id": "g-2-008",
+      "group": "E04",
+      "fingerprint": "6e9e888dd4bca52159888e3c768379c748e299d293a88eafb210cf62652202bc",
+      "source": "instance",
+      "ref": "e2-3"
+     },
+     {
+      "id": "g-2-009",
+      "group": "E04",
+      "fingerprint": "897538d352cbc7fecb68ebe72746113e7e86e29f1b051dc80a5677bb6804e19b",
+      "source": "instance",
+      "ref": "e2-1"
+     },
+     {
+      "id": "g-2-010",
+      "group": "E04",
+      "fingerprint": "6cbafa4e57fff8662266b1f82b4afbcc99c431fe1df37f118fd19be9abd00706",
+      "source": "instance",
+      "ref": "e2-0"
+     },
+     {
+      "id": "g-2-011",
+      "group": "E04",
+      "fingerprint": "64db8e0803a408dfcc1e5511290fa6b5645450ba9f6b9cc459123e59c02be81b",
+      "source": "instance",
+      "ref": "e2-4"
+     },
+     {
+      "id": "g-2-012",
+      "group": "E05",
+      "fingerprint": "37842311c4996c69dc06863e7ff301690292aaad0355ef43aabf5f3b32553952",
+      "source": "instance",
+      "ref": "e3-4"
+     },
+     {
+      "id": "g-2-013",
+      "group": "E05",
+      "fingerprint": "499b76351ce604a98b5be9ea84880b1f15f6f796d262ed3699f087c6f0bf52c1",
+      "source": "instance",
+      "ref": "e3-2"
+     },
+     {
+      "id": "g-2-014",
+      "group": "E05",
+      "fingerprint": "10583971b60f70eb8689793b3bb6ece8f9920f1c446046df0fd6dfb7b2db58f6",
+      "source": "instance",
+      "ref": "e3-1"
+     },
+     {
+      "id": "g-2-015",
+      "group": "E05",
+      "fingerprint": "18f2eec82a1b473f0a0e99308d49fdf601ae9428fcafd4ebdc0e02f296a053bf",
+      "source": "instance",
+      "ref": "e3-3"
+     },
+     {
+      "id": "g-2-016",
+      "group": "E05",
+      "fingerprint": "c20bdd7dd2ccfd0309edde7e9f36c399d301ff70db9106830ac9de25c21b0fca",
+      "source": "instance",
+      "ref": "e3-0"
+     },
+     {
+      "id": "g-2-017",
+      "group": "E06",
+      "fingerprint": "fa2dac96f23db2baf0be2d1ae7f889adf310fd778e1617a58e03bb32a18289fa",
+      "source": "synthetic",
+      "ref": "s02"
+     },
+     {
+      "id": "g-2-018",
+      "group": "E07",
+      "fingerprint": "c6afc653cf92e020d7456e7ff51391c1c8b51dfa610cd51ac46b906197fdcca1",
+      "source": "synthetic",
+      "ref": "s01"
+     },
+     {
+      "id": "g-2-019",
+      "group": "E07",
+      "fingerprint": "25586bbd21ea8d8c1084a0e807d044c173df9b6ebb2dcfa3ea8ace1edcf53b17",
+      "source": "anchor",
+      "ref": "a02"
+     },
+     {
+      "id": "g-2-020",
+      "group": "E07",
+      "fingerprint": "42c862e164aca0e20045d5af32c393bab8dae8208d7546eaf1db3646fbe73b88",
+      "source": "anchor",
+      "ref": "a15"
+     },
+     {
+      "id": "g-2-021",
+      "group": "E08",
+      "fingerprint": "3f93de239ac8981c58182a4353d5fb252308d6567bdfb8e2bf8212618755784c",
+      "source": "instance",
+      "ref": "e4-2"
+     },
+     {
+      "id": "g-2-022",
+      "group": "E08",
+      "fingerprint": "0ec82e41b4f489a4b1447e573f8b5c735c2dc4fd6e97ac916d234b9eb149fc79",
+      "source": "instance",
+      "ref": "e4-0"
+     },
+     {
+      "id": "g-2-023",
+      "group": "E08",
+      "fingerprint": "75023c63ac7bdecb5e104d4995ad11f5190ad74e26e7a077f49ca9bc2f8afd4d",
+      "source": "instance",
+      "ref": "e4-1"
+     },
+     {
+      "id": "g-2-024",
+      "group": "E08",
+      "fingerprint": "ce21f71ba0f468a275e4c1603c0a5e876683fabf8214cee3ca332dfd128fada6",
+      "source": "instance",
+      "ref": "e4-3"
+     },
+     {
+      "id": "g-2-025",
+      "group": "E09",
+      "fingerprint": "58d5eafee31e7ea4c9a79e10bdcd3c5f4b3ad85dc4f0242f257781975839363b",
+      "source": "anchor",
+      "ref": "a20"
+     },
+     {
+      "id": "g-2-026",
+      "group": "E10",
+      "fingerprint": "e7603364a94898f92a0332acce205b19d83287234bc7e81e38446fbc63b62738",
+      "source": "anchor",
+      "ref": "a16"
+     },
+     {
+      "id": "g-2-027",
+      "group": "E11",
+      "fingerprint": "1b30ba389f8554fb032a2eba3bf4946544c5c68eddd30063015da28661e4f2b8",
+      "source": "anchor",
+      "ref": "a13"
+     },
+     {
+      "id": "g-2-028",
+      "group": "E11",
+      "fingerprint": "a7fc1ec12eb46b9901ddf21b977106f5a2360ce93fa3ff2a7d67f03465bf7cca",
+      "source": "anchor",
+      "ref": "a14"
+     },
+     {
+      "id": "g-2-029",
+      "group": "E12",
+      "fingerprint": "4a024d8b53ea9b4389e34390dc4e2b825cc95323bf804ab965577cf15fb9f8b4",
+      "source": "anchor",
+      "ref": "a04"
+     },
+     {
+      "id": "g-2-030",
+      "group": "E13",
+      "fingerprint": "85cbf325781133b9aca9c70f192aae035aae174a749da5728a4cec80edd2e9be",
+      "source": "anchor",
+      "ref": "a23"
+     },
+     {
+      "id": "g-2-031",
+      "group": "F01",
+      "fingerprint": "1e00b6e26f54fd4b952fcad5accffc8c47c52ff6ba82f9d519601cb79e2e523d",
+      "source": "synthetic",
+      "ref": "s06"
+     },
+     {
+      "id": "g-2-032",
+      "group": "F02",
+      "fingerprint": "923f56cb332592d7c5b67ddd7283684b9c4b8efbb6a4fdd6dfd6c7d76ce3ef34",
+      "source": "synthetic",
+      "ref": "s07"
+     },
+     {
+      "id": "g-2-033",
+      "group": "F03",
+      "fingerprint": "ba54033c193f7f394337237e93acc7cb49afe92a958dc7e35fb432da45f3bd7d",
+      "source": "synthetic",
+      "ref": "s08"
+     },
+     {
+      "id": "g-2-034",
+      "group": "F04",
+      "fingerprint": "00809d373ed2632f384df10f575b979460856788671644f3a676a65b082fe55b",
+      "source": "synthetic",
+      "ref": "s13"
+     },
+     {
+      "id": "g-2-035",
+      "group": "F05",
+      "fingerprint": "841f87272504e15085336a70f6eee77c8de37b64dcd4a34e5a8a3587fc2baaad",
+      "source": "synthetic",
+      "ref": "s09"
+     },
+     {
+      "id": "g-2-036",
+      "group": "F06",
+      "fingerprint": "98115917b6a9cd71004b794de6735389387b5a73346b397b5facdb574a80ee00",
+      "source": "synthetic",
+      "ref": "s11"
+     },
+     {
+      "id": "g-2-037",
+      "group": "F07",
+      "fingerprint": "87a7d679b4bfc8502c642aa507441d3f820f37a558fbc2257c22148ffea2f124",
+      "source": "synthetic",
+      "ref": "s05"
+     },
+     {
+      "id": "g-2-038",
+      "group": "F08",
+      "fingerprint": "0052221330136215e8a257c842194392956a579a7de2a997fb3306545cd282cc",
+      "source": "instance",
+      "ref": "f4"
+     },
+     {
+      "id": "g-2-039",
+      "group": "F09",
+      "fingerprint": "7b23151d7f0ca67954503a40ef2ed75170407b758e3f4ea4d615b1d491b17433",
+      "source": "synthetic",
+      "ref": "s10"
+     },
+     {
+      "id": "g-2-040",
+      "group": "F10",
+      "fingerprint": "6b1de2abacfa233b7f06c1dff33386e00ebb99c6f64167069db4886731562ae6",
+      "source": "synthetic",
+      "ref": "s12"
+     }
+    ]
+   },
+   {
+    "pool": "g-3",
+    "real": 10,
+    "controls": 25,
+    "items": [
+     {
+      "id": "g-3-001",
+      "group": "E01",
+      "fingerprint": "d7fd822b8f39b2702a5053937085e695109220109e8f7132a1af67d5d86894d0",
+      "source": "instance",
+      "ref": "e8-0"
+     },
+     {
+      "id": "g-3-002",
+      "group": "E02",
+      "fingerprint": "fa2dac96f23db2baf0be2d1ae7f889adf310fd778e1617a58e03bb32a18289fa",
+      "source": "synthetic",
+      "ref": "s02"
+     },
+     {
+      "id": "g-3-003",
+      "group": "E03",
+      "fingerprint": "e7603364a94898f92a0332acce205b19d83287234bc7e81e38446fbc63b62738",
+      "source": "anchor",
+      "ref": "a16"
+     },
+     {
+      "id": "g-3-004",
+      "group": "E04",
+      "fingerprint": "f0ca95ce815130a21774a243438cac9ee4fb637726b857b2b4de8a23499a1f41",
+      "source": "anchor",
+      "ref": "a12"
+     },
+     {
+      "id": "g-3-005",
+      "group": "E04",
+      "fingerprint": "5ffb386dbcfb021680ba335a6d82d60a977e151287445f2dc175803d40d77f66",
+      "source": "synthetic",
+      "ref": "s04"
+     },
+     {
+      "id": "g-3-006",
+      "group": "E04",
+      "fingerprint": "93b45f24bdef88334896ea62d37a8bdaf0f741b490c8ac13086e03e7f73272b5",
+      "source": "anchor",
+      "ref": "a24"
+     },
+     {
+      "id": "g-3-007",
+      "group": "E05",
+      "fingerprint": "85cbf325781133b9aca9c70f192aae035aae174a749da5728a4cec80edd2e9be",
+      "source": "anchor",
+      "ref": "a23"
+     },
+     {
+      "id": "g-3-008",
+      "group": "E06",
+      "fingerprint": "1b30ba389f8554fb032a2eba3bf4946544c5c68eddd30063015da28661e4f2b8",
+      "source": "anchor",
+      "ref": "a13"
+     },
+     {
+      "id": "g-3-009",
+      "group": "E06",
+      "fingerprint": "a7fc1ec12eb46b9901ddf21b977106f5a2360ce93fa3ff2a7d67f03465bf7cca",
+      "source": "anchor",
+      "ref": "a14"
+     },
+     {
+      "id": "g-3-010",
+      "group": "E07",
+      "fingerprint": "58d5eafee31e7ea4c9a79e10bdcd3c5f4b3ad85dc4f0242f257781975839363b",
+      "source": "anchor",
+      "ref": "a20"
+     },
+     {
+      "id": "g-3-011",
+      "group": "E08",
+      "fingerprint": "4a024d8b53ea9b4389e34390dc4e2b825cc95323bf804ab965577cf15fb9f8b4",
+      "source": "anchor",
+      "ref": "a04"
+     },
+     {
+      "id": "g-3-012",
+      "group": "E09",
+      "fingerprint": "6a9e21f323bba8ff2ec612fee10f5a8f3957d6982ed34de9d9891845b42c98eb",
+      "source": "anchor",
+      "ref": "a05"
+     },
+     {
+      "id": "g-3-013",
+      "group": "E10",
+      "fingerprint": "0f8feb9e07b7129bf56e6841c79a522f3df984e1a2bd18184cf0ec2056e78c12",
+      "source": "instance",
+      "ref": "e7-0"
+     },
+     {
+      "id": "g-3-014",
+      "group": "E11",
+      "fingerprint": "cc0daa3336b35d086edff7e0b10ad9ff3c2f8e6477717ad9f29b4df9d4462d95",
+      "source": "instance",
+      "ref": "e5-0"
+     },
+     {
+      "id": "g-3-015",
+      "group": "E11",
+      "fingerprint": "b78ed7ffbacc3a4de7ad5321c7d43c452ee2867fe7c502315276b643946afbc7",
+      "source": "instance",
+      "ref": "e5-2"
+     },
+     {
+      "id": "g-3-016",
+      "group": "E11",
+      "fingerprint": "4cf5bec3c56307928b55042f80956aa94df734536b32feb5e416a2a26ba7fa2b",
+      "source": "instance",
+      "ref": "e5-1"
+     },
+     {
+      "id": "g-3-017",
+      "group": "E12",
+      "fingerprint": "23b341e1fa4bd0a5142c86bb331d66b47062364ecc28f6137a186b360ca6224b",
+      "source": "instance",
+      "ref": "e6-0"
+     },
+     {
+      "id": "g-3-018",
+      "group": "E12",
+      "fingerprint": "218a052d3e34ff62f17d065184191e389282108b552f7d1349e661eb273781e8",
+      "source": "instance",
+      "ref": "e6-1"
+     },
+     {
+      "id": "g-3-019",
+      "group": "E13",
+      "fingerprint": "42c862e164aca0e20045d5af32c393bab8dae8208d7546eaf1db3646fbe73b88",
+      "source": "anchor",
+      "ref": "a15"
+     },
+     {
+      "id": "g-3-020",
+      "group": "E13",
+      "fingerprint": "25586bbd21ea8d8c1084a0e807d044c173df9b6ebb2dcfa3ea8ace1edcf53b17",
+      "source": "anchor",
+      "ref": "a02"
+     },
+     {
+      "id": "g-3-021",
+      "group": "E13",
+      "fingerprint": "c6afc653cf92e020d7456e7ff51391c1c8b51dfa610cd51ac46b906197fdcca1",
+      "source": "synthetic",
+      "ref": "s01"
+     },
+     {
+      "id": "g-3-022",
+      "group": "E14",
+      "fingerprint": "dac53d3b91f5c583c19a4a25b853d4354dfa25af0f92a453fa6c2a7d7e3e077d",
+      "source": "synthetic",
+      "ref": "s03"
+     },
+     {
+      "id": "g-3-023",
+      "group": "E14",
+      "fingerprint": "e3646784f9b0b47cf1c07f20ae26673308bacd88f2e6ebb4a3071e5ccb449180",
+      "source": "anchor",
+      "ref": "a09"
+     },
+     {
+      "id": "g-3-024",
+      "group": "F01",
+      "fingerprint": "952e40220951b6a7ba0e4279bffa9ccabe3edc3eb9637425f123963931d2ef7e",
+      "source": "instance",
+      "ref": "f1"
+     },
+     {
+      "id": "g-3-025",
+      "group": "F02",
+      "fingerprint": "ba54033c193f7f394337237e93acc7cb49afe92a958dc7e35fb432da45f3bd7d",
+      "source": "synthetic",
+      "ref": "s08"
+     },
+     {
+      "id": "g-3-026",
+      "group": "F03",
+      "fingerprint": "1e00b6e26f54fd4b952fcad5accffc8c47c52ff6ba82f9d519601cb79e2e523d",
+      "source": "synthetic",
+      "ref": "s06"
+     },
+     {
+      "id": "g-3-027",
+      "group": "F04",
+      "fingerprint": "f6dfb992b0d19cfc84d444ac86ab2fbf5dbce00a0298c5d8f32d9b8c6c0e0d7a",
+      "source": "instance",
+      "ref": "f3"
+     },
+     {
+      "id": "g-3-028",
+      "group": "F05",
+      "fingerprint": "7a85f208a7d1d6bc34ba48748060e32b7a65eac141034e576fc0062f0c0544f3",
+      "source": "instance",
+      "ref": "f2"
+     },
+     {
+      "id": "g-3-029",
+      "group": "F06",
+      "fingerprint": "6b1de2abacfa233b7f06c1dff33386e00ebb99c6f64167069db4886731562ae6",
+      "source": "synthetic",
+      "ref": "s12"
+     },
+     {
+      "id": "g-3-030",
+      "group": "F07",
+      "fingerprint": "87a7d679b4bfc8502c642aa507441d3f820f37a558fbc2257c22148ffea2f124",
+      "source": "synthetic",
+      "ref": "s05"
+     },
+     {
+      "id": "g-3-031",
+      "group": "F08",
+      "fingerprint": "98115917b6a9cd71004b794de6735389387b5a73346b397b5facdb574a80ee00",
+      "source": "synthetic",
+      "ref": "s11"
+     },
+     {
+      "id": "g-3-032",
+      "group": "F09",
+      "fingerprint": "923f56cb332592d7c5b67ddd7283684b9c4b8efbb6a4fdd6dfd6c7d76ce3ef34",
+      "source": "synthetic",
+      "ref": "s07"
+     },
+     {
+      "id": "g-3-033",
+      "group": "F10",
+      "fingerprint": "00809d373ed2632f384df10f575b979460856788671644f3a676a65b082fe55b",
+      "source": "synthetic",
+      "ref": "s13"
+     },
+     {
+      "id": "g-3-034",
+      "group": "F11",
+      "fingerprint": "7b23151d7f0ca67954503a40ef2ed75170407b758e3f4ea4d615b1d491b17433",
+      "source": "synthetic",
+      "ref": "s10"
+     },
+     {
+      "id": "g-3-035",
+      "group": "F12",
+      "fingerprint": "841f87272504e15085336a70f6eee77c8de37b64dcd4a34e5a8a3587fc2baaad",
+      "source": "synthetic",
+      "ref": "s09"
+     }
+    ]
+   }
+  ]
+ },
+ "tQuantile": [
+  [
+   1,
+   12.706204736174659
+  ],
+  [
+   2,
+   4.302652729749456
+  ],
+  [
+   3,
+   3.1824463052837046
+  ],
+  [
+   4,
+   2.7764451051977908
+  ],
+  [
+   5,
+   2.570581835636313
+  ],
+  [
+   9,
+   2.2621571627982027
+  ],
+  [
+   10,
+   2.228138851986274
+  ],
+  [
+   29,
+   2.0452296421327016
+  ],
+  [
+   100,
+   1.9839715185235387
+  ]
+ ],
+ "tTwoSidedP": [
+  [
+   0.5,
+   1,
+   0.7048327646991337
+  ],
+  [
+   1.0,
+   2,
+   0.4226497308103746
+  ],
+  [
+   2.5,
+   4,
+   0.06676654481198813
+  ],
+  [
+   3.2,
+   9,
+   0.010831302589901316
+  ],
+  [
+   12.7,
+   1,
+   0.05002432768934409
+  ],
+  [
+   0.0,
+   3,
+   1.0
+  ]
+ ],
+ "statistics": [
+  {
+   "scores": [
+    0.5,
+    0.7,
+    0.6,
+    0.8,
+    0.9
+   ],
+   "mean": 0.7,
+   "sd": 0.15811388300841897,
+   "se": 0.07071067811865475,
+   "ci95": [
+    0.5036756838522445,
+    0.8963243161477554
+   ],
+   "nNegative": 0,
+   "min": 0.5,
+   "median": 0.7
+  },
+  {
+   "scores": [
+    0.31,
+    -0.2,
+    0.0,
+    0.12
+   ],
+   "mean": 0.057499999999999996,
+   "sd": 0.2139119756660046,
+   "se": 0.1069559878330023,
+   "ci95": [
+    -0.282881688307107,
+    0.397881688307107
+   ],
+   "nNegative": 1,
+   "min": -0.2,
+   "median": 0.06
+  },
+  {
+   "scores": [
+    0.4,
+    0.4
+   ],
+   "mean": 0.4,
+   "sd": 0.0,
+   "se": 0.0,
+   "ci95": [
+    0.4,
+    0.4
+   ],
+   "nNegative": 0,
+   "min": 0.4,
+   "median": 0.4
+  },
+  {
+   "scores": [
+    0.9
+   ],
+   "mean": 0.9,
+   "sd": null,
+   "se": null,
+   "ci95": null,
+   "nNegative": 0,
+   "min": 0.9,
+   "median": 0.9
+  },
+  {
+   "scores": [
+    0.1,
+    0.25,
+    -0.05,
+    0.6,
+    0.45,
+    0.33,
+    0.01
+   ],
+   "mean": 0.2414285714285714,
+   "sd": 0.2375169166907606,
+   "se": 0.08977295624779985,
+   "ci95": [
+    0.021762060873511263,
+    0.4610950819836316
+   ],
+   "nNegative": 1,
+   "min": -0.05,
+   "median": 0.25
+  }
+ ],
+ "ratios": [
+  [
+   "d.hcf",
+   "d.hc.f",
+   0.9090909090909091
+  ],
+  [
+   "b.a21",
+   "b.ad1",
+   0.8
+  ],
+  [
+   "d`gh1",
+   "d`gh/1",
+   0.9090909090909091
+  ],
+  [
+   "1cd/c12h `a/:bc:.ae:a11eg.`22 ",
+   "1cd/c12h `a/::c:.ae:a1eg.`22 ",
+   0.9491525423728814
+  ],
+  [
+   ".g2c2fbacgde/ :/1e h1 .fh. .d2",
+   "g2c2fbacg2de/ :/1e h1 .fh. .d2",
+   0.9666666666666667
+  ],
+  [
+   "./`c`1fh2..b`/d/1.eebbg1/gbf:b",
+   ":/`c`1fh2..b`d/1.eebbg1/gbf:b",
+   0.9491525423728814
+  ],
+  [
+   " 1ba..:a `.fh22ehdaeabb.had e.ec`a1fffc21  g1h /1./hb.:he /``d2e ehehfa: .fa ../",
+   " 1a..:a `.fh22eh/aeabb.had e.ec`a1fffc21 / ge1h /1./hb.:he /`ad2e ehehfa: .fa ../",
+   0.9565217391304348
+  ],
+  [
+   "e/ge..fcfcf:f1.ee: b:1a./`cehd/:edfc/ /`bb.ff/1dg:1cbf`/d2.ged:bahdf:11.c1ef:1/b",
+   "e/ge..fcfcf:f1.ee: b:1a./`cehd/:ed/fc/ /`bb.ff/1dg:1 .:`/d2.ged:bahdf:11.c1ef:1/c",
+   0.9440993788819876
+  ],
+  [
+   "cdag12.h h2`da`g1:/`hehf2d1b1.eb:daa2:`h2d222 .aag`bched/ahh a2.bfce1hg::afddbh2",
+   ".cdag12.h h2`da`::/`hehf2d1b1.eb:da2:`h2d222 .aag`behed/ahh a2.bfce1hg::afddbh2",
+   0.9559748427672956
+  ],
+  [
+   "de.hh agf:1a1a:cababga1`bhhgfcfbf / .efedf bcha`` :b.cafg./:h /:a.2 af/g:`f ` gaddhe`.b: d c2a2ff2h:1ebg`b1`/12h: /b`f.hb:.`agcd: ahb.b/2 c1af11ba1b/g",
+   "de.hh agf:1a1a:1cababga:`bhgfcfbf / .efedf bcha`` :b.cafg./:h/:`a.2 af/g::`f ` gaddhe`.b: d c2a2ff2h.1ebg`b1`/12h: /b`f.hb:.`agcd: ahb.b/2 c1af1b1ba1b/g",
+   0.9668874172185431
+  ],
+  [
+   " fh b hd2 1`c `.:./2h/gc/ 22ccbg`g2`hg.`1cce:dc.hf2d1`h:e/`1 .1..e2deaeg: dc.fdfg:1c `g`.dg.121/hag`b1 :`2ag2d2d/`:/bd1ed2d:ecc.`/1a22ec1afc b`:bbbe12",
+   " fh b hd2 1`c `.:./b.h/gc/ 22ccbg`g2`hg.`1cce:dc.hf2d1`h:e/`1 .1`.e2deaeg: gc.fdfge1cg `f`.dg.121/hag`b1 :`2ag2dd/`:/bd1ed2d:hcc.`/1a22ec1afc b`:bbbe2",
+   0.9466666666666667
+  ],
+  [
+   "f/:f:ge////:1eb:f/.hhb/ghfa`e/`.`c//`/ccf22/gbb2hc2f/`/. he/cgge:c`bb`c:hh.` fbee a1caghed`:hf2f gh::bfg1bce.b/b.:2`bc`d. /` 1`c..c1 :dhhc.cd1ef:ea1:g",
+   ":/:f:ge////:1eb:f/.hhb/ghfa`e/`.`c//`/ccf22/gbb2hc2f/`/. heh/cgge:c`bb`c:hh.`fbhee a1caghed`:hf2f g2::bfgbce.b/b.:2`b:`d. /`d1`c.c1 :d1hc.cd1ef:ea1:g",
+   0.9498327759197325
+  ],
+  [
+   "gb.e/2ccg:b.2aaf.dhbgha2fff1f``cb11.:2a`b`f:d2b1d `:dgfb:a b1d`c gg`bh1 d/geagg:` gcg2a`ef1fghf. da:de:fc1ghdcdac. hc/acb.cggca1a gf a``ad a ga22ddb gdcf.bf2b.a:`ee:g:2egdhea1f/ffba/ b..aba/bachagad/",
+   "gb.e/2ccg:b.2aaf.dhbgh2fff1f`h`cb11.:2a`b`f:d2b1 `dgfb:a b1d`c gg`bh1 d/geagg:` gcg2a:`ef1fhf. da:de:f`1ghdcdac. hc/acb.cgca1a f a``ad a ga22ddb gdcf.bf2b.a:`ee:g:2egdeea1f/ffba/ b..aba/hacha :gad/",
+   0.9595959595959596
+  ],
+  [
+   "f: gdg:`gfe1ch`:.2`` gacc`:a1gb:`//bfd.1:/a2.1agg21`/ffabd :2bf.ebgb1/dd`ac2/c.abdedd1hh h:2.f:2h:dgc.ba1:b.a1bd2ebbg d11/.b/g:/1`f ./g:be1.g1 dbhage`/bffdg:b2h/`f :/b.hddf1afd gbedfc`2d`d12`.g2`h1 f",
+   "f: gbg:2fe1ch`:.2`` gacc`:a1gb:`//bfd.1:/a2.1ag21`/ffabd :2bf.ebgb1/dd`acg/a.abdedd1hh h:2.f:2h:dgc.ba1.::b.agbd2ebbg d11/.b/g:/1`f ./g:be1.g1 dbhage`/bffdg:b2h/`df :/b.hddf1afd gbedfc`2d`:g2`.g2`h1 f",
+   0.020050125313283207
+  ],
+  [
+   "gbdcg::`e :2/fc egghhdf1eeagf2f:1e`d2:haac/hchacaad::gf:fhagcdae 2f1a.h:bgeed/:g `efaa a//c2::.dc`:1: h:1fhceacaag/a212ggh/:211.h fh/cecb/c1hb :fgge:egehc.fcha g1d1g2..eaf..hbgce:`:2eb /bfahg2:1/gde2",
+   "gdcg::`e :2/fc egghdhdf1eeag2f1:1e`d2:haac/hchacaad::g:fhagcdae 2f1a.h:bgeed/:g ` faa a /c2::.dc`:1:eh:1fh2eacaag/a212ggh/:e211.h fh/cecb/c1hb cfgge:egehc.fcha g1d1g2..eaf..hbgcee`:2eb /bfhhg2:1/gde2",
+   0.949748743718593
+  ],
+  [
+   "hhacdgccc2`c`g/ /ac ac:/ced/1c1cahchd :b  caebcbcec f2.b2dafcgdbfh2gb`1fga`fh`1:g. ghhegchg1 d:.e2`1`ce11cfe1dca.a .1cb.ac1b: ./fh`:ebgh.gfc..dfgh.f/f.f`.:`2f1`1feeecb.hd`f`/de egcgfh:1c.hhg.ab  h1.:e",
+   "hhacdgccc2`c`g/ /ac ac:/ced/1c1cahchd :b  caebcbcec f2.bbdafcgdbfh2gb`1fga`fh`1:g. ghhegchg1fad.e21`ce11cfe1ca.a .1cb.ac1b: ./fhg:ebgh.gfbc..dfgh.f/ff.f`.:`221`1feeecb.hd`f`/deegcgfh:1c.hhg.ab  h1.:e",
+   0.9624060150375939
+  ],
+  [
+   "bdf edaah`2fhg`f1`1:2dgf/.bh22 dgc2eehdb1c.2b a:f ag1cgec dh/ .//e eb/``2bbg2:`fb1afg2 /2b1/f/ 2.d2fd/ ba/ha22hhd.1bcd1g112h efg/hdd.ef2.c.hf.hff:12.1``hdga` 1e/dg11dc1bgb22h 1dfc:afgd 21/1`ad f dceef",
+   "bdf edaah`2fhg`f1`1:2dgf/.bh22 dgc2eehdb1c.`b a:f ag1/gec dh/ .//e f b/``2bbg2.:`fb1afg2 /2b1/cf/ 2.d 2fd/ ba/ha22bhd.1bcd1g11ch efg/hdd.ef2.c.hf.hff:12.1e`hdga` 1e/dg11dc1bgb22 1dfc:afgd 21d1`ad f dceegf",
+   0.21287128712871287
+  ],
+  [
+   "/gd 1hgf .g:cb` f1`c.fbfhc1eg/hc12gfga.f1/d.b`:h.e.2/2ehf 12`/e2a /h`:f gf.cde`d.1 `bfhcf2`gch gd2 h.fb`a.g`dch/cbbhhb2 1hhf ebge/fdebdbgf cef/ce.:hd/dde:f`f2bb1`c:bdgfbf1:cca/gehcf21g` h./. : eehe.2 ",
+   "/gd 1hgf .g.:cb` f1`c.fbfhc1eg/hc12gfga.c1/d.b`:h.e.2/ef 12`/e2a /h`:f gf.cde`d.1 `bfhcf2`cch gd2 h.fb`a.g`dcdh/cbbhhb2 1hhf ebge/fdebdbgf 1ef/ce.:hd/dde:`f2bb1`c:bdgfbf1:cca/gehcf21g` eh.b : `ehe.2 ",
+   0.9573934837092731
+  ],
+  [
+   "ecb.b2/cba`b/:h `gh/.gec`1abe/` caafh`f1fba:d a:hg2/`f/dggd:afddc  b f.bh/.deba a.fddg.he/:. /2`dh. /e:bc:ghhbe2..cghcehcdfhebbgbg:d`2: aaag.aa`h1g2aaf/ee1gge:e:ce/.b /ab/ddbc` h`:`hc/cb/eh1hagbf/g2b /`fh:  gf.afeg`/e:g`edfb/e`g g",
+   "ecb.b2/`cba1b/:h `gh/.gec`21abe/` caafh`f1fba:d a:h2/`f/2ggd:afddc  b f.bh/.deba a.fddg1he/:. /2`dh. /e:bc:ghhbe2..cghcehcdfhebb gbg:d`2: aaag.aa`h1g2a f/ed1gge:e:ce/.b /ab/ddbc` h`:`hchcb/eh12afbf/g2b /`fh:  gf.afeg:/e:g`edfb./e`g g",
+   0.03023758099352052
+  ],
+  [
+   " gg hhh .dg a/h`c2ad.2/:`b1c :h2bbb.d2eh1c2  ccd`1/ gf/gh2aeha.ffh dbedbd2 d1d1fd`2bfhe:d1hdh` ah/e11d2c:e1.b:efdecfd2d2/h:bg eah2 e.e1hdg2def/bb 2: `f:/:.de`b..bac1ff.cdfab:f.hb 2fheagg:`g:cgab:cf11ge 1hd1g gf`f`a2hfg.ghgagb`ecdh",
+   " gg hhh .dg a/h`c2ad.2/d:`b1 c:h2bbb.d2eh1:2 ccd`1/ gf/gh2aeha.ffhfdbedbd2 d1d1fd`2bfhe:d1hdh` ah/e11d2c:e1.b:efdecfd22d2/h:b ea`h2 e.e1hdgddef/bb 2: `f:/:.d `b..bac1bff:cdfab:f.hb 2fheagg:`g:cgab:cf11ge 1hd1g gfbf`a2hag.ghgagb`ecdh",
+   0.09956709956709957
+  ],
+  [
+   "da`gabh22`df`g`.e:f`a1d`h/ad:. c`1fghh /gc.`2:e1/ebd:ch2fg: dh2`hfeff:::cefbc2 `e.g h 1d2b/fa.`fga//gh/1.e.2ghh`g:1`d1:eb1`b1g:g `cd1e`ch2.eac2d/dg/.bef/d1h/bafgeg.a2:/f:ec/g..ge1hgfdbdhaf2hbf1acagcfbc1f.1dg`h/haa:hd/fc.ehdf1:1f. ",
+   "da`gabh22`2`g`.e:f`1d`h/ad:. c:1fghh/ /gc.`2:e1/ebd:ch2fg: dh2`hfefff:::cefbc2 `e.g h 1d2b/fa.2fga//gh1.e.2hh`g:1`d1:eb1`b1g:g `cd1e`ch2.eac2d/dg/.bef/d1h/bafgeg.a.2:/f:ec g. geg1hgfdbdhaf2dbf1acagcfbc1`.1dg`h/haa:hd/fc.ehdf1:1f. ",
+   0.043478260869565216
+  ],
+  [
+   "`.fhd`1 f`fe.cdf2`ad/cgedc.1g:2h.11g22c:1 1e :. bd /bd1:/.f1:fee12`// /h: c/fhbef2.::e`dd``1 /1d/`dhdf1.egd/2:b`bh.a/2. 11a:1.h.ee.fc`hce22c:g::/ ehdc/1.:::gbd1fa./g1ah  2b. f 1ef/2. 1bgdb/eg:`behb1d.hfe:/1d.//2f1 ab.acd.d/:bdfch:bc hga2b1fd :2 :dbab`bh`e/11dcgcb`fb2gh/ccdd/ge 2/a21d.e1/f2b/cc/.agb::d2b1c1ch2f`dh: 2aebgdhgdb 1./`.2cd/22hebcg:122: a. b1dh 1`cbb2ga:cdf1.12fg2`geb12b:2f..aaffabceba1e",
+   "`hfhd`1 f`fe.cdf2`ad/cgedc.1g:2h.1.g22c:1 d1e :. bd /bd1:/.f1:fee12`// /h/ c/fhbf2.::e`dd``1 /1d/`dhdf1.egd/2:b`b.h.a/2. 11a:1.h.ee.fc`hce22c:g::/ ehdc/1./::gbd1dfa./g1ah  2b. f 1ef/2` 1bgdb/eg:`behf1/b.hfe:/1d. //2f1 a.acd.d/:bdfch`bc hga2b1f1d :2 :dbabb`bh`e/11dcgcb`fb2gh/ccdd/ge 2/a21d.e1/f2b/cc/.agb::d2b1c1ch2f`h: 2.aebdhgdb 1./`.2cd/22hebcg:122: a.bdh 1`cbb2ga:cdf1.12:fg2h`geb12b:2f..aaffabceba1e",
+   0.0024875621890547263
+  ],
+  [
+   "h :eb`1..`f2bb2 . e`gebdg1.`.1gc1b. `gd`gea`2.e/:ebc.2d`aag h .: 12 :ac:a 1 gbdc1`/c/fb/.f2/22:`/f/aef/a/1.egf:ad ``2a2eabd1f.gbg/ a 1aeg22hc/ dc :hbbb1bd1ad`ffg:ha dbfbg/1`d c111fc21ffhf2b21cgbf1cfdb1cghe.ghehb bdb1b21.def2/dcc/`1:.hb`1cdf/f:2:db/1c `ad:e2eafg2ffhef:.g.21b1f``d`/e.2gd.ge`d`2f:bgbhg/cf/cafa1.ea2def2ec.g/ccfhf.hhd`e2f 2`b: d1.be.:b1chagge1fede :`b2ab/ b:hc`.c1hgdef. `a da 1hhee/ec2",
+   "h :eb`1..`f2bd2e . e`gebdg1.`.1gc1b. `gd`:ea`2.e/:ebc.2d`aag h .: 12 :ac: 1 gbdc1`/c/fb/.f2/22:`/f/aef/a/1.egfb:ad``2a2eabd1f.ggbg/ a 1aeg22hc/ dc :hbbbb1bd1ad`bfg:ha dfbg/1d c111f212ffhf2b21cgbf1cfdb1cghe.ghehb  db1b21.def2/dcc/`1:.hb`c1cdf//f:2:db/1c `ad:e2eafgaffhef:.g.21b1f``d`/e.2gdge`d`2f:bgbhg/cf/cafa1..ea2def2ec.g/ccfhf.hhd`e2f 2`b: d1.be.:bcagge1fede :`b2ab/ b:hc`.c1hgde. `a da 1bhhee/ec2",
+   0.0325
+  ],
+  [
+   "/fc2dgdhfb/aahg. e/.1` `. efg`/.a1h hbc.dc1ffbdehh: eff`daha.gbf./e1 bc.`bf1bc2c2.:`/.dhd/g/111ge2d/hf.ef/1:1f/.h/``df:fce22/2e`d .fg2`gbb2a /gg`1.hgfe2gfa`ec12baba1efghg.2``fa:1a11de./ge2`. d.:f 1f::d/:g/d1dh2:dc:b2`e`:ge/:ch1g2b / `gedagb2ebd` 2a`gc1 /1`a1b`g:g2/ fa.eba.e/.fe2d/bhf1h`.12bgehb 2h/g/b1ae2ff1/f .`cefe.d1`hgbchf1.df1.b1./f:de`1:dhcab::h1``hh h.b.a`dh.g1 /.ffd``1222. b`:  d:d gd:af`f",
+   "/fc2dgdhfb/aahg. e/.1` `. efg`/ba1h hbc.dc1ffbdehh1 eff`daha.gbf./e1 bc.`bf1bc2c2.:`/.dhd/g/111g fd/hf.ef/g1:b1f/.h/``df:fce22/2e`d .fg2`gbb2a /gg`.hgfg2gfa`ec12baba1efghg.2``fa:1a11de./g2`.e .:f 1f::d/.:g/d1dh2:dc:b2`e`:ge2/:ch1g2b / `gedagbebd` 2a`g1 /`a1b`g:g2/ fa.eba.e/.fbe2d/ hf1h`.12bge2b` 2h/g/b1ae2ff1/f .`cefe.d1`hgbch.f1.df1.b1./fc:de`1:dhcab::h1``hh h.b.a`dh.g1 /.ffd``1222 b:  d::d gdaf`f",
+   0.07740324594257178
+  ],
+  [
+   "cfhe`f2d2ceah 1b1b.c `:fd`:1 :aae``:d``1.1a.f1.h2bbe.2`fdg12/b:2geh:b1dacdh.h b//ba gaegdc/f/11g/fg1`e:h1/f ` a g.b1hfcae1:dcb22e`c`gdh./.ebh//c1e.c1ha.eg22hd hag`degbg e:fghd`fbdb`bhbd2h. 2bd2d.`c21.cebceecgfaad2`11.f.gfh1:.e hah/1af/a  :2bcc/ccfeb.bcgd. b:11aed::g.`.e..`a`de//``gg:2cf1hc.d. c /`bhhhge`c1:dd22g2hda.1cd efeedaede`h1fh:h222  h/f`d`g /df:`/cfa/ebe:22g2bb`:dc/.fd1d`a/ee1:.d:a ca1121/effc`gfhe//d/cebcgf`.///f2/: g/` /ff2ca g`1:2e h/bc.2g`:`1habc:edce:ce2c:.e:/f::fbfc 1`1f`h1.e:ag 1h.ge`2b1ca` 1c.g/12 1:ebdbh`d.fb/  `e2c:`hda2..e2ghbghe:a1hdcb22 ha.12``ee/ec/f/adcdgh ah:2/cf.`.gb` ",
+   "cfhe`f2bd2ceah 1b1b.c `:fd`:1 :aae``:d``1.1a.f1.h2be.2`fdg12/b:geh:b1dacdh.h b//ba gaegdc/f/11g`/fg1`e:h1/f ` a` g.1hfcae1:dcb22e`c`gdh./.ebh//c1e.c1ha.eg22hd hag`degba e:fghd`fbdb`bhbd2h. 2b2d.`c21gcebceecgfaad2`11a.f.gfh1:.e hah/1af/a  :2bcc/bc/fe b.bcgd` b:11ae::g.`.e.e`ag`de//``gg:2cf1hc.d. c /`bhhhge`c1:1dd22g2hda.1cd efecedaede`h1fh:h222  h/f`d`g /df:`/cfa/ebe:22g2bb`:d c/.fd1d`a/ee1:.d:a ca1121/effc`gfbhe//d/cebcgf`.///f2/: g/` ./ff2ca g`1:2 h/bc.2g:`:`b.habc:edce:ce2c:.e:/fa::fbfc 1`1f`h1.e:ag 1h.ed2b1ca` 1..g 12 1:ebdbh`d.fb/  `e2c:`hda2.e2ghbgh:a1hdcb22 ha.12``ee/ecf/adcdgh ah:2/cf.`.gb` ",
+   0.011618257261410789
+  ],
+  [
+   "aabdfh`. cahdcd/:bd:1e.c1a1g/h2:d/bh2a22hd.dcc/.1/fhe:a.``bbed :h`eceh`g`2f /gb/d 1acbcgd/bh2bhggbf`ga b`c a1c1 1f``cb  1bf..fdh1ffgf 11b`ac cggb/ c:f2h21:1bgf2geae:he2:`/ee fbgdgab fdhea:e`d 2af:ge:b/:.2de2he2ahbf/cfae2/:cc/da`. ``ah/bf.//ba1afe``/ggb1d`/eggc1eg/h2`dc g/hb.1`1e1g2ggbc:2:hh gf2g.ffe.dfddd/ga`fhh1ceadaab fh:`f.dee  `c12ch:`.e1/a2/d .ea`/gge2b . h2`.cagcghgf/ad1hfb2:f:c` 21d2a..edhde fbada`2 :1dc.:ah1d.`c d 11hfbabd2`edb:.hca h:ddf a2a1b1dabgh/c:eb gafbhgb.h.:11bf`af1//b`fcd21eed` f:ffhg:.`dbc ``b/2df//1a`:cdad1`:e``b.c/cf /b g 2f/`12ebge2:/f1a:1c :b`.hb1/1/1b2e f:2g/2d1/1ba1aca",
+   "abdfh:. cahcd/:bd:1e.c1bag/h2:d/bh2a22hd.dcc/b1/fhe:a.``bbed :h`eceh`g`2f /gb/d 1acbcgd/bh2bhgbf`ga b`c a1c1 1fd`cb  1bf.fdh1ffgf 11b`ac cggb/ c:f2h21:1bg2 eae:he2:`/ee fbgdga1 fdhea:e d 2af:ge:b/:.2de2he2ahbf/cfae 2/:cc/da`. ``ah/bcf.//ba1afe``/ggbad`/eggc1eg/h2d`dc g/hb.1`1e1g2ggbc:2:h gf g.ffe.bdfddd ga`fhh`1ceadaab fh:`f.dee  f`c11ch:`.e1./a2/d :ea`/gge2b .h2`.cagcghgf/ad1hfb2:f:` 21d2a..edhde fbada`2 :1c.:ah1gd.`c d 11hf2babd2`:edb:.hca h:ddf a2a1bc1dabgh/c:eb afbhgb.h.:11bf`af1//b`fcd21eed` f:ffhg:.``dbc ``b/2dfc//1ae:cdad1`:e``b.c/cf /b g 2f/a12ebge2:/f1a:1c :b`.hb1/1e1b2ee f:2g/2d1/1ba1aca",
+   0.0016611295681063123
+  ],
+  [
+   " fhb2:cg1:/:aea 2:efhfeh bge/ed1::a:e:h.f/hcedc/2 :hh.aea2``/2g:f e`f  ..1 gf db/22 ch:g/hd:ch1dcgb1bg1: .ahe/hdg/c1` e2fceca:.2ee/b1df1e2f:gdad efbc1.`gg1b`:  2g/.dc:d.hfd:ff1c/ae.`ecc2aa::e11f2f1:dd:.b122/ff  21ecbfa2hae2eag e`f.h1d/`1 /1d.: dh/d.e`h.ge `bd.fag1f.hf:dd.eafbgfdfcbd.:gdeb fg`g/dhfae.c.hbdfdd2h2a dh:b:a.hedb`g1:aac.:ee:c1:2 :fbf/`h`edddgh : ` d21bc``1ga cgfcbd. bdf1a`./f`/cda`be2.g11f2 ./g1h gef1dd212b .c/1gge`2 `be`ebd2ecgffahd//cb bcafaeh/d.:2/1h2a1ee:h`:cd: ag/.2./f`/d :b. bee:d2`2f.222fach`bfbgg1`/c1fgehcbc1abff1cf: / 1d:2afg1:/c1/a11 c:a.gf h:a221h/./d`:ggdb/2b1a:dcfede/.f",
+   " fhb2:cg1:ac:a`a 2:efhfeh bge/ed1::a:e:h.f/hcedc/2 c:hh.aea2``/2g:f e`f  ..1 gf db/22 ch:g/hd:cah1dcgb1bg1: .ahe/hdg/c1` e2fceca:.2ee/gb1df1e2f:ddad efbc1.gg1b`:  2g/.dc:d.hfd:ff1c/ae`.`ecc2aa::e11f2f1:/dd:.b122/df  21b1a2hae2eag e`fh1fd/`1 /1d.: dh/d.e`h.ge `bd.fag1f.hf:dd.eafbgfdfcbd.:gdeb fg`g/dhfae.c.hbdcddh2a dh:b:a.hedb`d1:aac.:/e:c1:2 :bf/`h`.edddgh : ` d21bc``1ga cgfcbd.  bdf1a`.f`/cda`be2.g11f2 ./g1h gef1d212b .c/1gge`2a`beaebd2echfahd//cb bcafaeh/d.:2/1h2a1ee:h`:cd: ag/.2./f`/d :b. bee:d2`2f.222fach`bfbgg1`/c1hgehcb 1abff1cf:e/ f1`:h2afg1:/c1/a11 c:a.gf h:a221h/./d`:ggdb/2b1af/`dcfede/.f",
+   0.016611295681063124
+  ],
+  [
+   "x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x abc",
+   "x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x abd",
+   0.991869918699187
+  ],
+  [
+   "",
+   "",
+   1.0
+  ],
+  [
+   "abc",
+   "",
+   0.0
+  ],
+  [
+   "中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本",
+   "中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测试文本中文测式文本",
+   0.9875
+  ],
+  [
+   "a",
+   "a",
+   1.0
+  ]
+ ],
+ "normalized": [
+  [
+   "Look at `foo.mjs:12-14` and 3 other items.",
+   "look at `x` and 0 other items."
+  ],
+  [
+   "LOOK at `bar` and 7 other items ",
+   "look at `x` and 0 other items"
+  ],
+  [
+   "src/a.mjs:5,9 failed\n\tbadly",
+   "loc failed badly"
+  ],
+  [
+   "x_y ./z-1:2 `a`b`",
+   "x_y loc `x`b`"
+  ],
+  [
+   "中文 路径/文件.mjs:3 出错 12",
+   "中文 loc 出错 0"
+  ]
+ ],
+ "templates": {
+  "candidates": [
+   {
+    "instanceId": "inst-a",
+    "candidateId": "inst-a:c:finding-1",
+    "check": "CHK",
+    "findingIndex": 0,
+    "finding": "The function does not validate its input before use at `src/x.mjs:10`, which can throw for 3 callers.",
+    "kind": "finding"
+   },
+   {
+    "instanceId": "inst-a",
+    "candidateId": "inst-a:c:finding-2",
+    "check": "CHK",
+    "findingIndex": 1,
+    "finding": "The function does not validate its input before use at `src/x.mjs:11`, which can throw for 3 callers.",
+    "kind": "finding"
+   },
+   {
+    "instanceId": "inst-a",
+    "candidateId": "inst-a:c:finding-3",
+    "check": "CHK",
+    "findingIndex": 2,
+    "finding": "The function does not validate its input before use at `src/x.mjs:12`, which can throw for 3 callers.",
+    "kind": "finding"
+   },
+   {
+    "instanceId": "inst-a",
+    "candidateId": "inst-a:c:finding-4",
+    "check": "CHK",
+    "findingIndex": 3,
+    "finding": "The function does not validate its input before use at `src/x.mjs:13`, which can throw for 3 callers.",
+    "kind": "finding"
+   },
+   {
+    "instanceId": "inst-a",
+    "candidateId": "inst-a:c:finding-9",
+    "check": "CHK",
+    "findingIndex": 9,
+    "finding": "A wholly different statement about naming.",
+    "kind": "finding"
+   },
+   {
+    "instanceId": "inst-b",
+    "candidateId": "inst-b:c:finding-1",
+    "check": "CHK",
+    "findingIndex": 0,
+    "finding": "The function does not validate its input before use at `src/x.mjs:5`, which can throw for 3 callers.",
+    "kind": "finding"
+   },
+   {
+    "instanceId": "inst-b",
+    "candidateId": "inst-b:c:finding-2",
+    "check": "CHK",
+    "findingIndex": 1,
+    "finding": "The function does not validate its input before use at `src/x.mjs:6`, which can throw for 3 callers.",
+    "kind": "finding"
+   },
+   {
+    "instanceId": "inst-a",
+    "candidateId": "inst-a:d:assoc-1",
+    "check": "CHK",
+    "findingIndex": 1,
+    "finding": "The function does not validate its input before use at `src/x.mjs:11`, which can throw for 3 callers.",
+    "kind": "association"
+   },
+   {
+    "instanceId": "inst-a",
+    "candidateId": "inst-a:e:none",
+    "check": "CHK",
+    "findingIndex": 20
+   }
+  ],
+  "decisions": {
+   "inst-a:c:finding-1": {
+    "stable_id": "inst-a:c:finding-1",
+    "decision": "problem-2",
+    "source": "pool p:1"
+   },
+   "inst-a:c:finding-2": {
+    "stable_id": "inst-a:c:finding-2",
+    "decision": "unsupported",
+    "source": "pool p:2"
+   },
+   "inst-a:d:assoc-1": {
+    "stable_id": "inst-a:d:assoc-1",
+    "decision": "matched",
+    "source": "override (Main review)"
+   }
+  },
+  "expected": [
+   {
+    "instanceId": "inst-a",
+    "findings": 4,
+    "text": "The function does not validate its input before use at `src/x.mjs:10`, which can throw for 3 callers.",
+    "credited": [
+     {
+      "stable_id": "inst-a:c:finding-1",
+      "decision": "problem-2",
+      "source": "pool p:1"
+     },
+     {
+      "stable_id": "inst-a:d:assoc-1",
+      "decision": "matched",
+      "source": "override (Main review)"
+     }
+    ]
+   }
+  ]
+ }
+}

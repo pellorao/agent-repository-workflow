@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0001:40",
+  "request": {
+    "digest": "9220cd881f5dc55a3a09127a2a5773c2ab38e62324981d9a0653fb3d0c805ed2",
+    "filePath": ".tmp/claude-code/06588b1e-7f07-4832-8933-107aaf5b5978/0001_40/spec-readiness/requests/request-8aef5223-d75c-4909-a1bb-64bdd2369f64.json",
+    "id": "8aef5223-d75c-4909-a1bb-64bdd2369f64"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "9803a9120632ba201ecccc1996b3e3cc75c13faf7b5cdedb5d4e518dc6d8ebd0"
+  },
+  "inputs": [
+    {
+      "filePath": "docs/specs/agent-repository-workflow-development/spec.md",
+      "role": "governing-spec",
+      "sha256": "6a9830c0e920a09160242a6adebf0a3ddfbcfdc6b0ce1d37a5ba3becd236d395"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow-release/spec.md",
+      "role": "governing-spec",
+      "sha256": "fa4fe39348dc27c2d29434b4c96dde4a3da8d2f5985fab4330114f4191f5fb96"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow/spec.md",
+      "role": "governing-spec",
+      "sha256": "6ec58d0f3c13ae83bc416b37bc9edee3f4f42a6b7e9d2b91ddf05f22dc69e9ad"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0001-claude-code-migration/issues/40-scoring-port-bc-pool-stats.md",
+    "sha256": "d562c7dc26861049688d3bdedd7479417538c370683ae48ab6bf4a9d9633d42c"
+  },
+  "result": "satisfied"
+}
