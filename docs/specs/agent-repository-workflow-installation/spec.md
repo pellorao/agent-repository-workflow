@@ -16,9 +16,9 @@
 node install-arw.mjs --non-interactive --register-path true
 ```
 
-规范来源没有稳定 tag 时, 引导脚本明确失败, 不自动安装默认分支. 此时使用克隆 Source Checkout 后执行 `node install.mjs` 的本地安装路线和相应 `-pre` 身份.
+规范来源没有稳定发布时, 引导脚本明确失败, 不自动安装默认分支. 此时使用克隆 Source Checkout 后执行 `node install.mjs` 的本地安装路线和相应 `-pre` 身份.
 
-引导安装脚本默认选择最高稳定 SemVer 标签. `--version MAJOR.MINOR.PATCH` 只接受远端存在的精确稳定标签, 并明确授权首次安装历史版本. ARW 不提供降级: 已安装版本高于目标版本时安装报错且零安装写入, 无论是否使用 `--version`; 需要旧版本时先卸载再安装. 单文件引导安装脚本生成时, 从根 `release-validation.json` 投影规范 HTTPS 远端. 生成物可以包含该派生值, 但不成为第二权威来源. 运行时不读取当前目录的 Git 配置, 也不提供远端覆盖选项. 它建立临时检出目录, 解析标签对应的提交, 验证检出目录 `HEAD`, 调用该版本根目录的 `install.mjs`, 再清理临时检出目录.
+引导安装脚本默认选择 GitHub 最新稳定发布 (不含预发布). `--version MAJOR.MINOR.PATCH` 选择精确稳定发布, 并明确授权首次安装历史版本. ARW 不提供降级: 已安装版本高于目标版本时安装报错且零安装写入, 无论是否使用 `--version`; 需要旧版本时先卸载再安装. 单文件引导安装脚本生成时, 从根 `release-validation.json` 投影规范 HTTPS 远端. 生成物可以包含该派生值, 但不成为第二权威来源. 运行时不提供远端覆盖选项, 不需要 Git. 它用 Node.js 内置 `fetch` 从该远端的 GitHub release 下载固定名称的安装压缩包 `arw.tar.gz`, 用系统 `tar` 解压到临时目录, 调用压缩包根目录的 `install.mjs`, 再清理临时目录. 本规格生效前没有已发布的稳定版本, 此后每个稳定发布都带 `arw.tar.gz` 资产, 因此 `--version` 可选择的都是带资产的发布. 设规范远端去掉结尾 `.git` 后为 `https://github.com/<owner>/<repo>`: 最新稳定发布的标签是 `https://api.github.com/repos/<owner>/<repo>/releases/latest` 返回的 `tag_name`, 资产地址是 `https://github.com/<owner>/<repo>/releases/download/<tag>/arw.tar.gz`; 规范远端不是这种形式时, Bootstrap 在任何网络访问前以退出码 1 失败. 参数错误以退出码 2 结束; 下载失败, HTTP 状态非成功, 解压失败或其他 Bootstrap 失败以退出码 1 并向标准错误写一行原因结束; 否则返回 Installer 的退出码.
 
 维护者也可以从源码仓库根直接运行:
 
@@ -26,13 +26,13 @@ node install-arw.mjs --non-interactive --register-path true
 node install.mjs
 ```
 
-没有任何发布身份参数时, 安装程序从当前工作树执行本地安装, 不读取 Git 元数据, 不访问远端, 也不要求干净工作树, Git 提交或标签. 本地身份从根 `package.json.version` 机械派生为固定 `<version>-pre`. 用户不能提供另一个本地版本或后缀.
+Installer 总是以 `install.mjs` 所在目录为来源目录, 与进程当前目录无关. 没有 `--release-tag` 时, 它从该目录的源码树执行本地安装, 不读取 Git 元数据, 不访问远端, 也不要求干净工作树, Git 提交或标签. 本地身份从根 `package.json.version` 机械派生为固定 `<version>-pre`. 用户不能提供另一个本地版本或后缀.
 
-任一 `--release-tag` 或 `--release-commit` 出现时都进入正式发布路径. 两项必须完整, 未重复且有效. 部分或无效的证据不退回本地安装.
+`--release-tag` 出现时进入正式发布路径, 缺失时执行本地安装; 重复或无效的标签不退回本地安装.
 
-Installer 不接受选择方式参数, 版本策略不区分默认最高版本与 `--version`. `--version` 只属于 Bootstrap, Installer 不接受它. `--release-tag` 必须是没有 `v` 前缀的规范稳定 `MAJOR.MINOR.PATCH`, `--release-commit` 必须是完整的 40 或 64 位小写十六进制 Git 对象 ID. Installer 验证标签与 `package.json.version` 一致, 标签解析结果, 检出副本 `HEAD` 和传入提交完全相同, 并验证载荷字节属于该提交.
+Installer 不接受选择方式参数, 版本策略不区分默认最高版本与 `--version`. `--version` 只属于 Bootstrap, Installer 不接受它. `--release-tag` 必须是没有 `v` 前缀的规范稳定 `MAJOR.MINOR.PATCH`. Installer 验证标签与来源 `package.json.version` 一致, 并验证载荷完整; 发布来源的可信度来自 Bootstrap 经 HTTPS 从规范远端取得的发布压缩包, Installer 不读取 Git.
 
-源码仓库和 ARW 安装目录都提供 `arw.mjs`, `arw.cmd` 和无扩展名 `arw` 启动器. PowerShell, CMD, Git Bash 和 Linux Bash 使用同一个日常 CLI `arw`. Bootstrap 与 Installer 在加载 Installation Implementation 或开始 Git, 网络, 临时资源, 提示和安装写入前检查运行时. Node.js 低于 24 或无法解析时写入明确错误并以退出码 1 结束. 普通 `arw` 与 Uninstaller 不执行显式版本检查. 启动器每次从当前 PATH 解析 `node`, 不固定安装时的运行时绝对路径.
+源码仓库和 ARW 安装目录都提供 `arw.mjs`, `arw.cmd` 和无扩展名 `arw` 启动器. PowerShell, CMD, Git Bash 和 Linux Bash 使用同一个日常 CLI `arw`. Bootstrap 与 Installer 在加载 Installation Implementation 或开始网络, 临时资源, 提示和安装写入前检查运行时. Node.js 低于 24 或无法解析时写入明确错误并以退出码 1 结束. 普通 `arw` 与 Uninstaller 不执行显式版本检查. 启动器每次从当前 PATH 解析 `node`, 不固定安装时的运行时绝对路径.
 
 Installer 和 Uninstaller 把通知与成功摘要逐行写入标准输出, 把诊断和参数错误逐行写入标准错误, 不输出内部结果 JSON. 参数错误使用退出码 2; 不支持的运行时, 任一 `severity: "error"` 诊断, `partial`, `unknown`, 交互输入 `EOF` 或其他操作失败使用退出码 1; 没有错误诊断的 `installed`, `removed` 或幂等 `unchanged` 使用退出码 0. Installer 成功摘要使用 `Installed agent-repository-workflow to <absolute-path>.`, Uninstaller 成功摘要使用 `Uninstalled agent-repository-workflow from <absolute-path>.`. 交互询问只把 `y` 和 `yes` 视为同意, 把空输入, `n` 和 `no` 视为拒绝, 其他输入重新询问. Installer 的 PATH 拒绝等同 `registerPath: false` 并继续安装; Uninstaller 的删除拒绝返回无错误的 `unchanged`; `EOF` 不解释为拒绝, 而是在任何写入前返回稳定错误.
 
@@ -61,7 +61,9 @@ Installer 和 Uninstaller 把通知与成功摘要逐行写入标准输出, 把�
 
 Installation Payload Module 验证清单的封闭结构, 平台启动器选择, 相对路径包含关系, 安全普通来源文件, 重复目标和大小写冲突. 它通过 Filesystem Module 的规范相对路径拼接 Interface 组合 `distributionRoot` 与每个 Workflow Distribution 条目, 因而输出不含重复分隔符的规范目标路径, 再通过同一 Module 的相对路径范围操作确认结果位于来源根内. 它从 `distributionRoot` 读取完整且验证通过的 Workflow Distribution. 本地与正式来源使用同一种载荷展开方式.
 
-正式发布在任何安装写入前独立验证所选标签, 解析出的提交, 检出目录 `HEAD`, 软件包身份, 载荷字节和来源 Git 状态. `package.json` 留在 Git 树验证清单, 但不进入 ARW 安装目录. `release-manifest.json`, 引导安装脚本, 根安装程序, `config.install.json`, 测试, 源码仓库文档和维护脚本也不进入安装.
+正式发布在任何安装写入前独立验证所选标签, 软件包身份和载荷. `package.json` 随安装压缩包提供以供身份验证, 但不进入 ARW 安装目录. `release-manifest.json`, 引导安装脚本, 根安装程序, `config.install.json`, 测试, 源码仓库文档和维护脚本也不进入安装.
+
+安装压缩包 `arw.tar.gz` 由发布流程用 `scripts/pack-release.mjs` 从 `release-manifest.json` 生成, 只含 `install.mjs`, `package.json`, `release-manifest.json`, `config.install.json`, 平台启动器, `runtimeFiles` 与 `distributionRoot` 下的完整内容, 以及 `install.mjs` 的模块导入闭包; 不含测试, 测试夹具和只服务 Source Checkout 维护的文件.
 
 安装载荷同时包含根 `LICENSE.txt`, 与来源保持准确字节并沿用普通载荷的归属, 修复, 升级和卸载责任. 该文件通过既有 `runtimeFiles` 清单登记, 不增加独立许可状态或修改第三方许可.
 
@@ -346,13 +348,13 @@ Module 返回 `unchanged | removed | partial | unknown`, 阶段, 诊断信息和
 
 `Runtime Compatibility Module` 位于 `lib/arw-common/`, 是只拥有 Node.js 版本字符串解析和 Node.js 24 最低版本判断的纯 Module. 它不执行 I/O, 不退出进程, 不接收生命周期模式或调用方身份. Bootstrap 与 Installer 消费它的结果; 普通 `arw` 与 Uninstaller 不依赖它.
 
-`Bootstrap Module` 消费发布长期规格拥有的规范 HTTPS 远端, 并拥有稳定发布选择, 临时检出目录, 安装程序交接和清理. `Bootstrap Artifact Module` 只拥有单文件引导安装脚本的确定性生成, 写入和验证, 包括把当前配置值投影到生成物. 它不选择发布或执行安装.
+`Bootstrap Module` 消费发布长期规格拥有的规范 HTTPS 远端, 并拥有稳定发布选择, 压缩包下载与解压, 临时目录, 安装程序交接和清理. `Bootstrap Artifact Module` 只拥有单文件引导安装脚本的确定性生成, 写入和验证, 包括把当前配置值投影到生成物. 它不选择发布或执行安装.
 
 `Installation Payload Module` 独占 `release-manifest.json` 验证, 平台启动器选择, 运行时清单, 完整 Workflow Distribution 组合, 安全来源验证和载荷字节读取. 它不写安装目录. Engine Installation Module 通过一个内部 Installation Payload Seam 消费该 Module 的完整结果, 使生产 Adapter 和确定性测试 Adapter 不改变 Engine 的载荷消费责任.
 
 `Identity Module` 拥有产品身份, 稳定版与固定 `-pre` 的版本语法与解析, 软件包身份和当前 `arwVersion` 权威来源选择. 它不拥有载荷或事务.
 
-`Engine Installation Module` 选择 Local Source Adapter 或 Release Source Adapter, 再让两种来源共用同一个安装生命周期. 它编排后台管理进程的互斥关闭, 载荷, 配置, PATH 或配置文件和运行时写入. Release Source Adapter 消费 Git, Installation Payload 和 Scoped Filesystem Interface, 但不让产品调用方选择这些依赖. 它在收集阶段拥有版本顺序 (数值核心版本, 同核心时固定 `-pre` 低于稳定版), 经 Identity 的 `parseArwVersion` 解析后比较已验证的目标 `arwVersion` 与 Installation Contract Module 验证的已安装清单版本, 执行版本策略, 违反时在任何安装写入前阻断.
+`Engine Installation Module` 选择 Local Source Adapter 或 Release Source Adapter, 再让两种来源共用同一个安装生命周期. 它编排后台管理进程的互斥关闭, 载荷, 配置, PATH 或配置文件和运行时写入. Release Source Adapter 消费 Installation Payload 和 Scoped Filesystem Interface, 但不让产品调用方选择这些依赖. 它在收集阶段拥有版本顺序 (数值核心版本, 同核心时固定 `-pre` 低于稳定版), 经 Identity 的 `parseArwVersion` 解析后比较已验证的目标 `arwVersion` 与 Installation Contract Module 验证的已安装清单版本, 执行版本策略, 违反时在任何安装写入前阻断.
 
 `Uninstallation Module` 验证当前受管理安装, 确认后台管理进程, 所有受管根线程及单个共享 App Server 可以安全退出, 再按用户配置选择和有效清单证明编排平台登记, 受管理文件, 残留枚举与清单最后删除. 它不取得安装来源, 构建载荷或升级已有配置.
 
@@ -366,7 +368,7 @@ Module 返回 `unchanged | removed | partial | unknown`, 阶段, 诊断信息和
 
 `evaluateNodeRuntime(version)` 是 Runtime Compatibility Module 的唯一公开行为 Interface. 非字符串输入抛出 `TypeError`. 可解析版本的第一个以点分隔的部分必须是无前导零的非负十进制主版本号. 无法解析时返回 `{status: "unsupported", error: "ARW cannot determine the active Node.js major version: <version>."}`. 主版本号低于 24 时返回 `{status: "unsupported", error: "ARW requires Node.js 24 or newer. Current runtime: <version>."}`. 主版本号 24 或更高版本返回 `{status: "supported", recommendation: null}`. `<version>` 保留调用方提供的准确字符串. 结果不同时包含 `error` 和 `recommendation`.
 
-Bootstrap Module Interface 接受 [Public entry points](#public-entry-points) 定义的 Bootstrap 参数. 参数有效时, 它选择发布, 验证完整提交与检出目录 `HEAD`, 再把准确发布参数和其余 Installer 参数交给该检出的 Installer, 并返回 Installer 退出码. 参数错误在任何临时资源或来源访问前失败. 创建临时目录后的每条路径都尝试清理它; 发布选择, Git, Installer 启动, 信号或清理失败使 Bootstrap 失败, 不返回部分成功. 该 Interface 不返回检出文件或安装结果对象.
+Bootstrap Module Interface 接受 [Public entry points](#public-entry-points) 定义的 Bootstrap 参数. 参数有效时, 它选择发布, 下载并解压发布压缩包, 再把 `--release-tag` 和其余 Installer 参数交给解压得到的 Installer, 并返回 Installer 退出码. 参数错误在任何临时资源或网络访问前失败. 创建临时目录后的每条路径都尝试清理它; 发布选择, 下载, 解压, Installer 启动, 信号或清理失败使 Bootstrap 失败, 不返回部分成功. 该 Interface 不返回解压文件或安装结果对象.
 
 `Bootstrap Artifact Module` Interface 接受源码仓库根目录和 `write | check` 模式. 它读取当前规范 Bootstrap 行为, Runtime Compatibility 行为和已验证的发布配置, 再确定性形成完整单文件生成物. `write` 只在完整构建成功后写入规范生成物; `check` 只读比较现有生成物且不写文件. 成功结果只包含 `status: "succeeded"`, `changed` 和空 `diagnostics`; `check` 成功固定使用 `changed: false`. 输入或配置无效, 规范行为无法唯一组成或 `check` 发现字节不一致时返回 `blocked` 与完整 `diagnostics`. 配置读取或生成物 I/O 失败返回 `failed`, `stage` 和 `diagnostics`. 非成功结果不返回部分生成物, Interface 也不公开组成过程. 生成物只投影规范远端和行为, 不成为其权威来源.
 
@@ -374,11 +376,10 @@ Identity Module Interface 根据当前运行目录的来源布局或完整有效
 
 Installation Payload Module Interface 接受已经固定的来源根目录和目标平台, 自行读取并验证该来源的 `release-manifest.json` 与完整 Workflow Distribution. 无效调用形状同步抛出 `TypeError`. 成功结果只包含 `status: "succeeded"`, 空 `diagnostics`, 完整 `configSeedBytes`, 按目标路径字节序排序的完整 `{path, bytes}` `payload`, 以及按来源路径字节序排序且无重复的 `verificationPaths`. `verificationPaths` 包含清单, `configSeed` 来源路径和形成完整载荷所依赖的每个来源文件; 它不包含由正式来源 Adapter 单独验证的软件包身份. 输入, 清单, Workflow Distribution, 安全路径或载荷冲突返回 `blocked` 与完整 `diagnostics`; 来源读取失败返回 `failed`, `stage` 和 `diagnostics`. 两种非成功结果都不返回 `configSeedBytes`, 载荷, 验证路径或其他部分候选, 并且不写安装目录. Engine 的内部 Installation Payload Seam 使用相同输入和完整结果形状, 不向产品调用方增加可选择的 Adapter 或部分载荷 Interface.
 
-Release Source Interface 接受准确的 `{evidence, platform, sourceDirectory}`. `evidence` 只包含完整提交对象 ID 和规范稳定 `tag`; `platform` 与 `sourceDirectory` 都是字符串. 输入对象缺失或包含额外字段时抛出 `TypeError`, 证据内容无效时返回 `blocked` 与唯一 `release-evidence-invalid` 诊断信息. 成功结果准确为 `{arwVersion, diagnostics: [], sourceDirectory, status: "succeeded"}`. 其他来源阻断问题返回 `{diagnostics, status: "blocked"}`, 观察失败返回 `{diagnostics, stage, status: "failed"}`; 非成功结果不返回部分来源.
+Release Source Interface 接受准确的 `{evidence, platform, sourceDirectory}`. `evidence` 只包含规范稳定 `tag`; `platform` 与 `sourceDirectory` 都是字符串. 输入对象缺失或包含额外字段时抛出 `TypeError`, 证据内容无效时返回 `blocked` 与唯一 `release-evidence-invalid` 诊断信息. 成功结果准确为 `{arwVersion, diagnostics: [], sourceDirectory, status: "succeeded"}`. 其他来源阻断问题返回 `{diagnostics, status: "blocked"}`, 观察失败返回 `{diagnostics, stage, status: "failed"}`; 非成功结果不返回部分来源.
 
-Release Git Adapter 只包含 3 个异步操作. `readHead(directory)` 返回 `{status: "succeeded", commit}` 或 `{status: "failed", message}`. `resolveTagCommit(directory, tag)` 使用相同结果形状. 两者的 `commit` 必须是当前仓库对象格式的完整小写十六进制提交 ID. `assertFilesMatch(directory, commit, paths)` 接受稳定排序且无重复的安全仓库相对路径, 并返回 `{status: "succeeded"}`, `{status: "blocked", message}` 或 `{status: "failed", message}`. `blocked` 只表示树清单含不支持条目, 路径集合不匹配或检出副本字节与提交不同; Git 启动, 退出, 输出解析或其他观察错误使用 `failed`. 每个非成功结果只包含非空 `message`, 不返回提交, 匹配路径或部分观察. 无效调用形状抛出 `TypeError`.
 
-Release Source Adapter 先验证调用形状与 Release 证据, 再取得完整 Installation Payload 结果. 只有载荷成功时才通过 Scoped Filesystem 依次观察和读取 `package.json`, 解析软件包身份, 比较标签与版本, 观察检出副本 `HEAD` 和标签提交, 最后验证 `package.json` 与全部载荷 `verificationPaths` 的准确 Git 树字节. `readHead` 或 `resolveTagCommit` 的 `failed` 映射为 `release-source-observation-failed` 与 `stage: "git-observation"`; 两个成功提交与证据不同映射为 `release-git-identity-mismatch` 阻断问题. `assertFilesMatch` 的 `blocked` 映射为 `release-checkout-mismatch` 阻断问题, `failed` 映射为相同 Git 观察失败. 载荷的 `blocked | failed`, 软件包缺失或不安全, 软件包解析和身份不匹配保持现有结果种类, 诊断信息与阶段优先顺序. 确定性 Adapter 必须返回相同完整结果, 不能提供部分载荷, 跳过软件包身份或缩小最终 Git 验证路径.
+Release Source Adapter 先验证调用形状与 Release 证据, 再取得完整 Installation Payload 结果. 只有载荷成功时才通过 Scoped Filesystem 依次观察和读取 `package.json`, 解析软件包身份并比较标签与版本. 载荷的 `blocked | failed`, 软件包缺失或不安全, 软件包解析和身份不匹配保持现有结果种类, 诊断信息与阶段优先顺序. 确定性 Adapter 必须返回相同完整结果, 不能提供部分载荷或跳过软件包身份.
 
 ARW 安装请求明确来源模式, 已选择的身份, `reinitializeConfig`, `registerPath` 和平台. Engine Installation Module 返回只包含 `diagnostics`, `notices`, `operation`, `stage`, `status` 和 `summary` 的对象. `operation` 固定为 `install`; `stage` 是 `preflight | remove | install | path | manifest | complete`; `status` 是 `unchanged | installed | partial | unknown`. `diagnostics` 的每项只包含稳定非空 `code`, `message` 和 `severity: "warning" | "error"`; `notices` 是字符串数组, 已有配置的路径净变更, `unknownPaths` 和实际写入失败后的人工清理要求准确使用本文定义的模板与顺序. 在来源身份或安装目录尚未验证时 `summary` 可以是 `null`, 否则只包含 `arwVersion`, `configurationResult: null | "initialized" | "preserved" | "reinitialized"`, `installationDirectory`, `managedFiles` 和 `pathOwnership`.
 
@@ -406,13 +407,13 @@ Shared Model Catalog Module 的安装 Interface 只读: 成功时返回遗留 `m
 
 ### Seams and Adapters
 
-引导安装脚本通过 Git, 临时资源和安装程序子进程 Seams 取得固定发布并完成交接. 生产环境 Adapter 使用真实 Git, 文件系统和子进程; 确定性测试使用具有相同操作形状的隔离或脚本化 Adapter. 任一 Adapter 失败通过拥有该生命周期的 Module 返回, 调用方不从部分输出推断成功.
+引导安装脚本通过下载, 临时资源, 压缩包解压和安装程序子进程 Seams 取得固定发布并完成交接. 生产环境 Adapter 使用真实 `fetch`, 文件系统, 系统 `tar` 和子进程; 临时目录操作创建并返回目录路径, 删除失败时抛出; 下载操作返回响应字节, HTTP 状态非成功时抛出, 解压操作在 `tar` 失败时抛出, Installer 启动返回退出码, 信号终止时抛出; 确定性测试使用具有相同操作形状的隔离或脚本化 Adapter. 任一 Adapter 失败通过拥有该生命周期的 Module 返回, 调用方不从部分输出推断成功.
 
-Engine Installation Module 通过一个共同来源 Seam 取得固定安装来源. Local Source Adapter 验证当前源码布局与规范预发布身份, Release Source Adapter 验证完整发布参数, 标签, 提交, 检出 `HEAD`, Git 字节和规范稳定身份. 两者成功时都只返回 `status: "succeeded"`, 固定 `sourceDirectory`, 规范 `arwVersion` 和空 `diagnostics`; 来源特有证据在 Adapter 完成验证后不继续进入共同安装路径. 验证阻断问题返回 `blocked` 与完整 `diagnostics`, 来源或 Git 观察失败返回 `failed`, `stage` 和 `diagnostics`; 非成功结果不返回部分来源. Engine 只把成功结果交给同一个 Installation Payload, 配置, 平台归属和事务生命周期.
+Engine Installation Module 通过一个共同来源 Seam 取得固定安装来源. Local Source Adapter 验证当前源码布局与规范预发布身份, Release Source Adapter 验证发布标签, 载荷和规范稳定身份. 两者成功时都只返回 `status: "succeeded"`, 固定 `sourceDirectory`, 规范 `arwVersion` 和空 `diagnostics`; 来源特有证据在 Adapter 完成验证后不继续进入共同安装路径. 验证阻断问题返回 `blocked` 与完整 `diagnostics`, 来源观察失败返回 `failed`, `stage` 和 `diagnostics`; 非成功结果不返回部分来源. Engine 只把成功结果交给同一个 Installation Payload, 配置, 平台归属和事务生命周期.
 
 Engine Installation Module 的内部 Installation Payload Seam 接受与 Installation Payload Module Interface 相同的固定来源和平台输入, 并只返回该 Interface 定义的完整结果. 生产 Adapter 由 Installation Payload Module 承担, 继续执行真实清单, Workflow Distribution, 路径和来源字节验证. 确定性测试 Adapter 只在 Engine 测试中提供同形状的完整结果或失败, 不成为 CLI 输入, 用户配置, 持久状态或另一份载荷权威. Engine 对两个 Adapter 的结果使用同一载荷消费, 事务和失败路径.
 
-Release Source Adapter 通过 Installation Payload, Scoped Filesystem 和 Release Git Interface 取得完整来源事实. 确定性 Adapter 仍执行 Release Source Adapter 的顺序, 映射与最终结果责任, 不重复构造与读取完整 Workflow Distribution. 保留的真实 Release 检出副本测试证明载荷验证路径, 软件包字节和 Git 树验证能够组合通过. 这些 Adapter 不改变 Engine Installation Module 的共同来源 Seam 或 Release Validation Module 的正式边界.
+Release Source Adapter 通过 Installation Payload 和 Scoped Filesystem 取得完整来源事实. 确定性 Adapter 仍执行 Release Source Adapter 的顺序, 映射与最终结果责任, 不重复构造与读取完整 Workflow Distribution. 保留的真实解压副本测试证明载荷和软件包字节能够组合通过. 这些 Adapter 不改变 Engine Installation Module 的共同来源 Seam 或 Release Validation Module 的正式边界.
 
 PATH 与配置文件归属通过平台 Adapter 隔离 Windows Registry 和 Linux 配置文件 I/O. ARW 安装目录通过开发规格中的公共 `Repository Module`, `Filesystem Module`, `JSON Module`, `Configuration Conversion Module`, `File Transaction Module` 和 `Text Policy Module` 执行普通能力. 配置转换是确定性的内存操作, 不增加文件 I/O Adapter. 用户选择和外部环境不成为可伪造的运行时 Adapter.
 
@@ -424,14 +425,14 @@ Installation 与 Uninstallation 通过后台管理进程的交接 Seam 先取得
 
 ```mermaid
 flowchart TD
-  Bootstrap[引导安装脚本] --> Checkout[选定发布的检出目录]
+  Bootstrap[引导安装脚本] --> Checkout[解压的发布压缩包]
   Runtime[Runtime Compatibility Module] --> Bootstrap
   Runtime --> Installer[Installer CLI Adapter]
   Installer --> Install
   Local[本地源码仓库] --> Source[安装来源]
   Checkout --> ReleaseSource[Release Source Adapter]
   ReleaseSource --> Source
-  ReleaseDependencies[Git, Installation Payload 和 Scoped Filesystem] --> ReleaseSource
+  ReleaseDependencies[Installation Payload 和 Scoped Filesystem] --> ReleaseSource
   Manifest[release-manifest.json] --> Payload[Installation Payload Module]
   Distribution[已验证的 Workflow Distribution] --> Payload
   Source --> Payload
@@ -462,7 +463,7 @@ flowchart TD
 | 权威来源或状态 | 责任方 | 转换和使用方 | 失败, 恢复和最终写入点 |
 | --- | --- | --- | --- |
 | 根 `release-validation.json` 中的规范 HTTPS 远端 | 发布长期规格 | `Bootstrap Artifact Module` 投影到单文件生成物, Bootstrap Module 用它取得准确发布 | 配置无效时在网络访问前失败; 修复受 Git 管理的配置后重试; 普通 Git 提交是配置更新点, 生成物不是第二权威来源 |
-| 本地源码树或稳定标签解析出的准确检出提交 | Local Source Adapter 或 Release Source Adapter, Identity Module 验证产品身份 | Installation Payload Module 从同一个固定来源读取清单, Workflow Distribution 和载荷字节 | 身份, Git 树或检出不匹配时在安装写入前阻断; 临时检出失败后清理并重新取得; 安装事务只消费验证成功的固定来源 |
+| 本地源码树或发布压缩包解压出的来源 | Local Source Adapter 或 Release Source Adapter, Identity Module 验证产品身份 | Installation Payload Module 从同一个固定来源读取清单, Workflow Distribution 和载荷字节 | 身份或载荷不匹配时在安装写入前阻断; 下载, HTTP 非成功或解压失败时 Bootstrap 失败, 清理临时目录后重试; 安装事务只消费验证成功的固定来源 |
 | `release-manifest.json` 和已验证的 Workflow Distribution | Installation Payload Module | 完整结果通过 Installation Payload Seam 交给 Engine Installation Module, 再用于平台启动器选择和有序安装载荷 | 清单, 路径或字节无效时零安装写入; 修复来源后重新构建完整载荷; 载荷只在安装事务中写入 ARW 安装目录 |
 | 当前 `config.json` 字节和全局配置规则对象 | Installation 拥有规则对象, Configuration Conversion Module 拥有公共转换语义 | Engine Installation Module 生成完整替换字节与用户可见净变更 | 解析, 版本, 验证器或结构冲突时阻断, 未知路径报告给用户; 失败后保留原字节并重新安装; File Transaction Module 是配置替换点 |
 | [入口所属 Engine 配置中的 `backgroundAgent`](#background-agent-configuration) | Installation 拥有字段格式, 默认值和安装配置生命周期; 各入口读取自身配置 | 管理进程消费启动时的容量与保存间隔, 机器入口和用户列表客户端消费自身的请求预算 | 普通读取不写配置, 其他入口连接不改变管理进程设置; 无效格式明确失败 |
@@ -481,7 +482,7 @@ flowchart TD
 
 Installation Payload Seam 保持在 Engine Installation Module 内部, 因为生产与测试只需要替换取得完整载荷结果的方式, 不需要改变产品调用方必须理解的 Installation Interface. Installation Payload Module 直接承担生产 Adapter, 避免增加只做转发的浅 Module. 确定性测试 Adapter 让 Engine 的事务与失败行为不再为每个案例重复读取完整来源, 而保留的真实链路测试继续证明生产 Adapter 与 Engine 的组合行为.
 
-Release Source Adapter 只消费已经存在的完整 Interface, 因为软件包失败, 载荷失败和 Git 失败需要分别验证来源编排, 但重复复制完整 Workflow Distribution 不能增加这些失败映射的证明. 让产品调用方选择 Adapter 会扩大安全边界, 让测试跳过 Release Source Adapter 又无法证明失败优先顺序和验证路径组合. 当前选择保留一个使用全部生产 Adapter 的真实发布检出验证, 并让其余来源矩阵使用同形状的确定性 Adapter 执行完整 Release Source 责任.
+Release Source Adapter 只消费已经存在的完整 Interface, 因为软件包失败和载荷失败需要分别验证来源编排, 但重复复制完整 Workflow Distribution 不能增加这些失败映射的证明. 让产品调用方选择 Adapter 会扩大安全边界, 让测试跳过 Release Source Adapter 又无法证明失败优先顺序. 当前选择保留一个使用全部生产 Adapter 的真实解压验证, 并让其余来源矩阵使用同形状的确定性 Adapter.
 
 Installation Contract Module 独立拥有清单最后提交, 因为运行时与 PATH 或配置文件写入可以由 ARW 安装目录编排, 但只有一个边界能判断归属证明何时完整. 有效清单证明的部分失败保留幂等向前重试事实; 任一实际写入步骤失败后无法证明的残留要求用户准确清理再完整重跑, 不建立无法兑现的全量回滚或新的持久恢复记录.
 
@@ -491,7 +492,7 @@ Uninstallation Module 与 Engine Installation Module 分离, 因为卸载只消�
 
 `reviewEditor` 与普通 `editor` 分离, 因为已有编辑器程序不保证等待模式. 共享内部子进程启动实现可以避免重复进程逻辑, 但两个公开行为的完成语义仍不同.
 
-Bootstrap Module 与 `Bootstrap Artifact Module` 分离, 因为稳定发布选择, Git 取得, 安装交接和临时目录清理是一次外部执行生命周期, 单文件生成与验证则是只依赖当前源码和配置的确定性转换. 合并两者会让生成操作取得网络和安装责任, 只保留生成物又会复制发布选择规则. 当前选择接受两个 Module 共享规范远端投影, 配置变化时必须重新生成和验证单文件的成本.
+Bootstrap Module 与 `Bootstrap Artifact Module` 分离, 因为稳定发布选择, 压缩包下载与解压, 安装交接和临时目录清理是一次外部执行生命周期, 单文件生成与验证则是只依赖当前源码和配置的确定性转换. 合并两者会让生成操作取得网络和安装责任, 只保留生成物又会复制发布选择规则. 当前选择接受两个 Module 共享规范远端投影, 配置变化时必须重新生成和验证单文件的成本.
 
 Identity Module 集中产品身份, 版本语法和当前布局中的唯一版本来源, 优先让源码运行时, 已安装运行时和安装验证使用同一判断. 让每个入口直接读取 `package.json` 或安装清单会产生回退和歧义, 把身份放进载荷 Module 又会让没有载荷的运行时查询依赖安装计划. 当前选择接受调用方必须提供当前布局事实, 两种来源同时存在或同时缺失时关闭式失败的成本.
 
@@ -519,7 +520,7 @@ Runtime Compatibility Module 与 Bootstrap 和 Installer 生命周期分离, 因
 
 [ADR-0020](../../adr/0020-use-external-nodejs-source-delivery.md) 继续拥有外部 Node.js, 稳定发布检出目录和复制式安装. [ADR-0031](../../adr/0031-use-github-and-local-validation-sources.md) 拥有公开 HTTPS 来源的边界. 当前规范远端值由[发布长期规格](../agent-repository-workflow-release/spec.md#release-validation-configuration)和根 `release-validation.json` 拥有. [ADR-0022](../../adr/0022-place-source-checkout-scripts-under-scripts.md) 继续拥有引导安装脚本, 根目录安装程序和内部 Module 布局. [ADR-0005](../../adr/0005-use-arw-version-and-distribution-digest.md) 继续拥有 ARW 版本的产品身份责任. [ADR-0026](../../adr/0026-use-source-checkout-workflow-files-as-distribution-authority.md) 说明安装消费派生后的完整 Workflow Distribution, 不让安装取得编写责任.
 
-[ADR-0017](../../adr/0017-use-operation-specific-recovery-baselines.md) 继续拥有 Engine Installation 的完整写入前检查, 移除当前受管运行时后全新安装, 不保留旧运行时回滚, 最后提交清单, 以及有效清单能够证明残留时的失败后向前重试. 本规格的 `partial | unknown`, 残留报告, 未证明残留的人工清理和清单最后处理把该恢复基线具体化, 不建立第二套恢复权威. [ADR-0018](../../adr/0018-use-bounded-mechanical-trust-for-initial-arw-security.md) 继续拥有固定来源的有界机械信任, 以及 Bootstrap 可以先选择稳定标签, 但必须解析完整提交, 验证检出 `HEAD` 和准确来源字节后才能交给 Installer 的有限例外. 当前来源验证不声称证明标签历史, 作者或托管身份.
+[ADR-0017](../../adr/0017-use-operation-specific-recovery-baselines.md) 继续拥有 Engine Installation 的完整写入前检查, 移除当前受管运行时后全新安装, 不保留旧运行时回滚, 最后提交清单, 以及有效清单能够证明残留时的失败后向前重试. 本规格的 `partial | unknown`, 残留报告, 未证明残留的人工清理和清单最后处理把该恢复基线具体化, 不建立第二套恢复权威. [ADR-0018](../../adr/0018-use-bounded-mechanical-trust-for-initial-arw-security.md) 继续拥有固定来源的有界机械信任, 以及 Bootstrap 经 HTTPS 从规范远端的标签 release 取得压缩包, 由 Installer 验证软件包版本与标签一致的有限例外. 当前来源验证不声称证明标签历史, 作者或托管身份.
 
 [ADR-0030](../../adr/0030-use-user-wide-background-agent-management.md) 拥有单一用户级后台管理进程和本机控制通道的架构选择. 本规格拥有固定安装目录中的容量配置默认值, 私有状态位置, 共享模型目录来源与文件生命周期, 以及更新卸载的安全交接; 不复制后台 Agent 的任务控制, Reviewer 规则或原生恢复策略.
 
@@ -529,7 +530,7 @@ Installation 直接消费开发长期规格拥有的 `resolveRelativePathWithinS
 
 内部 Installation Payload Seam 不改变 ADR 0017 的恢复基线或 ADR 0018 的生产信任根. 生产 Adapter 仍执行准确来源验证, 测试 Adapter 不进入产品调用, 配置, 持久状态或发布载荷. 该 Seam 只把已经存在的载荷取得依赖显式交给 Engine, 不改变公开行为, 安全边界或跨领域责任, 因而不需要新 ADR.
 
-Release Source Adapter 的依赖 Seam 同样不改变 ADR 0018 的固定来源信任根. 生产 Adapter 仍执行真实 Installation Payload, Scoped Filesystem 和 Git 验证, 并保持软件包身份与完整树字节的关闭式检查. 确定性 Adapter 不增加外部来源选择或持久结构, 因而不需要新 ADR.
+Release Source Adapter 的依赖 Seam 同样不改变 ADR 0018 的固定来源信任根. 生产 Adapter 仍执行真实 Installation Payload 和 Scoped Filesystem 验证, 并保持软件包身份的关闭式检查. 确定性 Adapter 不增加外部来源选择或持久结构, 因而不需要新 ADR.
 
 ## Requirement ownership
 
@@ -553,7 +554,7 @@ Release Source Adapter 的依赖 Seam 同样不改变 ADR 0018 的固定来源�
 
 ## Validation strategy
 
-固定验证覆盖引导安装, 安装载荷, 安装, 更新, 卸载, 配置升级, 支持平台的 PATH 或配置文件归属, 事务和恢复. Installation Payload Module 的聚焦测试通过生产 Adapter 覆盖真实清单, Workflow Distribution, 路径, 来源字节和失败结果. Engine Installation Module 的多数测试通过确定性测试 Adapter 覆盖载荷消费, 事务和失败行为, 并保留少量完整真实链路测试证明生产 Adapter 与 Engine 组合后的准确来源字节和最终安装结果. Release Source Adapter 的确定性矩阵覆盖载荷, 软件包与 Git 失败的准确顺序和映射, 一个完整真实发布检出验证证明生产依赖组合, 软件包身份, 验证路径和 Git 树字节. 各类 Adapter 使用相同操作形状, 测试不通过绕过 Engine 或 Release Source 责任或削弱断言来减少来源 I/O.
+固定验证覆盖引导安装 (用确定性 Adapter 覆盖 `--version` 精确选择, 最新发布解析, 下载与 HTTP 非成功, 解压失败, Installer 交接, 信号终止, 参数错误先于临时资源和网络访问以退出码 2 失败, 非 GitHub 远端失败和临时目录清理, 并用真实 `tar` 解压发布压缩包证明不需要 Git), 安装载荷, 安装, 更新, 卸载, 配置升级, 支持平台的 PATH 或配置文件归属, 事务和恢复. Installation Payload Module 的聚焦测试通过生产 Adapter 覆盖真实清单, Workflow Distribution, 路径, 来源字节和失败结果. Engine Installation Module 的多数测试通过确定性测试 Adapter 覆盖载荷消费, 事务和失败行为, 并保留少量完整真实链路测试证明生产 Adapter 与 Engine 组合后的准确来源字节和最终安装结果. Release Source Adapter 的确定性矩阵覆盖载荷, 与软件包失败的准确顺序和映射, 一个完整真实解压验证证明生产依赖组合和软件包身份. 发布打包测试证明压缩包只含安装载荷及 `install.mjs` 的导入闭包, 不含测试. 各类 Adapter 使用相同操作形状, 测试不通过绕过 Engine 或 Release Source 责任或削弱断言来减少来源 I/O.
 
 测试通过公开 Module Interface 覆盖正常结果, 输入或状态阻断, I/O 与外部依赖失败, `configSeedBytes` 到安装根目录 `config.json` 的固定映射, `config.json` 与 `manifest.json` 保留目标冲突, 准确载荷字节和归属, 登记与移除幂等状态, 平台写入失败的 `none | changed | unknown` 影响, 零写入保证, 最后提交安装清单, 以及未知配置字段的保留与报告. Installation 的路径集成测试还覆盖范围根排除, 解析后重复与大小写冲突, 目标链接, 嵌套祖先的符号链接或目录联接, 缺失前缀和后续操作的祖先链重验, 并只断言公共 Filesystem 与 Installation 结果. 引导安装生成测试从发布验证配置读取远端并核对生成物一致性, 不断言当前远端字符串永远不变.
 

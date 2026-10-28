@@ -1,22 +1,17 @@
 import assert from 'node:assert/strict';
-import {copyFile, mkdir, readFile, writeFile} from 'node:fs/promises';
+import {access, copyFile, mkdir, mkdtemp, readFile, rm, writeFile} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
 import {dirname, join} from 'node:path';
-import {fileURLToPath, pathToFileURL} from 'node:url';
-import test from 'node:test';
+import {fileURLToPath} from 'node:url';
+import test, {after} from 'node:test';
 
+import {moduleSpecifiers, resolveSourceImport} from '../helpers/module-imports.mjs';
 import {runExitedProcess, runSuccessfulProcess} from '../helpers/process.mjs';
-import {runGit} from '../helpers/git.mjs';
 import {createTemporaryDirectory} from '../helpers/cleanup.mjs';
 import {generateBootstrapArtifact} from '../../lib/installation/bootstrap-artifact.mjs';
-import {BootstrapUsageError, runBootstrap, selectStableRelease} from '../../lib/installation/bootstrap.mjs';
-import {loadReleaseValidationConfiguration} from '../../lib/release/release-validation-config.mjs';
-
-/** @typedef {{arguments: string[], checkoutDirectory: string, commit: string, tag: string}} InstallerLaunchInput */
+import {BootstrapUsageError, runBootstrap} from '../../lib/installation/bootstrap.mjs';
 
 const SOURCE_DIRECTORY = dirname(dirname(dirname(fileURLToPath(import.meta.url))));
-const releaseConfiguration = await loadReleaseValidationConfiguration();
-if (releaseConfiguration.status !== 'succeeded' || !('value' in releaseConfiguration)) throw new Error('Test requires valid release-validation.json.');
-const CANONICAL_REMOTE = releaseConfiguration.value.repositories.sourceCheckout.url;
 
 test('Bootstrap Artifact Module closes invalid input, mismatch, and write results', async t => {
     assert.deepEqual(await generateBootstrapArtifact({mode: 'check', sourceDirectory: 'relative'}), {
@@ -67,237 +62,129 @@ test('scripts bootstrap artifact exposes the standalone CLI seam', async () => {
     assert.match(result.stderr, /stable MAJOR\.MINOR\.PATCH/);
 });
 
-test('default bootstrap selection chooses the highest stable SemVer tag', () => {
-    assert.equal(selectStableRelease([
-        'refs/tags/1.9.0',
-        'refs/tags/2.0.0-rc.1',
-        'refs/tags/v3.0.0',
-        'refs/heads/master',
-        'refs/tags/1.10.0',
-    ]), '1.10.0');
-    assert.throws(() => selectStableRelease(['refs/heads/main']), /no stable ARW release tags/i);
-});
+const RELEASE_CONFIGURATION = {
+    status: 'succeeded',
+    value: {repositories: {sourceCheckout: {url: 'https://github.com/example/arw.git'}}},
+};
+const ARCHIVE_DIRECTORY = await mkdtemp(join(tmpdir(), 'arw-bootstrap-archive-'));
+const ARCHIVE = join(ARCHIVE_DIRECTORY, 'arw.tar.gz');
+await runSuccessfulProcess(process.execPath, [join(SOURCE_DIRECTORY, 'scripts', 'pack-release.mjs'), ARCHIVE]);
+after(() => rm(ARCHIVE_DIRECTORY, {force: true, recursive: true}));
+const ASSET_URL = (/** @type {string} */ tag) => `https://github.com/example/arw/releases/download/${tag}/arw.tar.gz`;
 
-test('explicit bootstrap selection accepts only an existing exact stable tag', () => {
-    const refs = ['refs/tags/1.2.3', 'refs/tags/2.0.0-rc.1', 'refs/tags/v3.0.0'];
-
-    assert.equal(selectStableRelease(refs, '1.2.3'), '1.2.3');
-    assert.throws(() => selectStableRelease(refs, '2.0.0-rc.1'), /stable MAJOR\.MINOR\.PATCH/);
-    assert.throws(() => selectStableRelease(refs, '1.2.3+build.1'), /stable MAJOR\.MINOR\.PATCH/);
-    assert.throws(() => selectStableRelease(refs, 'v3.0.0'), /stable MAJOR\.MINOR\.PATCH/);
-    assert.throws(() => selectStableRelease(refs, '9.9.9'), /does not exist/);
-});
-
-test('invalid explicit bootstrap version fails before remote access', async () => {
+test('bootstrap with --version downloads that release asset, hands off the tag and cleans up', async () => {
     /** @type {string[]} */
-    const stderr = [];
-    let gitCalled = false;
-    const failGit = async () => {
-        gitCalled = true;
-        throw new Error('Git must not run.');
-    };
-    await assert.rejects(runBootstrap(['--version', 'v1.0.0'], {
-        git: {
-            checkoutCommit: failGit,
-            fetchRelease: failGit,
-            initialize: failGit,
-            listRemoteTags: failGit,
-            readHead: failGit,
-            resolveTagCommit: failGit,
-        },
+    const downloads = [];
+    /** @type {string[]} */
+    const cleanup = [];
+    /** @type {unknown[]} */
+    const installers = [];
+    const result = await runBootstrap(['--non-interactive', '--version', '0.2.0', '--register-path', 'false'], {
+        createTemporaryDirectory: async () => '/tmp/arw-release',
+        download: async url => { downloads.push(url); return Buffer.from('archive'); },
+        extractArchive: async (bytes, directory) => assert.deepEqual([bytes.toString(), directory], ['archive', '/tmp/arw-release']),
+        launchInstaller: async input => { installers.push(input); return 7; },
+        loadReleaseConfiguration: async () => RELEASE_CONFIGURATION,
+        removeTemporaryDirectory: async directory => cleanup.push(directory),
         runtimeVersion: '24.0.0',
-        stderr: message => stderr.push(message),
-    }), error => error instanceof BootstrapUsageError);
-    assert.equal(gitCalled, false);
-    assert.deepEqual(stderr, []);
-});
-
-test('bootstrap verbose mode consumes one flag in any position and emits three canonical actual events', async () => {
-    /** @type {string[]} */
-    const stderr = [];
-    const commit = '0123456789abcdef0123456789abcdef01234567';
-    for (const args of [
-        ['--verbose', '--one', '1', '--version', '0.2.0', '--two', '2'],
-        ['--one', '1', '--version', '0.2.0', '--verbose', '--two', '2'],
-        ['--one', '1', '--version', '0.2.0', '--two', '2', '--verbose'],
-    ]) {
-        /** @type {string[]} */
-        const stdout = [];
-        /** @type {InstallerLaunchInput[]} */
-        const installers = [];
-        const result = await runBootstrap(args, {
-            createTemporaryDirectory: async () => 'C:\\temporary\\arw-release',
-            git: {
-                checkoutCommit: async () => {},
-                fetchRelease: async () => {},
-                initialize: async () => {},
-                listRemoteTags: async () => ['refs/tags/0.2.0'],
-                readHead: async () => commit,
-                resolveTagCommit: async () => commit,
-            },
-            launchInstaller: async input => {
-                installers.push(input);
-                return 0;
-            },
-            removeTemporaryDirectory: async () => {},
-            runtimeVersion: '24.0.0',
-            stderr: message => stderr.push(message),
-            stdout: line => stdout.push(line),
-        });
-
-        assert.equal(result, 0);
-        assert.deepEqual(installers[0].arguments, ['--one', '1', '--two', '2']);
-        assert.deepEqual(stdout, [
-            '{"event":"release-selected","tag":"0.2.0"}\n',
-            `{"commit":"${commit}","event":"tag-resolved","tag":"0.2.0"}\n`,
-            `{"commit":"${commit}","event":"checkout-verified"}\n`,
-        ]);
-    }
-    assert.deepEqual(stderr, []);
-});
-
-test('bootstrap rejects duplicate verbose before temporary or remote work', async () => {
-    /** @type {string[]} */
-    const stderr = [];
-    let temporaryCalled = false;
-    await assert.rejects(
-        runBootstrap(['--verbose', '--version', '0.2.0', '--verbose'], {
-            createTemporaryDirectory: async () => {
-                temporaryCalled = true;
-                throw new Error('must not create');
-            },
-            runtimeVersion: '24.0.0',
-            stderr: message => stderr.push(message),
-        }),
-        error => error instanceof BootstrapUsageError && /unrepeated --verbose/.test(error.message),
-    );
-    assert.equal(temporaryCalled, false);
-    assert.deepEqual(stderr, []);
-});
-
-test('bootstrap non-verbose behavior emits no events and verbose failure preserves only the actual prefix', async () => {
-    /** @type {string[]} */
-    const stderr = [];
-    /** @type {string[]} */
-    const nonVerbose = [];
-    await runBootstrap(['--version', '0.2.0'], {
-        createTemporaryDirectory: async () => 'C:\\temporary\\arw-release',
-        git: {
-            checkoutCommit: async () => {},
-            fetchRelease: async () => {},
-            initialize: async () => {},
-            listRemoteTags: async () => ['refs/tags/0.2.0'],
-            readHead: async () => 'a'.repeat(40),
-            resolveTagCommit: async () => 'a'.repeat(40),
-        },
-        launchInstaller: async () => 0,
-        removeTemporaryDirectory: async () => {},
-        runtimeVersion: '24.0.0',
-        stderr: message => stderr.push(message),
-        stdout: line => nonVerbose.push(line),
     });
-    assert.deepEqual(nonVerbose, []);
 
+    assert.equal(result, 7);
+    assert.deepEqual(downloads, [ASSET_URL('0.2.0')]);
+    assert.deepEqual(installers, [{
+        arguments: ['--non-interactive', '--register-path', 'false'],
+        directory: '/tmp/arw-release',
+        tag: '0.2.0',
+    }]);
+    assert.deepEqual(cleanup, ['/tmp/arw-release']);
+});
+
+test('bootstrap without --version resolves the latest release tag from the GitHub API', async () => {
     /** @type {string[]} */
-    const verbose = [];
-    await assert.rejects(runBootstrap(['--version', '0.2.0', '--verbose'], {
-        createTemporaryDirectory: async () => 'C:\\temporary\\arw-release',
-        git: {
-            checkoutCommit: async () => {},
-            fetchRelease: async () => {},
-            initialize: async () => {},
-            listRemoteTags: async () => ['refs/tags/0.2.0'],
-            readHead: async () => assert.fail('must stop before checkout'),
-            resolveTagCommit: async () => { throw new Error('resolve failed'); },
-        },
+    const downloads = [];
+    /** @type {string[]} */
+    const tags = [];
+    await runBootstrap([], {
+        createTemporaryDirectory: async () => '/tmp/arw-release',
+        download: async url => { downloads.push(url); return Buffer.from('{"tag_name":"1.4.0"}'); },
+        extractArchive: async () => {},
+        launchInstaller: async input => { tags.push(input.tag); return 0; },
+        loadReleaseConfiguration: async () => RELEASE_CONFIGURATION,
         removeTemporaryDirectory: async () => {},
         runtimeVersion: '24.0.0',
-        stderr: message => stderr.push(message),
-        stdout: line => verbose.push(line),
-    }), /resolve failed/);
-    assert.deepEqual(verbose, ['{"event":"release-selected","tag":"0.2.0"}\n']);
-    assert.deepEqual(stderr, []);
+    });
+
+    assert.deepEqual(downloads, ['https://api.github.com/repos/example/arw/releases/latest', ASSET_URL('1.4.0')]);
+    assert.deepEqual(tags, ['1.4.0']);
 });
 
-test('bootstrap ignores caller repository URL rewrites', async t => {
-    const root = await createTemporaryDirectory(t, 'agent-repository-workflow-bootstrap-cwd-');
-    const caller = join(root, 'caller');
-    const remote = join(root, 'remote');
-
-    await runGit(root, ['init', '--quiet', '--initial-branch=main', remote]);
-    await runGit(remote, ['config', 'user.name', 'ARW Tests']);
-    await runGit(remote, ['config', 'user.email', 'tests@example.invalid']);
-    await runGit(remote, ['commit', '--quiet', '--allow-empty', '-m', 'local redirect target']);
-    await runGit(remote, ['tag', '9.9.9']);
-    await runGit(root, ['init', '--quiet', '--initial-branch=main', caller]);
-    await runGit(caller, [
-        'config',
-        `url.${pathToFileURL(remote).href}.insteadOf`,
-        CANONICAL_REMOTE,
-    ]);
-
-    const bootstrapUrl = pathToFileURL(join(SOURCE_DIRECTORY, 'lib', 'installation', 'bootstrap.mjs')).href;
-    const program = `
-        import {runBootstrap} from ${JSON.stringify(bootstrapUrl)};
-        try {
-            await runBootstrap(['--version', '1.2.3'], {runtimeVersion: '24.0.0'});
-        } catch (error) {
-            process.stdout.write(error instanceof Error ? error.message : String(error));
-        }
-    `;
-    const {stdout} = await runSuccessfulProcess(process.execPath, ['--input-type=module', '--eval', program], {cwd: caller, env: {...process.env, GIT_ALLOW_PROTOCOL: 'file'}});
-
-    assert.doesNotMatch(stdout, /requested ARW release tag does not exist/);
-    assert.match(stdout, /transport 'https' not allowed/);
+test('bootstrap rejects bad arguments and remotes before temporary or network work', async () => {
+    const fail = async () => assert.fail('must not run');
+    const dependencies = {createTemporaryDirectory: fail, download: fail, runtimeVersion: '24.0.0'};
+    for (const args of [['--version', 'v1.0.0'], ['--version', '1.0.0', '--version', '1.0.1'], ['--version']]) {
+        await assert.rejects(
+            runBootstrap(args, {...dependencies, loadReleaseConfiguration: async () => RELEASE_CONFIGURATION}),
+            error => error instanceof BootstrapUsageError,
+        );
+    }
+    await assert.rejects(runBootstrap([], {
+        ...dependencies,
+        loadReleaseConfiguration: async () => ({status: 'succeeded', value: {repositories: {sourceCheckout: {url: 'https://example.invalid/team/arw.git'}}}}),
+    }), /canonical GitHub HTTPS remote/);
 });
 
-test('bootstrap acquires an exact release from the fixed remote and hands it to the versioned installer', async () => {
+test('bootstrap cleans up and fails when download or extraction fails', async () => {
+    for (const failure of ['download', 'extract']) {
+        /** @type {string[]} */
+        const cleanup = [];
+        await assert.rejects(runBootstrap(['--version', '0.2.0'], {
+            createTemporaryDirectory: async () => '/tmp/arw-release',
+            download: async () => { if (failure === 'download') throw new Error('HTTP 404'); return Buffer.alloc(0); },
+            extractArchive: async () => { throw new Error('bad archive'); },
+            launchInstaller: async () => assert.fail('must not launch'),
+            loadReleaseConfiguration: async () => RELEASE_CONFIGURATION,
+            removeTemporaryDirectory: async directory => cleanup.push(directory),
+            runtimeVersion: '24.0.0',
+        }), /HTTP 404|bad archive/);
+        assert.deepEqual(cleanup, ['/tmp/arw-release']);
+    }
+});
+
+test('bootstrap reports a corrupt archive as one line', async () => {
+    await assert.rejects(runBootstrap(['--version', '0.2.0'], {
+        download: async () => Buffer.from('not an archive'),
+        launchInstaller: async () => assert.fail('must not launch'),
+        loadReleaseConfiguration: async () => RELEASE_CONFIGURATION,
+        runtimeVersion: '24.0.0',
+    }), error => error instanceof Error && /^Archive extraction failed: [^\n]+$/u.test(error.message));
+});
+
+test('bootstrap extracts the real release archive without Git and the Installer import closure is complete', async () => {
     /** @type {string[]} */
-    const stderr = [];
-    /** @type {{cleanup: string[], installer: InstallerLaunchInput[], remotes: string[]}} */
-    const observed = {cleanup: [], installer: [], remotes: []};
-    const commit = '0123456789abcdef0123456789abcdef01234567';
-    const checkoutDirectory = 'C:\\temporary\\arw-release';
-    const result = await runBootstrap(['--non-interactive', '--register-path', 'false'], {
-        createTemporaryDirectory: async () => checkoutDirectory,
-        git: {
-            checkoutCommit: async () => {},
-            fetchRelease: async () => {},
-            initialize: async () => {},
-            listRemoteTags: async (directory, remote) => {
-                assert.equal(directory, checkoutDirectory);
-                observed.remotes.push(remote);
-                return ['refs/tags/0.2.0'];
-            },
-            readHead: async () => commit,
-            resolveTagCommit: async () => commit,
-        },
-        launchInstaller: async input => {
-            observed.installer.push(input);
+    const directories = [];
+    const closure = ['install.mjs'];
+
+    const result = await runBootstrap(['--version', '0.2.0'], {
+        download: async () => readFile(ARCHIVE),
+        launchInstaller: async ({directory}) => {
+            directories.push(directory);
+            await Promise.all(['lib', 'distribution', 'package.json'].map(entry => access(join(directory, entry))));
+            await assert.rejects(access(join(directory, 'tests')));
+            for (const file of closure) {
+                for (const specifier of moduleSpecifiers(await readFile(join(directory, file), 'utf8')).filter(name => name.startsWith('.'))) {
+                    const imported = resolveSourceImport(file, specifier);
+                    await access(join(directory, imported));
+                    if (!closure.includes(imported)) closure.push(imported);
+                }
+            }
             return 0;
         },
-        removeTemporaryDirectory: async directory => observed.cleanup.push(directory),
+        loadReleaseConfiguration: async () => RELEASE_CONFIGURATION,
         runtimeVersion: '24.0.0',
-        stderr: message => stderr.push(message),
     });
 
-    assert.deepEqual({
-        cleanup: observed.cleanup,
-        installer: observed.installer,
-        remotes: observed.remotes,
-        result,
-    }, {
-        cleanup: [checkoutDirectory],
-        installer: [{
-            arguments: ['--non-interactive', '--register-path', 'false'],
-            checkoutDirectory,
-            commit,
-            tag: '0.2.0',
-        }],
-        remotes: [CANONICAL_REMOTE],
-        result: 0,
-    });
-    assert.deepEqual(stderr, []);
+    assert.equal(result, 0);
+    await assert.rejects(access(directories[0]));
 });
 
 test('Bootstrap artifact projects the canonical remote from Release configuration', async t => {

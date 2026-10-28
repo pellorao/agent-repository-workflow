@@ -59,7 +59,7 @@ node install.mjs
 
 该安装使用本地来源模式, 身份为 `<version>-pre`. 执行 `node install.mjs` 不会访问远端. 目前不要使用 Bootstrap 稳定版安装命令: 没有稳定 tag 时 Bootstrap 会失败, 也不会自动回退到 `main`. 未来创建正式稳定 tag 后, 才可使用从 GitHub 获取的单文件 [`scripts/install-arw.mjs`](scripts/install-arw.mjs). 不要把远程响应直接通过管道交给 Node.js; 先检查下载内容. 引导脚本不接受远端覆盖值, 也不保存凭据.
 
-ARW 安装会校验来源数据的准确字节. Git 不得在取得数据时把仓库文本的换行符转换为 Windows 形式, 否则安装会因为来源字节不一致而失败. 下载的 Bootstrap 会在自己的临时 Repository 中设置 `core.autocrlf=false`, 不修改用户的全局 Git 配置.
+从源码安装时, ARW 会校验来源数据的准确字节. Git 不得在取得数据时把仓库文本的换行符转换为 Windows 形式, 否则安装会因为来源字节不一致而失败. 引导脚本从 GitHub release 下载只含安装载荷的压缩包 `arw.tar.gz` (约 0.5 MB), 用系统自带的 `tar` 解压, 不需要 Git.
 
 先确认运行时:
 

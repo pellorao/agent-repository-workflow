@@ -27,7 +27,7 @@ disable-model-invocation: true
 
 ## 3. Validate on VMs
 
-本节证明候选在每台 Windows 和 Linux VM 上都能完成以下流程: 安装, PATH 登记 (新开终端能解析到 `arw`), `arw workflow init` 和 `arw workflow verify`, 以及卸载. 安装使用候选自己的 `install.mjs` 和本地版本 tag.
+本节证明候选在每台 Windows 和 Linux VM 上都能完成以下流程: 安装, PATH 登记 (新开终端能解析到 `arw`), `arw workflow init` 和 `arw workflow verify`, 以及卸载. guest 检查用 `scripts/pack-release.mjs` 把候选打成安装压缩包, 解压后用其中的 `install.mjs` 和发布标签安装.
 
 1. 向维护者索取本次 VM 配置 JSON 的绝对路径. 配置格式和受验系统要求见 [VM 参考](references/vm.md). 配置内容, VM 身份和凭据不写入仓库, issue 或报告.
 2. `mkdir -p .tmp/release`, 然后 `git bundle create .tmp/release/candidate.bundle HEAD`.
@@ -43,7 +43,7 @@ disable-model-invocation: true
 
 ## 4. Publish
 
-全部机器通过, 且维护者授权发布后, 按 [发布参考](references/publication.md) 推送分支, 推送 tag, 验证公开 Bootstrap, 然后发布 GitHub Release. 任一步骤失败时, 按该文件中的恢复方法处理.
+全部机器通过, 且维护者授权发布后, 按 [发布参考](references/publication.md) 推送分支, 推送 tag, 发布带 `arw.tar.gz` 资产的 GitHub Release, 然后验证公开 Bootstrap. 任一步骤失败时, 按该文件处理.
 
 ## Records
 

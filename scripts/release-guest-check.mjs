@@ -4,7 +4,7 @@
 // 它修改当前用户的 HOME 和 PATH 登记, 只能在测试后会还原快照的系统中运行.
 
 import {spawnSync} from 'node:child_process';
-import {existsSync, mkdtempSync, readdirSync, readFileSync} from 'node:fs';
+import {existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync} from 'node:fs';
 import {homedir, tmpdir} from 'node:os';
 import {delimiter, dirname, join} from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -50,14 +50,16 @@ const fresh = (command, cwd = homedir()) => {
 const locate = WINDOWS ? 'where arw' : 'command -v arw';
 
 step('arw 安装前不可解析', fresh(locate), false);
-if (!run('git', ['rev-parse', '--verify', '--quiet', `refs/tags/${VERSION}`], {cwd: ROOT}).ok) {
-    step(`创建本地 tag ${VERSION}`, run('git', ['tag', VERSION], {cwd: ROOT}));
-}
 const commit = step('读取候选 commit', run('git', ['rev-parse', 'HEAD'], {cwd: ROOT}));
-step('安装候选', run(process.execPath, [
-    'install.mjs', '--release-tag', VERSION, '--release-commit', commit,
-    '--non-interactive', '--register-path', 'true',
-], {cwd: ROOT}));
+const staging = mkdtempSync(join(tmpdir(), 'arw-release-archive-'));
+const archive = join(staging, 'arw.tar.gz');
+const extracted = join(staging, 'extracted');
+mkdirSync(extracted);
+step('打包安装压缩包', run(process.execPath, [join(ROOT, 'scripts', 'pack-release.mjs'), archive]));
+step('解压安装压缩包', run('tar', ['-xzf', archive, '-C', extracted]));
+step('从压缩包安装', run(process.execPath, [
+    'install.mjs', '--release-tag', VERSION, '--non-interactive', '--register-path', 'true',
+], {cwd: extracted}));
 
 const resolved = step('新终端解析 arw', fresh(locate));
 if (!resolved.split(/\r?\n/u).every(line => line.startsWith(INSTALLATION))) step('arw 指向 Installation 目录', {ok: false, output: resolved});

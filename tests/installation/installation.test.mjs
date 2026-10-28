@@ -6,7 +6,6 @@ import {fileURLToPath} from 'node:url';
 import test from 'node:test';
 
 import {runExitedProcess, runSuccessfulProcess} from '../helpers/process.mjs';
-import {runGit} from '../helpers/git.mjs';
 import {createTemporaryDirectory} from '../helpers/cleanup.mjs';
 import {createRepository as createGitRepository} from '../helpers/repository-fixture.mjs';
 import {completeGlobalConfigurationBytes} from '../../lib/arw-common/config.mjs';
@@ -14,7 +13,6 @@ import {ARW_VERSION, parseArwVersion} from '../../lib/arw-common/identity.mjs';
 import {createSharedModelCatalog} from '../../lib/background-agent/model-catalog.mjs';
 import {loadInstallationPayload} from '../../lib/installation/installation-payload.mjs';
 import {installRelease as productionInstallRelease, parseInstallArguments, runInstaller as productionRunInstaller} from '../../lib/installation/installation.mjs';
-import {createReleaseLoader} from '../../lib/installation/release.mjs';
 import {createScopedFilesystem} from '../../lib/common/filesystem.mjs';
 
 const maintenanceReady = async () => ({
@@ -81,12 +79,9 @@ const LOCAL_SOURCE_PATHS = [
     'release-manifest.json',
     'uninstall.mjs',
 ];
-const RELEASE_COMMIT = '0123456789abcdef0123456789abcdef01234567';
 const RELEASE_ARGUMENTS = [
     '--release-tag',
     ARW_VERSION,
-    '--release-commit',
-    RELEASE_COMMIT,
 ];
 const createHome = async (/** @type {test.TestContext} */ t) => {
     const home = await createTemporaryDirectory(t, 'agent-repository-workflow-home-');
@@ -172,33 +167,18 @@ test('Installer arguments select local only when every Release identity option i
         'false',
     ]);
     assert.deepEqual(release.sourceRequest, {
-        evidence: {commit: RELEASE_COMMIT, tag: ARW_VERSION},
+        evidence: {tag: ARW_VERSION},
         kind: 'release',
     });
-
-    for (const releaseOptions of [
-        ['--release-tag', ARW_VERSION],
-        ['--release-commit', RELEASE_COMMIT],
-    ]) {
-        assert.throws(
-            () => parseInstallArguments([
-                ...releaseOptions,
-                '--non-interactive',
-                '--register-path',
-                'false',
-            ]),
-            /Versioned installation requires/,
-        );
-    }
 });
 
 test('root Installer rejects invalid arguments before runtime identity observation', async t => {
     const checkout = await copyLocalCheckout(t);
     await rm(join(checkout, 'package.json'));
 
-    const result = await runExitedProcess('node', [join(checkout, 'install.mjs'), '--release-tag', ARW_VERSION]);
+    const result = await runExitedProcess('node', [join(checkout, 'install.mjs'), '--release-tag', `${ARW_VERSION}-pre`]);
     assert.equal(result.exitCode, 2);
-    assert.match(result.stderr, /Versioned installation requires/);
+    assert.match(result.stderr, /stable MAJOR\.MINOR\.PATCH/);
     assert.doesNotMatch(result.stderr, /Runtime identity authority/);
 });
 
@@ -219,14 +199,11 @@ const runNonInteractive = async (/** @type {string} */ home, /** @type {NonInter
     /** @type {InstallerMessage[]} */
     const messages = [];
     const release = overrides.release ?? TEST_RELEASE_SOURCE;
-    const releaseCommit = RELEASE_COMMIT;
     const releaseTag = ARW_VERSION;
     const result = await runInstaller(
         [
-            ...RELEASE_ARGUMENTS.slice(0, 1),
+            '--release-tag',
             releaseTag,
-            ...RELEASE_ARGUMENTS.slice(2, 3),
-            releaseCommit,
             '--non-interactive',
             '--reinitialize-config',
             String(decisions.reinitializeConfig ?? false),
@@ -330,7 +307,7 @@ test('Installation consumes a closed source failure without entering the common 
         nonInteractive: true,
         registerPath: false,
         reinitializeConfig: false,
-        sourceRequest: {evidence: {commit: RELEASE_COMMIT, tag: ARW_VERSION}, kind: 'release'},
+        sourceRequest: {evidence: {tag: ARW_VERSION}, kind: 'release'},
     }, {
         environment: {HOME: home},
         loadReleaseSource: async () => ({
@@ -376,30 +353,6 @@ test('Installation Payload applies ordinary unsafe-source failure to LICENSE.txt
     assert.equal(result.status, 'blocked');
     assert.deepEqual(result.diagnostics.map(diagnostic => diagnostic.code), ['installation-source-unsafe']);
     assert.deepEqual(Object.keys(result).sort(), ['diagnostics', 'status']);
-});
-
-test('local source selection never invokes Release Git operations', async t => {
-    const home = await createHome(t);
-    /** @type {string[]} */
-    const calls = [];
-    const rejectGitObservation = (/** @type {string} */ name) => async () => {
-        calls.push(name);
-        throw new Error(`unexpected Release Git observation: ${name}`);
-    };
-    const attempted = await runLocalNonInteractive(home, {
-        loadReleaseSource: createReleaseLoader({
-            createFilesystem: createScopedFilesystem,
-            git: {
-                assertFilesMatch: rejectGitObservation('assertFilesMatch'),
-                readHead: rejectGitObservation('readHead'),
-                resolveTagCommit: rejectGitObservation('resolveTagCommit'),
-            },
-            loadInstallationPayload: loadTestInstallationPayload,
-        }),
-    });
-
-    assert.equal(attempted.result, 0);
-    assert.deepEqual(calls, []);
 });
 
 test('installation refuses busy or unknown maintenance before changing installed files', async t => {
@@ -538,7 +491,7 @@ test('installation writes the captured launcher payload and the completed config
         nonInteractive: true,
         registerPath: false,
         reinitializeConfig: false,
-        sourceRequest: {evidence: {commit: RELEASE_COMMIT, tag: '0.2.0'}, kind: 'release'},
+        sourceRequest: {evidence: {tag: '0.2.0'}, kind: 'release'},
     }, {
         environment: {HOME: home},
         loadInstallationPayload: async () => ({
@@ -1165,8 +1118,6 @@ test('interactive installation refuses an unowned noncanonical Linux marker', as
     const result = await runInstaller([
         '--release-tag',
         ARW_VERSION,
-        '--release-commit',
-        RELEASE_COMMIT,
     ], {
         environment: {HOME: home},
         loadInstallationPayload: loadTestInstallationPayload,
@@ -1712,24 +1663,10 @@ test('manifest commit failure reports every newly unowned target and platform re
 test('installer rejects unsupported and incomplete argument shapes before writing', async t => {
     const cases = [
         ['--non-interactive', '--take-over', 'true'],
-        ['--release-tag', ARW_VERSION, '--non-interactive', '--reinitialize-config', 'false', '--register-path', 'false'],
         [...RELEASE_ARGUMENTS, '--release-tag', ARW_VERSION, '--non-interactive', '--reinitialize-config', 'false', '--register-path', 'false'],
         [
             '--release-tag',
             `${ARW_VERSION}-pre`,
-            '--release-commit',
-            RELEASE_COMMIT,
-            '--non-interactive',
-            '--reinitialize-config',
-            'false',
-            '--register-path',
-            'false',
-        ],
-        [
-            '--release-tag',
-            ARW_VERSION,
-            '--release-commit',
-            'abc',
             '--non-interactive',
             '--reinitialize-config',
             'false',

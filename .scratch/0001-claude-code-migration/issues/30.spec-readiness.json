@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0001:30",
+  "request": {
+    "digest": "65f216fb2e4bda0b1a4a754eca8a13446d3c972a42edb30cf042946674627907",
+    "filePath": ".tmp/claude-code/06588b1e-7f07-4832-8933-107aaf5b5978/0001_30/spec-readiness/requests/request-2a0fbadb-b83d-477f-853e-6641889912a8.json",
+    "id": "2a0fbadb-b83d-477f-853e-6641889912a8"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "9803a9120632ba201ecccc1996b3e3cc75c13faf7b5cdedb5d4e518dc6d8ebd0"
+  },
+  "inputs": [
+    {
+      "filePath": "docs/adr/0018-use-bounded-mechanical-trust-for-initial-arw-security.md",
+      "role": "adr",
+      "sha256": "a68e6b3b47d8429340c501e449b23a8f2e76ee044c95392597d73c6eaf52f550"
+    },
+    {
+      "filePath": "docs/adr/0020-use-external-nodejs-source-delivery.md",
+      "role": "adr",
+      "sha256": "4c0b0d9e786028e92f10ad0e606fd6ebf41b56e97e071cf8a8ee9c253533991c"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow-installation/spec.md",
+      "role": "governing-spec",
+      "sha256": "3ec2ef44844789fdeaf60921750986578db05d25c650ba7d5fa82a0baa2bba3f"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow-release/spec.md",
+      "role": "governing-spec",
+      "sha256": "0fc9eeefd253cce7154ad5ad30a6370a3cc0622f4646b8059c73cd951b04ab13"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0001-claude-code-migration/issues/30-release-asset-installer.md",
+    "sha256": "cc4d6831c368f0ef9e13cd20ddeac30a6c5b9a2bb0d2a751c0e312ff7c8e62f3"
+  },
+  "result": "satisfied"
+}

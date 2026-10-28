@@ -1,18 +1,14 @@
 import assert from 'node:assert/strict';
-import {mkdir, readFile, writeFile} from 'node:fs/promises';
+import {readFile} from 'node:fs/promises';
 import {dirname, join} from 'node:path';
 import {fileURLToPath, pathToFileURL} from 'node:url';
 import test from 'node:test';
 
 import {moduleSpecifiers, resolveSourceImport} from './helpers/module-imports.mjs';
-import {createTemporaryDirectory} from './helpers/cleanup.mjs';
-import {commitAll, runGit} from './helpers/git.mjs';
 import {runProcess} from './helpers/process.mjs';
-import {createRepository} from './helpers/repository-fixture.mjs';
 
 const SOURCE_DIRECTORY = dirname(dirname(fileURLToPath(import.meta.url)));
 const VERSION_PRELOAD = pathToFileURL(join(SOURCE_DIRECTORY, 'tests', 'fixtures', 'runtime-version-preload.mjs')).href;
-const CANONICAL_REMOTE = JSON.parse(await readFile(join(SOURCE_DIRECTORY, 'release-validation.json'), 'utf8')).repositories.sourceCheckout.url;
 
 test('the release manifest includes every module reachable from the installed entries', async () => {
     const manifest = JSON.parse(await readFile(join(SOURCE_DIRECTORY, 'release-manifest.json'), 'utf8'));
@@ -32,9 +28,8 @@ test('the release manifest includes every module reachable from the installed en
  * @param {string} relativeEntry
  * @param {string[]} args
  * @param {string} version
- * @param {NodeJS.ProcessEnv} [environment]
  */
-const runEntry = async (relativeEntry, args, version, environment = {}) => {
+const runEntry = async (relativeEntry, args, version) => {
     const result = await runProcess(process.execPath, [
         '--import',
         VERSION_PRELOAD,
@@ -42,46 +37,11 @@ const runEntry = async (relativeEntry, args, version, environment = {}) => {
         ...args,
     ], {
         cwd: SOURCE_DIRECTORY,
-        env: {...process.env, ...environment, ARW_TEST_NODE_VERSION: version},
+        env: {...process.env, ARW_TEST_NODE_VERSION: version},
     });
     assert.equal(result.status, 'exited');
     if (result.status !== 'exited') assert.fail(`Expected ${relativeEntry} to exit normally.`);
     return result;
-};
-
-/**
- * @param {import('node:test').TestContext} t
- */
-const createBootstrapEnvironment = async t => {
-    const remote = await createRepository(t);
-    await mkdir(join(remote, 'lib', 'arw-common'), {recursive: true});
-    await writeFile(join(remote, 'install.mjs'), await readFile(join(SOURCE_DIRECTORY, 'install.mjs')));
-    await writeFile(
-        join(remote, 'lib', 'arw-common', 'runtime-compatibility.mjs'),
-        await readFile(join(SOURCE_DIRECTORY, 'lib', 'arw-common', 'runtime-compatibility.mjs')),
-    );
-    await mkdir(join(remote, 'lib', 'installation'), {recursive: true});
-    await writeFile(
-        join(remote, 'lib', 'installation', 'cli-prompt.mjs'),
-        await readFile(join(SOURCE_DIRECTORY, 'lib', 'installation', 'cli-prompt.mjs')),
-    );
-    await writeFile(join(remote, 'lib', 'installation', 'installation.mjs'), 'export const runInstaller = async () => 0;\n');
-    await writeFile(join(remote, 'lib', 'arw-common', 'product-identity.mjs'), "export const PRODUCT_NAME = 'ARW';\n");
-    await commitAll(remote, 'fake release Installer');
-    await runGit(remote, ['tag', '1.0.0']);
-
-    const configurationDirectory = await createTemporaryDirectory(t, 'arw-runtime-entry-config-');
-    const globalConfiguration = join(configurationDirectory, 'gitconfig');
-    await writeFile(globalConfiguration, [
-        `[url "${pathToFileURL(remote).href}"]`,
-        `    insteadOf = ${CANONICAL_REMOTE}`,
-        '',
-    ].join('\n'));
-    return {
-        GIT_ALLOW_PROTOCOL: 'file',
-        GIT_CONFIG_GLOBAL: globalConfiguration,
-        NODE_OPTIONS: `--import=${VERSION_PRELOAD}`,
-    };
 };
 
 test('Bootstrap and Installer reject Node.js below 24 before argument handling', async () => {
@@ -108,11 +68,10 @@ test('Bootstrap and Installer reject an unparseable Node.js version before argum
     }
 });
 
-test('Node.js 24 emits no recommendation for direct or complete installation entries', async t => {
-    const [bootstrap, installer, environment] = await Promise.all([
+test('Node.js 24 emits no recommendation for direct installation entries', async () => {
+    const [bootstrap, installer] = await Promise.all([
         runEntry('scripts/install-arw.mjs', ['--version', 'v1.0.0'], '24.0.0'),
         runEntry('install.mjs', ['--unknown'], '24.0.0'),
-        createBootstrapEnvironment(t),
     ]);
     assert.equal(bootstrap.exitCode, 2);
     assert.equal(bootstrap.stdout, '');
@@ -121,9 +80,4 @@ test('Node.js 24 emits no recommendation for direct or complete installation ent
     assert.equal(installer.exitCode, 2);
     assert.equal(installer.stdout, '');
     assert.equal(installer.stderr, 'Unknown or repeated option: --unknown.\n');
-
-    const complete = await runEntry('scripts/install-arw.mjs', ['--version', '1.0.0'], '24.0.0', environment);
-    assert.equal(complete.exitCode, 0);
-    assert.equal(complete.stdout, '');
-    assert.equal(complete.stderr, '');
 });

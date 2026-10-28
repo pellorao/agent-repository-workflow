@@ -112,7 +112,7 @@ node scripts/generate-install-arw.mjs --check
 
 Run the installation entry point from a cloned Source Checkout with `node install.mjs`. Run `node uninstall.mjs` from the ARW installation directory to uninstall.
 
-The public GitHub repository is [pellorao/agent-repository-workflow](https://github.com/pellorao/agent-repository-workflow). The current source-installation route is to clone its `main` branch and run `node install.mjs` from the checkout root. This route requires external Node.js and Git and uses local-source mode with a `<version>-pre` identity. There is no stable tag at the initial publication state. The separately downloaded Bootstrap requires a stable tag and fails when none is available; it does not fall back to `main`. Do not describe a Bootstrap installation as currently available until a stable release exists.
+The public GitHub repository is [pellorao/agent-repository-workflow](https://github.com/pellorao/agent-repository-workflow). The current source-installation route is to clone its `main` branch and run `node install.mjs` from the checkout root. This route requires external Node.js and Git and uses local-source mode with a `<version>-pre` identity. There is no stable tag at the initial publication state. The separately downloaded Bootstrap downloads `arw.tar.gz` from a stable release and fails when none is available; it does not fall back to `main`. Do not describe a Bootstrap installation as currently available until a stable release exists.
 
 ### Workflow Distribution and Platform Projection
 
@@ -156,7 +156,7 @@ This migration is separate from a version release. It does not create a tag or G
 
 ### Stable release
 
-Use this route to validate or publish a stable version. An Agent does it only when the maintainer explicitly invokes the Skill (`$release` in Codex, `/release` in Claude Code), which owns the local checks, VM validation, tag, public Bootstrap check, GitHub Release, and tag recovery. The [release long-term specification (Chinese)](../specs/agent-repository-workflow-release/spec.md) owns the release contract.
+Use this route to validate or publish a stable version. An Agent does it only when the maintainer explicitly invokes the Skill (`$release` in Codex, `/release` in Claude Code), which owns the local checks, VM validation, tag, GitHub Release with the `arw.tar.gz` asset, and public Bootstrap check. The [release long-term specification (Chinese)](../specs/agent-repository-workflow-release/spec.md) owns the release contract.
 
 ## Navigate code by responsibility
 
@@ -179,6 +179,7 @@ Direct children of `scripts/` are entry points for Source Checkout maintainers o
 | `scripts/check-workflow-distribution.mjs` | Validate production Workflow Distribution payloads and platform projections |
 | `scripts/generate-install-arw.mjs` | Generate or check the separately downloadable bootstrap script |
 | `scripts/install-arw.mjs` | Separately downloadable bootstrap script that starts installation from a fixed release source |
+| `scripts/pack-release.mjs` | Pack the installation payload into the release archive `arw.tar.gz`, which `$release` uploads as a release asset |
 | `scripts/release-guest-check.mjs` | In a disposable test system, check install, PATH registration, `arw workflow init`, and uninstall |
 | `scripts/release-vm.mjs` | Run the guest check in a VMware VM and restore its snapshot |
 | `scripts/reviewer-capability.mjs` | Reviewer capability suite entry: build a scenario repository, score a report, build and use blind pools |

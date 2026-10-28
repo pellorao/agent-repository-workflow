@@ -5,8 +5,6 @@ import {dirname, join} from 'node:path';
 import {fileURLToPath} from 'node:url';
 
 import {createTemporaryDirectory} from '../helpers/cleanup.mjs';
-import {runGit} from '../helpers/git.mjs';
-import {createScopedFilesystem} from '../../lib/common/filesystem.mjs';
 import {loadInstallationPayload} from '../../lib/installation/installation-payload.mjs';
 import {createReleaseLoader, loadRelease} from '../../lib/installation/release.mjs';
 
@@ -14,7 +12,6 @@ import {createReleaseLoader, loadRelease} from '../../lib/installation/release.m
 
 const sourceDirectory = dirname(dirname(dirname(fileURLToPath(import.meta.url))));
 const packageVersion = JSON.parse(await readFile(join(sourceDirectory, 'package.json'), 'utf8')).version;
-const git = (/** @type {string} */ directory, /** @type {string[]} */ ...args) => runGit(directory, args);
 
 const createMinimalReleaseCheckout = async (/** @type {test.TestContext} */ t, prefix = 'agent-repository-workflow-release-') => {
     const checkout = await createTemporaryDirectory(t, prefix);
@@ -42,7 +39,7 @@ const createMinimalReleaseCheckout = async (/** @type {test.TestContext} */ t, p
         writeFile(join(checkout, 'arw.mjs'), 'export {};\n', 'utf8'),
         writeFile(join(checkout, manifest.configSeed), '{}\n', 'utf8'),
         writeFile(join(checkout, 'package.json'), `${JSON.stringify({
-            description: 'selected commit',
+            description: 'release package',
             name: 'agent-repository-workflow',
             version: packageVersion,
         }, null, 2)}\n`, 'utf8'),
@@ -51,22 +48,10 @@ const createMinimalReleaseCheckout = async (/** @type {test.TestContext} */ t, p
     return {checkout, manifest};
 };
 
-const commitReleaseCheckout = async (/** @type {string} */ checkout, /** @type {string} */ version) => {
-    await git(checkout, 'init', '--quiet');
-    await git(checkout, 'add', '-A');
-    await git(checkout, '-c', 'user.email=release-test@example.invalid', '-c', 'user.name=Release Test', 'commit', '--quiet', '-m', `release ${version}`);
-    await git(checkout, 'tag', version);
-    return (await git(checkout, 'rev-parse', '--verify', 'HEAD')).stdout.trim();
-};
-
 test('Release Source Adapter validates the fixed checkout and returns only the common source result', async t => {
     const {checkout} = await createMinimalReleaseCheckout(t);
-    const commit = await commitReleaseCheckout(checkout, packageVersion);
     const release = await loadRelease({
-        evidence: {
-            commit,
-            tag: packageVersion,
-        },
+        evidence: {tag: packageVersion},
         platform: 'win32',
         sourceDirectory: checkout,
     });
@@ -80,7 +65,6 @@ test('Release Source Adapter validates the fixed checkout and returns only the c
 });
 
 test('release loading derives identity from the selected checkout package', async () => {
-    const commit = '1'.repeat(40);
     const checkout = sourceDirectory;
     const loader = createReleaseLoader({
         createFilesystem: async () => ({
@@ -100,11 +84,6 @@ test('release loading derives identity from the selected checkout package', asyn
             },
             status: /** @type {'succeeded'} */ ('succeeded'),
         }),
-        git: {
-            assertFilesMatch: async () => ({status: /** @type {'succeeded'} */ ('succeeded')}),
-            readHead: async () => ({commit, status: /** @type {'succeeded'} */ ('succeeded')}),
-            resolveTagCommit: async () => ({commit, status: /** @type {'succeeded'} */ ('succeeded')}),
-        },
         loadInstallationPayload: async () => ({
             configSeedBytes: Buffer.from('{}\n'),
             diagnostics: [],
@@ -114,7 +93,7 @@ test('release loading derives identity from the selected checkout package', asyn
         }),
     });
     const release = await loader({
-        evidence: {commit, tag: '1.2.3'},
+        evidence: {tag: '1.2.3'},
         platform: 'linux',
         sourceDirectory: checkout,
     });
@@ -128,7 +107,6 @@ test('release loading derives identity from the selected checkout package', asyn
 });
 
 test('Release Source Adapter closes package observation failures and identity blockers', async t => {
-    const commit = '0123456789abcdef0123456789abcdef01234567';
     const payload = {
         configSeedBytes: Buffer.from('{}\n'),
         diagnostics: [],
@@ -168,15 +146,10 @@ test('Release Source Adapter closes package observation failures and identity bl
                 },
                 status: /** @type {'succeeded'} */ ('succeeded'),
             }),
-            git: {
-                assertFilesMatch: async () => assert.fail('Package blocker must stop before Git.'),
-                readHead: async () => assert.fail('Package blocker must stop before Git.'),
-                resolveTagCommit: async () => assert.fail('Package blocker must stop before Git.'),
-            },
             loadInstallationPayload: async () => payload,
         });
         const result = await loader({
-            evidence: {commit, tag: packageVersion},
+            evidence: {tag: packageVersion},
             platform: 'linux',
             sourceDirectory,
         });
@@ -186,53 +159,6 @@ test('Release Source Adapter closes package observation failures and identity bl
             : ['diagnostics', 'status']);
         assert.match(result.diagnostics[0].message, expected);
     }
-});
-
-test('Release Source Adapter returns a closed blocker when checkout bytes differ from the selected Git tree', async t => {
-    const {checkout} = await createMinimalReleaseCheckout(t, 'agent-repository-workflow-release-mismatch-');
-    const commit = await commitReleaseCheckout(checkout, packageVersion);
-    const packagePath = join(checkout, 'package.json');
-    const packageMetadata = JSON.parse(await readFile(packagePath, 'utf8'));
-    packageMetadata.description = 'changed after the selected commit';
-    const changed = `${JSON.stringify(packageMetadata, null, 2)}\n`;
-    await writeFile(packagePath, changed, 'utf8');
-
-    const result = await loadRelease({
-        evidence: {commit, tag: packageVersion},
-        platform: 'linux',
-        sourceDirectory: checkout,
-    });
-    assert.equal(result.status, 'blocked');
-    assert.deepEqual(Object.keys(result).sort(), ['diagnostics', 'status']);
-    assert.match(result.diagnostics[0].message, /selected commit|Git tree|checkout/i);
-    assert.equal(await readFile(packagePath, 'utf8'), changed);
-});
-
-test('Release Source Adapter closes Git observation failures without returning a partial source', async () => {
-    const loader = createReleaseLoader({
-        createFilesystem: createScopedFilesystem,
-        git: {
-            assertFilesMatch: async () => ({status: /** @type {'succeeded'} */ ('succeeded')}),
-            readHead: async () => ({message: 'simulated Git failure', status: /** @type {'failed'} */ ('failed')}),
-            resolveTagCommit: async () => ({commit: '0'.repeat(40), status: /** @type {'succeeded'} */ ('succeeded')}),
-        },
-        loadInstallationPayload,
-    });
-    const result = await loader({
-        evidence: {commit: '0'.repeat(40), tag: packageVersion},
-        platform: 'linux',
-        sourceDirectory,
-    });
-
-    assert.deepEqual(result, {
-        diagnostics: [{
-            code: 'release-source-observation-failed',
-            message: 'simulated Git failure',
-            severity: 'error',
-        }],
-        stage: 'git-observation',
-        status: 'failed',
-    });
 });
 
 test('release manifest rejects unknown fields, malformed inventories, and conflicting targets', async t => {

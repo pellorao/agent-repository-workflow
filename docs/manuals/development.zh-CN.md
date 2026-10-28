@@ -112,7 +112,7 @@ node scripts/generate-install-arw.mjs --check
 
 从克隆的源码仓库运行安装入口使用 `node install.mjs`. ARW 安装目录中的卸载入口使用 `node uninstall.mjs`.
 
-公开 GitHub 仓库为 [pellorao/agent-repository-workflow](https://github.com/pellorao/agent-repository-workflow). 初始发布时没有稳定 tag. 当前源码安装路线是克隆 `main` 分支, 然后在检出根目录运行 `node install.mjs`; 这条路线要求外部 Node.js 和 Git, 使用本地来源模式和 `<version>-pre` 身份. 单独下载的 Bootstrap 要求稳定 tag, 没有 tag 时会失败, 不会回退到 `main`. 在出现稳定版本前, 不要把 Bootstrap 安装描述为当前可用路线.
+公开 GitHub 仓库为 [pellorao/agent-repository-workflow](https://github.com/pellorao/agent-repository-workflow). 初始发布时没有稳定 tag. 当前源码安装路线是克隆 `main` 分支, 然后在检出根目录运行 `node install.mjs`; 这条路线要求外部 Node.js 和 Git, 使用本地来源模式和 `<version>-pre` 身份. 单独下载的 Bootstrap 从稳定 release 下载 `arw.tar.gz`, 没有稳定 release 时会失败, 不会回退到 `main`. 在出现稳定版本前, 不要把 Bootstrap 安装描述为当前可用路线.
 
 ### Workflow Distribution 和 Platform Projection
 
@@ -156,7 +156,7 @@ node scripts/reviewer-capability.mjs pool build|prompt|split|override ...
 
 ### 稳定版本发布
 
-验证或发布稳定版本时使用这条路线. Agent 只在维护者显式调用该 Skill 时执行 (Codex 中为 `$release`, Claude Code 中为 `/release`); 本地检查, VM 验证, tag, 公开 Bootstrap 检查, GitHub Release 和 tag 恢复都由该 Skill 负责. 发布合同由 [发布长期规格](../specs/agent-repository-workflow-release/spec.md) 拥有.
+验证或发布稳定版本时使用这条路线. Agent 只在维护者显式调用该 Skill 时执行 (Codex 中为 `$release`, Claude Code 中为 `/release`); 本地检查, VM 验证, tag, 带 `arw.tar.gz` 资产的 GitHub Release 和公开 Bootstrap 验证都由该 Skill 负责. 发布合同由 [发布长期规格](../specs/agent-repository-workflow-release/spec.md) 拥有.
 
 ## 按责任导航代码
 
@@ -179,6 +179,7 @@ node scripts/reviewer-capability.mjs pool build|prompt|split|override ...
 | `scripts/check-workflow-distribution.mjs` | 验证生产工作流分发载荷和平台投射 |
 | `scripts/generate-install-arw.mjs` | 生成或核对可单独下载的引导脚本 |
 | `scripts/install-arw.mjs` | 可单独下载并从固定发布来源启动安装的引导脚本 |
+| `scripts/pack-release.mjs` | 把安装载荷打成发布压缩包 `arw.tar.gz`, 由 `$release` 上传为 release 资产 |
 | `scripts/release-guest-check.mjs` | 在可丢弃的受验系统中检查安装, PATH 登记, `arw workflow init` 和卸载 |
 | `scripts/release-vm.mjs` | 在 VMware VM 中运行 guest 检查并还原快照 |
 | `scripts/reviewer-capability.mjs` | Reviewer 能力套件入口: 搭建场景仓库, 给报告计分, 组盲池并记录裁决 |

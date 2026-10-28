@@ -61,7 +61,7 @@ node install.mjs
 
 This uses local-source mode and has an identity of `<version>-pre`. Running `node install.mjs` does not access a remote. Do not use the Bootstrap stable-release installation commands below yet: with no stable tag, Bootstrap fails and does not fall back to `main`. After a formal stable tag exists, you can use the single-file [`scripts/install-arw.mjs`](scripts/install-arw.mjs) obtained from GitHub. Do not pipe a remote response directly to Node.js; inspect the downloaded file first. Bootstrap does not accept a remote override or save credentials.
 
-ARW checks source bytes exactly. Git must not convert repository text line endings to Windows form while obtaining the source, or installation can fail because the source bytes do not match. The downloaded Bootstrap sets `core.autocrlf=false` in its temporary Repository and does not change the user's global Git configuration.
+When installing from source, ARW checks source bytes exactly. Git must not convert repository text line endings to Windows form while obtaining the source, or installation can fail because the source bytes do not match. The Bootstrap downloads `arw.tar.gz` (about 0.5 MB, installation payload only) from the GitHub release and unpacks it with the system `tar`; it does not need Git.
 
 Check the runtime first:
 

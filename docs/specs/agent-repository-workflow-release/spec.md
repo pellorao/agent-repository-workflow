@@ -12,18 +12,18 @@
 
 1. Main Agent 读取 `package.json.version`, 取得维护者对该准确版本进行发布验证的确认. 确认不授权任何外部写入. 版本必须高于候选可达的全部稳定 tag, 且该 tag 在本地和规范远端都不存在.
 2. 候选是一个已提交, 工作树干净的 commit. 在候选上运行 pnpm frozen install, `pnpm typecheck`, `pnpm test`, Workflow Distribution 检查, Bootstrap 生成物检查, 文本检查和严格术语检查.
-3. 跨平台 VM 验证在每台受支持的 Windows 和 Linux 受验系统上, 从基线快照开始, 只通过宿主传入的候选 Git bundle 取得候选, 用候选自己的 `install.mjs` 和仅存在于受验系统的本地版本 tag 安装, 然后证明新开终端能解析到已安装的 `arw` 且版本正确, `arw workflow init` 与 `arw workflow verify` 在新 Git 仓库中成功, 卸载后新终端不再解析 `arw`. 结束后硬关机并还原快照. 受验系统不安装或启动 Agent CLI, 也不安装源码仓库开发依赖.
+3. 跨平台 VM 验证在每台受支持的 Windows 和 Linux 受验系统上, 从基线快照开始, 只通过宿主传入的候选 Git bundle 取得候选, 用候选打成的安装压缩包 (`scripts/pack-release.mjs`) 解压后的 `install.mjs` 和发布标签安装, 然后证明新开终端能解析到已安装的 `arw` 且版本正确, `arw workflow init` 与 `arw workflow verify` 在新 Git 仓库中成功, 卸载后新终端不再解析 `arw`. 结束后硬关机并还原快照. 受验系统不安装或启动 Agent CLI, 也不安装源码仓库开发依赖.
 4. 任一检查发现候选缺陷时, 修复并形成新候选, 从第 2 步重新开始. 环境问题修复后只重跑受影响的检查. 临时补偿后的结果只用于诊断.
-5. 全部通过且维护者授权准确项目, `origin`, 分支和版本后, 推送分支, 创建并推送无前缀的版本 tag. 规范远端第一次看到的 tag 就必须指向已验证 commit. 随后从公开 HTTPS 地址取得该 tag 的 `scripts/install-arw.mjs`, 在隔离 home 中安装并确认版本.
-6. 公开 Bootstrap 验证通过后, 才发布 GitHub 托管发布对象.
+5. 全部通过且维护者授权准确项目, `origin`, 分支和版本后, 推送分支, 创建并推送无前缀的版本 tag. 规范远端第一次看到的 tag 就必须指向已验证 commit. 随后在已验证 commit 的干净检出上用 `scripts/pack-release.mjs` 生成安装压缩包 `arw.tar.gz`, 其内容由该 commit 的 `release-manifest.json` 决定.
+6. 创建 GitHub 托管发布对象并上传 `arw.tar.gz` 为资产. 之后从公开 HTTPS 地址取得该 tag 的 `scripts/install-arw.mjs`, 在隔离 home 中安装并确认版本.
 
 ## GitHub release publication
 
 公告保存在 Repository 之外, title 和正文使用中文, 只描述在本次 tag 上可观察的变化, 并包含安装章节和 `Changelog`. Main Agent 向维护者展示准确 title 和完整公告文件, 批准绑定准确字节, 任何变化都需要重新批准.
 
-写入前确认本地与规范远端的 tag 都指向已验证 commit, 并完成 `gh` 认证预检. 先只读查看同 tag 的 Release: 已存在且 tag, 经 Git 解析的 commit, title 和正文全部匹配, 并且是正式已发布对象时, 视为幂等成功; 冲突或读取失败时停止. 只有明确不存在时才用 `--verify-tag` 创建, 不提供 `--target`. 创建后, 以及超时或结果不明时, 都只做只读核对, 不盲目重复创建. `targetCommitish` 不能证明 tag 提交.
+写入前确认本地与规范远端的 tag 都指向已验证 commit, 并完成 `gh` 认证预检. 先只读查看同 tag 的 Release: 已存在且 tag, 经 Git 解析的 commit, title 和正文全部匹配, 并且是正式已发布对象, 且资产 `arw.tar.gz` 存在时, 视为幂等成功; 冲突或读取失败时停止. 只有明确不存在时才用 `--verify-tag` 创建, 不提供 `--target`. 创建后, 以及超时或结果不明时, 都只做只读核对, 不盲目重复创建. `targetCommitish` 不能证明 tag 提交.
 
-创建 GitHub 托管发布对象是 Main Agent 使用外部维护者工具完成的操作, 不是 ARW runtime Module. ARW 代码不读取 `gh` 凭据.
+发布资产是只含安装载荷的压缩包 `arw.tar.gz`, Bootstrap 按固定名称从该 release 下载. 创建 GitHub 托管发布对象是 Main Agent 使用外部维护者工具完成的操作, 不是 ARW runtime Module. ARW 代码不读取 `gh` 凭据.
 
 ## Reviewer capability tests
 
@@ -33,9 +33,13 @@ Reviewer 能力测试不是发布门禁. 维护者需要时显式调用源码专
 
 本地检查和 VM 验证不需要外部写入授权, 也不写规范远端. 外部写入授权只覆盖准确项目, `origin`, 分支和版本, 不允许强制推送, 修改其他分支或 tag, 也不允许移动已经推送的 tag.
 
-公开 Bootstrap 验证失败时, Main Agent 先证明本地与远端 tag 都仍指向候选, 再只删除这两个准确 tag 并确认两端都不存在. 无法证明时停止. 修复后形成新候选, 重新完整验证. GitHub 托管发布对象的失败发生在 tag 验证之后, 不触发 tag 恢复: 保留 tag, 记录准确远端状态并停止, 后续创建, 更新或删除需要维护者重新决定.
+压缩包生成, GitHub 托管发布对象的创建, 核对或随后的公开 Bootstrap 验证失败发生在 tag 推送之后, 不触发 tag 恢复: 保留 tag, 记录准确远端状态并停止, 后续创建, 更新或删除需要维护者重新决定.
 
 ## Design rationale
+
+已存在 Release 的资产字节不由发布核对比较, 公开 Bootstrap 验证用该资产实际安装并核对版本, 证明其可安装且身份正确.
+
+失败后保留已推送 tag 沿用既有的"不移动已推送 tag"授权规则, 不引入新的持久决定, 因而不需要 ADR.
 
 Reviewer 能力测试只在角色指令, 模型或报告格式变化时才有意义, 不随每次发布运行. 旧的发布能力门禁用程序准备, 评分, 折减和会话检查, 这些代码大多校验程序自己产生的数据; 现在由 Agent 按 Skill 运行场景; 保留场景, 隐藏预期, 一个入口脚本及其评分与盲裁实现, 这些是评估角色指令的方法本身, 不校验程序自己产生的数据.
 
