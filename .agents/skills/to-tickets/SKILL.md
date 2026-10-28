@@ -34,6 +34,7 @@ disable-model-invocation: true
 - 已完成切片可以独立演示或验证.
 - 每个切片适合在一个新的上下文窗口内完成.
 - 任何预先重构先完成.
+- 粒度宁粗勿细. 每个 issue 都要经过 Spec Readiness 与提交审核, 太小的 issue 让审核开销超过改动本身. 同一模块, 同一 spec 章节或同一验收路径的切片合并为一个 issue; 只在超出一个上下文窗口, 或确需独立验证与独立回退时才拆开.
 
 </vertical-slice-rules>
 
