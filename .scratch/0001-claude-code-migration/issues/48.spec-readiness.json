@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0001:48",
+  "request": {
+    "digest": "ced478dd5553efb2d720445d62539abef66c107bea5202edc0a53a942de4345e",
+    "filePath": ".tmp/claude-code/06588b1e-7f07-4832-8933-107aaf5b5978/0001_48/spec-readiness/requests/request-d603b0b1-c84a-4a2e-a8a2-b20c74d72c05.json",
+    "id": "d603b0b1-c84a-4a2e-a8a2-b20c74d72c05"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "6dcc2d47ebd13fb7d6de3e845765d84572686dfc4a3d8132945d820502bc9ef9"
+  },
+  "inputs": [
+    {
+      "filePath": "docs/specs/agent-repository-workflow-development/spec.md",
+      "role": "governing-spec",
+      "sha256": "3c7c0d2fc05c605c76ac6ae62b01e6ab9a8846ea2fa9866eb62119c06dcfdd03"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow/spec.md",
+      "role": "governing-spec",
+      "sha256": "44418bacffcd28a4b91f001bb6b386ac3a274ec3b8ae7be242fa090f5961e93d"
+    },
+    {
+      "filePath": "lib/arw-background-agent-host.mjs",
+      "role": "architecture-evidence",
+      "sha256": "0c0ffef61c3c9dd9b9e22421a5c65ae50ba6d77a16daff6605834f4e1e2bf9d2"
+    },
+    {
+      "filePath": "lib/background-agent/client.mjs",
+      "role": "architecture-evidence",
+      "sha256": "606c421e8e983c88b66aa7ff758e462304c1015a53a687d3472640476922fa63"
+    },
+    {
+      "filePath": "lib/background-agent/manager-process.mjs",
+      "role": "architecture-evidence",
+      "sha256": "5cb8fb8e754d83aafd77026da67e8173653c5865d4419e9c139eb8fd5aff81f9"
+    },
+    {
+      "filePath": "lib/background-agent/manager.mjs",
+      "role": "architecture-evidence",
+      "sha256": "a8dfcde788ecde73965011ddbd7d5b2a61e8e63f07717ace4fefc899cdfb7619"
+    },
+    {
+      "filePath": "lib/background-agent/recovery-record.mjs",
+      "role": "architecture-evidence",
+      "sha256": "fb40307604fb8a361069fb26a744ff6dab759223db3b4cef7130f1965a44b5c6"
+    },
+    {
+      "filePath": "tests/background-agent/client.test.mjs",
+      "role": "architecture-evidence",
+      "sha256": "a4d6d68f53982158de146e2d295e76fb51ae0013a14aecdba812bde29dce33b2"
+    },
+    {
+      "filePath": "tests/background-agent/daemon.test.mjs",
+      "role": "architecture-evidence",
+      "sha256": "914ca8beede272b9c37495221da500aa088df97041c42fb16f186a8bf8e5fcf0"
+    },
+    {
+      "filePath": "tests/background-agent/manager-process.test.mjs",
+      "role": "architecture-evidence",
+      "sha256": "67a0010b25d7d60ff27d023c9d910971dc7d42fd8e8c1c3998ebf3007da3056a"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0001-claude-code-migration/issues/48-background-agent-small-cleanups.md",
+    "sha256": "cceb9321c00d068b99cd0f9bee549d487bb014a8788f0da1da1a35c73f5747c7"
+  },
+  "result": "satisfied"
+}
