@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0001:34",
+  "request": {
+    "digest": "2ac5c6faba03c83d6962961e1f866d7998637049fe87375997a6dc1a6e0a82f6",
+    "filePath": ".tmp/claude-code/06588b1e-7f07-4832-8933-107aaf5b5978/0001_34/spec-readiness/requests/request-95d4f227-064f-4f7e-a48f-081d28c682cd.json",
+    "id": "95d4f227-064f-4f7e-a48f-081d28c682cd"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "9803a9120632ba201ecccc1996b3e3cc75c13faf7b5cdedb5d4e518dc6d8ebd0"
+  },
+  "inputs": [
+    {
+      "filePath": "docs/specs/agent-repository-workflow-installation/spec.md",
+      "role": "governing-spec",
+      "sha256": "adb06fc9277e4b4223c5f4f88113dbc7a11066ae33a12035a1118ea766533773"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0001-claude-code-migration/issues/34-release-manifest-closure.md",
+    "sha256": "5151034d986b9cfa9f8d8939ca5b5585db4b36fe12b5f8746cc83b50765f2d24"
+  },
+  "result": "satisfied"
+}

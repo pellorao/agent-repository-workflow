@@ -2,10 +2,11 @@ import assert from 'node:assert/strict';
 import {execFile} from 'node:child_process';
 import {access, readFile} from 'node:fs/promises';
 import {builtinModules} from 'node:module';
-import {dirname, posix} from 'node:path';
 import test from 'node:test';
 import {fileURLToPath} from 'node:url';
 import {promisify} from 'node:util';
+
+import {moduleSpecifiers, resolveSourceImport} from './helpers/module-imports.mjs';
 
 const execute = promisify(execFile);
 const repositoryRoot = fileURLToPath(new URL('../', import.meta.url));
@@ -15,15 +16,6 @@ const readSourcePaths = async () => {
     const {stdout} = await execute('git', ['ls-files', '--', 'scripts', 'lib'], {cwd: repositoryRoot});
     return stdout.trim().split('\n').filter(Boolean).sort();
 };
-
-const moduleSpecifiers = (/** @type {string} */ source) => [
-    ...source.matchAll(/\b(?:from\s+|import\s*\(\s*)['"]([^'"]+)['"]/gu),
-    ...source.matchAll(/\bimport\s+['"]([^'"]+)['"]/gu),
-].map(match => match[1]);
-
-const resolveSourceImport = (/** @type {string} */ sourcePath, /** @type {string} */ specifier) => (
-    posix.normalize(posix.join(dirname(sourcePath), specifier))
-);
 
 test('source checkout does not retain target Repository lifecycle state', async () => {
     await assert.rejects(access(new URL('../arw-lock.json', import.meta.url)), {code: 'ENOENT'});

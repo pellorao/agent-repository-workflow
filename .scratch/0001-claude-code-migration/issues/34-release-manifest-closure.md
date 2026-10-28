@@ -1,6 +1,6 @@
 # 安装清单漏装 codex-home.mjs, 测试改为检查运行时导入闭包
 
-Status: needs-triage
+Status: completed
 
 ## What to build
 
@@ -23,10 +23,22 @@ Governing requirements:
 
 ## Acceptance criteria
 
-- [ ] `release-manifest.json` 包含 `lib/common/codex-home.mjs`; 从本仓库安装后 `arw lba` 正常.
-- [ ] 测试按导入闭包检查 `runtimeFiles`, 删掉清单中任一运行时模块时测试失败.
-- [ ] 全量测试, 投影与分发检查, `arw text check` 通过.
+- [x] `release-manifest.json` 包含 `lib/common/codex-home.mjs`; 从本仓库安装后 `arw lba` 正常.
+- [x] 测试按导入闭包检查 `runtimeFiles`, 删掉清单中任一运行时模块时测试失败.
+- [x] 全量测试, 投影与分发检查, `arw text check` 通过.
 
 ## Blocked by
 
 - None - can start immediately
+
+## Validation
+
+- 清单含 `lib/common/codex-home.mjs`: `release-manifest.json` 的 `git diff`; 重新安装后 `arw lba` 正常 (主 Agent 已在本机确认).
+- 导入闭包测试: `tests/runtime-entries.test.mjs` 的 "the release manifest includes every module reachable from the installed entries"; 入口含 `uninstall.mjs`; 导入扫描复用新增的 `tests/helpers/module-imports.mjs` (自 `tests/source-layout.test.mjs` 移出, 行为不变). 临时从清单删除 `lib/common/codex-home.mjs` 或只被 `uninstall.mjs` 导入的 `lib/installation/cli-prompt.mjs` 后该测试均失败, 恢复后通过.
+- `pnpm test` 707 通过, 1 跳过, 0 失败; `pnpm typecheck`, `node scripts/check-workflow-distribution.mjs`, `node scripts/project-claude-skills.mjs --check`, `node arw.mjs text check` 均通过.
+- `node --check` 受影响的 `.mjs` 文件与 `git diff --check` 通过.
+- `arw terms check --include .scratch/0001-claude-code-migration/` 报 2 条 `Artifact` 术语发现, 位于 effort `spec.md` 与 `docs/specs/agent-repository-workflow/spec.md`, 不在本 issue 改动内.
+
+## Comments
+
+- Spec Readiness 一轮 (haiku high, 约 3 分钟) 返回 `No problems.`, 已提升并 `verify` 为 0.

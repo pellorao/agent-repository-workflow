@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
-import {mkdir, readFile, readdir, writeFile} from 'node:fs/promises';
+import {mkdir, readFile, writeFile} from 'node:fs/promises';
 import {dirname, join} from 'node:path';
 import {fileURLToPath, pathToFileURL} from 'node:url';
 import test from 'node:test';
 
+import {moduleSpecifiers, resolveSourceImport} from './helpers/module-imports.mjs';
 import {createTemporaryDirectory} from './helpers/cleanup.mjs';
 import {commitAll, runGit} from './helpers/git.mjs';
 import {runProcess} from './helpers/process.mjs';
@@ -13,17 +14,16 @@ const SOURCE_DIRECTORY = dirname(dirname(fileURLToPath(import.meta.url)));
 const VERSION_PRELOAD = pathToFileURL(join(SOURCE_DIRECTORY, 'tests', 'fixtures', 'runtime-version-preload.mjs')).href;
 const CANONICAL_REMOTE = JSON.parse(await readFile(join(SOURCE_DIRECTORY, 'release-validation.json'), 'utf8')).repositories.sourceCheckout.url;
 
-test('the release manifest includes the background Agent entry and its runtime modules', async () => {
+test('the release manifest includes every module reachable from the installed entries', async () => {
     const manifest = JSON.parse(await readFile(join(SOURCE_DIRECTORY, 'release-manifest.json'), 'utf8'));
     const included = new Set(/** @type {string[]} */ (manifest.runtimeFiles));
-    for (const entry of ['arw.mjs', 'lib/arw.mjs', 'lib/arw-background-agent-host.mjs']) {
-        assert.equal(included.has(entry), true, `Installed runtime omits ${entry}.`);
-    }
-    for (const directory of ['lib/background-agent', 'lib/reviewer-runtime']) {
-        const modules = (await readdir(join(SOURCE_DIRECTORY, directory))).filter(name => name.endsWith('.mjs'));
-        for (const name of modules) {
-            const entry = `${directory}/${name}`;
-            assert.equal(included.has(entry), true, `Installed runtime omits ${entry}.`);
+    const pending = ['arw.mjs', 'uninstall.mjs', 'lib/arw.mjs', 'lib/arw-background-agent-host.mjs'];
+    for (const file of pending) {
+        assert.equal(included.has(file), true, `Installed runtime omits ${file}.`);
+        const source = await readFile(join(SOURCE_DIRECTORY, file), 'utf8');
+        for (const specifier of moduleSpecifiers(source).filter(name => name.startsWith('.'))) {
+            const entry = resolveSourceImport(file, specifier);
+            if (!pending.includes(entry)) pending.push(entry);
         }
     }
 });
