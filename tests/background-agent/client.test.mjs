@@ -144,3 +144,12 @@ test('a manager launch that cannot write its state asks for a rerun outside the 
     await assert.rejects(client.execute({operation:'list_agents',input:{}}),/blocked by the sandbox\. Rerun this same command with escalated permissions/);
   }finally{await client.close();await chmod(parent,0o700);await rm(parent,{recursive:true,force:true});}
 });
+
+test('two concurrent cold launches in one process do not remove each other\'s probe file',async()=>{
+  const runtimeDirectory=await mkdtemp(join(tmpdir(),'arw-background-agent-probe-'));
+  const client=createBackgroundAgentClient({runtimeDirectory,messageTimeoutMs:50,entryPoint:'/unused-entry.mjs'});
+  try {
+    const results=await Promise.allSettled([1,2].map(()=>client.execute({operation:'list_agents',input:{}})));
+    for(const result of results)assert.match(String(/** @type {PromiseRejectedResult} */(result).reason?.message),/timed out before delivery|did not start/);
+  }finally{await client.close();await rm(runtimeDirectory,{recursive:true,force:true});}
+});

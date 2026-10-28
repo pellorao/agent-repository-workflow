@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0001:49",
+  "request": {
+    "digest": "7a284d6a0b0125b6a0b3011e761730869839e6a51e5ff630de531cdbfc3114f0",
+    "filePath": ".tmp/claude-code/06588b1e-7f07-4832-8933-107aaf5b5978/0001_49/spec-readiness/requests/request-f283a5e1-5e7c-434f-83b3-779c5f31e3fa.json",
+    "id": "f283a5e1-5e7c-434f-83b3-779c5f31e3fa"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "6dcc2d47ebd13fb7d6de3e845765d84572686dfc4a3d8132945d820502bc9ef9"
+  },
+  "inputs": [
+    {
+      "filePath": "docs/specs/agent-repository-workflow-development/spec.md",
+      "role": "governing-spec",
+      "sha256": "3c7c0d2fc05c605c76ac6ae62b01e6ab9a8846ea2fa9866eb62119c06dcfdd03"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow/spec.md",
+      "role": "governing-spec",
+      "sha256": "44418bacffcd28a4b91f001bb6b386ac3a274ec3b8ae7be242fa090f5961e93d"
+    },
+    {
+      "filePath": "lib/background-agent/client.mjs",
+      "role": "architecture-evidence",
+      "sha256": "71b53d85b22944d7231a7bb1cab578df66a6493d9422fcce3dcd36e9504c172a"
+    },
+    {
+      "filePath": "release-manifest.json",
+      "role": "architecture-evidence",
+      "sha256": "03373b7d4e4274720f60e08bfcd484cc41ca9455d961b1276c4ca05335b20916"
+    },
+    {
+      "filePath": "tests/background-agent/client.test.mjs",
+      "role": "architecture-evidence",
+      "sha256": "a4d6d68f53982158de146e2d295e76fb51ae0013a14aecdba812bde29dce33b2"
+    },
+    {
+      "filePath": "tests/source-layout.test.mjs",
+      "role": "architecture-evidence",
+      "sha256": "21513f9f65c03481f418c56d791677bdff89245fdd6d65dac66baf7cd43931a4"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0001-claude-code-migration/issues/49-launch-probe-concurrent-name.md",
+    "sha256": "6d5f061682a7708144ab139d4bb314cfca3ce23f112d40f10a0e70372ff10e90"
+  },
+  "result": "satisfied"
+}
