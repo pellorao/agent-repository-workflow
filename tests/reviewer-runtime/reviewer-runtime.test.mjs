@@ -869,6 +869,24 @@ test('interrupt_agent binds the exact active turn, and close only detaches contr
     failed(await runtime.execute({operation: 'resume', input: {runId: observed.runId}}), 'runtime-closed');
 });
 
+test('interrupt_agent validates its turn before observing and never continues a finished turn', async () => {
+    const fixture = createReviewerRuntimeFixture();
+    let continuations = 0;
+    const runtime = createReviewerRuntime({...options(fixture), nativeSessions: {open: async (/** @type {Parameters<typeof fixture.native.nativeSessions.open>[0]} */ input) => {
+        const session = await fixture.native.nativeSessions.open(input);
+        return Object.assign(session, {continueTask: async () => {continuations++; return undefined;}});
+    }}});
+    const receipt = succeeded(await runtime.execute({operation: 'spawn_agent', input: reviewerHandoff}));
+    const active = succeeded(await runtime.inspect({runId: receipt.runId}));
+    failed(await runtime.execute({operation: 'interrupt_agent', input: {runId: receipt.runId}}), 'invalid-input');
+    fixture.native.finish(/** @type {string} */ (active.threadId));
+    await new Promise(resolve => setImmediate(resolve));
+    const before = continuations;
+    failed(await runtime.execute({operation: 'interrupt_agent', input: {runId: receipt.runId, turnId: active.turnId}}), 'turn-mismatch');
+    assert.equal(continuations, before);
+    await runtime.close();
+});
+
 test('only repository temporary write scope and a complete current bound report can authorize delivery', async () => {
     const fixture = createReviewerRuntimeFixture();
     const runtime = createReviewerRuntime(options(fixture));

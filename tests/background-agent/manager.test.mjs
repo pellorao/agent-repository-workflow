@@ -28,6 +28,7 @@ const result=reply=>{assert.equal(reply.status,'succeeded');return /** @type {Re
 
 /** @param {{blockedStart?:boolean,unsafeIdle?:boolean,failStart?:boolean,incompleteFacts?:boolean,failTurn?:boolean}} [options] */
 function nativeHarness({blockedStart=false,unsafeIdle=false,failStart=false,incompleteFacts=false,failTurn=false}={}){
+  let failResume=false;
   let openCount=0,closeCount=0,rootStops=0,startCount=0,serverStarts=0;
   let serverRunning=false,serverExited=false;
   /** @type {string[]} */
@@ -66,7 +67,7 @@ function nativeHarness({blockedStart=false,unsafeIdle=false,failStart=false,inco
       return {
         async start(){await startGate;startCount++;if(failStart)throw new Error('Native root creation rejected.');
           return{threadId:item.id,sessionPath:`/native/${item.id}.jsonl`};},
-        async resume({threadId}){resumedThreads.push(threadId);item.id=threadId;return{threadId,sessionPath:`/native/${threadId}.jsonl`};},
+        async resume({threadId}){if(failResume)throw new Error('Native thread restore failed.');resumedThreads.push(threadId);item.id=threadId;return{threadId,sessionPath:`/native/${threadId}.jsonl`};},
         async startTurn({handoff}){turnInputs.push(handoff);if(failTurn)throw new Error('Native reply was lost.');
           item.active=true;item.turnCount++;item.turnId=item.turnCount===1?'turn':`turn-${item.turnCount}`;return{turnId:item.turnId};},
         async steer({turnId}){return{turnId};},
@@ -86,7 +87,7 @@ function nativeHarness({blockedStart=false,unsafeIdle=false,failStart=false,inco
   });
   return {nativeSessions,openedSettings,openedProviderConnections,resumedThreads,turnInputs,releaseStart:()=>releaseStart?.(),
     get openCount(){return openCount;},get closeCount(){return closeCount;},get rootStops(){return rootStops;},get startCount(){return startCount;},
-    get serverStarts(){return serverStarts;},
+    get serverStarts(){return serverStarts;},set failResume(/** @type {boolean} */ value){failResume=value;},
     exitServer(){serverRunning=false;serverExited=true;for(const item of roots.values())if(!item.ended)item.onNotification({type:'exited',reason:null});},
     /** @param {string} runId */
     finish(runId){const item=roots.get(runId);assert.ok(item);item.active=false;
@@ -923,6 +924,27 @@ test('followup_task restores an evicted root using the original native thread',a
   const resumed=result(await fake.execute(first.runId,'list_agents'));
   assert.equal(resumed.threadId,original);
   assert.equal(fake.native.rootStops,2);
+});
+
+test('a failed followup_task restore leaves no task options so the exited run can be reclaimed',async t=>{
+  const fake=await harness(t,{maxInstances:1});
+  const first=result(await fake.start());
+  await waitDelivered(fake.stateStore,first.messageId);
+  fake.native.finish(first.runId);
+  await tick();
+  const second=result(await fake.start());
+  await waitDelivered(fake.stateStore,second.messageId);
+  await fake.stateStore.flush();
+  fake.native.failResume=true;
+  /** @type {string[]} */
+  const released=[];
+  const release=fake.stateStore.releaseAgent;
+  fake.stateStore.releaseAgent=runId=>{released.push(runId);return release(runId);};
+  const accepted=result(await fake.execute(first.runId,'followup_task',{handoff:'continue'}));
+  await waitFailedDelivery(fake.stateStore,accepted.messageId,'failed');
+  await fake.stateStore.flush();
+  await tick();
+  assert.ok(released.includes(first.runId));
 });
 
 test('cold startup confirms the old process once and restores only an explicit new task on the same root',async t=>{

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0001:41",
+  "request": {
+    "digest": "6d2ea7a85c91dadd0c47fada07ffb3a6b0ff46f2836b3efbf46d627c648abb49",
+    "filePath": ".tmp/claude-code/06588b1e-7f07-4832-8933-107aaf5b5978/0001_41/spec-readiness/requests/request-7a4ba3e2-4db1-458e-b2a7-ac03d30deee8.json",
+    "id": "7a4ba3e2-4db1-458e-b2a7-ac03d30deee8"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "9803a9120632ba201ecccc1996b3e3cc75c13faf7b5cdedb5d4e518dc6d8ebd0"
+  },
+  "inputs": [
+    {
+      "filePath": "docs/specs/agent-repository-workflow/spec.md",
+      "role": "governing-spec",
+      "sha256": "7c2bb3957b57fb71157cbc286a2be5facddff3d4ad087fd3672b6db7ce4352f4"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0001-claude-code-migration/issues/41-background-agent-lifecycle.md",
+    "sha256": "fd02341ca846bb764be169e3e271c6f56b7788c67d3bbd7c9f7e8b9b972205cb"
+  },
+  "result": "satisfied"
+}

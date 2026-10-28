@@ -587,7 +587,7 @@ test('catalog preparation or synchronous spawn failure leaves no unmanaged gener
   assert.deepEqual(events,['prepare','spawn','remove']);
 });
 
-test('confirmed exit attempts both cleanups and reports a failed component',async()=>{
+test('confirmed exit attempts both cleanups, reports a failed component and completes on retry',async()=>{
   for(const failed of ['process identity','shared model catalog']){
     const fake=harness();
     const session=await fake.open();
@@ -597,6 +597,9 @@ test('confirmed exit attempts both cleanups and reports a failed component',asyn
     else fake.modelCatalog.remove=async()=>{fake.catalogEvents.push('remove');throw new Error('Catalog cleanup failed.');};
     await assert.rejects(fake.factory.close(),error=>error instanceof Error&&error.message.includes(`exit cleanup failed: ${failed}`));
     assert.deepEqual(fake.catalogEvents,['prepare','spawn','remove']);
+    fake.processIdentityBoundary.remove=async()=>{};
+    fake.modelCatalog.remove=async()=>{};
+    assert.deepEqual(await fake.factory.close(),{environmentState:'exited'});
   }
 });
 

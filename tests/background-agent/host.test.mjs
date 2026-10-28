@@ -389,6 +389,7 @@ test('Host accepts Reviewer work asynchronously and delivers its messages throug
     const overview = succeeded(await f.dispatch('list_agents', {}, 'another-session'));
     assert.ok(Array.isArray(overview.agents));
     assert.equal(overview.agents.length, 1);
+    assert.equal(overview.agents[0].cwd, f.repositoryRoot);
 });
 
 test('Reviewer pre-turn rejection ends accepted delivery and permits safe maintenance', async t => {

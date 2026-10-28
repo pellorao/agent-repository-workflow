@@ -104,19 +104,19 @@ test('global background list preserves title and full session identity without M
         assert.ok(result.events[0].message.includes('requirements-reviewer'));
         assert.ok(result.events[0].message.includes('running'));
         assert.ok(result.events[0].message.includes('main-blank'));
-        assert.ok(result.events[0].message.includes('/w/a'));
+        assert.ok(!result.events[0].message.includes('/w/a'));
         assert.equal((result.events[0].message.match(/\u001b\[90mN\/A\u001b\[0m/gu) ?? []).length, 2);
         assert.match(result.events[0].message,/1:02:03/u);
         assert.ok(!result.events[0].message.includes(repository.root));
     }
 });
 
-test('background list reports a manager running older code instead of crashing on rows without cwd', async t => {
+test('background list reports a manager running older code instead of crashing on rows without required fields', async t => {
     const programDirectory = await createTemporaryDirectory(t, 'arw-list-program-');
     const root = await createTemporaryDirectory(t, 'arw-list-cwd-');
     await writeConfig(programDirectory);
     for (const args of [['list', 'background-agents'], ['lba']]) {
-        const stale = await run(args, {root, programDirectory}, {backgroundAgentList: async () => /** @type {any} */ ([{role: 'reviewer', ownerId: 'main', ownerTitle: null, state: 'idle', taskElapsedMs: 1}])});
+        const stale = await run(args, {root, programDirectory}, {backgroundAgentList: async () => /** @type {any} */ ([{role: 'reviewer', cwd: '/w', ownerTitle: null, state: 'idle', taskElapsedMs: 1}])});
         assert.equal(stale.result, 1);
         assert.equal(stale.events[0].channel, 'stderr');
         assert.match(stale.events[0].message, /incompatible with this command.*node install\.mjs/u);
