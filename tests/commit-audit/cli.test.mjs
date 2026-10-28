@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
-import {mkdir, readFile, rename, writeFile} from 'node:fs/promises';
+import {mkdir, readFile, rename, rm, writeFile} from 'node:fs/promises';
 import {dirname, join} from 'node:path';
 import {test} from 'node:test';
 
 import {parseCommand, UsageError} from '../../lib/arw.mjs';
-import {prepareCommitAudit} from '../../lib/commit-audit/commit-audit.mjs';
+import {prepareCommitAudit, verifyCommitAudit} from '../../lib/commit-audit/commit-audit.mjs';
 import {reviewerRecoveryPath} from '../../lib/reviewer-runtime/reviewer-session-record.mjs';
 import {createRepository, run, writeArtifact, writeIssue} from '../helpers/arw-cli.mjs';
 import {commitAll, runGit} from '../helpers/git.mjs';
@@ -32,14 +32,21 @@ const stagedRepository = async (/** @type {import('node:test').TestContext} */ t
 };
 
 const identity = {platform: /** @type {const} */ ('codex'), sessionId: 'audit-session'};
+const adapter = {getCurrentAgentIdentity: () => /** @type {{platform: 'claude-code' | 'codex', sessionId: string}} */ (identity)};
+const verifyRound = async (/** @type {string} */ root) => (await verifyCommitAudit({platformAdapter: adapter, repositoryRoot: root})).errors.map(error => `${error.filePath}: ${error.message}`).join('\n');
+const writeReports = (/** @type {string} */ round, /** @type {string[]} */ roles = ['requirements-reviewer', 'code-standards-reviewer'], text = 'No problems.\n') => Promise.all(roles.map(role => writeFile(join(round, role, 'review.txt'), text, 'utf8')));
+const stageIssue = async (/** @type {string} */ root, /** @type {string} */ text) => {
+    await writeIssue(root, '0001-workflow', '01-issue.md', text);
+    await runGit(root, ['add', '.scratch']);
+};
 let roundNumber = 0;
-const prepare = async (/** @type {string} */ root, /** @type {unknown} */ input) => {
+const prepare = async (/** @type {string} */ root, /** @type {unknown} */ input, platformAdapter = adapter) => {
     roundNumber += 1;
     const directory = join(root, '.tmp', 'audit', String(roundNumber));
     await mkdir(directory, {recursive: true});
     const inputPath = join(directory, 'input.json');
     await writeFile(inputPath, JSON.stringify(input), 'utf8');
-    const round = (await prepareCommitAudit({inputPath, platformAdapter: {getCurrentAgentIdentity: () => identity}, repositoryRoot: root})).roundDirectory;
+    const round = (await prepareCommitAudit({inputPath, platformAdapter, repositoryRoot: root})).roundDirectory;
     const request = JSON.parse(await readFile(join(round, 'request.json'), 'utf8'));
     return {request, round};
 };
@@ -137,12 +144,18 @@ test('verify ignores Wayfinder tickets, preserves registered identities, and all
         join(repository.root, '.scratch', '0001-after', 'issues', '01-after.md'),
     );
     await runGit(repository.root, ['add', '-A']);
-    assert.equal((await run(['commit-audit', 'verify'], repository)).result, 0);
+    const fakeRound = async () => {
+        const round = join(repository.root, '.tmp', 'codex', 'audit-session', '_commit-audit', '1');
+        for (const role of ['requirements-reviewer', 'code-standards-reviewer']) await mkdir(join(round, role), {recursive: true});
+        await writeReports(round);
+        await writeFile(join(round, 'request.json'), JSON.stringify({authorizingIssueIds: [], base: (await runGit(repository.root, ['rev-parse', 'HEAD'])).stdout.trim(), tree: (await runGit(repository.root, ['write-tree'])).stdout.trim()}));
+    };
+    await fakeRound();
+    assert.equal(await verifyRound(repository.root), '');
 
     await runGit(repository.root, ['rm', '--quiet', '-f', '.scratch/0001-after/spec.md']);
-    const missingIdentity = await run(['commit-audit', 'verify'], repository);
-    assert.equal(missingIdentity.result, 1);
-    assert.match(missingIdentity.events[0].message, /Committed ARW Artifact identity must be retained: spec:0001/);
+    await fakeRound();
+    assert.match(await verifyRound(repository.root), /Committed ARW Artifact identity must be retained: spec:0001/);
 });
 
 test('verify --non-implementation accepts planning records and rejects other or malformed staged content', async t => {
@@ -190,4 +203,87 @@ test('verify --non-implementation accepts a candidate of only Agent rule and doc
     await writeFile(join(repository.root, 'tests/fixtures/README.md'), '# Fixture\n', 'utf8');
     await runGit(repository.root, ['add', '.']);
     assert.match((await run(['commit-audit', 'verify', '--non-implementation'], repository)).events[0].message, /tests\/fixtures\/README\.md/u);
+});
+
+test('verify requires a review round whose HEAD and tree match the staged candidate', async t => {
+    const repository = await stagedRepository(t, {statuses: ['in-progress']});
+    assert.match(await verifyRound(repository.root), /No Commit Audit round exists for this session\. Run `arw commit-audit prepare` again/u);
+    await mkdir(join(repository.root, '.tmp', 'codex', 'audit-session', '_commit-audit', '1'), {recursive: true});
+    assert.match(await verifyRound(repository.root), /no readable request\.json\. Run `arw commit-audit prepare` again/u);
+    const {round} = await prepare(repository.root, {authorizingIssueIds: ['issue:0001:01']});
+    const empty = await verifyRound(repository.root);
+    assert.match(empty, /requirements-reviewer report is empty\. Relaunch it/u);
+    assert.match(empty, /code-standards-reviewer report is empty/u);
+    await writeReports(round);
+    assert.equal(await verifyRound(repository.root), '');
+
+    await writeFile(join(repository.root, 'implementation.mjs'), `${implementation}export const later = true;\n`, 'utf8');
+    await runGit(repository.root, ['add', 'implementation.mjs']);
+    assert.match(await verifyRound(repository.root), /implementation\.mjs: Staged path changed after the reviewed version\. Run `arw commit-audit prepare`/u);
+    await runGit(repository.root, ['reset', '-q', '--', 'implementation.mjs']);
+    await commitAll(repository.root, 'advance HEAD');
+    assert.match(await verifyRound(repository.root), /HEAD changed after the reviewed version/u);
+});
+
+test('verify accepts only issue record changes and rejects Status or review subject changes of an authorizing issue', async t => {
+    const repository = await stagedRepository(t, {statuses: ['in-progress']});
+    const {round} = await prepare(repository.root, {authorizingIssueIds: ['issue:0001:01']});
+    await writeReports(round);
+    const original = issueText('in-progress');
+    await stageIssue(repository.root, `${original}\n## Validation\n\nChecked.\n\n## Comments\n\nNote.\n`);
+    assert.equal(await verifyRound(repository.root), '');
+    for (const changed of [original.replace('in-progress', 'completed'), original.replace('- [ ] Complete.', '- [x] Complete.')]) {
+        await stageIssue(repository.root, changed);
+        assert.match(await verifyRound(repository.root), /01-issue\.md: Authorizing issue Status or review subject changed/u);
+    }
+});
+
+test('verify takes each Reviewer report from the latest non-empty round and resolves the session round for both platforms', async t => {
+    const repository = await stagedRepository(t, {statuses: ['in-progress']});
+    const {round: first} = await prepare(repository.root, {authorizingIssueIds: ['issue:0001:01']});
+    await writeReports(first, ['requirements-reviewer', 'code-standards-reviewer'], ' \n');
+    await writeReports(first, ['requirements-reviewer']);
+    await writeFile(join(repository.root, 'implementation.mjs'), `${implementation}export const fixed = true;\n`, 'utf8');
+    await runGit(repository.root, ['add', 'implementation.mjs']);
+    const {round: second} = await prepare(repository.root, {authorizingIssueIds: ['issue:0001:01']});
+    assert.match(await verifyRound(repository.root), /code-standards-reviewer report is empty/u);
+    assert.doesNotMatch(await verifyRound(repository.root), /requirements-reviewer report/u);
+    await writeReports(second, ['code-standards-reviewer']);
+    assert.equal(await verifyRound(repository.root), '');
+
+    const claude = {getCurrentAgentIdentity: () => ({platform: /** @type {const} */ ('claude-code'), sessionId: 'claude-session'})};
+    const {round: roundDirectory} = await prepare(repository.root, {authorizingIssueIds: ['issue:0001:01']}, claude);
+    assert.match(roundDirectory, /\/\.tmp\/claude-code\/claude-session\/_commit-audit\/1$/u);
+    await writeReports(roundDirectory);
+    assert.deepEqual((await verifyCommitAudit({platformAdapter: claude, repositoryRoot: repository.root})).errors, []);
+});
+
+test('verify --non-implementation rejects non-canonical effort directories and NUL Markdown, and keeps checking after an Artifact error', async t => {
+    const repository = await createRepository(t);
+    const verify = async () => (await run(['commit-audit', 'verify', '--non-implementation'], repository)).events[0].message;
+    await writeArtifact(repository.root, 'audit-notes', 'spec.md', '# Spec\n');
+    await mkdir(join(repository.root, 'docs'), {recursive: true});
+    await writeFile(join(repository.root, 'docs', 'notes.md'), 'a\0b\n', 'utf8');
+    await runGit(repository.root, ['add', '.']);
+    const rejected = await verify();
+    assert.match(rejected, /audit-notes\/spec\.md[^]*canonical NNNN-<slug>/u);
+    assert.match(rejected, /docs\/notes\.md[^]*NUL bytes/u);
+
+    await runGit(repository.root, ['reset', '-q']);
+    await rm(join(repository.root, '.scratch', 'audit-notes'), {recursive: true});
+    await rm(join(repository.root, 'docs'), {recursive: true});
+    await writeIssue(repository.root, '0001-a', '01-x.md', issueText('ready-for-agent', 'Not required'));
+    await writeIssue(repository.root, '0001-b', '01-x.md', issueText('ready-for-agent', 'Not required'));
+    await writeFile(join(repository.root, 'crlf.md'), 'a\r\n', 'utf8');
+    await runGit(repository.root, ['add', '.']);
+    const failures = await verify();
+    assert.match(failures, /duplicate canonical issue ID/u);
+    assert.match(failures, /LF line endings/u);
+});
+
+test('prepare ignores governing documents under a non-canonical effort directory', async t => {
+    const repository = await stagedRepository(t, {requirement: 'Governing requirements:\n\n- `.scratch/audit/spec.md#spec`', statuses: ['completed']});
+    await writeArtifact(repository.root, '../audit', 'spec.md', specification);
+    await runGit(repository.root, ['add', '.']);
+    await assert.rejects(prepare(repository.root, {authorizingIssueIds: ['issue:0001:01']}), /requires gate2Exception/u);
 });

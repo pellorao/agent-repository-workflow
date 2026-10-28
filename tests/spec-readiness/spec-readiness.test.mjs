@@ -257,7 +257,7 @@ test('generate rejects an empty bound report when a different file contains No p
                 platformAdapter: adapter,
                 repositoryRoot,
             }),
-            /report is empty/i,
+            /report is empty.*relaunch/i,
         );
     }
     await assert.rejects(readdir(artifactsDirectory), {code: 'ENOENT'});
@@ -556,6 +556,17 @@ test('exception uses the same generate promote verify boundary', async t => {
         result: 'not-applicable',
     });
     assert.deepEqual(await verifySpecReadiness({issueId: 'issue:0001:01', repositoryRoot}), {authorized: true, findings: []});
+});
+
+test('exception applicability counts only canonical issue file names', async t => {
+    const repositoryRoot = await createRepository(t);
+    const issues = join(repositoryRoot, '.scratch', '0001-workflow', 'issues');
+    await writeFile(join(issues, '01-implement.md'), issue('Not required'), 'utf8');
+    const draft = {exception: {confirmedAt: '2026-08-04T12:34:56Z', reason: 'No governing design is required.'}};
+    await writeFile(join(issues, '00-x.md'), '# Not an issue\n', 'utf8');
+    await generateException(repositoryRoot, draft);
+    await writeFile(join(issues, '02-a-.md'), issue('Not required'), 'utf8');
+    await assert.rejects(generateException(repositoryRoot, draft), /exactly one implementation issue/);
 });
 
 test('exception promotion and verification bind the current issue subject', async t => {

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0001:42",
+  "request": {
+    "digest": "612d0711cc668f50af429c7e44971a926b5c58f7381e9dbaa93dc028b65495f7",
+    "filePath": ".tmp/claude-code/06588b1e-7f07-4832-8933-107aaf5b5978/0001_42/spec-readiness/requests/request-8699bb29-0c25-423c-809a-16fdb1145790.json",
+    "id": "8699bb29-0c25-423c-809a-16fdb1145790"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "9803a9120632ba201ecccc1996b3e3cc75c13faf7b5cdedb5d4e518dc6d8ebd0"
+  },
+  "inputs": [
+    {
+      "filePath": "docs/specs/agent-repository-workflow/spec.md",
+      "role": "governing-spec",
+      "sha256": "ce3b30c7bd28e7462dd64ca4ecd0106e2900d0440c04b6a44a9cf112cda67ce5"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0001-claude-code-migration/issues/42-commit-audit-gate.md",
+    "sha256": "c0dd1316ccf4cc42f974359e12a288d10ec4cb0818da1dd880d90e5536c5c5cb"
+  },
+  "result": "satisfied"
+}
