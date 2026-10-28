@@ -236,3 +236,21 @@ test('`--wait` keeps waiting after a stray cancelled wait result and ends on the
     assert.equal(code, 0);
     assert.deepEqual(io.responses.at(-1), {id: 'a:done', ok: true, result: {runId: 'run', state: 'idle', completion: {status: 'ready', reportPath: '/r'}, messages: [], providerError: null}});
 });
+
+test('`--wait` reports `reviewer-not-ready` when the run exits without a completion or a program pause', async () => {
+    const io = capture();
+    const code = await runBackgroundAgent({
+        ...io,
+        input: Readable.from([request('a', 'spawn_agent')]),
+        runtime: {
+            async execute() {return /** @type {RuntimeResult} */ ({status: 'succeeded', result: {runId: 'run'}});},
+            async wait() {return /** @type {RuntimeResult} */ ({status: 'succeeded', result: {cursor: 2, state: 'exited', providerError: 'crashed'}});},
+            async close() {return {status: 'succeeded', result: null};},
+        },
+        waitForCompletion: true,
+    });
+    assert.equal(code, 0);
+    const {id, ok, error} = /** @type {{id: string, ok: boolean, error: {code: string, message: string}}} */ (io.responses.at(-1));
+    assert.deepEqual({id, ok, code: error.code}, {id: 'a:done', ok: false, code: 'reviewer-not-ready'});
+    assert.match(error.message, /exited.*crashed/);
+});

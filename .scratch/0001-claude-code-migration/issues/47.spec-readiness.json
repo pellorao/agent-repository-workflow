@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0001:47",
+  "request": {
+    "digest": "af7c4e72e73858da8b6cde80f41978b40515d8a162d997be83a7e6c22ada4dbc",
+    "filePath": ".tmp/claude-code/06588b1e-7f07-4832-8933-107aaf5b5978/0001_47/spec-readiness/requests/request-f82a7c02-7de4-40fc-b3b3-0985fcd057fd.json",
+    "id": "f82a7c02-7de4-40fc-b3b3-0985fcd057fd"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "6dcc2d47ebd13fb7d6de3e845765d84572686dfc4a3d8132945d820502bc9ef9"
+  },
+  "inputs": [
+    {
+      "filePath": "docs/specs/agent-repository-workflow-development/spec.md",
+      "role": "governing-spec",
+      "sha256": "3c7c0d2fc05c605c76ac6ae62b01e6ab9a8846ea2fa9866eb62119c06dcfdd03"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow/spec.md",
+      "role": "governing-spec",
+      "sha256": "44418bacffcd28a4b91f001bb6b386ac3a274ec3b8ae7be242fa090f5961e93d"
+    },
+    {
+      "filePath": "lib/background-agent/machine.mjs",
+      "role": "architecture-evidence",
+      "sha256": "236030319a9beede8064d03a6f231cf6c6c86cd95fe0dd1fd7eca1a163f22a8d"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0001-claude-code-migration/issues/47-reviewer-not-ready.md",
+    "sha256": "485fdcfe80e8b5ca1b891a04472a1382e9c2e6229e8098cb6dce3d86803aa590"
+  },
+  "result": "satisfied"
+}

@@ -18,7 +18,7 @@ Reviewer 的审核行为由 [Reviewer 责任](../../../docs/agents/reviewer.md) 
 Spec Readiness 和提交审核的每一轮由所属工作流的 `prepare` 写出审核轮目录: 固定版本的输入, 执行规则副本, 每个 Reviewer 的空报告和一行 `<role>.jsonl` 请求 (首轮 `spawn_agent`, 复审 `followup_task`). Main Agent 不手工拼请求或复制规则.
 
 1. 运行 `cat <轮目录>/*.jsonl | arw background-agent --wait`; 只重审其中一个 Reviewer 时只传它的文件.
-2. 每个请求先输出回执, 结束时再输出一行 `<id>:done`. `completion` 非空时读取其 `reportPath` 的报告; `completion` 为 `null` 而 `messages` 含 `source` 为 `provider-program` 的消息时按 [暂停通知](#long-running-and-paused-reviews) 处理; 来源为 `agent` 的是 Reviewer 的中途通知, 结果以报告为准; `ok: false`, `state: "exited"` 或 `providerError` 按具体原因处理.
+2. 每个请求先输出回执, 结束时再输出一行 `<id>:done`. `completion` 非空时读取其 `reportPath` 的报告; `completion` 为 `null` 而 `messages` 含 `source` 为 `provider-program` 的消息时按 [暂停通知](#long-running-and-paused-reviews) 处理; 来源为 `agent` 的是 Reviewer 的中途通知, 结果以报告为准; `ok: false` (含 `reviewer-not-ready`), `state: "exited"` 或 `providerError` 按具体原因处理; `reviewer-not-ready` 和 `incomplete` 都不是审核结果, 重派时重新 `prepare` 后重跑.
 3. 复审前修复并重新运行 `prepare`, 得到下一轮目录. 运行中的输入不改写, 未完成审核不当作通过.
 
 ## Other reviews

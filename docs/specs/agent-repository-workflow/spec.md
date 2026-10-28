@@ -262,7 +262,7 @@ ARW 等待进程退出并传播正常退出码. 启动失败或没有正常数�
 
 ### Machine entry
 
-`arw background-agent` 是 Main Agent 与后台 Agent 共用的通用完整后台 Agent 机器入口, 只接受可选的 `--wait`, 不接受其他位置参数或命令选项. `--wait` 对每个成功受理的 `spawn_agent` 或 `followup_task` 持续 `wait_agent`, 直到 Reviewer `completion` 非空, 收到程序产生 (来源 `provider-program`) 的[提前结束阈值](#reviewer-task-continuation)暂停通知, 运行环境退出或等待失败, 然后为该请求追加一行 `{id: "<请求 id>:done", ok, result: {runId, state, completion, messages, providerError}}`, 其中 `messages` 是期间收集的全部发给 Main 的消息编号, 来源与正文, Reviewer 自己发的消息不结束等待; 标准输入结束后等这些行都输出才退出; 调用方的工具在读到回执后, `<id>:done` 前提前返回时 (超时或进程被终止), 审核照常继续, 调用方用回执中的 `runId` 经 `list_agents` 取得 `cursor`, 再以 `wait_agent` 续等. 这里的等待失败指单次 `wait_agent` 返回失败响应 (`ok: false`). 除此之外只有调用方自己取消等待 (`SIGINT` 或 `SIGTERM`) 才按取消结束, 不因其他原因结束; 单次 `wait_agent` 等待超时或没有更新时, 以原 `cursor` 继续等待. 已安装的 ARW 启动器定位随附实现, Agent 无需发现安装目录或为每项任务编写启动脚本. 它与 `arw agent start` 的前台外部 CLI 生命周期分离; 入口本身是命令客户端, 用户级后台管理进程持有原生运行环境, 客户端不承担进程所有权.
+`arw background-agent` 是 Main Agent 与后台 Agent 共用的通用完整后台 Agent 机器入口, 只接受可选的 `--wait`, 不接受其他位置参数或命令选项. `--wait` 对每个成功受理的 `spawn_agent` 或 `followup_task` 持续 `wait_agent`, 直到 Reviewer `completion` 非空, 收到程序产生 (来源 `provider-program`) 的[提前结束阈值](#reviewer-task-continuation)暂停通知, 运行环境退出或等待失败, 然后为该请求追加一行 `{id: "<请求 id>:done", ok, result: {runId, state, completion, messages, providerError}}`, 其中 `messages` 是期间收集的全部发给 Main 的消息编号, 来源与正文, Reviewer 自己发的消息不结束等待; 运行环境退出而 `completion` 为空, 又没有暂停通知时 (调用方自己取消等待除外), 该行改为 `{id: "<请求 id>:done", ok: false, error: {code: "reviewer-not-ready", message}}`, `message` 给出运行状态与 `providerError`, 并说明审核未完成. 上述情形不返回 `ok: true`, 因为调用方会把它当作审核完成而去读空报告; 代价是依赖旧行为的调用方须处理该失败. 等待失败优先于此, 其 `:done` 行为 `{id: "<请求 id>:done", ok: false, error}`, `error` 原样取自失败响应; 标准输入结束后等这些行都输出才退出; 调用方的工具在读到回执后, `<id>:done` 前提前返回时 (超时或进程被终止), 审核照常继续, 调用方用回执中的 `runId` 经 `list_agents` 取得 `cursor`, 再以 `wait_agent` 续等. 这里的等待失败指单次 `wait_agent` 返回失败响应 (`ok: false`). 除此之外只有调用方自己取消等待 (`SIGINT` 或 `SIGTERM`) 才按取消结束, 不因其他原因结束; 单次 `wait_agent` 等待超时或没有更新时, 以原 `cursor` 继续等待. 已安装的 ARW 启动器定位随附实现, Agent 无需发现安装目录或为每项任务编写启动脚本. 它与 `arw agent start` 的前台外部 CLI 生命周期分离; 入口本身是命令客户端, 用户级后台管理进程持有原生运行环境, 客户端不承担进程所有权.
 
 双方通过工具调用同一机器入口, 用 UTF-8 JSONL 标准输入和输出收发消息. 每行请求是 `{id, operation, input}`, `id` 为本进程内唯一的非空字符串, `input` 为对象. 成功响应是 `{id, ok: true, result}`, 失败响应是 `{id, ok: false, error: {code, message}}`, 按 `id` 关联请求; 无法取得有效请求身份时错误响应使用 `id: null`. 每项操作返回一行完整响应; 调用方读到完整合法回执后结束这次请求, 不等待模型执行或目标处理任务. 普通请求从客户端开始处理请求, 经必要的凭据读取, 管理进程启动或连接, 排队处理到完整回执, 共用客户端配置 `backgroundAgent.messageTimeoutMs` 的总等待预算, 来源和默认值由[后台 Agent 配置规则](../agent-repository-workflow-installation/spec.md#background-agent-configuration)拥有; 超时表示结果不确定, 不停止后台 Agent, 不自动重发, 也不能推断管理进程未接受请求. 该预算不限制 Reviewer 任务执行时长或 `wait_agent` 的独立等待预算. Reviewer 的完整报告写入绑定文件, 最终完成消息只返回现行状态与适用理由; 进度和通知仍由机器入口交付. 无法解析或不支持的请求返回错误, 不启动工作或把它改写成其他操作.
 
@@ -915,6 +915,8 @@ Document Repository Interface 不改变 ADR-0013 的 Agent 写入分工, 因为�
 `unload_agent` 复用既有安全卸载核验, 不改变运行恢复记录由调用方绑定并位于调用方工作区的位置, 也不增加持久状态或恢复协议; 本变更沿用既有的恢复记录位置合同, 不改变它, 只新增可随时撤销且不改变任何已持久数据格式的 `unload_agent` 操作和 `list_agents` 概览的 `cwd`, 因而没有新的难以逆转的持久权威决定; 被拒绝的替代方案见 Module Design Rationale, 因而不需要新 ADR. 非 Reviewer 运行的 `spawn_agent` 和 `followup_task` 新增受理前的路径包含拒绝, 是对既有 "恢复记录位于调用方工作区" 合同的执行而不是新合同, 不改变任何持久数据格式, 且可随时撤销, 同样不需要新 ADR.
 
 列表的 Main 标题回退只读取原生会话记录. 这些记录仍由对应平台拥有, 权威来源表中的行只记录既有事实的只读使用, 不建立新的所有者或权威关系; 记录位于同一用户的本机目录, 读不到时标题未知, 不扩大信任边界; 标题保存沿用既有的 `owner_title` 字段, 原生记录仍是唯一来源, 不新增持久状态或恢复协议, 例外只限所属 Main 标题, 因而不需要新 ADR.
+
+`--wait` 的 `reviewer-not-ready` 失败响应只把运行退出且没有结果的 `:done` 由成功改为失败, 不增加持久状态, 恢复协议, 所有者, 权威关系或信任边界, 可随时撤销, 因而不需要新 ADR.
 
 ## Requirement ownership
 
