@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {relative} from 'node:path';
 import test from 'node:test';
 import {createReviewerRuntime} from '../../lib/reviewer-runtime/reviewer-runtime.mjs';
-import {readReviewerSessionRecord} from '../../lib/reviewer-runtime/reviewer-session-record.mjs';
+import {normalizeReviewerIdentity, readReviewerSessionRecord} from '../../lib/reviewer-runtime/reviewer-session-record.mjs';
 import {createReviewerRuntimeFixture,reviewerHandoff} from '../helpers/reviewer-runtime-adapter.mjs';
 
 test('saved Reviewer records reject malformed optional measurements without changing bytes and retain legacy reads',async () => {
@@ -55,4 +55,8 @@ test('saved Reviewer records reject malformed optional measurements without chan
     } finally {
         await runtime.close();
     }
+});
+
+test('an ordinary Reviewer identity may have no issue IDs', () => {
+    assert.deepEqual(normalizeReviewerIdentity({kind: 'ordinary', issueIds: []}), {kind: 'ordinary', issueIds: []});
 });

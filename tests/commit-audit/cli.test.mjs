@@ -97,7 +97,11 @@ test('prepare adds Gate 1 for terminal transitions and Gate 2 documents when the
     await assert.rejects(prepare(repository.root, {authorizingIssueIds: ['issue:0001:01', 'issue:0002:01']}), /all belong to one effort/);
     await assert.rejects(prepare(repository.root, {authorizingIssueIds: ['issue:0001:02', 'issue:0001:01']}), /unique and sorted/);
     const exception = {confirmedAt: '2026-09-10T00:00:00Z', reason: 'No governing requirements apply.'};
-    await assert.rejects(prepare(repository.root, {authorizingIssueIds: ['issue:0001:01', 'issue:0001:02'], gate2Exception: exception}), /conflicts with governing requirements/);
+    const skipped = await prepare(repository.root, {authorizingIssueIds: ['issue:0001:01', 'issue:0001:02'], gate2Exception: exception});
+    assert.deepEqual(skipped.request.gate2, {documents: [], exception});
+    await writeArtifact(repository.root, '0001-workflow', 'spec.md', `${specification}\nChanged.\n`);
+    await runGit(repository.root, ['add', '.']);
+    await assert.rejects(prepare(repository.root, {authorizingIssueIds: ['issue:0001:01', 'issue:0001:02'], gate2Exception: exception}), /changed governing document/);
 });
 
 test('Gate 2 without governing requirements requires a confirmed exception', async t => {

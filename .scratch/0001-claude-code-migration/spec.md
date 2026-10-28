@@ -114,7 +114,7 @@ ARW 由 Codex 开发和维护, 现在改由 Claude Code 维护, 并且今后 ARW
 - 提交审核最多两个并行 Reviewer:
   - 要求符合审核: 由 Code Spec 与 Commit Audit Gate 1 合并而成, 逐条对照 issue 要求和验收标准检查实现.
   - 代码质量审核: 即 Code Standards, 职责中增加 "指出可删除的代码": 未使用的通用性, 对内部数据的校验, 没有现实失败场景的错误处理, 净增行数超出预算.
-- Gate 2 effort 级审计时机不变, 在 effort 的全部实施 issue 进入终态时运行.
+- Gate 2 effort 级审计时机不变, 在 effort 的全部实施 issue 进入终态时运行. 整个 effort 没有改动 Gate 2 文档并集内的任何文档时, 可以跳过 Gate 2 (Main Agent 核对后写入 `gate2Exception`, 引擎拒绝本次候选改动了并集内文档的跳过).
 - 任何复审只看改动部分及其影响范围; 未受影响的有效结论保留.
 - Reviewer 输出格式减负, 以实测而不是格式严格程度防止偷懒:
   - 偷懒的真实表现是 "格式完整但没有实际检查" (例如用脚本按输入一次性生成每条结果), 格式检查拦不住它. 旧规则要求复述每条要求的细节就是为此; 但这类要求是否必要取决于模型, 例如 luna medium 会偷懒, luna xhigh 基本不会.
@@ -218,7 +218,7 @@ ticket 13 冒烟后的日常使用修正, 预期结果如下:
 
 ### ADR Evaluation
 
-Claude Code Reviewer 执行和后台管理范围由 ADR-0032 记录, 它取代 ADR-0016 的暂停决定并修订 ADR-0030 的管理范围. 其余变化不新增持久状态或权威来源, 不需要 ADR. ticket 16 的审核轮准备, `--wait` 和非实施提交检查只把 Main Agent 原先手工执行的步骤交给程序, 轮目录在临时工作区, 不新增持久状态或权威来源; 复审收敛, 提交审核读取固定 `tree` 和实施前就绪检查是规则文字层面的取舍, 改回原文字即可撤销, 不需要 ADR; 体积预算的净增口径 (无关删除不抵扣) 同属规则文字层面的取舍, 不新增持久状态或权威来源, 改回原文字即可撤销, 不需要 ADR. `newThread: true` 改绑同身份线程是 Reviewer 运行层既有行为, 对应长期规格 "原线程不可用或不可恢复时才新建线程", 本 ticket 只把它写进 `spawn_agent` 合同, 也不需要 ADR.
+Claude Code Reviewer 执行和后台管理范围由 ADR-0032 记录, 它取代 ADR-0016 的暂停决定并修订 ADR-0030 的管理范围. 其余变化不新增持久状态或权威来源, 不需要 ADR. ticket 16 的审核轮准备, `--wait` 和非实施提交检查只把 Main Agent 原先手工执行的步骤交给程序, 轮目录在临时工作区, 不新增持久状态或权威来源; 复审收敛, 提交审核读取固定 `tree` 和实施前就绪检查是规则文字层面的取舍, 改回原文字即可撤销, 不需要 ADR; 跳过 Gate 2 是提交工作流拥有的调用条件 (ADR-0023 规定 Gate 1 和 Gate 2 的准确调用条件只由提交工作流拥有), 不改变 ADR-0023 的决定, 不新增持久状态或权威来源, 理由见长期规范的 Module Design Rationale, 不需要 ADR; 体积预算的净增口径 (无关删除不抵扣) 同属规则文字层面的取舍, 不新增持久状态或权威来源, 改回原文字即可撤销, 不需要 ADR. `newThread: true` 改绑同身份线程是 Reviewer 运行层既有行为, 对应长期规格 "原线程不可用或不可恢复时才新建线程", 本 ticket 只把它写进 `spawn_agent` 合同, 也不需要 ADR.
 
 ## Testing Decisions
 
@@ -235,6 +235,10 @@ Claude Code Reviewer 执行和后台管理范围由 ADR-0032 记录, 它取代 A
   - 同身份已有记录而不带 `newThread` 的 `spawn_agent` 以 `reviewer-identity-exists` 拒绝, 带 `newThread: true` 时得到新的运行.
   - `--wait` 收集 Reviewer 消息而不结束, 在 `completion` 或 `provider-program` 暂停通知时为每个请求输出一行 `:done`.
   - `verify --non-implementation` 接受合格候选, 拒绝实施路径和终态转换.
+  - `prepare` 在并集文档未改动时接受 `gate2Exception` 并写出文档为空的 Gate 2, 在本次候选改动并集文档时拒绝; 结构缺失或格式错误 (空 `reason`, 非 UTC 秒级 `confirmedAt`) 的 `gate2Exception` 被拒绝.
+    - 防止的风险: 跳过条件被误拒, 在改了 spec 时被误放行, 或无依据的例外被接受.
+  - 普通身份的 `issueIds` 为空数组时, 运行时接受该身份.
+    - 防止的风险: 只改规则和文档的单个 `requirements-reviewer` 无法启动.
   - 防止的风险: Main 拿到的请求不能直接运行, 或等待提前结束.
   - 不新增测试的部分 (风险接受): 运行层写入 `failure` 和 `newThread` 改写恢复记录 (新 `runId`, `threadId` 和 `failure: null`) 是本 ticket 之前已有的运行层行为, 本 ticket 不改其代码, 不为它新增测试. 它出错时 `prepare` 会选错请求, 但运行层对错选显式拒绝 (`reviewer-identity-exists`, 或跟进不可用线程时报错), Main 在 `:done` 行看到错误, 不会静默沿错线程审核. 唯一不报错的是 `failure` 被错记为非 `null`: 带 `newThread: true` 的新运行被受理, 原线程上下文不再续接, 结果是一次不带前轮上下文的完整新审核, 只多花时间, 不会沿错线程给出结论. `prepare` 的其他失败 (记录无法读取, 报告已存在) 是文件系统错误原样抛出; 失败残留的部分轮目录只占临时空间, 不影响下一轮 (前轮只取自恢复记录). 这些成本小于逐条写测试, 接受.
   - 参考 `tests/commit-audit/`, `tests/spec-readiness/`, `tests/reviewer-runtime/` 和 `tests/background-agent/machine.test.mjs`.

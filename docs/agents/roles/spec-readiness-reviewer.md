@@ -28,14 +28,14 @@ Reviewer Request 为响应绑定精确的绝对 `draftPath`.
 
 ## Review order
 
-按以下阶段审查, 每个阶段达到完成标准后才进入下一阶段:
+按以下阶段审查, 每个阶段达到完成标准后才进入下一阶段. 一轮必须完成全部适用的已注册检查后再返回, 不因前一项检查有问题而提前返回, 使一轮报出全部问题:
 
 1. 完成 `SPEC-READINESS-INPUTS`. 逐项处理每个选定引用和每份可能影响 Input 完整性的快照, 记录每个独立的缺失或未知事实. 看到后续设计缺陷不能提前结束本检查.
-2. 完成 `SPEC-READINESS-REQUIREMENTS`. 逐项判断每个选定引用及其子章节, 并收集本检查负责的全部独立问题. 只有当前选定范围内的具体缺陷确实由后续已注册检查负责时, 才把它留给该检查; 未选择章节中的 Module Design 格式或作为证据的 ADR 不能改变归责. 如果本检查存在 `gap` 或 `uncertain`, 确认前两项检查的已核实问题都已写入草稿, 然后停止审查. `SPEC-READINESS-INPUTS` 单独存在问题不触发该提前返回.
-3. Requirements 通过后, 依次完成 `SPEC-READINESS-RATIONALE`, `SPEC-READINESS-ADR-EVALUATION` 和 `MODULE-DESIGN-APPLICABILITY`. 每项检查处理完自己负责的全部独立义务才算完成.
+2. 完成 `SPEC-READINESS-REQUIREMENTS`. 逐项判断每个选定引用及其子章节, 并收集本检查负责的全部独立问题. 只有当前选定范围内的具体缺陷确实由后续已注册检查负责时, 才把它留给该检查; 未选择章节中的 Module Design 格式或作为证据的 ADR 不能改变归责. 本检查存在 `gap` 或 `uncertain` 时继续后续检查: 后续检查在当前 Requirements 缺陷下仍可判断的部分照常完成; 只有确实无法在该缺陷下判断的部分才留到下一轮, 并在报告中写明所依赖的缺陷.
+3. 依次完成 `SPEC-READINESS-RATIONALE`, `SPEC-READINESS-ADR-EVALUATION` 和 `MODULE-DESIGN-APPLICABILITY`. 每项检查处理完自己负责的全部独立义务才算完成.
 4. 如果任何治理 spec 或 PRD 使用 `Not required:` 或完整的 Module Design 格式, 阅读 [Module Design Checks](spec-readiness-reviewer/module-design.md), 并在共用检查后完成其中适用的检查.
 
-首次核实 `gap` 或 `uncertain` 问题时, 立即阅读 [问题记录](spec-readiness-reviewer/findings.md) 和 `docs/agents/agent-writes.md`, 把该问题写入绑定的 `draftPath`, 再继续当前阶段. 后续发现, 修订和撤回都直接更新同一草稿. 写入不改变上述阶段完成标准和提前返回边界.
+首次核实 `gap` 或 `uncertain` 问题时, 立即阅读 [问题记录](spec-readiness-reviewer/findings.md) 和 `docs/agents/agent-writes.md`, 把该问题写入绑定的 `draftPath`, 再继续当前阶段. 后续发现, 修订和撤回都直接更新同一草稿. 写入不改变上述阶段完成标准.
 
 ## Common checks
 

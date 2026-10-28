@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0001:28",
+  "request": {
+    "digest": "a645d43166c4ef366e12e3d075af5335abb62936353c76ed9c2034e3a82e03f9",
+    "filePath": ".tmp/claude-code/06588b1e-7f07-4832-8933-107aaf5b5978/0001_28/spec-readiness/requests/request-38f7f473-36c3-475d-b37d-c23ae319c729.json",
+    "id": "38f7f473-36c3-475d-b37d-c23ae319c729"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "9803a9120632ba201ecccc1996b3e3cc75c13faf7b5cdedb5d4e518dc6d8ebd0"
+  },
+  "inputs": [
+    {
+      "filePath": ".scratch/0001-claude-code-migration/spec.md",
+      "role": "governing-spec",
+      "sha256": "80122b87ca2c2766a3829e97594b8edcf83e3f1c49b232e250c94d3ddf21b1a3"
+    },
+    {
+      "filePath": "docs/adr/0023-separate-commit-audit-review-from-implementation.md",
+      "role": "adr",
+      "sha256": "2044be86c36d8a06d6a38ed8f2ca8dc1f612f955415d9a62a93aa1670b5c84be"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow/spec.md",
+      "role": "governing-spec",
+      "sha256": "9da7833b3719e69b7c30f3c440e326fdb729adecbd041552c07839a3eec1c983"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0001-claude-code-migration/issues/28-fewer-review-rounds.md",
+    "sha256": "fd748a19a1440489e57415429cff5d0ad119fee26b1e67d951e302361bbbfa1a"
+  },
+  "result": "satisfied"
+}
