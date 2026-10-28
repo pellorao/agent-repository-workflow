@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import {EventEmitter} from 'node:events';
-import {mkdir, readFile, writeFile} from 'node:fs/promises';
+import {mkdir, readFile, rm, writeFile} from 'node:fs/promises';
 import {dirname, join} from 'node:path';
 import {Readable, Writable} from 'node:stream';
 import test from 'node:test';
 
-import {createBackgroundAgentHost, listBackgroundAgents, runBackgroundAgentMachine} from '../../lib/arw-background-agent-host.mjs';
+import {createBackgroundAgentHost, daemonEntryPoint, listBackgroundAgents, runBackgroundAgentMachine} from '../../lib/arw-background-agent-host.mjs';
 import {isJsonObject} from '../../lib/common/json.mjs';
 import {createUsage} from '../../lib/reviewer-runtime/reviewer-measurement.mjs';
 import {createScriptedReviewerSessions} from '../helpers/reviewer-runtime-adapter.mjs';
@@ -880,4 +880,27 @@ test('a cold paused Reviewer retains its early-exit count and does not replay en
         assert.deepEqual(completed.completion,{status:'ready',reportPath:f.reportPath});
         assert.equal(completed.threadId,f.threadId);assert.equal(measurement(completed).usage.totalTokens,70);
     }finally{await cold.manager.close();}
+});
+
+test('unload_agent unloads an idle Reviewer run after its runtime retired, but only for its own Main', async t => {
+    const f = await fixture(t);
+    const started = succeeded(await f.dispatch('spawn_agent', f.handoff));
+    const runId = String(started.runId);
+    await f.host.manager.owned(runId, 'main-session', 'main-session').work;
+    const threadId = String(succeeded(await f.dispatch('list_agents', {runId})).threadId);
+    await writeFile(f.reportPath, 'Complete bound report.');
+    f.scripted.finish(threadId);
+    assert.equal(succeeded(await f.dispatch('list_agents', {runId})).state, 'idle');
+    assert.match(String(failed(await f.dispatch('unload_agent', {runId}, 'main-other')).message), /another Main/u);
+    assert.deepEqual(succeeded(await f.dispatch('unload_agent', {runId})), {runId, unloaded: true});
+});
+
+test('daemon entry point is the installed host file when it exists and the caller entry otherwise', async t => {
+    const installation = await createTemporaryDirectory(t, 'daemon-entry-');
+    assert.equal(await daemonEntryPoint(installation, '/caller/host.mjs'), '/caller/host.mjs');
+    await mkdir(join(installation, 'lib', 'arw-background-agent-host.mjs'), {recursive: true});
+    assert.equal(await daemonEntryPoint(installation, '/caller/host.mjs'), '/caller/host.mjs');
+    await rm(join(installation, 'lib', 'arw-background-agent-host.mjs'), {recursive: true});
+    await writeFile(join(installation, 'lib', 'arw-background-agent-host.mjs'), '');
+    assert.equal(await daemonEntryPoint(installation, '/caller/host.mjs'), join(installation, 'lib', 'arw-background-agent-host.mjs'));
 });

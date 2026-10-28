@@ -111,6 +111,23 @@ test('global background list preserves title and full session identity without M
     }
 });
 
+test('background list reports a manager running older code instead of crashing on rows without cwd', async t => {
+    const programDirectory = await createTemporaryDirectory(t, 'arw-list-program-');
+    const root = await createTemporaryDirectory(t, 'arw-list-cwd-');
+    await writeConfig(programDirectory);
+    for (const args of [['list', 'background-agents'], ['lba']]) {
+        const stale = await run(args, {root, programDirectory}, {backgroundAgentList: async () => /** @type {any} */ ([{role: 'reviewer', ownerId: 'main', ownerTitle: null, state: 'idle', taskElapsedMs: 1}])});
+        assert.equal(stale.result, 1);
+        assert.equal(stale.events[0].channel, 'stderr');
+        assert.match(stale.events[0].message, /incompatible with this command.*node install\.mjs/u);
+        for (const row of [{role: 'reviewer', cwd: '/w', ownerId: 'main', state: 'idle', taskElapsedMs: 1}, {role: 'reviewer', cwd: '/w', ownerId: 'main', ownerTitle: null, state: 'idle'}]) {
+            const partial = await run(args, {root, programDirectory}, {backgroundAgentList: async () => /** @type {any} */ ([row])});
+            assert.equal(partial.result, 1);
+            assert.match(partial.events[0].message, /incompatible with this command/u);
+        }
+    }
+});
+
 test('background list commands distinguish confirmed manager absence from unavailable and ordinary results', async t => {
     const programDirectory = await createTemporaryDirectory(t, 'arw-list-program-');
     const root = await createTemporaryDirectory(t, 'arw-list-cwd-');

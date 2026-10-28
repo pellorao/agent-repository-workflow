@@ -6,6 +6,8 @@
 
 ### Repository workflow and Agent launch
 
+管理进程运行安装目录中的代码 (安装目录有 `lib/arw-background-agent-host.mjs` 时), 管理进程一侧的改动须 `node install.mjs` 后才在真实管理进程中端到端生效; 确定性测试直接构造管理进程, 不受影响.
+
 Agent CLI 启动覆盖包括没有调用方参数, 多个普通参数, Codex `resume --last`, Claude Code `--resume <session>`, 字面 `--`, 位于调用方参数之前的已配置参数, 子进程非零退出和生成进程失败. 它不得启动真实 Agent CLI.
 
 Repository Workflow 覆盖使用注入的提示 Adapter 验证每项适用的说明, 示例, 消息, 选择集合和顺序. 终端集成验证解释文字出现在简短提示之前. 交互式替换和完整的非交互式替换必须把 `src` 和 `src/` 视为相同的 Repository Profile 根目录观察, 计划和锁. 无效根目录矩阵必须在应用前失败, 并保留现有锁和受管理的输出字节.
