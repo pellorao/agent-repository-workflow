@@ -1,0 +1,60 @@
+{
+ "original": "/home/pello/projects/qwen_strata/.tmp/haiku-baseline/cs51/runs/haiku-1/arw/.tmp/codex/b7635f94-ad60-429b-98e7-3ee5c19ba2bb/_reviewer-cap/runs/b08812a7-9d98-4f52-a75f-0e50102ba395/cst/1/.tmp/reports/review-result.md",
+ "original_sha256": "4d21f32aa5ae144fc49740859fe1bffa0f1eb25a108f71723040caf3a0c96a4e",
+ "changes": {
+  "short-evidence-path": 7
+ },
+ "details": [
+  {
+   "kind": "short-evidence-path",
+   "line": 0,
+   "column": 443,
+   "before": "`catering-service.mjs:10`",
+   "after": "`src/catering/catering-service.mjs:10`"
+  },
+  {
+   "kind": "short-evidence-path",
+   "line": 10,
+   "column": 563,
+   "before": "`catering-notices.mjs:10`",
+   "after": "`src/catering/catering-notices.mjs:10`"
+  },
+  {
+   "kind": "short-evidence-path",
+   "line": 12,
+   "column": 164,
+   "before": "`catering-service.mjs:145`",
+   "after": "`src/catering/catering-service.mjs:145`"
+  },
+  {
+   "kind": "short-evidence-path",
+   "line": 14,
+   "column": 365,
+   "before": "`catering-service.mjs:31-37`",
+   "after": "`src/catering/catering-service.mjs:31-37`"
+  },
+  {
+   "kind": "short-evidence-path",
+   "line": 34,
+   "column": 179,
+   "before": "`menu.mjs:13`",
+   "after": "`src/catering/menu.mjs:13`"
+  },
+  {
+   "kind": "short-evidence-path",
+   "line": 34,
+   "column": 247,
+   "before": "`catering-policy.mjs:6-14`",
+   "after": "`src/catering/catering-policy.mjs:6-14`"
+  },
+  {
+   "kind": "short-evidence-path",
+   "line": 34,
+   "column": 338,
+   "before": "`catering-notices.mjs:7`",
+   "after": "`src/catering/catering-notices.mjs:7`"
+  }
+ ],
+ "normalized": "/home/pello/projects/qwen_strata/.tmp/haiku-baseline/cs51/runs/haiku-1/repair/review-result.md",
+ "normalized_sha256": "c4b7a0ecf874b02406659bccf22dcdc54184f5e39f18d5f83b104d884d5d02cf"
+}

@@ -1,0 +1,18 @@
+{
+ "original": "/home/pello/projects/qwen_strata/.tmp/haiku-baseline/cs51/runs/haiku-3/arw/.tmp/codex/b7635f94-ad60-429b-98e7-3ee5c19ba2bb/_reviewer-cap/runs/3710bd67-4f59-48f0-a687-f9609222ef3a/cst/1/.tmp/reports/review-result.md",
+ "original_sha256": "fc902fa0902d23141b11a2d385ab4bb305b5d81657e08e85957c4aa30c6bcfb8",
+ "changes": {
+  "short-evidence-path": 1
+ },
+ "details": [
+  {
+   "kind": "short-evidence-path",
+   "line": 36,
+   "column": 274,
+   "before": "`kitchen-manifest.mjs:20-21`",
+   "after": "`src/catering/kitchen-manifest.mjs:20-21`"
+  }
+ ],
+ "normalized": "/home/pello/projects/qwen_strata/.tmp/haiku-baseline/cs51/runs/haiku-3/repair/review-result.md",
+ "normalized_sha256": "974cd17d445e5479d8915fbcfa41dee7feb03463f118219d2c0075b900b61529"
+}

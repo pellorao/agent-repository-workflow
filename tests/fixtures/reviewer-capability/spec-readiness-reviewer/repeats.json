@@ -1,0 +1,32 @@
+{
+  "sharedEvidence": [
+    {
+      "cases": [
+        "artifact-promotion:SPEC-READINESS-RATIONALE/clean/1",
+        "runtime-migration:SPEC-READINESS-REQUIREMENTS/clean/2"
+      ],
+      "reason": "reader-index 第 9 行: 一条问理由是否需要替代方案, 一条问需求是否完整; 检查不同"
+    },
+    {
+      "cases": [
+        "artifact-promotion:MODULE-DESIGN-INTERFACES/problem/5",
+        "runtime-migration:SPEC-READINESS-REQUIREMENTS/clean/4"
+      ],
+      "reason": "validation-report 第 11 行: 正例问 renderReport 接口缺项, 反例问需求是否须规定内部实现; 检查不同"
+    },
+    {
+      "cases": [
+        "artifact-promotion:MODULE-DESIGN-APPLICABILITY/clean/0",
+        "artifact-promotion:MODULE-DESIGN-EXEMPTION/clean/0"
+      ],
+      "reason": "diagnostic-wording 第 13 行: 一条问 Not required 写法是否合规, 一条问豁免理由是否充分; 检查不同"
+    },
+    {
+      "cases": [
+        "artifact-promotion:MODULE-DESIGN-INTERFACES/clean/2",
+        "artifact-promotion:MODULE-DESIGN-INTERFACES/clean/3"
+      ],
+      "reason": "validation-report 第 104 行: 一条问已定义规则是否都有测试, 一条问是否须逐个组合列测试; 结论不同"
+    }
+  ]
+}

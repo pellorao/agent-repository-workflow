@@ -1,0 +1,15 @@
+{
+ "original": "/home/pello/projects/qwen_strata/.claude/worktrees/agent-abfd6a35ac8a2fcbc/.tmp/v2-format/work/code-spec-v5.1/a4/prep/arw/.tmp/codex/b7635f94-ad60-429b-98e7-3ee5c19ba2bb/_reviewer-cap/runs/fa48649a-33a3-44a5-9af7-4370598f3952/csp/1/.tmp/reports/review-result.md",
+ "original_sha256": "330a4e56bb4a33f77a5a21d20652b7d1e8a65ad844713d38dd2d400700fb080f",
+ "spills": [
+  {
+   "path": ".tmp/v2-format/rec/code-spec-v5.1/haiku-high-a4/h0/session-files/-var-tmp-qwen-claude-code-spec-v5-1-4-h0-1792869660173601910-work/9cb61919-6e01-4781-bdd0-de56d8d662f0/tool-results/byhg9l0e1.txt",
+   "sha256": "ffbdabaaad3f464e39bf01b430d60fab189c8be29393834925ef612c4ba00d83"
+  }
+ ],
+ "changes": {},
+ "details": [],
+ "diagnostics": {
+  "inRangeSpillReadable": 1
+ }
+}

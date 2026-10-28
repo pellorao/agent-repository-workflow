@@ -1,0 +1,450 @@
+{
+  "code-standards": {
+    "version": "Code Standards v5.1 修订 25",
+    "source": "Haiku-high ×5（claude-haiku-5-5，2026-10-15，T=1454 秒）；r 为全部格式错误（计分器口径）：修复记录的可修复处数 rRepairable，加计分升级对所计分报告（修复副本）仍判为格式错误的 rUnrepairable 与越界截断的 rOverrun；T 为计分器读到的定位数 locatorCount",
+    "runs": [
+      {
+        "run": "haiku-1",
+        "r": 7,
+        "rRepairable": 7,
+        "rUnrepairable": 0,
+        "rOverrun": 0,
+        "T": 41,
+        "reports": [
+          {
+            "instanceId": "default-b08812a7-9d98-4f52-a75f-0e50102ba395-instance-1",
+            "report": "code-standards-v5.1/haiku-1/review-result.md",
+            "reportSha256": "4d21f32aa5ae144fc49740859fe1bffa0f1eb25a108f71723040caf3a0c96a4e",
+            "changes": "code-standards-v5.1/haiku-1/review-result.md.changes.json",
+            "changesSha256": "c1dc71344b20420a74dded022bbfdbd60c4423e2f459ce7d33f1973f5be2686e"
+          }
+        ]
+      },
+      {
+        "run": "haiku-2",
+        "r": 0,
+        "rRepairable": 0,
+        "rUnrepairable": 0,
+        "rOverrun": 0,
+        "T": 44,
+        "reports": [
+          {
+            "instanceId": "default-f066d366-18b3-4d31-9560-ce04a8d395fe-instance-1",
+            "report": "code-standards-v5.1/haiku-2/review-result.md",
+            "reportSha256": "09ab731b83a1427830bd7b328db8a799c26f6479b6f792c19d12a3325b9fc155",
+            "changes": "code-standards-v5.1/haiku-2/review-result.md.changes.json",
+            "changesSha256": "7bc49cb0c207ab6f63ffe65b1105e4a577eac5d67d443c4b4fcf31a154080db4"
+          }
+        ]
+      },
+      {
+        "run": "haiku-3",
+        "r": 1,
+        "rRepairable": 1,
+        "rUnrepairable": 0,
+        "rOverrun": 0,
+        "T": 54,
+        "reports": [
+          {
+            "instanceId": "default-3710bd67-4f59-48f0-a687-f9609222ef3a-instance-1",
+            "report": "code-standards-v5.1/haiku-3/review-result.md",
+            "reportSha256": "fc902fa0902d23141b11a2d385ab4bb305b5d81657e08e85957c4aa30c6bcfb8",
+            "changes": "code-standards-v5.1/haiku-3/review-result.md.changes.json",
+            "changesSha256": "1e21efd503960f43acc08f4720b336dc08eeeceae9ed58e7fb8bfdbbd06c128e"
+          }
+        ]
+      },
+      {
+        "run": "haiku-4",
+        "r": 0,
+        "rRepairable": 0,
+        "rUnrepairable": 0,
+        "rOverrun": 0,
+        "T": 37,
+        "reports": [
+          {
+            "instanceId": "default-e47f6869-3d57-4581-9fa5-5fca47f2117f-instance-1",
+            "report": "code-standards-v5.1/haiku-4/review-result.md",
+            "reportSha256": "78ca92d85826f7874b8a38f5f9af7b0979e742f30b489e7e6a47a3946310547c",
+            "changes": "code-standards-v5.1/haiku-4/review-result.md.changes.json",
+            "changesSha256": "02029e000aad47992480129548bada01bd2351c182e02fdaab35d3e9e1199e7a"
+          }
+        ]
+      },
+      {
+        "run": "haiku-5",
+        "r": 10,
+        "rRepairable": 10,
+        "rUnrepairable": 0,
+        "rOverrun": 0,
+        "T": 48,
+        "reports": [
+          {
+            "instanceId": "default-ca5670df-eae1-4cd2-8012-454381d0ab42-instance-1",
+            "report": "code-standards-v5.1/haiku-5/review-result.md",
+            "reportSha256": "50020a99d66c918dde480d88f95ad7d7f325051b9b9443975e967441d0948f24",
+            "changes": "code-standards-v5.1/haiku-5/review-result.md.changes.json",
+            "changesSha256": "c4a85811dd3a357bb298ab50dabf7bf67f5a9d8e5ff961a1c2cc9ae6611a35bf"
+          }
+        ]
+      }
+    ],
+    "sumR": 18,
+    "sumT": 224,
+    "pBase": 0.0803571,
+    "pBaseBootstrap90": [
+      0.0429185,
+      0.1531532
+    ],
+    "scenarioSha256": {
+      "code-standards-reviewer/code-standards": "92eafd6429bf71cb652cb7c615f1cd367b016ffa8fd63be97e6cd8f502577afd"
+    },
+    "scoringPatchSha256": "ebc4ad013b225cca8fc5a2d7b8542dba5bc6a459c6dec44e5e42716266b05666",
+    "archive": "format-baseline/code-standards-v5.1"
+  },
+  "code-spec": {
+    "version": "Code Spec v5.1（multi-model v2）",
+    "source": "Haiku-high ×5（claude-haiku-5-5，2026-10-25，Claude Code 2.1.310，无启动与压缩提示，标签 v2-f3-haiku）；r 为全部格式错误（计分器口径）：修复记录的可修复处数 rRepairable，加计分升级对所计分报告（修复副本）仍判为格式错误的 rUnrepairable 与越界截断的 rOverrun；T 为计分器读到的定位数 locatorCount；计分升级 r8.5；5 个实例的最终状态消息均为 ARW 形式（B 类 0 处）",
+    "sumR": 0,
+    "sumT": 231,
+    "pBase": 0.04329,
+    "pBaseBootstrap90": [
+      0.0389105,
+      0.0543478
+    ],
+    "runs": [
+      {
+        "run": "haiku-1",
+        "r": 0,
+        "rRepairable": 0,
+        "rUnrepairable": 0,
+        "rOverrun": 0,
+        "T": 51,
+        "reports": [
+          {
+            "instanceId": "default-7080a18d-524c-4b25-8b41-b74ad883378e-instance-1",
+            "report": "code-spec-v5.1/haiku-1/review-result.md",
+            "reportSha256": "ff35e339cfe0e77da9096b729699bcf0efa744494bbe6229cdff37c13b95bdae",
+            "changes": "code-spec-v5.1/haiku-1/review-result.md.changes.json",
+            "changesSha256": "43182cb52ce2afe12113d0dfcb69675d5b1c6c82f24d54b73f6d37f88bb17e21"
+          }
+        ]
+      },
+      {
+        "run": "haiku-2",
+        "r": 0,
+        "rRepairable": 0,
+        "rUnrepairable": 0,
+        "rOverrun": 0,
+        "T": 52,
+        "reports": [
+          {
+            "instanceId": "default-b9c3f31c-0c3c-4c7d-86a9-3fd6591e9f6a-instance-1",
+            "report": "code-spec-v5.1/haiku-2/review-result.md",
+            "reportSha256": "46dc0d350c712a2ee8eda10e230fbb35ee36a53445269df5035bf93fd11047b7",
+            "changes": "code-spec-v5.1/haiku-2/review-result.md.changes.json",
+            "changesSha256": "34b9a17874e8e84e2753c8f93b9595af3554c09ae9c76aee9a02e552a24ce7eb"
+          }
+        ]
+      },
+      {
+        "run": "haiku-3",
+        "r": 0,
+        "rRepairable": 0,
+        "rUnrepairable": 0,
+        "rOverrun": 0,
+        "T": 27,
+        "reports": [
+          {
+            "instanceId": "default-778a6333-ab75-460c-b0f6-679be2bca1d6-instance-1",
+            "report": "code-spec-v5.1/haiku-3/review-result.md",
+            "reportSha256": "04075d820612a0fd3e015107fab9cb49796cc117d715a98e1368d8bb32934b4a",
+            "changes": "code-spec-v5.1/haiku-3/review-result.md.changes.json",
+            "changesSha256": "7ebaf60cca9eff148eb33e11c2ce6231e14b38d17dc5c667206bb1071ac5ec71"
+          }
+        ]
+      },
+      {
+        "run": "haiku-4",
+        "r": 0,
+        "rRepairable": 0,
+        "rUnrepairable": 0,
+        "rOverrun": 0,
+        "T": 51,
+        "reports": [
+          {
+            "instanceId": "default-fa48649a-33a3-44a5-9af7-4370598f3952-instance-1",
+            "report": "code-spec-v5.1/haiku-4/review-result.md",
+            "reportSha256": "330a4e56bb4a33f77a5a21d20652b7d1e8a65ad844713d38dd2d400700fb080f",
+            "changes": "code-spec-v5.1/haiku-4/review-result.md.changes.json",
+            "changesSha256": "be8241abc3b5e9a3aa5dba1ed3cffd8a4675df0d9100918cbf1a7fb4a68357ea"
+          }
+        ]
+      },
+      {
+        "run": "haiku-5",
+        "r": 0,
+        "rRepairable": 0,
+        "rUnrepairable": 0,
+        "rOverrun": 0,
+        "T": 50,
+        "reports": [
+          {
+            "instanceId": "default-ff96288f-8c61-47a8-9fbd-3a927374fafc-instance-1",
+            "report": "code-spec-v5.1/haiku-5/review-result.md",
+            "reportSha256": "b4bd85b371122934200ac4b572bdfdd10c13ff36135daa2df8cd46cfb657129b",
+            "changes": "code-spec-v5.1/haiku-5/review-result.md.changes.json",
+            "changesSha256": "3cf047392485307b08fb472f5e3d716b076adcac4c88b5f42ec9f63fa222b1d8"
+          }
+        ]
+      }
+    ],
+    "scenarioSha256": {
+      "requirements-reviewer/code-spec": "e2d600b207fd33bdd8a639013124c1a72f52594bd8fb43fbc54e44855ae10478"
+    },
+    "scoringPatchSha256": "c40856cc5ce276e664701e09e988f5aa10635e6d76cdacade7c947ca2e2049f0",
+    "archive": "format-baseline/code-spec-v5.1"
+  },
+  "commit-audit": {
+    "version": "Commit Audit v3.1（multi-model v2）",
+    "source": "Haiku-high ×5（claude-haiku-5-5，2026-10-25，Claude Code 2.1.310，无启动与压缩提示，标签 v2-f3-haiku）；r 为全部格式错误（计分器口径）：修复记录的可修复处数 rRepairable，加计分升级对所计分报告（修复副本）仍判为格式错误的 rUnrepairable 与越界截断的 rOverrun；T 为计分器读到的定位数 locatorCount；计分升级 r8.5；5 个实例的最终状态消息均为 ARW 形式（B 类 0 处）",
+    "sumR": 0,
+    "sumT": 1103,
+    "pBase": 0.0090662,
+    "pBaseBootstrap90": [
+      0.008673,
+      0.0094607
+    ],
+    "runs": [
+      {
+        "run": "haiku-1",
+        "r": 0,
+        "rRepairable": 0,
+        "rUnrepairable": 0,
+        "rOverrun": 0,
+        "T": 217,
+        "reports": [
+          {
+            "instanceId": "default-94d17499-9080-4d98-8973-1de5de2ce2e5-instance-1",
+            "report": "commit-audit-v3.1/haiku-1/review.jsonl",
+            "reportSha256": "6ee17b02e02c72cbe0437dc249266552c5292053750ebca0f0d01dcbc79d1c89",
+            "changes": "commit-audit-v3.1/haiku-1/review.jsonl.changes.json",
+            "changesSha256": "e0ac75eee663783e7d4f6b70b8c6c677e6a476c79d49769fee46d829c4d3cc52"
+          }
+        ]
+      },
+      {
+        "run": "haiku-2",
+        "r": 0,
+        "rRepairable": 0,
+        "rUnrepairable": 0,
+        "rOverrun": 0,
+        "T": 243,
+        "reports": [
+          {
+            "instanceId": "default-73680f7b-16c7-4bc5-b7a0-ff1c3f73a636-instance-1",
+            "report": "commit-audit-v3.1/haiku-2/review.jsonl",
+            "reportSha256": "2879aac08acfe025c0ba8a2516b230f3a6cb4c8f7d921321aefd8383f339efe9",
+            "changes": "commit-audit-v3.1/haiku-2/review.jsonl.changes.json",
+            "changesSha256": "ad23b64cca04f0c756433d15efe1b748c58c6eb556150a88baf7dd4d8d74a81a"
+          }
+        ]
+      },
+      {
+        "run": "haiku-3",
+        "r": 0,
+        "rRepairable": 0,
+        "rUnrepairable": 0,
+        "rOverrun": 0,
+        "T": 205,
+        "reports": [
+          {
+            "instanceId": "default-f19690e8-d05a-430c-bba2-3d33b662cbe2-instance-1",
+            "report": "commit-audit-v3.1/haiku-3/review.jsonl",
+            "reportSha256": "8d9aa085581a1939b94b2f35abc22298d62cdb16b510c08603ee2068dd9825e2",
+            "changes": "commit-audit-v3.1/haiku-3/review.jsonl.changes.json",
+            "changesSha256": "f44479f48f4bd674fe1a261afabcb0f36edf9d1b70167f1c423851ba18de9bdb"
+          }
+        ]
+      },
+      {
+        "run": "haiku-4",
+        "r": 0,
+        "rRepairable": 0,
+        "rUnrepairable": 0,
+        "rOverrun": 0,
+        "T": 213,
+        "reports": [
+          {
+            "instanceId": "default-2f6a8af7-acc2-4060-81fe-fd0a6b6544cc-instance-1",
+            "report": "commit-audit-v3.1/haiku-4/review.jsonl",
+            "reportSha256": "dbb5b2af6f8baf45f8e0edb2e2aadcdb15a20ed1756b61e3ec594b0db2759eda",
+            "changes": "commit-audit-v3.1/haiku-4/review.jsonl.changes.json",
+            "changesSha256": "6d4b2c7b2f150291788d03a1f0597d14f59b186ad3ec2ca18a1da0a5238840e2"
+          }
+        ]
+      },
+      {
+        "run": "haiku-5",
+        "r": 0,
+        "rRepairable": 0,
+        "rUnrepairable": 0,
+        "rOverrun": 0,
+        "T": 225,
+        "reports": [
+          {
+            "instanceId": "default-6bd820f9-18ec-427c-98f0-ccf669c152a4-instance-1",
+            "report": "commit-audit-v3.1/haiku-5/review.jsonl",
+            "reportSha256": "aadecbaa86bca725a4b1506805b00f7d30538413bcc6537af1d12146713bb791",
+            "changes": "commit-audit-v3.1/haiku-5/review.jsonl.changes.json",
+            "changesSha256": "0f02817425f665b0b421b0c9fd388ad29a974e004a005c6c42e81bb5b82da77e"
+          }
+        ]
+      }
+    ],
+    "scenarioSha256": {
+      "requirements-reviewer/commit-audit": "9fd901804091a686a913541b01eb8edcb5f53ba795eff512f54ccf78bcd48d5f"
+    },
+    "scoringPatchSha256": "c40856cc5ce276e664701e09e988f5aa10635e6d76cdacade7c947ca2e2049f0",
+    "archive": "format-baseline/commit-audit-v3.1"
+  },
+  "spec-readiness": {
+    "version": "Spec Readiness v4.5（multi-model v2）",
+    "source": "Haiku-high ×5（claude-haiku-5-5，2026-10-25，Claude Code 2.1.310，无启动与压缩提示，标签 v2-f3-haiku）；r 为全部格式错误（计分器口径）：修复记录的可修复处数 rRepairable，加计分升级对所计分报告（修复副本）仍判为格式错误的 rUnrepairable 与越界截断的 rOverrun；T 为计分器读到的定位数 locatorCount；计分升级 r8.5；5 个实例的最终状态消息均为 ARW 形式（B 类 0 处）",
+    "sumR": 1,
+    "sumT": 451,
+    "pBase": 0.0221729,
+    "pBaseBootstrap90": [
+      0.0185529,
+      0.0289017
+    ],
+    "runs": [
+      {
+        "run": "haiku-1",
+        "r": 0,
+        "rRepairable": 0,
+        "rUnrepairable": 0,
+        "rOverrun": 0,
+        "T": 101,
+        "reports": [
+          {
+            "instanceId": "runtime-migration-c5799c23-db28-4181-ad9a-d012253125d9-instance-1",
+            "report": "spec-readiness-v4.5/haiku-1/runtime-migration.draft.jsonl",
+            "reportSha256": "4bb329c398d9df66b4a5824d3993df6a1fbd487cd0f44bfbbcf32f32c332bdd0",
+            "changes": "spec-readiness-v4.5/haiku-1/runtime-migration.draft.jsonl.changes.json",
+            "changesSha256": "2d3084e02b082ecbce43fa70ffd5f268bfddcda1510b301e7ca949de473deed5"
+          },
+          {
+            "instanceId": "artifact-promotion-c5799c23-db28-4181-ad9a-d012253125d9-instance-1",
+            "report": "spec-readiness-v4.5/haiku-1/artifact-promotion.draft.jsonl",
+            "reportSha256": "96c1ed4a6657d6a00ce937ea38a287b06dd82f49f7fef4038fd590d0155c07a6",
+            "changes": "spec-readiness-v4.5/haiku-1/artifact-promotion.draft.jsonl.changes.json",
+            "changesSha256": "3c027f4ee185d217710ecba55e53c9e925a1661f5e7cde5a143a322960d15504"
+          }
+        ]
+      },
+      {
+        "run": "haiku-2",
+        "r": 0,
+        "rRepairable": 0,
+        "rUnrepairable": 0,
+        "rOverrun": 0,
+        "T": 116,
+        "reports": [
+          {
+            "instanceId": "runtime-migration-d5d1fe46-0cc1-4cbb-ad7c-ee42a4b710f8-instance-1",
+            "report": "spec-readiness-v4.5/haiku-2/runtime-migration.draft.jsonl",
+            "reportSha256": "49542654a3af08c382e780368684d7b4076a160581fc1b6e8a869f0a01375296",
+            "changes": "spec-readiness-v4.5/haiku-2/runtime-migration.draft.jsonl.changes.json",
+            "changesSha256": "32494de5629f267afa6f106a6e13154f51e3388637a046884e6a3b90c51bde57"
+          },
+          {
+            "instanceId": "artifact-promotion-d5d1fe46-0cc1-4cbb-ad7c-ee42a4b710f8-instance-1",
+            "report": "spec-readiness-v4.5/haiku-2/artifact-promotion.draft.jsonl",
+            "reportSha256": "9ea26a39d5c699cc91eb092fa9639a8d1cf46aa4a6c683e46e559122a5e75672",
+            "changes": "spec-readiness-v4.5/haiku-2/artifact-promotion.draft.jsonl.changes.json",
+            "changesSha256": "ec98f080954c1a8151e01a5a955b09fb1a8297b19239c959b6edcc70b1f6b5eb"
+          }
+        ]
+      },
+      {
+        "run": "haiku-3",
+        "r": 1,
+        "rRepairable": 0,
+        "rUnrepairable": 1,
+        "rOverrun": 0,
+        "T": 43,
+        "reports": [
+          {
+            "instanceId": "runtime-migration-8cc62911-18d1-4794-8e81-67a5b6ae5739-instance-1",
+            "report": "spec-readiness-v4.5/haiku-3/runtime-migration.draft.jsonl",
+            "reportSha256": "c6d9616fbc34b4b8428900906da5243de821fcb80dda6a25119524721f44002e",
+            "changes": "spec-readiness-v4.5/haiku-3/runtime-migration.draft.jsonl.changes.json",
+            "changesSha256": "896bf83367938c041ccd294fcd815510be9a20e7e147c14d06ecc65e049e24cb"
+          },
+          {
+            "instanceId": "artifact-promotion-8cc62911-18d1-4794-8e81-67a5b6ae5739-instance-1",
+            "report": "spec-readiness-v4.5/haiku-3/artifact-promotion.draft.jsonl",
+            "reportSha256": "40bd6db176cd54a5ee70523acf9e43d6d2293bd8cfe95632b653f5d00c8bbb91",
+            "changes": "spec-readiness-v4.5/haiku-3/artifact-promotion.draft.jsonl.changes.json",
+            "changesSha256": "a57c396840c6dc7526a62bf3109cabe783837329be578aa97d2e342d421aa6c9"
+          }
+        ]
+      },
+      {
+        "run": "haiku-4",
+        "r": 0,
+        "rRepairable": 0,
+        "rUnrepairable": 0,
+        "rOverrun": 0,
+        "T": 106,
+        "reports": [
+          {
+            "instanceId": "runtime-migration-3dc825f2-e626-4c6b-9a8f-f0f1c0204eca-instance-1",
+            "report": "spec-readiness-v4.5/haiku-4/runtime-migration.draft.jsonl",
+            "reportSha256": "31f56c4bac7556380d1b077018c1f0c98f42d4cc524256db77a459ef42412900",
+            "changes": "spec-readiness-v4.5/haiku-4/runtime-migration.draft.jsonl.changes.json",
+            "changesSha256": "47918beb6b51cbed4da2d15af219be657798db209d77a4c95d8985b8a1036d57"
+          },
+          {
+            "instanceId": "artifact-promotion-3dc825f2-e626-4c6b-9a8f-f0f1c0204eca-instance-1",
+            "report": "spec-readiness-v4.5/haiku-4/artifact-promotion.draft.jsonl",
+            "reportSha256": "65c2f847d2a30f6692b6f9653a0a90c0d3dbb380ee2e183c892274a6eb0894ff",
+            "changes": "spec-readiness-v4.5/haiku-4/artifact-promotion.draft.jsonl.changes.json",
+            "changesSha256": "c2a16d4f32ebd0648c9d4ddd4ad46db534b772704777133063580623ebe0aaaf"
+          }
+        ]
+      },
+      {
+        "run": "haiku-5",
+        "r": 0,
+        "rRepairable": 0,
+        "rUnrepairable": 0,
+        "rOverrun": 0,
+        "T": 85,
+        "reports": [
+          {
+            "instanceId": "runtime-migration-d8c65453-b1ef-4348-8b12-834996fd7085-instance-1",
+            "report": "spec-readiness-v4.5/haiku-5/runtime-migration.draft.jsonl",
+            "reportSha256": "1942605cb1371cda0e768d8b33302b4254ced0a2a8cbdfdc26f753983b17dfaa",
+            "changes": "spec-readiness-v4.5/haiku-5/runtime-migration.draft.jsonl.changes.json",
+            "changesSha256": "6defac17dd2c1cde3c0f7e5e5da3961b8a441abc0215275f91ff26cbfd5b52fc"
+          },
+          {
+            "instanceId": "artifact-promotion-d8c65453-b1ef-4348-8b12-834996fd7085-instance-1",
+            "report": "spec-readiness-v4.5/haiku-5/artifact-promotion.draft.jsonl",
+            "reportSha256": "214bf2f8a69f623b11dc0e3413690fffe63c277177414b2c5ea2e89627c1826f",
+            "changes": "spec-readiness-v4.5/haiku-5/artifact-promotion.draft.jsonl.changes.json",
+            "changesSha256": "e7185d5384520a57afe26bce0079f9a9d8a4b8f90d88025bcc209fa3ba965f71"
+          }
+        ]
+      }
+    ],
+    "scenarioSha256": {
+      "spec-readiness-reviewer/runtime-migration": "90a963a0dcbbc55d6f1ae6272d336f942124207cdc0afdf667711e297ef95eee",
+      "spec-readiness-reviewer/artifact-promotion": "8a4178b2546b41c7a66c7ab6e7a7836da8294517fedb6ac76e5d4bc516864a14"
+    },
+    "scoringPatchSha256": "c40856cc5ce276e664701e09e988f5aa10635e6d76cdacade7c947ca2e2049f0",
+    "archive": "format-baseline/spec-readiness-v4.5"
+  }
+}

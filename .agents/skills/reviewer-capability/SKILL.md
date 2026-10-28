@@ -29,14 +29,17 @@ disable-model-invocation: true
    ```
 
    输出 `{"status":"succeeded","input":{...}}`, `input` 是 `spawn_agent` 输入 (角色指令, 交接, 空报告, 恢复目录). 比较别的报告格式时, 改写场景仓库中的角色文件和 `input` 的 `instructions`, `handoff`, `reportPath`, `writePaths`.
-3. 按 `reviewer-launch` Skill 通过 `arw background-agent` 启动: 给 `input` 加上 `settings`, 例如 Codex `{"model":"gpt-6-luna","modelProvider":"openai","reasoningEffort":"xhigh","serviceTier":"default"}`, Claude `{"model":"haiku","modelProvider":"anthropic","reasoningEffort":"high","serviceTier":"default"}`. 用 `wait_agent` 等到完成, 记录 `measurement`.
+3. 按 `reviewer-launch` Skill 通过 `arw background-agent` 启动: 给 `input` 加上 `settings`, 例如 Codex `{"model":"gpt-6-luna","modelProvider":"openai","reasoningEffort":"xhigh","serviceTier":"default"}`, Claude `{"model":"haiku","modelProvider":"anthropic","reasoningEffort":"high","serviceTier":"default"}`. 用 `wait_agent` 等到完成, 记录 `measurement`. 本流程覆盖 `reviewer-launch` 对阈值暂停通知的处理 (不询问用户): `wait_agent` 返回来源 `provider-program` 且正文以 `The Reviewer runtime paused this same task after ` 开头的通知时, Main 对同一运行发 `send_message` "继续" 后再 `wait_agent`, 直到 `completion` 非空. 完成后, `unload_agent` 之前, 把该运行的 `list_agents {runId}` 结果存为 `<instance>/agent.json` (已送达消息卸载后或超过 24 小时即丢失), 供计分统计暂停.
 4. 计分: 报告是当前角色的自由格式 (`.txt` 或 `.md`, 要点 `- ... path:line`), 基线格式用 `.jsonl`:
 
    ```sh
-   node scripts/reviewer-capability.mjs score <scenario-directory> <reportPath> --instance <唯一实例名> [--decisions <root>/<name>/decisions.json ...]
+   node scripts/reviewer-capability.mjs repair <scenario-directory> <reportPath> <repaired-path> [--spill <溢出文件> ...]
+   node scripts/reviewer-capability.mjs score <scenario-directory> <reportPath 或 repaired-path> (--repair <repaired-path>.changes.json | --no-repair) --agent <instance>/agent.json --instance <唯一实例名> [--decisions <root>/<name>/decisions.json ...]
    ```
 
-   输出 `{status, candidates, scores}`. `candidates` 是尚未裁决的候选 (关联候选与发现候选), `scores` 是按现有裁决计的分 (未裁决的候选按机械规则暂计). `--instance` 在不同报告间必须唯一, 因为候选的稳定 id 含它. 不计 pause, format penalty, registry sha 绑定和 0.9 残差截断. Commit Audit 的 txt 报告没有 satisfied 行, 只计问题召回.
+   先对每份报告做 `repair` (规范化副本与修复记录); 记录有修改时对副本计分并给 `--repair`, 无修改时对原报告计分并给 `--no-repair`; 二者必须声明其一, 缺少 `--agent` 也返回 `blocked`.
+
+   输出 `{status, candidates, scores}`. `candidates` 是尚未裁决的候选 (关联候选与发现候选), `scores` 是按现有裁决计的分 (未裁决的候选按机械规则暂计), 含 `reportDiagnostics`, `scoreBeforePenalty` 与残差折减后的 `score`. 空报告或没有可评分内容的报告是模型失败, 返回 `succeeded` 且分数为 0 (带 `modelFailure`). `--instance` 在不同报告间必须唯一, 因为候选的稳定 id 含它. `scores` 另含格式罚, 暂停扣分与 `final`. Commit Audit 的 txt 报告没有 satisfied 行, 只计问题召回. Spec Readiness 的两个子场景各自计分后 (它们的单份输出没有 `final`), 把两份 `score` 输出存成文件再合成一次重复的分数: `node scripts/reviewer-capability.mjs combine <score-1.json> <score-2.json>`; 单个子场景的分数不能与整次重复比较. `baseline <unit>` (评分单元 `code-standards`, `code-spec`, `commit-audit`, `spec-readiness`) 校验该评分单元登记的 pBase 基线及其归档; 场景答案键改动后须重测基线并重新登记.
 5. 盲裁: 把 `candidates` 数组存成 JSON 文件, 同一裁决批次的所有报告 (Spec Readiness 含两个子场景) 并入一个池:
 
    ```sh

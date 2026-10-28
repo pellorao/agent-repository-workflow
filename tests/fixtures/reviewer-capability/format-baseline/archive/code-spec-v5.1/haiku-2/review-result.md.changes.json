@@ -1,0 +1,19 @@
+{
+ "original": "/home/pello/projects/qwen_strata/.claude/worktrees/agent-abfd6a35ac8a2fcbc/.tmp/v2-format/work/code-spec-v5.1/a2/prep/arw/.tmp/codex/b7635f94-ad60-429b-98e7-3ee5c19ba2bb/_reviewer-cap/runs/b9c3f31c-0c3c-4c7d-86a9-3fd6591e9f6a/csp/1/.tmp/reports/review-result.md",
+ "original_sha256": "46dc0d350c712a2ee8eda10e230fbb35ee36a53445269df5035bf93fd11047b7",
+ "spills": [
+  {
+   "path": ".tmp/v2-format/rec/code-spec-v5.1/haiku-high-a2/h0/session-files/-var-tmp-qwen-claude-code-spec-v5-1-2-h0-1792869128649500772-work/82235296-13d5-413f-b40c-40e7cd44d709/tool-results/bbg4yygjp.txt",
+   "sha256": "93e3ff27ba94902a6c6b5d28c05a1c9977f7ea821ae6234ba62aa08c78cb1642"
+  },
+  {
+   "path": ".tmp/v2-format/rec/code-spec-v5.1/haiku-high-a2/h0/session-files/-var-tmp-qwen-claude-code-spec-v5-1-2-h0-1792869128649500772-work/82235296-13d5-413f-b40c-40e7cd44d709/tool-results/buouw81jb.txt",
+   "sha256": "adfa1f339c646540d30a1ba49952cc2a3105ef64e71519e11b18885e30db8fc2"
+  }
+ ],
+ "changes": {},
+ "details": [],
+ "diagnostics": {
+  "inRangeSpillReadable": 0
+ }
+}

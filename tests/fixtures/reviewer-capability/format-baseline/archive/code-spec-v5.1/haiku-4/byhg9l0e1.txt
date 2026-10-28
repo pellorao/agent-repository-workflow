@@ -1,0 +1,1013 @@
+diff --git a/src/exports/csv-format.mjs b/src/exports/csv-format.mjs
+new file mode 100644
+index 0000000..d1e40e0
+--- /dev/null
++++ b/src/exports/csv-format.mjs
+@@ -0,0 +1,28 @@
++import {FORMATTERS, formatValue} from './value-format.mjs';
++
++export const LINE_END = '\r\n';
++
++const NEEDS_QUOTES = /[",\r\n]/;
++
++export const quoteField = (text) => (NEEDS_QUOTES.test(text) ? `"${text.replace(/"/, '""')}"` : text);
++
++export const formatLine = (fields) => `${fields.map(quoteField).join(',')}${LINE_END}`;
++
++export const prepareColumns = (columns) => {
++    const names = new Set();
++    return columns.map((column, index) => {
++        const name = typeof column.name === 'string' ? column.name.trim() : '';
++        if (!name) throw new Error(`column ${index + 1} needs a name`);
++        if (names.has(name)) throw new Error(`column ${name} is listed twice`);
++        if (!Object.hasOwn(FORMATTERS, column.kind)) throw new Error(`column ${name} has an unknown kind`);
++        names.add(name);
++        return Object.freeze({name, kind: column.kind});
++    });
++};
++
++export const buildCsv = (rawColumns, rows) => {
++    const columns = prepareColumns(rawColumns);
++    const header = formatLine(columns.map((column) => column.name));
++    const body = rows.map((row) => formatLine(columns.map((column) => formatValue(column.kind, row[column.name]))));
++    return [header, ...body].join('');
++};
+diff --git a/src/exports/export-filter.mjs b/src/exports/export-filter.mjs
+new file mode 100644
+index 0000000..d151000
+--- /dev/null
++++ b/src/exports/export-filter.mjs
+@@ -0,0 +1,48 @@
++import {minutes} from '../platform/time.mjs';
++import {RESERVATION_STATES} from './reservation-columns.mjs';
++
++export const EXPORT_LIMITS = Object.freeze({
++    maxWindowMinutes: 44_640,
++    maxRows: 10_000,
++});
++
++const normalizeState = (state) => {
++    const normalized = typeof state === 'string' ? state.trim().toLowerCase() : '';
++    if (!RESERVATION_STATES.includes(normalized)) throw new Error(`export state ${String(state)} is unknown`);
++    return normalized;
++};
++
++const normalizeStates = (states) => {
++    if (states === undefined) return [...RESERVATION_STATES];
++    if (!Array.isArray(states) || states.length === 0) throw new Error('export states are required');
++    const normalized = states.map(normalizeState);
++    return RESERVATION_STATES.filter((state) => normalized.includes(state));
++};
++
++const normalizeBuilding = (buildingId) => {
++    if (buildingId === undefined) return null;
++    const trimmed = typeof buildingId === 'string' ? buildingId.trim() : '';
++    if (!trimmed) throw new Error('export building is invalid');
++    return trimmed;
++};
++
++export const prepareFilter = ({buildingId, from, states, until}) => {
++    if (!Number.isInteger(from) || !Number.isInteger(until) || until <= from) throw new Error('export window is invalid');
++    if (until - from > minutes(EXPORT_LIMITS.maxWindowMinutes)) throw new Error('export window is too long');
++    return Object.freeze({from, until, states: normalizeStates(states), buildingId: normalizeBuilding(buildingId)});
++};
++
++export const isIncluded = (filter, reservation) => (
++    filter.from <= reservation.startAt
++    && reservation.startAt < filter.until
++    && filter.states.includes(reservation.state)
++    && (filter.buildingId === null || reservation.buildingId === filter.buildingId)
++);
++
++const byId = (left, right) => (left.id < right.id ? -1 : left.id > right.id ? 1 : 0);
++
++export const selectRows = (filter, reservations) => {
++    const rows = reservations.filter((reservation) => isIncluded(filter, reservation));
++    if (rows.length > EXPORT_LIMITS.maxRows) throw new Error('export has too many rows');
++    return rows.sort((left, right) => left.startAt - right.startAt || byId(left, right));
++};
+diff --git a/src/exports/export-service.mjs b/src/exports/export-service.mjs
+new file mode 100644
+index 0000000..8dda94f
+--- /dev/null
++++ b/src/exports/export-service.mjs
+@@ -0,0 +1,46 @@
++import {buildCsv} from './csv-format.mjs';
++import {prepareFilter, selectRows} from './export-filter.mjs';
++import {HISTORY_COLUMNS, RESERVATION_COLUMNS, ROOM_COLUMNS} from './reservation-columns.mjs';
++
++const normalizeRequestKey = (key) => (typeof key === 'string' && key.trim() !== '' ? key.trim().toLowerCase() : null);
++
++const deliveryNotice = (job) => Object.freeze({exportId: job.id, rowCount: job.rowCount, csv: job.csv});
++
++export const exportRecords = ({columns, rows}) => buildCsv(columns, rows);
++
++const byId = (left, right) => (left.id < right.id ? -1 : left.id > right.id ? 1 : 0);
++
++export const exportRooms = ({rooms}) => buildCsv(ROOM_COLUMNS, rooms.filter((room) => room.active === true).sort(byId));
++
++export const exportHistory = async ({request, source}) => {
++    const rows = selectRows(prepareFilter(request), await source.list()).flatMap((reservation) => (
++        reservation.history.map((entry) => ({reservationId: reservation.id, state: entry.state, at: entry.at}))
++    ));
++    return buildCsv(HISTORY_COLUMNS, rows);
++};
++
++export const exportReservations = async ({deliver, nextId, now, request, source, store}) => {
++    const filter = prepareFilter(request);
++    const requestKey = normalizeRequestKey(request.requestKey);
++    if (requestKey !== null) {
++        const existing = await store.findByRequestKey(requestKey);
++        if (existing !== null) return existing;
++    }
++    const rows = selectRows(filter, await source.list());
++    const csv = buildCsv(RESERVATION_COLUMNS, rows);
++    const job = Object.freeze({
++        id: nextId(),
++        requestKey,
++        createdAt: now(),
++        from: filter.from,
++        until: filter.until,
++        states: filter.states,
++        buildingId: filter.buildingId,
++        columns: RESERVATION_COLUMNS.map((column) => column.name),
++        rowCount: rows.length,
++        csv,
++    });
++    await store.save(job);
++    await deliver(deliveryNotice(job));
++    return job;
++};
+diff --git a/src/exports/export-store.mjs b/src/exports/export-store.mjs
+new file mode 100644
+index 0000000..1baebcc
+--- /dev/null
++++ b/src/exports/export-store.mjs
+@@ -0,0 +1,16 @@
++export const createExportStore = (initialJobs = []) => {
++    const jobs = new Map(initialJobs.map((job) => [job.id, job]));
++    let writes = Promise.resolve();
++
++    return Object.freeze({
++        findByRequestKey: async (requestKey) => [...jobs.values()].find((job) => job.requestKey === requestKey) ?? null,
++        list: async () => [...jobs.values()],
++        save: (job) => {
++            writes = writes.then(() => {
++                jobs.set(job.id, job);
++                return job;
++            });
++            return writes;
++        },
++    });
++};
+diff --git a/src/exports/reservation-columns.mjs b/src/exports/reservation-columns.mjs
+new file mode 100644
+index 0000000..82dfa43
+--- /dev/null
++++ b/src/exports/reservation-columns.mjs
+@@ -0,0 +1,32 @@
++export const RESERVATION_COLUMNS = Object.freeze([
++    {name: 'id', kind: 'text'},
++    {name: 'roomId', kind: 'text'},
++    {name: 'buildingId', kind: 'text'},
++    {name: 'memberId', kind: 'text'},
++    {name: 'partySize', kind: 'integer'},
++    {name: 'state', kind: 'text'},
++    {name: 'startAt', kind: 'timestamp'},
++    {name: 'endAt', kind: 'timestamp'},
++    {name: 'expiresAt', kind: 'timestamp'},
++    {name: 'confirmedAt', kind: 'timestamp'},
++    {name: 'canceledAt', kind: 'timestamp'},
++    {name: 'price', kind: 'integer'},
++    {name: 'fee', kind: 'integer'},
++    {name: 'note', kind: 'text'},
++].map((column) => Object.freeze(column)));
++
++export const HISTORY_COLUMNS = Object.freeze([
++    {name: 'reservationId', kind: 'text'},
++    {name: 'state', kind: 'text'},
++    {name: 'at', kind: 'timestamp'},
++].map((column) => Object.freeze(column)));
++
++export const ROOM_COLUMNS = Object.freeze([
++    {name: 'id', kind: 'text'},
++    {name: 'buildingId', kind: 'text'},
++    {name: 'capacity', kind: 'integer'},
++    {name: 'hourlyRate', kind: 'integer'},
++    {name: 'amenities', kind: 'list'},
++].map((column) => Object.freeze(column)));
++
++export const RESERVATION_STATES = Object.freeze(['held', 'confirmed', 'canceled']);
+diff --git a/src/exports/value-format.mjs b/src/exports/value-format.mjs
+new file mode 100644
+index 0000000..30450fb
+--- /dev/null
++++ b/src/exports/value-format.mjs
+@@ -0,0 +1,40 @@
++const MAX_INSTANT = 8.64e15;
++
++const isMissing = (value) => value === undefined || value === null;
++
++const FORMULA_START = /^[=+\-@]/;
++
++const formatText = (value) => {
++    if (typeof value !== 'string') throw new Error('text value is invalid');
++    return FORMULA_START.test(value) ? `'${value}` : value;
++};
++
++const formatInteger = (value) => {
++    if (!Number.isSafeInteger(value)) throw new Error('integer value is invalid');
++    return String(value);
++};
++
++const formatTimestamp = (value) => {
++    if (!Number.isSafeInteger(value) || Math.abs(value) > MAX_INSTANT) throw new Error('timestamp value is invalid');
++    return new Date(value).toISOString();
++};
++
++const formatBoolean = (value) => {
++    if (typeof value !== 'boolean') throw new Error('boolean value is invalid');
++    return value ? 'true' : 'false';
++};
++
++const formatList = (value) => {
++    if (!Array.isArray(value) || !value.every((item) => typeof item === 'string')) throw new Error('list value is invalid');
++    return value.map(formatText).join(';');
++};
++
++export const FORMATTERS = Object.freeze({
++    text: formatText,
++    integer: formatInteger,
++    timestamp: formatTimestamp,
++    boolean: formatBoolean,
++    list: formatList,
++});
++
++export const formatValue = (kind, value) => (isMissing(value) ? '' : FORMATTERS[kind](value));
+diff --git a/src/maintenance/ticket-fields.mjs b/src/maintenance/ticket-fields.mjs
+new file mode 100644
+index 0000000..d716575
+--- /dev/null
++++ b/src/maintenance/ticket-fields.mjs
+@@ -0,0 +1,29 @@
++export const PRIORITIES = Object.freeze(['urgent', 'high', 'normal', 'low']);
++
++const trimmed = (value) => (typeof value === 'string' ? value.trim() : '');
++
++export const requireText = (value, label) => {
++    const text = trimmed(value);
++    if (!text) throw new Error(`${label} is required`);
++    return text;
++};
++
++export const normalizePriority = (priority) => {
++    const value = trimmed(priority).toLowerCase();
++    if (!PRIORITIES.includes(value)) throw new Error('priority is unknown');
++    return value;
++};
++
++export const normalizeAmenities = (amenities) => {
++    if (!Array.isArray(amenities)) throw new Error('amenities must be a list');
++    const names = amenities.map((amenity) => requireText(amenity, 'amenity name').toLowerCase());
++    return [...new Set(names)];
++};
++
++export const prepareTicket = (request) => ({
++    roomId: requireText(request.roomId, 'room'),
++    buildingId: requireText(request.buildingId, 'building'),
++    summary: requireText(request.summary, 'summary'),
++    priority: normalizePriority(request.priority),
++    amenities: normalizeAmenities(request.amenities),
++});
+diff --git a/src/maintenance/ticket-policy.mjs b/src/maintenance/ticket-policy.mjs
+new file mode 100644
+index 0000000..8835239
+--- /dev/null
++++ b/src/maintenance/ticket-policy.mjs
+@@ -0,0 +1,47 @@
++import {overlaps} from '../platform/periods.mjs';
++import {minutes} from '../platform/time.mjs';
++
++export const RESPONSE_MINUTES = Object.freeze({urgent: 60, high: 240, normal: 1440, low: 4320});
++
++export const MAX_WORK_MINUTES = 480;
++
++export const respondBy = (priority, openedAt) => openedAt + minutes(RESPONSE_MINUTES[priority]);
++
++const ESCALATION = Object.freeze({low: 'normal', normal: 'high', high: 'urgent'});
++
++export const escalatedPriority = (priority) => {
++    const next = ESCALATION[priority];
++    if (next === undefined) throw new Error(`cannot escalate a ${priority} ticket`);
++    return next;
++};
++
++export const isOverdue = (ticket, at) => ticket.state === 'open' && at >= ticket.respondBy;
++
++const PLANNABLE = Object.freeze(['open', 'assigned']);
++
++export const canPlan = (ticket) => PLANNABLE.includes(ticket.state);
++
++export const checkWorkWindow = (window, at) => {
++    if (!(window.endAt > window.startAt)) throw new Error('work window is invalid');
++    if (window.startAt < at) throw new Error('work window has started');
++    if (window.endAt - window.startAt > minutes(MAX_WORK_MINUTES)) throw new Error('work window is too long');
++    return {startAt: window.startAt, endAt: window.endAt};
++};
++
++export const conflictingTicket = (tickets, ticket, window) => tickets.find((other) => (
++    other.roomId === ticket.roomId
++    && hasOpenPlan(other)
++    && overlaps(other.plannedWork, window)
++)) ?? null;
++
++const byId = (left, right) => (left.id < right.id ? -1 : left.id > right.id ? 1 : 0);
++
++export const orderByDeadline = (tickets) => [...tickets].sort((left, right) => (
++    left.respondBy - right.respondBy || byId(left, right)
++));
++
++export const orderByWorkStart = (tickets) => [...tickets].sort((left, right) => (
++    left.plannedWork.startAt - right.plannedWork.startAt || byId(left, right)
++));
++
++export const hasOpenPlan = (ticket) => ticket.state !== 'resolved' && ticket.plannedWork !== undefined;
+diff --git a/src/maintenance/ticket-service.mjs b/src/maintenance/ticket-service.mjs
+new file mode 100644
+index 0000000..0ee7502
+--- /dev/null
++++ b/src/maintenance/ticket-service.mjs
+@@ -0,0 +1,110 @@
++import {prepareTicket, requireText} from './ticket-fields.mjs';
++import {
++    canPlan, checkWorkWindow, conflictingTicket, escalatedPriority, hasOpenPlan, isOverdue, orderByDeadline, orderByWorkStart,
++    respondBy,
++} from './ticket-policy.mjs';
++import {advanceTicket, newTicket, replan} from './ticket-states.mjs';
++
++const openedNotice = (ticket) => Object.freeze({
++    ticketId: ticket.id,
++    roomId: ticket.roomId,
++    buildingId: ticket.buildingId,
++    priority: ticket.priority,
++    respondBy: ticket.respondBy,
++});
++
++const assignmentNotice = (ticket) => Object.freeze({
++    ticketId: ticket.id,
++    assignee: ticket.assignee,
++    roomId: ticket.roomId,
++    respondBy: ticket.respondBy,
++});
++
++const escalationNotice = (ticket) => Object.freeze({ticketId: ticket.id, priority: ticket.priority, respondBy: ticket.respondBy});
++
++const resolutionNotice = (ticket) => Object.freeze({ticketId: ticket.id, roomId: ticket.roomId, resolvedAt: ticket.resolvedAt});
++
++const saveThenSend = async (store, send, ticket) => {
++    const saved = await store.save(ticket);
++    await send(saved);
++    return saved;
++};
++
++export const openTicket = async ({nextId, notifier, now, request, store}) => {
++    const prepared = prepareTicket(request);
++    const at = now();
++    const ticket = newTicket({at, id: nextId(), prepared, respondBy: respondBy(prepared.priority, at)});
++    return saveThenSend(store, (saved) => notifier.opened(openedNotice(saved)), ticket);
++};
++
++export const findTicket = async ({id, store}) => {
++    const ticket = await store.find(id);
++    if (ticket === null) throw new Error('ticket not found');
++    return ticket;
++};
++
++export const assignTicket = async ({assignee, notifier, now, store, ticket}) => {
++    const name = requireText(assignee, 'assignee');
++    const assigned = {...advanceTicket(ticket, 'assign', now()), assignee: name};
++    return saveThenSend(store, (saved) => notifier.assigned(assignmentNotice(saved)), assigned);
++};
++
++export const startWork = async ({now, store, ticket}) => {
++    const started = advanceTicket(ticket, 'start', now());
++    await store.save(started);
++    return started;
++};
++
++export const resolveTicket = async ({notifier, now, resolution, store, ticket}) => {
++    const note = requireText(resolution, 'resolution');
++    const resolved = {...advanceTicket(ticket, 'resolve', now()), resolution: note};
++    return saveThenSend(store, (saved) => notifier.resolved(resolutionNotice(saved)), resolved);
++};
++
++export const planWork = async ({endAt, now, startAt, store, ticket}) => {
++    if (!canPlan(ticket)) throw new Error(`cannot plan work for a ${ticket.state} ticket`);
++    if (ticket.plannedWork !== undefined) throw new Error('ticket already has planned work');
++    const at = now();
++    const window = checkWorkWindow({startAt, endAt}, at);
++    const sameRoom = await store.list({roomId: ticket.roomId});
++    if (conflictingTicket(sameRoom, ticket, window) !== null) throw new Error('work window conflicts with another ticket');
++    const planned = {...ticket, ...replan(ticket, window), plannedAt: at};
++    await store.save(planned);
++    return planned;
++};
++
++export const overdueTickets = async ({buildingId, now, store}) => {
++    const at = now();
++    const tickets = await store.list({buildingId: requireText(buildingId, 'building')});
++    return orderByDeadline(tickets.filter((ticket) => isOverdue(ticket, at)));
++};
++
++export const clearPlannedWork = async ({now, store, ticket}) => {
++    if (!canPlan(ticket)) throw new Error(`cannot plan work for a ${ticket.state} ticket`);
++    if (ticket.plannedWork === undefined) return ticket;
++    const cleared = {...ticket, ...replan(ticket, null), plannedAt: now()};
++    await store.save(cleared);
++    return cleared;
++};
++
++export const escalateTicket = async ({notifier, now, store, ticket}) => {
++    if (ticket.state === 'resolved') throw new Error('cannot escalate a resolved ticket');
++    const priority = escalatedPriority(ticket.priority);
++    const escalated = {
++        ...ticket,
++        priority,
++        respondBy: respondBy(priority, ticket.openedAt),
++        lastEscalation: {from: ticket.priority, to: priority, at: now()},
++    };
++    return saveThenSend(store, (saved) => notifier.escalated(escalationNotice(saved)), escalated);
++};
++
++export const plannedWorkFor = async ({roomId, store}) => orderByWorkStart(
++    (await store.list({roomId: requireText(roomId, 'room')})).filter(hasOpenPlan),
++);
++
++export const unavailableAmenities = async ({roomId, store}) => {
++    const tickets = await store.list({roomId: requireText(roomId, 'room')});
++    const names = tickets.filter((ticket) => ticket.state !== 'resolved').flatMap((ticket) => ticket.amenities);
++    return [...new Set(names)].sort();
++};
+diff --git a/src/maintenance/ticket-states.mjs b/src/maintenance/ticket-states.mjs
+new file mode 100644
+index 0000000..946477b
+--- /dev/null
++++ b/src/maintenance/ticket-states.mjs
+@@ -0,0 +1,24 @@
++import {withOptional} from '../platform/records.mjs';
++
++const RULES = Object.freeze([
++    {action: 'assign', from: ['open', 'assigned'], to: 'assigned', stamp: 'assignedAt'},
++    {action: 'start', from: ['assigned'], to: 'inProgress', stamp: 'startedAt'},
++    {action: 'resolve', from: ['inProgress'], to: 'resolved', stamp: 'resolvedAt'},
++]);
++
++export const newTicket = ({at, id, prepared, respondBy}) => ({
++    id,
++    ...prepared,
++    state: 'open',
++    openedAt: at,
++    respondBy,
++    lastEscalation: null,
++});
++
++export const replan = (ticket, window) => withOptional(ticket, 'plannedWork', window);
++
++export const advanceTicket = (ticket, action, at) => {
++    const rule = RULES.find((candidate) => candidate.action === action && candidate.from.includes(ticket.state));
++    if (rule === undefined) throw new Error(`cannot ${action} a ${ticket.state} ticket`);
++    return {...ticket, state: rule.to, [rule.stamp]: at};
++};
+diff --git a/src/maintenance/ticket-store.mjs b/src/maintenance/ticket-store.mjs
+new file mode 100644
+index 0000000..ae9fde0
+--- /dev/null
++++ b/src/maintenance/ticket-store.mjs
+@@ -0,0 +1,18 @@
++export const createTicketStore = (initialTickets = []) => {
++    const records = new Map(initialTickets.map((ticket) => [ticket.id, ticket]));
++    let writes = Promise.resolve();
++
++    return Object.freeze({
++        find: async (id) => records.get(id) ?? null,
++        list: async ({buildingId, roomId} = {}) => [...records.values()].filter((ticket) => (
++            (buildingId === undefined || ticket.buildingId === buildingId) && (roomId === undefined || ticket.roomId === roomId)
++        )),
++        save: (ticket) => {
++            writes = writes.then(() => {
++                records.set(ticket.id, ticket);
++                return ticket;
++            });
++            return writes;
++        },
++    });
++};
+diff --git a/src/members/allowance.mjs b/src/members/allowance.mjs
+new file mode 100644
+index 0000000..6c2490d
+--- /dev/null
++++ b/src/members/allowance.mjs
+@@ -0,0 +1,35 @@
++import {instant, overlaps} from '../platform/periods.mjs';
++import {MINUTE} from '../platform/time.mjs';
++import {suspensionPeriod} from './periods.mjs';
++
++export const MONTHLY_ALLOWANCE_MINUTES = Object.freeze({basic: 600, plus: 1800, team: 6000});
++
++const bookedMinutes = (reservation) => (reservation.endAt - reservation.startAt) / MINUTE;
++
++export const countedReservations = (reservations, memberId, period) => reservations.filter((reservation) => (
++    reservation.memberId === memberId
++    && reservation.state === 'confirmed'
++    && overlaps(instant(reservation.startAt), period)
++));
++
++const suspendedDuring = (member, period) => member.suspension !== undefined && overlaps(suspensionPeriod(member.suspension), period);
++
++const byStart = (left, right) => left.startAt - right.startAt || (left.id < right.id ? -1 : left.id > right.id ? 1 : 0);
++
++export const allowanceSummary = (member, reservations, period) => {
++    const allowance = MONTHLY_ALLOWANCE_MINUTES[member.tier];
++    const counted = countedReservations(reservations, member.memberId, period).sort(byStart);
++    const used = counted.reduce((total, reservation) => total + bookedMinutes(reservation), 0);
++    return Object.freeze({
++        memberId: member.memberId,
++        tier: member.tier,
++        periodStart: period.startAt,
++        periodEnd: period.endAt,
++        allowance,
++        used,
++        remaining: Math.max(allowance - used, 0),
++        overage: Math.max(used - allowance, 0),
++        reservationIds: counted.map((reservation) => reservation.id),
++        suspended: suspendedDuring(member, period),
++    });
++};
+diff --git a/src/members/member-notices.mjs b/src/members/member-notices.mjs
+new file mode 100644
+index 0000000..f9a00ea
+--- /dev/null
++++ b/src/members/member-notices.mjs
+@@ -0,0 +1,16 @@
++export const welcomeNotice = (member) => Object.freeze({
++    memberId: member.memberId,
++    email: member.email,
++    tier: member.tier,
++});
++
++export const suspensionNotice = (member) => Object.freeze({
++    memberId: member.memberId,
++    expiresAt: member.suspension.expiresAt,
++});
++
++export const saveAndNotify = async (store, send, member) => {
++    const saved = await store.save(member);
++    await send(saved);
++    return saved;
++};
+diff --git a/src/members/member-service.mjs b/src/members/member-service.mjs
+new file mode 100644
+index 0000000..c2a9a06
+--- /dev/null
++++ b/src/members/member-service.mjs
+@@ -0,0 +1,77 @@
++import {allowanceSummary} from './allowance.mjs';
++import {usageMonth} from './periods.mjs';
++import {normalizeMemberId, prepareContact, prepareProfile, prepareReason, requireTier} from './profile.mjs';
++import {saveAndNotify, suspensionNotice, welcomeNotice} from './member-notices.mjs';
++import {effectiveStatus, reinstate, suspend} from './suspension.mjs';
++
++const requireMember = async (store, memberId) => {
++    const member = await store.find(normalizeMemberId(memberId));
++    if (member === null) throw new Error('member not found');
++    return member;
++};
++
++export const registerMember = async ({notifier, now, profile, store}) => {
++    const prepared = prepareProfile(profile);
++    if (await store.find(prepared.memberId) !== null) throw new Error('member already exists');
++    if (await store.findByEmail(prepared.email) !== null) throw new Error('email is already registered');
++    const at = now();
++    const member = {...prepared, status: 'active', joinedAt: at};
++    return saveAndNotify(store, (saved) => notifier.registered(welcomeNotice(saved)), member);
++};
++
++export const getMember = ({memberId, store}) => requireMember(store, memberId);
++
++export const memberStatus = async ({memberId, now, store}) => effectiveStatus(await requireMember(store, memberId), now());
++
++export const monthlyAllowance = async ({memberId, month, reservations, store}) => {
++    const member = await requireMember(store, memberId);
++    return allowanceSummary(member, reservations, usageMonth(month));
++};
++
++export const updateContact = async ({contact, memberId, store}) => {
++    const member = await requireMember(store, memberId);
++    const prepared = prepareContact(contact);
++    const owner = await store.findByEmail(prepared.email);
++    if (owner !== null && prepared.email !== member.email) throw new Error('email is already registered');
++    const updated = {...member, ...prepared};
++    await store.save(updated);
++    return updated;
++};
++
++export const changeTier = async ({memberId, store, tier}) => {
++    const member = await requireMember(store, memberId);
++    const updated = {...member, tier: requireTier(tier)};
++    await store.save(updated);
++    return updated;
++};
++
++export const suspendMember = async ({durationMinutes, memberId, notifier, now, reason, store}) => {
++    const member = await requireMember(store, memberId);
++    const suspended = suspend(member, {durationMinutes, reason: prepareReason(reason)}, now());
++    return saveAndNotify(store, (saved) => notifier.suspended(suspensionNotice(saved)), suspended);
++};
++
++export const reinstateMember = async ({memberId, now, store}) => {
++    const member = await requireMember(store, memberId);
++    const reinstated = reinstate(member, now());
++    await store.save(reinstated);
++    return reinstated;
++};
++
++const byMemberId = (left, right) => (left.memberId < right.memberId ? -1 : left.memberId > right.memberId ? 1 : 0);
++
++const directoryEntry = (member, at) => Object.freeze({
++    memberId: member.memberId,
++    name: member.name,
++    email: member.email,
++    tier: member.tier,
++    status: effectiveStatus(member, at),
++});
++
++export const listMembers = async ({now, status, store}) => {
++    const at = now();
++    return (await store.list())
++        .map((member) => directoryEntry(member, at))
++        .filter((entry) => status === undefined || entry.status === status)
++        .sort(byMemberId);
++};
+diff --git a/src/members/member-store.mjs b/src/members/member-store.mjs
+new file mode 100644
+index 0000000..0152ec8
+--- /dev/null
++++ b/src/members/member-store.mjs
+@@ -0,0 +1,17 @@
++export const createMemberStore = (initialMembers = []) => {
++    const records = new Map(initialMembers.map((member) => [member.memberId, member]));
++    let writes = Promise.resolve();
++
++    return Object.freeze({
++        find: async (memberId) => records.get(memberId) ?? null,
++        findByEmail: async (email) => [...records.values()].find((member) => member.email === email) ?? null,
++        list: async () => [...records.values()],
++        save: (member) => {
++            writes = writes.then(() => {
++                records.set(member.memberId, member);
++                return member;
++            });
++            return writes;
++        },
++    });
++};
+diff --git a/src/members/periods.mjs b/src/members/periods.mjs
+new file mode 100644
+index 0000000..0c85606
+--- /dev/null
++++ b/src/members/periods.mjs
+@@ -0,0 +1,10 @@
++const FIRST_YEAR = 1970;
++const LAST_YEAR = 9999;
++
++export const usageMonth = ({month, year}) => {
++    if (!Number.isInteger(year) || year < FIRST_YEAR || year > LAST_YEAR) throw new Error('usage year is invalid');
++    if (!Number.isInteger(month) || month < 1 || month > 12) throw new Error('usage month is invalid');
++    return {startAt: Date.UTC(year, month - 1, 1), endAt: Date.UTC(year, month, 1)};
++};
++
++export const suspensionPeriod = (suspension) => ({startAt: suspension.startedAt, endAt: suspension.expiresAt});
+diff --git a/src/members/profile.mjs b/src/members/profile.mjs
+new file mode 100644
+index 0000000..c2e1d04
+--- /dev/null
++++ b/src/members/profile.mjs
+@@ -0,0 +1,32 @@
++export const TIERS = Object.freeze(['basic', 'plus', 'team']);
++
++const trimmed = (value) => (typeof value === 'string' ? value.trim() : '');
++
++export const normalizeMemberId = (memberId) => trimmed(memberId);
++
++export const normalizeEmail = (email) => trimmed(email).toLowerCase();
++
++export const requireTier = (tier) => {
++    if (!TIERS.includes(tier)) throw new Error('membership tier is unknown');
++    return tier;
++};
++
++export const prepareContact = (contact) => {
++    const name = trimmed(contact.name);
++    const email = normalizeEmail(contact.email);
++    if (!name) throw new Error('member name is required');
++    if (!email) throw new Error('member email is required');
++    return {name, email};
++};
++
++export const prepareProfile = (profile) => {
++    const memberId = normalizeMemberId(profile.memberId);
++    if (!memberId) throw new Error('member id is required');
++    return {memberId, ...prepareContact(profile), tier: requireTier(profile.tier)};
++};
++
++export const prepareReason = (reason) => {
++    const text = trimmed(reason);
++    if (!text) throw new Error('suspension reason is required');
++    return text;
++};
+diff --git a/src/members/suspension.mjs b/src/members/suspension.mjs
+new file mode 100644
+index 0000000..15cfaea
+--- /dev/null
++++ b/src/members/suspension.mjs
+@@ -0,0 +1,25 @@
++import {withOptional} from '../platform/records.mjs';
++import {minutes} from '../platform/time.mjs';
++
++export const MAX_SUSPENSION_MINUTES = 43_200;
++
++export const isSuspended = (member, at) => member.suspension !== undefined && at < member.suspension.expiresAt;
++
++export const effectiveStatus = (member, at) => (isSuspended(member, at) ? 'suspended' : 'active');
++
++const isValidLength = (length) => Number.isInteger(length) && length >= 1 && length <= MAX_SUSPENSION_MINUTES;
++
++export const suspend = (member, {durationMinutes, reason}, at) => {
++    if (isSuspended(member, at)) throw new Error('member is already suspended');
++    if (!isValidLength(durationMinutes)) throw new Error('suspension length is invalid');
++    return {
++        ...member,
++        status: 'suspended',
++        suspension: {reason, startedAt: at, expiresAt: at + minutes(durationMinutes)},
++    };
++};
++
++export const reinstate = (member, at) => {
++    if (!isSuspended(member, at)) throw new Error('member is not suspended');
++    return withOptional({...member, status: 'active'}, 'suspension', null);
++};
+diff --git a/src/messaging/digest.mjs b/src/messaging/digest.mjs
+new file mode 100644
+index 0000000..18ed490
+--- /dev/null
++++ b/src/messaging/digest.mjs
+@@ -0,0 +1,46 @@
++export const DIGEST_LIMIT = 20;
++
++export const QUEUE_LIMIT = 50;
++
++const byId = (left, right) => (left.id < right.id ? -1 : left.id > right.id ? 1 : 0);
++
++const byQueueOrder = (left, right) => left.queuedAt - right.queuedAt || byId(left, right);
++
++export const isReleased = (message, at) => message.state === 'queued' && message.releaseAt <= at;
++
++export const queuedFor = (messages, memberId) => messages.filter((message) => (
++    message.memberId === memberId && message.state === 'queued'
++));
++
++export const groupDigests = (messages, at) => {
++    const byMember = new Map();
++    for (const message of messages.filter((candidate) => isReleased(candidate, at))) {
++        byMember.set(message.memberId, [...(byMember.get(message.memberId) ?? []), message]);
++    }
++    return [...byMember.keys()].sort().map((memberId) => ({
++        memberId,
++        messages: byMember.get(memberId).sort(byQueueOrder).slice(0, DIGEST_LIMIT),
++    }));
++};
++
++export const markSent = (message, at) => ({
++    ...message,
++    state: 'sent',
++    sentAt: at,
++});
++
++export const digestNotice = (memberId, messages) => Object.freeze({
++    memberId,
++    messageIds: messages.map((message) => message.id),
++    bodies: messages.map((message) => message.body),
++});
++
++export const withdraw = (message, at) => {
++    if (message.state === 'canceled') return message;
++    if (message.state !== 'queued') throw new Error(`cannot withdraw a ${message.state} message`);
++    return {
++        ...message,
++        state: 'canceled',
++        canceledAt: at,
++    };
++};
+diff --git a/src/messaging/locale-catalog.mjs b/src/messaging/locale-catalog.mjs
+new file mode 100644
+index 0000000..899b93a
+--- /dev/null
++++ b/src/messaging/locale-catalog.mjs
+@@ -0,0 +1,20 @@
++export const FALLBACK_LOCALE = 'en';
++
++export const normalizeLocale = (locale) => {
++    const normalized = typeof locale === 'string' ? locale.trim().toLowerCase() : '';
++    return normalized === '' ? FALLBACK_LOCALE : normalized;
++};
++
++export const loadCatalog = (rawCatalog) => new Map(
++    Object.entries(rawCatalog).map(([locale, templates]) => [locale.trim().toLowerCase(), templates]),
++);
++
++export const localeCandidates = (locale) => [...new Set([locale, locale.split('-')[0], FALLBACK_LOCALE])];
++
++export const resolveTemplate = (catalog, templateName, locale) => {
++    for (const candidate of localeCandidates(locale)) {
++        const template = catalog.get(candidate)?.[templateName];
++        if (typeof template === 'string') return {locale: candidate, template};
++    }
++    throw new Error('template is unavailable');
++};
+diff --git a/src/messaging/messaging-service.mjs b/src/messaging/messaging-service.mjs
+new file mode 100644
+index 0000000..258f05c
+--- /dev/null
++++ b/src/messaging/messaging-service.mjs
+@@ -0,0 +1,79 @@
++import {QUEUE_LIMIT, digestNotice, groupDigests, markSent, queuedFor, withdraw} from './digest.mjs';
++import {loadCatalog, normalizeLocale, resolveTemplate} from './locale-catalog.mjs';
++import {isQuiet, prepareQuietHours, releaseTime} from './quiet-hours.mjs';
++import {renderTemplate} from './template-render.mjs';
++
++const requiredText = (value, label) => {
++    const text = typeof value === 'string' ? value.trim() : '';
++    if (!text) throw new Error(`${label} is required`);
++    return text;
++};
++
++const normalizeMessageKey = (key) => (typeof key === 'string' && key.trim() !== '' ? key.trim().toLowerCase() : null);
++
++const draftMessage = ({member, request}) => {
++    const memberId = requiredText(member.id, 'member');
++    const templateName = requiredText(request.templateName, 'template');
++    return {memberId, templateName, messageKey: normalizeMessageKey(request.messageKey)};
++};
++
++const sentNotice = (message) => Object.freeze({messageId: message.id, memberId: message.memberId, body: message.body});
++
++export const sendMessage = async ({catalog, member, nextId, now, request, send, store}) => {
++    const draft = draftMessage({member, request});
++    if (draft.messageKey !== null) {
++        const existing = await store.findByMessageKey(draft.messageKey);
++        if (existing !== null) return existing;
++    }
++    const hours = prepareQuietHours(member);
++    const resolved = resolveTemplate(loadCatalog(catalog), draft.templateName, normalizeLocale(member.locale));
++    const body = renderTemplate(resolved.template, request.values ?? {});
++    const at = now();
++    const quiet = isQuiet(hours, at);
++    if (quiet && queuedFor(await store.list({state: 'queued'}), draft.memberId).length >= QUEUE_LIMIT) {
++        throw new Error('member has too many queued messages');
++    }
++    const base = {
++        id: nextId(),
++        memberId: draft.memberId,
++        messageKey: draft.messageKey,
++        templateName: draft.templateName,
++        locale: resolved.locale,
++        body,
++    };
++    if (quiet) {
++        const queued = {
++            ...base,
++            state: 'queued',
++            queuedAt: at,
++            releaseAt: releaseTime(hours, at),
++        };
++        return store.save(queued);
++    }
++    const sent = {...base, state: 'sent', sentAt: at};
++    const saved = store.save(sent);
++    await send(sentNotice(sent));
++    return saved;
++};
++
++export const flushDigests = async ({now, sendDigest, store}) => {
++    const at = now();
++    const digests = groupDigests(await store.list({state: 'queued'}), at);
++    const notices = [];
++    for (const digest of digests) {
++        const sent = digest.messages.map((message) => markSent(message, at));
++        for (const message of sent) await store.save(message);
++        const notice = digestNotice(digest.memberId, sent);
++        await sendDigest(notice);
++        notices.push(notice);
++    }
++    return notices;
++};
++
++export const withdrawMessage = async ({messageId, now, store}) => {
++    const message = await store.findById(messageId);
++    if (message === null) throw new Error('message is unknown');
++    const next = withdraw(message, now());
++    if (next === message) return message;
++    return store.save(next);
++};
+diff --git a/src/messaging/outbox-store.mjs b/src/messaging/outbox-store.mjs
+new file mode 100644
+index 0000000..47a6df3
+--- /dev/null
++++ b/src/messaging/outbox-store.mjs
+@@ -0,0 +1,21 @@
++export const createOutboxStore = (initialMessages = []) => {
++    const messages = new Map(initialMessages.map((message) => [message.id, message]));
++    let writes = Promise.resolve();
++
++    return Object.freeze({
++        findById: async (messageId) => messages.get(messageId) ?? null,
++        findByMessageKey: async (messageKey) => (
++            [...messages.values()].find((message) => message.messageKey === messageKey) ?? null
++        ),
++        list: async ({state} = {}) => [...messages.values()].filter((message) => (
++            state === undefined || message.state === state
++        )),
++        save: (message) => {
++            writes = writes.then(() => {
++                messages.set(message.id, message);
++                return message;
++            });
++            return writes;
++        },
++    });
++};
+diff --git a/src/messaging/quiet-hours.mjs b/src/messaging/quiet-hours.mjs
+new file mode 100644
+index 0000000..0f7a68e
+--- /dev/null
++++ b/src/messaging/quiet-hours.mjs
+@@ -0,0 +1,36 @@
++import {MINUTE, minutes} from '../platform/time.mjs';
++
++const DAY_MINUTES = 1440;
++
++const isMinuteOfDay = (value) => Number.isInteger(value) && value >= 0 && value < DAY_MINUTES;
++
++export const prepareQuietHours = (member) => {
++    const offset = member.utcOffsetMinutes ?? 0;
++    if (!Number.isInteger(offset) || offset < -720 || offset > 840) throw new Error('member offset is invalid');
++    if (member.quietHours === undefined || member.quietHours === null) return {offset, quiet: null};
++    const {startMinute, endMinute} = member.quietHours;
++    if (!isMinuteOfDay(startMinute) || !isMinuteOfDay(endMinute)) throw new Error('quiet hours are invalid');
++    return {offset, quiet: {startMinute, endMinute}};
++};
++
++const minuteStart = (at) => at - (((at % MINUTE) + MINUTE) % MINUTE);
++
++export const localMinuteOfDay = (at, offset) => {
++    const total = (minuteStart(at) / MINUTE) + offset;
++    return ((total % DAY_MINUTES) + DAY_MINUTES) % DAY_MINUTES;
++};
++
++export const isQuiet = (hours, at) => {
++    if (hours.quiet === null) return false;
++    const {startMinute, endMinute} = hours.quiet;
++    const minute = localMinuteOfDay(at, hours.offset);
++    if (startMinute < endMinute) return startMinute <= minute && minute < endMinute;
++    if (startMinute > endMinute) return minute >= startMinute || minute < endMinute;
++    return false;
++};
++
++export const releaseTime = (hours, at) => {
++    const minute = localMinuteOfDay(at, hours.offset);
++    const wait = (hours.quiet.endMinute - minute + DAY_MINUTES) % DAY_MINUTES;
++    return minuteStart(at + MINUTE - 1) + minutes(wait);
++};
+diff --git a/src/messaging/template-render.mjs b/src/messaging/template-render.mjs
+new file mode 100644
+index 0000000..25c2cd3
+--- /dev/null
++++ b/src/messaging/template-render.mjs
+@@ -0,0 +1,17 @@
++const PLACEHOLDER = /\{\{([A-Za-z][A-Za-z0-9_]*)\}\}/g;
++
++const ESCAPES = Object.freeze({
++    '&': '&amp;',
++    '<': '&lt;',
++    '>': '&gt;',
++    '"': '&quot;',
++    "'": '&#39;',
++});
++
++export const escapeText = (text) => text.replace(/[&<>"']/g, (character) => ESCAPES[character]);
++
++export const renderTemplate = (template, values) => template.replace(PLACEHOLDER, (match, name) => {
++    const value = Object.hasOwn(values, name) ? values[name] : undefined;
++    if (value === undefined || value === null) throw new Error(`template value ${name} is missing`);
++    return escapeText(String(value));
++});

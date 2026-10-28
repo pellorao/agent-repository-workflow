@@ -1,0 +1,81 @@
+{
+ "original": "/home/pello/projects/qwen_strata/.tmp/haiku-baseline/cs51/runs/haiku-5/arw/.tmp/codex/b7635f94-ad60-429b-98e7-3ee5c19ba2bb/_reviewer-cap/runs/ca5670df-eae1-4cd2-8012-454381d0ab42/cst/1/.tmp/reports/review-result.md",
+ "original_sha256": "50020a99d66c918dde480d88f95ad7d7f325051b9b9443975e967441d0948f24",
+ "changes": {
+  "short-evidence-path": 10
+ },
+ "details": [
+  {
+   "kind": "short-evidence-path",
+   "line": 4,
+   "column": 272,
+   "before": "`menu.mjs:16`",
+   "after": "`src/catering/menu.mjs:16`"
+  },
+  {
+   "kind": "short-evidence-path",
+   "line": 10,
+   "column": 500,
+   "before": "`catering-service.mjs:64-66`",
+   "after": "`src/catering/catering-service.mjs:64-66`"
+  },
+  {
+   "kind": "short-evidence-path",
+   "line": 14,
+   "column": 292,
+   "before": "`catering-store.mjs:21-23`",
+   "after": "`src/catering/catering-store.mjs:21-23`"
+  },
+  {
+   "kind": "short-evidence-path",
+   "line": 18,
+   "column": 401,
+   "before": "`catering-service.mjs:30-36`",
+   "after": "`src/catering/catering-service.mjs:30-36`"
+  },
+  {
+   "kind": "short-evidence-path",
+   "line": 22,
+   "column": 255,
+   "before": "`catering-pricing.mjs:35`",
+   "after": "`src/catering/catering-pricing.mjs:35`"
+  },
+  {
+   "kind": "short-evidence-path",
+   "line": 30,
+   "column": 272,
+   "before": "`vendors.mjs:1`",
+   "after": "`src/catering/vendors.mjs:1`"
+  },
+  {
+   "kind": "short-evidence-path",
+   "line": 34,
+   "column": 440,
+   "before": "`catering-notices.mjs:11`",
+   "after": "`src/catering/catering-notices.mjs:11`"
+  },
+  {
+   "kind": "short-evidence-path",
+   "line": 34,
+   "column": 563,
+   "before": "`catering-policy.mjs:16-17`",
+   "after": "`src/catering/catering-policy.mjs:16-17`"
+  },
+  {
+   "kind": "short-evidence-path",
+   "line": 36,
+   "column": 90,
+   "before": "`menu.mjs:46-49`",
+   "after": "`src/catering/menu.mjs:46-49`"
+  },
+  {
+   "kind": "short-evidence-path",
+   "line": 38,
+   "column": 119,
+   "before": "`catering-service.mjs:145`",
+   "after": "`src/catering/catering-service.mjs:145`"
+  }
+ ],
+ "normalized": "/home/pello/projects/qwen_strata/.tmp/haiku-baseline/cs51/runs/haiku-5/repair/review-result.md",
+ "normalized_sha256": "fcc51eb9561afb458fb28438863e1405a99d237383142a7b132d60e6e8dcada7"
+}

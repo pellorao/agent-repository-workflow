@@ -1,0 +1,25 @@
+{
+  "sharedEvidence": [
+    {
+      "cases": [
+        "code-standards:CODE-STANDARDS-FINDINGS/clean/17",
+        "code-standards:CODE-STANDARDS-FINDINGS/clean/3"
+      ],
+      "reason": "同一行 upcomingOrders: 一条问是否纯转发包装, 一条问是否缺分页; 规则不同"
+    },
+    {
+      "cases": [
+        "code-standards:CODE-STANDARDS-FINDINGS/clean/16",
+        "code-standards:CODE-STANDARDS-FINDINGS/clean/23"
+      ],
+      "reason": "servesDietary: 一条问是否纯转发包装, 一条问代码归属模块; 规则不同"
+    },
+    {
+      "cases": [
+        "code-standards:CODE-STANDARDS-FINDINGS/clean/19",
+        "code-standards:CODE-STANDARDS-FINDINGS/clean/29"
+      ],
+      "reason": "CATERING 设置: 一条问导出前是否冻结, 一条问放置位置是否合约定; 规则不同"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+ "original": "/home/pello/projects/qwen_strata/.claude/worktrees/agent-abfd6a35ac8a2fcbc/.tmp/v2-format/work/code-spec-v5.1/a3/prep/arw/.tmp/codex/b7635f94-ad60-429b-98e7-3ee5c19ba2bb/_reviewer-cap/runs/778a6333-ab75-460c-b0f6-679be2bca1d6/csp/1/.tmp/reports/review-result.md",
+ "original_sha256": "04075d820612a0fd3e015107fab9cb49796cc117d715a98e1368d8bb32934b4a",
+ "changes": {},
+ "details": [],
+ "diagnostics": {
+  "inRangeSpillReadable": 0
+ }
+}

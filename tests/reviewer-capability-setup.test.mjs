@@ -47,6 +47,6 @@ test('setup blocks an existing target or a missing fixture', async t => {
 test('the entry maps results to exit codes', async () => {
     const run = async (/** @type {string[]} */ ...args) => /** @type {any} */ (await runProcess(process.execPath, [ENTRY, ...args]));
     assert.equal((await run('bogus')).exitCode, 2);
-    const blocked = await run('score', join(FIXTURES, 'nowhere', 'none'), 'report.md');
+    const blocked = await run('score', join(FIXTURES, 'nowhere', 'none'), 'report.md', '--no-repair', '--agent', 'agent.json');
     assert.deepEqual([blocked.exitCode, JSON.parse(blocked.stdout).status], [1, 'blocked']);
 });

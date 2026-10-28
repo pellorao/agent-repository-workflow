@@ -1,0 +1,633 @@
+=== src/visitors/guest-fields.mjs
+     1	const trimmed = (value) => (typeof value === 'string' ? value.trim() : '');
+     2	
+     3	export const normalizeGuestName = (name) => trimmed(name).replace(/\s+/g, ' ');
+     4	
+     5	export const nameKey = (name) => name.toLowerCase();
+     6	
+     7	export const normalizeMemberId = (memberId) => trimmed(memberId);
+     8	
+     9	export const normalizeBuildingId = (buildingId) => trimmed(buildingId);
+    10	
+    11	export const prepareGuest = (request) => {
+    12	    const hostId = normalizeMemberId(request.memberId);
+    13	    if (!hostId) throw new Error('host member is required');
+    14	    const name = normalizeGuestName(request.name);
+    15	    if (!name) throw new Error('guest name is required');
+    16	    const email = trimmed(request.email).toLowerCase();
+    17	    if (!email) throw new Error('guest email is required');
+    18	    return {hostId, name, email, expectedAt: request.expectedAt};
+    19	};
+=== src/visitors/guest-states.mjs
+     1	const RULES = Object.freeze([
+     2	    {action: 'checkIn', from: ['registered'], to: 'checkedIn', stamp: 'checkedInAt'},
+     3	    {action: 'miss', from: ['registered'], to: 'noShow', stamp: 'missedAt'},
+     4	    {action: 'cancel', from: ['canceled'], to: null},
+     5	    {action: 'cancel', from: ['registered'], to: 'canceled', stamp: 'canceledAt'},
+     6	]);
+     7	
+     8	export const moveGuest = (guest, action, at) => {
+     9	    const rule = RULES.find((candidate) => candidate.action === action && candidate.from.includes(guest.state));
+    10	    if (rule === undefined) throw new Error(`cannot ${action} a ${guest.state} guest`);
+    11	    if (rule.to === null) return guest;
+    12	    return {...guest, state: rule.to, [rule.stamp]: at};
+    13	};
+=== src/visitors/lobby-policy.mjs
+     1	import {nameKey} from './guest-fields.mjs';
+     2	import {LOBBY} from '../platform/site-settings.mjs';
+     3	import {addMinutes} from '../platform/time.mjs';
+     4	
+     5	const checkInOpens = (guest) => addMinutes(guest.expectedAt, -LOBBY.earlyArrivalMinutes);
+     6	
+     7	export const isListed = (guest) => guest.state !== 'canceled';
+     8	
+     9	export const listedGuests = (guests) => guests.filter(isListed);
+    10	
+    11	export const guestLimit = (reservation) => reservation.partySize - LOBBY.hostSeats;
+    12	
+    13	export const hasSeat = (guests, reservation) => listedGuests(guests).length < guestLimit(reservation);
+    14	
+    15	export const isDuplicateName = (guests, name) => listedGuests(guests).some((guest) => nameKey(guest.name) === nameKey(name));
+    16	
+    17	export const expectedDuring = (reservation, expectedAt) => reservation.startAt <= expectedAt && expectedAt < reservation.endAt;
+    18	
+    19	export const isRegistrationOpen = (reservation, at) => at < reservation.endAt;
+    20	
+    21	const checkInCloses = (guest) => guest.expectedAt + LOBBY.lateArrival;
+    22	
+    23	export const checkInWindow = (guest) => ({startAt: checkInOpens(guest), endAt: checkInCloses(guest)});
+    24	
+    25	export const isInCheckInWindow = (guest, at) => {
+    26	    const window = checkInWindow(guest);
+    27	    return window.startAt <= at && at < window.endAt;
+    28	};
+    29	
+    30	export const hasMissedWindow = (guest, at) => guest.state === 'registered' && at >= checkInCloses(guest);
+    31	
+    32	const byName = (left, right) => {
+    33	    const a = nameKey(left.name);
+    34	    const b = nameKey(right.name);
+    35	    return a < b ? -1 : a > b ? 1 : 0;
+    36	};
+    37	
+    38	export const orderGuests = (guests) => [...guests].sort((left, right) => left.expectedAt - right.expectedAt || byName(left, right));
+=== src/visitors/visitor-service.mjs
+     1	import {normalizeBuildingId, prepareGuest} from './guest-fields.mjs';
+     2	import {moveGuest} from './guest-states.mjs';
+     3	import {
+     4	    checkInWindow, expectedDuring, hasMissedWindow, hasSeat, isDuplicateName, isInCheckInWindow, isRegistrationOpen,
+     5	    listedGuests, orderGuests,
+     6	} from './lobby-policy.mjs';
+     7	
+     8	const invitationNotice = (guest) => {
+     9	    const window = checkInWindow(guest);
+    10	    return Object.freeze({
+    11	        guestId: guest.id,
+    12	        name: guest.name,
+    13	        email: guest.email,
+    14	        expectedAt: guest.expectedAt,
+    15	        checkInFrom: window.startAt,
+    16	        checkInUntil: window.endAt,
+    17	    });
+    18	};
+    19	
+    20	const arrivalNotice = (guest) => Object.freeze({
+    21	    guestId: guest.id,
+    22	    reservationId: guest.reservationId,
+    23	    name: guest.name,
+    24	    checkedInAt: guest.checkedInAt,
+    25	});
+    26	
+    27	const saveThenSend = async (store, send, guest) => {
+    28	    const saved = await store.save(guest);
+    29	    await send(saved);
+    30	    return saved;
+    31	};
+    32	
+    33	export const registerGuest = async ({nextId, notifier, now, request, reservation, store}) => {
+    34	    const prepared = prepareGuest(request);
+    35	    if (reservation.state !== 'confirmed') throw new Error('guests need a confirmed reservation');
+    36	    if (prepared.hostId !== reservation.memberId) throw new Error('only the reservation member can register guests');
+    37	    if (!expectedDuring(reservation, prepared.expectedAt)) throw new Error('expected arrival is outside the reservation');
+    38	    const at = now();
+    39	    if (!isRegistrationOpen(reservation, at)) throw new Error('reservation has ended');
+    40	    const guests = await store.listByReservation(reservation.id);
+    41	    if (!hasSeat(guests, reservation)) throw new Error('guest list is full');
+    42	    if (isDuplicateName(guests, prepared.name)) throw new Error('guest is already registered');
+    43	    const guest = {
+    44	        id: nextId(),
+    45	        reservationId: reservation.id,
+    46	        roomId: reservation.roomId,
+    47	        buildingId: reservation.buildingId,
+    48	        memberId: reservation.memberId,
+    49	        name: prepared.name,
+    50	        email: prepared.email,
+    51	        expectedAt: prepared.expectedAt,
+    52	        state: 'registered',
+    53	        registeredAt: at,
+    54	    };
+    55	    return saveThenSend(store, (saved) => notifier.invited(invitationNotice(saved)), guest);
+    56	};
+    57	
+    58	export const findGuest = async ({id, store}) => {
+    59	    const guest = await store.find(id);
+    60	    if (guest === null) throw new Error('guest not found');
+    61	    return guest;
+    62	};
+    63	
+    64	export const checkInGuest = async ({guest, notifier, now, store}) => {
+    65	    const at = now();
+    66	    if (guest.state === 'registered' && !isInCheckInWindow(guest, at)) throw new Error('outside the check-in window');
+    67	    const arrived = moveGuest(guest, 'checkIn', at);
+    68	    return saveThenSend(store, (saved) => notifier.arrived(arrivalNotice(saved)), arrived);
+    69	};
+    70	
+    71	export const cancelGuest = async ({guest, now, store}) => {
+    72	    const canceled = moveGuest(guest, 'cancel', now());
+    73	    if (canceled === guest) return guest;
+    74	    await store.save(canceled);
+    75	    return canceled;
+    76	};
+    77	
+    78	export const recordNoShows = async ({now, reservationId, store}) => {
+    79	    const at = now();
+    80	    const missed = (await store.listByReservation(reservationId)).filter((guest) => hasMissedWindow(guest, at));
+    81	    const recorded = [];
+    82	    for (const guest of orderGuests(missed)) recorded.push(await store.save(moveGuest(guest, 'miss', at)));
+    83	    return recorded;
+    84	};
+    85	
+    86	export const listGuests = async ({reservationId, store}) => orderGuests(listedGuests(await store.listByReservation(reservationId)));
+    87	
+    88	export const changeArrival = async ({expectedAt, guest, notifier, now, reservation, store}) => {
+    89	    if (guest.state !== 'registered') throw new Error(`cannot move the arrival of a ${guest.state} guest`);
+    90	    if (guest.reservationId !== reservation.id) throw new Error('guest belongs to another reservation');
+    91	    if (!expectedDuring(reservation, expectedAt)) throw new Error('expected arrival is outside the reservation');
+    92	    if (!isRegistrationOpen(reservation, now())) throw new Error('reservation has ended');
+    93	    const moved = {...guest, expectedAt};
+    94	    return saveThenSend(store, (saved) => notifier.invited(invitationNotice(saved)), moved);
+    95	};
+    96	
+    97	export const lobbyArrivals = async ({buildingId, from, store, until}) => {
+    98	    const building = normalizeBuildingId(buildingId);
+    99	    if (!building) throw new Error('building is required');
+   100	    if (!(until > from)) throw new Error('arrival range is invalid');
+   101	    const guests = await store.listByBuilding(building);
+   102	    const expected = guests.filter((guest) => guest.state === 'registered' && from <= guest.expectedAt && guest.expectedAt < until);
+   103	    return orderGuests(expected);
+   104	};
+=== src/visitors/visitor-store.mjs
+     1	export const createVisitorStore = (initialGuests = []) => {
+     2	    const records = new Map(initialGuests.map((guest) => [guest.id, guest]));
+     3	    let writes = Promise.resolve();
+     4	
+     5	    return Object.freeze({
+     6	        find: async (id) => records.get(id) ?? null,
+     7	        listByBuilding: async (buildingId) => [...records.values()].filter((guest) => guest.buildingId === buildingId),
+     8	        listByReservation: async (reservationId) => [...records.values()].filter((guest) => guest.reservationId === reservationId),
+     9	        save: (guest) => {
+    10	            writes = writes.then(() => {
+    11	                records.set(guest.id, guest);
+    12	                return guest;
+    13	            });
+    14	            return writes;
+    15	        },
+    16	    });
+    17	};
+=== src/waitlist/entry-fields.mjs
+     1	const trimmed = (value) => (typeof value === 'string' ? value.trim() : '');
+     2	
+     3	const isPositiveInteger = (value) => Number.isInteger(value) && value > 0;
+     4	
+     5	export const normalizeRequestKey = (key) => trimmed(key).toLowerCase();
+     6	
+     7	export const requireRoomId = (roomId) => {
+     8	    const value = trimmed(roomId);
+     9	    if (!value) throw new Error('room is required');
+    10	    return value;
+    11	};
+    12	
+    13	export const requireMemberId = (memberId) => {
+    14	    const value = trimmed(memberId);
+    15	    if (!value) throw new Error('member is required');
+    16	    return value;
+    17	};
+    18	
+    19	const requireWindow = (window) => {
+    20	    if (!(window.endAt > window.startAt)) throw new Error('waitlist window is invalid');
+    21	    return {startAt: window.startAt, endAt: window.endAt};
+    22	};
+    23	
+    24	export const prepareEntry = (request) => {
+    25	    const memberId = requireMemberId(request.memberId);
+    26	    const roomId = requireRoomId(request.roomId);
+    27	    if (!isPositiveInteger(request.partySize)) throw new Error('party size is invalid');
+    28	    const requestKey = normalizeRequestKey(request.requestKey);
+    29	    if (!requestKey) throw new Error('request key is required');
+    30	    return {memberId, roomId, partySize: request.partySize, ...requireWindow(request), requestKey};
+    31	};
+    32	
+    33	export const prepareOpening = (opening) => {
+    34	    const roomId = requireRoomId(opening.roomId);
+    35	    if (!isPositiveInteger(opening.capacity)) throw new Error('room capacity is invalid');
+    36	    return {roomId, capacity: opening.capacity, ...requireWindow(opening)};
+    37	};
+=== src/waitlist/entry-states.mjs
+     1	import {minutes} from '../platform/time.mjs';
+     2	import {OFFER_MINUTES, WITHDRAW_CUTOFF_MINUTES} from './queue.mjs';
+     3	
+     4	const RULES = Object.freeze([
+     5	    {action: 'offer', from: ['waiting'], to: 'offered', stamp: 'offeredAt'},
+     6	    {action: 'lapse', from: ['offered'], to: 'lapsed', stamp: 'lapsedAt'},
+     7	    {action: 'accept', from: ['offered'], to: 'accepted', stamp: 'acceptedAt'},
+     8	    {action: 'withdraw', from: ['withdrawn'], to: null},
+     9	    {action: 'withdraw', from: ['waiting', 'offered'], to: 'withdrawn', stamp: 'withdrawnAt', cutoff: WITHDRAW_CUTOFF_MINUTES},
+    10	]);
+    11	
+    12	export const newEntry = ({at, id, prepared}) => ({
+    13	    id,
+    14	    ...prepared,
+    15	    state: 'waiting',
+    16	    requestedAt: at,
+    17	});
+    18	
+    19	export const moveEntry = (entry, action, at) => {
+    20	    const rule = RULES.find((candidate) => candidate.action === action && candidate.from.includes(entry.state));
+    21	    if (rule === undefined) throw new Error(`cannot ${action} a ${entry.state} entry`);
+    22	    if (rule.cutoff !== undefined && entry.startAt - at < minutes(rule.cutoff)) throw new Error(`too late to ${action}`);
+    23	    if (rule.to === null) return entry;
+    24	    const next = {...entry, state: rule.to, [rule.stamp]: at};
+    25	    if (action === 'offer') next.expiresAt = at + minutes(OFFER_MINUTES);
+    26	    return next;
+    27	};
+=== src/waitlist/queue.mjs
+     1	import {overlaps} from '../platform/periods.mjs';
+     2	
+     3	export const OFFER_MINUTES = 15;
+     4	
+     5	export const WITHDRAW_CUTOFF_MINUTES = 60;
+     6	
+     7	export const MAX_ACTIVE_ENTRIES = 3;
+     8	
+     9	export const isExpired = (entry, at) => at >= entry.expiresAt;
+    10	
+    11	export const isLiveOffer = (entry, at) => entry.state === 'offered' && !isExpired(entry, at);
+    12	
+    13	export const isLapsing = (entry, at) => entry.state === 'offered' && isExpired(entry, at);
+    14	
+    15	const byId = (left, right) => (left.id < right.id ? -1 : left.id > right.id ? 1 : 0);
+    16	
+    17	const byRequest = (left, right) => left.requestedAt - right.requestedAt || byId(left, right);
+    18	
+    19	const matchesOpening = (entry, opening) => entry.roomId === opening.roomId && overlaps(entry, opening);
+    20	
+    21	export const waitingFor = (entries, opening) => entries
+    22	    .filter((entry) => entry.state === 'waiting' && matchesOpening(entry, opening))
+    23	    .sort(byRequest);
+    24	
+    25	export const hasLiveOffer = (entries, opening, at) => entries.some((entry) => (
+    26	    isLiveOffer(entry, at) && matchesOpening(entry, opening)
+    27	));
+    28	
+    29	export const nextCandidate = (entries, opening) => (
+    30	    waitingFor(entries, opening).find((entry) => entry.partySize <= opening.capacity) ?? null
+    31	);
+    32	
+    33	export const queuePosition = (entries, entry) => {
+    34	    const ahead = entries.filter((other) => (
+    35	        other.state === 'waiting' && matchesOpening(other, entry) && byRequest(other, entry) < 0
+    36	    ));
+    37	    return ahead.length + 1;
+    38	};
+    39	
+    40	export const isActive = (entry, at) => entry.state === 'waiting' || isLiveOffer(entry, at);
+    41	
+    42	export const withinMemberLimit = (entries, memberId, at) => (
+    43	    entries.filter((entry) => entry.memberId === memberId && isActive(entry, at)).length < MAX_ACTIVE_ENTRIES
+    44	);
+    45	
+    46	export const orderByRequest = (entries) => [...entries].sort(byRequest);
+=== src/waitlist/waitlist-service.mjs
+     1	import {prepareEntry, prepareOpening, requireMemberId, requireRoomId} from './entry-fields.mjs';
+     2	import {moveEntry, newEntry} from './entry-states.mjs';
+     3	import {
+     4	    hasLiveOffer, isActive, isLapsing, nextCandidate, orderByRequest, queuePosition, withinMemberLimit,
+     5	} from './queue.mjs';
+     6	
+     7	const lapseNotice = (entry) => Object.freeze({entryId: entry.id, memberId: entry.memberId, lapsedAt: entry.lapsedAt});
+     8	
+     9	const offerNotice = (entry) => Object.freeze({
+    10	    entryId: entry.id,
+    11	    memberId: entry.memberId,
+    12	    roomId: entry.roomId,
+    13	    startAt: entry.startAt,
+    14	    endAt: entry.endAt,
+    15	    expiresAt: entry.expiresAt,
+    16	});
+    17	
+    18	export const joinWaitlist = async ({nextId, now, request, store}) => {
+    19	    const prepared = prepareEntry(request);
+    20	    const at = now();
+    21	    if (prepared.startAt < at) throw new Error('waitlist window has started');
+    22	    const existing = await store.findByRequestKey(prepared.requestKey);
+    23	    if (existing !== null) return existing;
+    24	    const memberEntries = await store.list({memberId: prepared.memberId});
+    25	    if (!withinMemberLimit(memberEntries, prepared.memberId, at)) throw new Error('member has too many waitlist entries');
+    26	    const entry = newEntry({at, id: nextId(), prepared});
+    27	    await store.save(entry);
+    28	    return entry;
+    29	};
+    30	
+    31	const lapseExpired = async (store, notifier, entries, at) => {
+    32	    const current = [];
+    33	    for (const entry of entries) {
+    34	        if (isLapsing(entry, at)) {
+    35	            const lapsed = await store.save(moveEntry(entry, 'lapse', at));
+    36	            await notifier.lapsed(lapseNotice(lapsed));
+    37	            current.push(lapsed);
+    38	        } else {
+    39	            current.push(entry);
+    40	        }
+    41	    }
+    42	    return current;
+    43	};
+    44	
+    45	export const offerOpening = async ({notifier, now, opening, store}) => {
+    46	    const prepared = prepareOpening(opening);
+    47	    const at = now();
+    48	    const entries = await lapseExpired(store, notifier, await store.list({roomId: prepared.roomId}), at);
+    49	    if (hasLiveOffer(entries, prepared, at)) return null;
+    50	    const candidate = nextCandidate(entries, prepared);
+    51	    if (candidate === null) return null;
+    52	    const offered = moveEntry(candidate, 'offer', at);
+    53	    await store.save(offered);
+    54	    await notifier.offered(offerNotice(offered));
+    55	    return offered;
+    56	};
+    57	
+    58	export const acceptOffer = async ({entry, now, store}) => {
+    59	    const at = now();
+    60	    const next = moveEntry(entry, 'accept', at);
+    61	    if (isLapsing(next, at)) throw new Error('offer has expired');
+    62	    await store.save(next);
+    63	    return next;
+    64	};
+    65	
+    66	export const withdrawEntry = async ({entry, now, store}) => {
+    67	    const withdrawn = moveEntry(entry, 'withdraw', now());
+    68	    if (withdrawn === entry) return entry;
+    69	    await store.save(withdrawn);
+    70	    return withdrawn;
+    71	};
+    72	
+    73	export const entryPosition = async ({entry, store}) => {
+    74	    if (entry.state !== 'waiting') return null;
+    75	    return queuePosition(await store.list({roomId: entry.roomId}), entry);
+    76	};
+    77	
+    78	export const listMemberEntries = async ({memberId, now, store}) => {
+    79	    const at = now();
+    80	    return orderByRequest(await store.list({memberId: requireMemberId(memberId)}))
+    81	        .filter((entry) => isActive(entry, at));
+    82	};
+    83	
+    84	export const listRoomQueue = async ({roomId, store}) => orderByRequest(await store.list({roomId: requireRoomId(roomId)}))
+    85	    .filter((entry) => entry.state === 'waiting');
+=== src/waitlist/waitlist-store.mjs
+     1	export const createWaitlistStore = (initialEntries = []) => {
+     2	    const records = new Map(initialEntries.map((entry) => [entry.id, entry]));
+     3	    let writes = Promise.resolve();
+     4	
+     5	    return Object.freeze({
+     6	        findByRequestKey: async (requestKey) => (
+     7	            [...records.values()].find((entry) => entry.requestKey === requestKey) ?? null
+     8	        ),
+     9	        list: async ({memberId, roomId} = {}) => [...records.values()].filter((entry) => (
+    10	            (roomId === undefined || entry.roomId === roomId) && (memberId === undefined || entry.memberId === memberId)
+    11	        )),
+    12	        save: (entry) => {
+    13	            writes = writes.then(() => {
+    14	                records.set(entry.id, entry);
+    15	                return entry;
+    16	            });
+    17	            return writes;
+    18	        },
+    19	    });
+    20	};
+=== src/payments/payment-notices.mjs
+     1	export const authorizationNotice = (intent) => Object.freeze({
+     2	    intentId: intent.id,
+     3	    invoiceId: intent.invoiceId,
+     4	    amount: intent.amount,
+     5	    fee: intent.fee,
+     6	    expiresAt: intent.expiresAt,
+     7	});
+     8	
+     9	export const receiptNotice = (intent) => Object.freeze({
+    10	    intentId: intent.id,
+    11	    invoiceId: intent.invoiceId,
+    12	    memberId: intent.memberId,
+    13	    amount: intent.captured,
+    14	    fee: intent.fee,
+    15	    capturedAt: intent.capturedAt,
+    16	});
+    17	
+    18	export const refundNotice = (intent) => {
+    19	    const last = intent.lastRefund;
+    20	    return Object.freeze({
+    21	        intentId: intent.id,
+    22	        invoiceId: intent.invoiceId,
+    23	        amount: last.amount,
+    24	        reason: last.reason,
+    25	        refundedAt: last.at,
+    26	    });
+    27	};
+    28	
+    29	export const voidNotice = (intent) => Object.freeze({
+    30	    intentId: intent.id,
+    31	    invoiceId: intent.invoiceId,
+    32	    voidedAt: intent.voidedAt,
+    33	});
+    34	
+    35	export const saveThenSend = async (store, send, intent) => {
+    36	    const saved = await store.save(intent);
+    37	    await send(saved);
+    38	    return saved;
+    39	};
+=== src/payments/payment-policy.mjs
+     1	import {lateFee} from '../platform/invoice-terms.mjs';
+     2	import {PAYMENT_TERMS} from '../platform/site-settings.mjs';
+     3	import {addMinutes} from '../platform/time.mjs';
+     4	
+     5	export const isExpired = (intent, at) => at >= intent.expiresAt;
+     6	
+     7	export const blocksNewIntent = (intent, at) => (
+     8	    intent.state === 'captured'
+     9	    || intent.state === 'refunded'
+    10	    || (intent.state === 'authorized' && !isExpired(intent, at))
+    11	);
+    12	
+    13	export const newIntent = ({at, id, prepared}) => {
+    14	    const fee = lateFee(prepared.total, prepared.issuedAt, at);
+    15	    return {
+    16	        id,
+    17	        invoiceId: prepared.invoiceId,
+    18	        memberId: prepared.memberId,
+    19	        requestKey: prepared.requestKey,
+    20	        total: prepared.total,
+    21	        fee,
+    22	        amount: prepared.total + fee,
+    23	        state: 'authorized',
+    24	        authorizedAt: at,
+    25	        expiresAt: addMinutes(at, PAYMENT_TERMS.authorizationHold),
+    26	        captured: 0,
+    27	        refunded: 0,
+    28	        lastRefund: null,
+    29	    };
+    30	};
+    31	
+    32	export const capture = (intent, at) => {
+    33	    if (intent.state !== 'authorized') throw new Error(`cannot capture a ${intent.state} payment`);
+    34	    if (isExpired(intent, at)) throw new Error('authorization has expired');
+    35	    return {...intent, state: 'captured', capturedAt: at, captured: intent.amount};
+    36	};
+    37	
+    38	export const refund = (intent, {amount, reason}, at) => {
+    39	    if (intent.state !== 'captured') throw new Error(`cannot refund a ${intent.state} payment`);
+    40	    const refunded = intent.refunded + amount;
+    41	    if (refunded > intent.captured) throw new Error('refund exceeds the captured amount');
+    42	    const next = {...intent, refunded, lastRefund: {amount, reason, at}};
+    43	    if (refunded < intent.captured) return next;
+    44	    return {...next, state: 'refunded'};
+    45	};
+    46	
+    47	export const voidAuthorization = (intent, at) => {
+    48	    if (intent.state === 'voided') return intent;
+    49	    if (intent.state !== 'authorized') throw new Error(`cannot void a ${intent.state} payment`);
+    50	    return {...intent, state: 'voided', voidedAt: at};
+    51	};
+    52	
+    53	export const netPaid = (intents, invoiceId) => intents
+    54	    .filter((intent) => intent.invoiceId === invoiceId && (intent.state === 'captured' || intent.state === 'refunded'))
+    55	    .reduce((total, intent) => total + intent.captured - intent.refunded, 0);
+    56	
+    57	const byAuthorization = (left, right) => (
+    58	    left.authorizedAt - right.authorizedAt || (left.id < right.id ? -1 : left.id > right.id ? 1 : 0)
+    59	);
+    60	
+    61	export const orderIntents = (intents) => [...intents].sort(byAuthorization);
+=== src/payments/payment-request.mjs
+     1	const trimmed = (value) => (typeof value === 'string' ? value.trim() : '');
+     2	
+     3	const isPositiveInteger = (value) => Number.isInteger(value) && value > 0;
+     4	
+     5	export const normalizeKey = (key) => trimmed(key).toLowerCase();
+     6	
+     7	export const requirePositiveAmount = (amount, label) => {
+     8	    if (!isPositiveInteger(amount)) throw new Error(`${label} is invalid`);
+     9	    return amount;
+    10	};
+    11	
+    12	export const requireInvoiceId = (invoiceId) => {
+    13	    const value = trimmed(invoiceId);
+    14	    if (!value) throw new Error('invoice is required');
+    15	    return value;
+    16	};
+    17	
+    18	export const prepareRefund = (request) => {
+    19	    const reason = trimmed(request.reason);
+    20	    if (!reason) throw new Error('refund reason is required');
+    21	    return {amount: requirePositiveAmount(request.amount, 'refund amount'), reason};
+    22	};
+    23	
+    24	const prepareInvoice = (invoice) => {
+    25	    const id = requireInvoiceId(invoice.id);
+    26	    const memberId = trimmed(invoice.memberId);
+    27	    if (!memberId) throw new Error('member is required');
+    28	    if (!Number.isInteger(invoice.issuedAt)) throw new Error('invoice issue time is invalid');
+    29	    return {...invoice, id, memberId, total: requirePositiveAmount(invoice.total, 'invoice total')};
+    30	};
+    31	
+    32	export const prepareIntentRequest = (request) => {
+    33	    const requestKey = normalizeKey(request.idempotencyKey);
+    34	    if (!requestKey) throw new Error('idempotency key is required');
+    35	    return {requestKey, invoice: prepareInvoice(request.invoice)};
+    36	};
+=== src/payments/payment-service.mjs
+     1	import {dueAt, isLate} from '../platform/invoice-terms.mjs';
+     2	import {
+     3	    blocksNewIntent, capture, netPaid, newIntent, orderIntents, refund, voidAuthorization,
+     4	} from './payment-policy.mjs';
+     5	import {authorizationNotice, receiptNotice, refundNotice, saveThenSend, voidNotice} from './payment-notices.mjs';
+     6	import {prepareIntentRequest, prepareRefund, requireInvoiceId} from './payment-request.mjs';
+     7	
+     8	const intentRequest = ({requestKey, invoice: {id, memberId, total}}) => (
+     9	    {requestKey, invoiceId: id, memberId, total}
+    10	);
+    11	
+    12	export const createPaymentIntent = async ({nextId, notifier, now, request, store}) => {
+    13	    const prepared = intentRequest(prepareIntentRequest(request));
+    14	    const existing = await store.findByRequestKey(prepared.requestKey);
+    15	    if (existing !== null) return existing;
+    16	    const at = now();
+    17	    const intents = await store.listByInvoice(prepared.invoiceId);
+    18	    if (intents.some((intent) => blocksNewIntent(intent, at))) throw new Error('invoice already has an active payment');
+    19	    const intent = newIntent({at, id: nextId(), prepared});
+    20	    return saveThenSend(store, (saved) => notifier.authorized(authorizationNotice(saved)), intent);
+    21	};
+    22	
+    23	export const findPayment = async ({id, store}) => {
+    24	    const intent = await store.find(id);
+    25	    if (intent === null) throw new Error('payment not found');
+    26	    return intent;
+    27	};
+    28	
+    29	export const capturePayment = async ({intent, notifier, now, store}) => {
+    30	    const captured = capture(intent, now());
+    31	    return saveThenSend(store, (saved) => notifier.receipt(receiptNotice(saved)), captured);
+    32	};
+    33	
+    34	export const refundPayment = async ({intent, notifier, now, request, store}) => {
+    35	    const refunded = refund(intent, prepareRefund(request), now());
+    36	    return saveThenSend(store, (saved) => notifier.refunded(refundNotice(saved)), refunded);
+    37	};
+    38	
+    39	export const voidPayment = async ({intent, notifier, now, store}) => {
+    40	    const voided = voidAuthorization(intent, now());
+    41	    if (voided === intent) return intent;
+    42	    return saveThenSend(store, (saved) => notifier.voided(voidNotice(saved)), voided);
+    43	};
+    44	
+    45	export const listPayments = async ({invoiceId, store}) => orderIntents(await store.listByInvoice(requireInvoiceId(invoiceId)));
+    46	
+    47	export const paymentStatus = async ({invoice, now, store}) => {
+    48	    const at = now();
+    49	    const current = {...invoice, id: requireInvoiceId(invoice.id)};
+    50	    return Object.freeze({
+    51	        invoiceId: current.id,
+    52	        dueAt: dueAt(current.issuedAt),
+    53	        late: isLate(current.issuedAt, at),
+    54	        paid: netPaid(await store.list(), current),
+    55	    });
+    56	};
+=== src/payments/payment-store.mjs
+     1	export const createPaymentStore = (initialIntents = []) => {
+     2	    const records = new Map(initialIntents.map((intent) => [intent.id, intent]));
+     3	    let writes = Promise.resolve();
+     4	
+     5	    return Object.freeze({
+     6	        find: async (id) => records.get(id) ?? null,
+     7	        findByRequestKey: async (requestKey) => (
+     8	            [...records.values()].find((intent) => intent.requestKey === requestKey) ?? null
+     9	        ),
+    10	        list: async () => [...records.values()],
+    11	        listByInvoice: async (invoiceId) => [...records.values()].filter((intent) => intent.invoiceId === invoiceId),
+    12	        save: (intent) => {
+    13	            writes = writes.then(() => {
+    14	                records.set(intent.id, intent);
+    15	                return intent;
+    16	            });
+    17	            return writes;
+    18	        },
+    19	    });
+    20	};
