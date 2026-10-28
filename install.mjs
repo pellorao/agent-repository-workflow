@@ -24,20 +24,23 @@ if (runtime.status === 'unsupported') {
     const questions = {
         registerPath: `Register ${PRODUCT_NAME} in PATH? [y/N] `,
     };
-    const readline = createInterface({input: process.stdin, output: process.stdout});
+    // 询问时才创建 readline: 管道输入在此之前留在缓冲中, 提前创建会在询问发出前读完并关闭.
+    /** @type {{readline?: import('node:readline/promises').Interface}} */
+    const session = {};
 
     try {
         process.exitCode = await runInstaller(process.argv.slice(2), {
             prompt: async (/** @type {'registerPath'} */ decision) => {
+                session.readline ??= createInterface({input: process.stdin, output: process.stdout});
                 return askYesNo({
                     question: questions[decision],
-                    readline,
+                    readline: session.readline,
                     writeInvalid: () => process.stderr.write('Please answer yes or no.\n'),
                 });
             },
             sourceDirectory: dirname(fileURLToPath(import.meta.url)),
         });
     } finally {
-        readline.close();
+        session.readline?.close();
     }
 }

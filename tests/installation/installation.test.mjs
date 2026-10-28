@@ -182,17 +182,33 @@ test('root Installer rejects invalid arguments before runtime identity observati
     assert.doesNotMatch(result.stderr, /Runtime identity authority/);
 });
 
-test('root Installer maps prompt EOF to one stable pre-write error', async t => {
-    const home = await createHome(t);
-    const result = await runExitedProcess('node', [join(SOURCE_DIRECTORY, 'install.mjs')], {
-        env: {...process.env, CODEX_HOME: '', HOME: home, USERPROFILE: home},
-        input: '',
-        timeout: 10_000,
-    });
+const runRootInstaller = (/** @type {string} */ home, /** @type {string} */ input) => runExitedProcess('node', [join(SOURCE_DIRECTORY, 'install.mjs')], {
+    env: {...process.env, CODEX_HOME: '', HOME: home, USERPROFILE: home},
+    input,
+    timeout: 10_000,
+});
 
-    assert.equal(result.exitCode, 1);
-    assert.equal(result.stderr, 'Interactive input ended before a decision was provided.\n');
-    await assert.rejects(readdir(join(home, '.agent-repository-workflow')), {code: 'ENOENT'});
+test('root Installer maps prompt EOF to one stable pre-write error', async t => {
+    for (const input of ['', 'maybe\n']) {
+        const home = await createHome(t);
+        const result = await runRootInstaller(home, input);
+
+        assert.equal(result.exitCode, 1);
+        assert.match(result.stderr, /Interactive input ended before a decision was provided\.\n$/);
+        assert.deepEqual(await readdir(home), []);
+    }
+});
+
+test('root Installer completes from a single piped answer line', async t => {
+    for (const [answer, registersPath] of [['n', false], ['y', true]]) {
+        const home = await createHome(t);
+        const result = await runRootInstaller(home, `${answer}\n`);
+
+        assert.equal(result.exitCode, 0);
+        assert.equal(result.stderr, '');
+        await readdir(join(home, '.agent-repository-workflow', 'lib'));
+        assert.equal((await readdir(home)).includes('.profile'), registersPath);
+    }
 });
 
 const runNonInteractive = async (/** @type {string} */ home, /** @type {NonInteractiveOverrides} */ overrides = {}, /** @type {NonInteractiveDecisions} */ decisions = {}) => {

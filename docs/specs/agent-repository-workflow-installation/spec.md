@@ -34,7 +34,7 @@ Installer 不接受选择方式参数, 版本策略不区分默认最高版本�
 
 源码仓库和 ARW 安装目录都提供 `arw.mjs`, `arw.cmd` 和无扩展名 `arw` 启动器. PowerShell, CMD, Git Bash 和 Linux Bash 使用同一个日常 CLI `arw`. Bootstrap 与 Installer 在加载 Installation Implementation 或开始网络, 临时资源, 提示和安装写入前检查运行时. Node.js 低于 24 或无法解析时写入明确错误并以退出码 1 结束. 普通 `arw` 与 Uninstaller 不执行显式版本检查. 启动器每次从当前 PATH 解析 `node`, 不固定安装时的运行时绝对路径.
 
-Installer 和 Uninstaller 把通知与成功摘要逐行写入标准输出, 把诊断和参数错误逐行写入标准错误, 不输出内部结果 JSON. 参数错误使用退出码 2; 不支持的运行时, 任一 `severity: "error"` 诊断, `partial`, `unknown`, 交互输入 `EOF` 或其他操作失败使用退出码 1; 没有错误诊断的 `installed`, `removed` 或幂等 `unchanged` 使用退出码 0. Installer 成功摘要使用 `Installed agent-repository-workflow to <absolute-path>.`, Uninstaller 成功摘要使用 `Uninstalled agent-repository-workflow from <absolute-path>.`. 交互询问只把 `y` 和 `yes` 视为同意, 把空输入, `n` 和 `no` 视为拒绝, 其他输入重新询问. Installer 的 PATH 拒绝等同 `registerPath: false` 并继续安装; Uninstaller 的删除拒绝返回无错误的 `unchanged`; `EOF` 不解释为拒绝, 而是在任何写入前返回稳定错误.
+Installer 和 Uninstaller 把通知与成功摘要逐行写入标准输出, 把诊断和参数错误逐行写入标准错误, 不输出内部结果 JSON. 参数错误使用退出码 2; 不支持的运行时, 任一 `severity: "error"` 诊断, `partial`, `unknown`, 交互输入 `EOF` 或其他操作失败使用退出码 1; 没有错误诊断的 `installed`, `removed` 或幂等 `unchanged` 使用退出码 0. Installer 成功摘要使用 `Installed agent-repository-workflow to <absolute-path>.`, Uninstaller 成功摘要使用 `Uninstalled agent-repository-workflow from <absolute-path>.`. Installer 的交互询问只有 PATH 登记一项, 由标准输入的第一行应答, 询问发出前已管道输入的该行同样有效, 因此单行管道应答可以完成安装; 无效的单行管道应答在重新询问时读到 `EOF`, 零写入失败, 不承诺多行管道输入; 配置重置只由 `--reinitialize-config` 决定, 不询问. 交互询问只把 `y` 和 `yes` 视为同意, 把空输入, `n` 和 `no` 视为拒绝, 其他输入重新询问. Installer 的 PATH 拒绝等同 `registerPath: false` 并继续安装; Uninstaller 的删除拒绝返回无错误的 `unchanged`; `EOF` 不解释为拒绝, 而是在任何写入前返回稳定错误.
 
 ## Installation target and choices
 
@@ -558,7 +558,7 @@ Release Source Adapter 的依赖 Seam 同样不改变 ADR 0018 的固定来源�
 
 测试通过公开 Module Interface 覆盖正常结果, 输入或状态阻断, I/O 与外部依赖失败, `configSeedBytes` 到安装根目录 `config.json` 的固定映射, `config.json` 与 `manifest.json` 保留目标冲突, 准确载荷字节和归属, 登记与移除幂等状态, 平台写入失败的 `none | changed | unknown` 影响, 零写入保证, 最后提交安装清单, 以及未知配置字段的保留与报告. Installation 的路径集成测试还覆盖范围根排除, 解析后重复与大小写冲突, 目标链接, 嵌套祖先的符号链接或目录联接, 缺失前缀和后续操作的祖先链重验, 并只断言公共 Filesystem 与 Installation 结果. 引导安装生成测试从发布验证配置读取远端并核对生成物一致性, 不断言当前远端字符串永远不变.
 
-运行时兼容测试覆盖无法解析, 低于 Node.js 24 和 Node.js 24 或更高版本. 入口测试证明 Bootstrap 与 Installer 在所有取得和安装副作用前拒绝不支持版本, 普通 `arw` 与 Uninstaller 不执行替代检查, 并证明单文件 Bootstrap 从同一规范源码生成判断.
+运行时兼容测试覆盖无法解析, 低于 Node.js 24 和 Node.js 24 或更高版本. 入口测试证明 Bootstrap 与 Installer 在所有取得和安装副作用前拒绝不支持版本, 普通 `arw` 与 Uninstaller 不执行替代检查, 并证明单文件 Bootstrap 从同一规范源码生成判断. 入口测试还用真实进程证明 Installer 的 PATH 询问对管道单行应答 `y` 登记 PATH 并完成安装, 对 `n` 不改变 PATH 并完成安装, 对无效的单行应答和输入流结束 (`EOF`, 没有任何应答行) 都零写入失败.
 
 全局配置测试分别覆盖缺失配置从 v3 初始文件创建, 明确重新初始化, v1 直接转换到 v3, v2 不受支持, 当前 v3 空操作, `reviewEditor`, `jira.listLimit: 50` 和 `backgroundAgent.maxInstances: 16` 默认值, `agents` 与 `editor` 保留, 已有有效上限不被默认值覆盖, 验证器阻断, 未知根保留和冲突, 净路径与未知路径提示的准确模板和顺序, 转换零 I/O, 事务中的单次替换内容, 以及任一配置阻断时零安装写入. 规则对象测试使用开发长期规格的公共断言辅助程序; 初始文件测试只验证它与当前 v3 完整有效值一致, 不把初始文件传入升级 Interface.
 
