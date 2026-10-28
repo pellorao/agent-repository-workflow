@@ -6,7 +6,7 @@
 
 ## Requirements
 
-Public `parseArtifact(bytes, path)` 必须保持 `architecture/05-validation-report.md#current-parser-contract` 定义的 input, canonical result, error, ordering, side effects 和 size limit. Size check 后, Parser 使用一个 forward cursor 消费 input bytes, 并在该 pass 中完成 token recognition 和 field collection; operation 不 restart 或 rescan input bytes. Existing Module 继续独占 parsing responsibility.
+Public `parseArtifact(bytes, path)` 必须保持 `architecture/05-validation-report.md#current-parser-contract` 定义的 input, canonical result, error, ordering, side effects 和 size limit. Size check 后, Parser 使用一个 forward cursor 消费 input bytes, 并在该 pass 中完成 token recognition 和 field collection; operation 不 restart 或 rescan input bytes. Existing Parser Module 继续独占 `parseArtifact` 的 parsing responsibility.
 
 ## Design Rationale
 

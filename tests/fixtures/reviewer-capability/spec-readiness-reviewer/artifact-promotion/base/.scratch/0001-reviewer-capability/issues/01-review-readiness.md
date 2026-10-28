@@ -58,7 +58,7 @@ Governing requirements:
 
 ## Acceptance criteria
 
-- [ ] 调用方可见行为通过各自 public lifecycle 验证, 并保持指定 authority 和 failure contract; 纯内部 cache 和 parser 算法策略通过源码审查核对.
+- [ ] 调用方可见行为通过各自 public lifecycle 验证, 并保持指定 authority 和 failure contract; 纯内部 cache 和 parser 算法策略, 以及 promotion 的 request binding 和 retentionDays 应用通过源码审查核对.
 
 ## Blocked by
 

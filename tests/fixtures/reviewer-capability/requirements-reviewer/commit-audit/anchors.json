@@ -1,0 +1,1792 @@
+{
+ "scenario": "commit-audit-v3.1",
+ "anchors": [
+  {
+   "id": "a01",
+   "family": "anthropic",
+   "model": "opus",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a01 在 v2 brief 与 commit-audit-v3.1 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：two blind Opus high adjudicators agree: original pool p1-162 and second-adjudicator pool r1 r1-001 (r1: anchors 38/38, synthetic 11/11)",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "COMMIT-AUDIT-GATE-1",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "`handleAnnouncementFailure` removes the copy returned by `store.get`, and `store.remove` removes only the exact stored object, so the stored manifest is not removed.",
+    "finding": "On announcement failure the code removes the result of `store.get(manifest.id)`, which the store contract defines as a new copy; `store.remove` removes only the exact stored object, so the stored manifest is not removed.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "docs/dispatch/storage-contract.md",
+      "lineEnd": 7,
+      "lineStart": 6
+     },
+     {
+      "filePath": "src/dispatch/manifest.mjs",
+      "line": 32
+     },
+     {
+      "filePath": "src/dispatch/publisher.mjs",
+      "lineEnd": 13,
+      "lineStart": 10
+     }
+    ],
+    "requirementSource": {
+     "filePath": ".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md",
+     "line": 22,
+     "requirement": "publishWithAnnouncement removes the stored manifest when announcement delivery fails."
+    }
+   }
+  },
+  {
+   "id": "a02",
+   "family": "anthropic",
+   "model": "opus",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a02 在 v2 brief 与 commit-audit-v3.1 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：two blind Opus high adjudicators agree: original pool p1-107 and second-adjudicator pool r1 r1-002 (r1: anchors 38/38, synthetic 11/11)",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "COMMIT-AUDIT-GATE-2",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "A suspended actor keeps the scopes of its active claims in `effectiveScopes`, so `canPlanRoute` can still allow it.",
+    "finding": "effectiveScopes drops only the actor's own scopes when suspended and still adds active claim scopes, so a suspended actor with an active routes:plan claim for its own depot is allowed by canPlanRoute, contrary to rule 5.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "docs/dispatch/dispatch-policy.md",
+      "lineEnd": 5,
+      "lineStart": 4
+     },
+     {
+      "filePath": "src/dispatch/access.mjs",
+      "line": 3
+     },
+     {
+      "filePath": "src/dispatch/access.mjs",
+      "line": 5
+     }
+    ],
+    "requirementSource": {
+     "filePath": ".scratch/0001-dispatch-control/spec.md",
+     "line": 73,
+     "requirement": "A suspended actor cannot plan any route."
+    }
+   }
+  },
+  {
+   "id": "a03",
+   "family": "anthropic",
+   "model": "opus",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a03 在 v2 brief 与 commit-audit-v3.1 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：two blind Opus high adjudicators agree: original pool p1-094 and second-adjudicator pool r1 r1-004 (r1: anchors 38/38, synthetic 11/11)",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "COMMIT-AUDIT-GATE-1",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "`orderedDestinationGroups` passes the `Map` returned by `groupByDestination` to `orderManifestGroups`, whose comparator reads a `destination` field that the `[key, group]` entries lack, so the groups keep insertion order instead of ascending lexical order.",
+    "finding": "orderedDestinationGroups passes the Map from groupByDestination to orderManifestGroups, which spreads it into [key, records] entries that have no destination property; the comparator always returns 0, so groups stay in insertion order rather than ascending lexical order (verified: records b,a yield groups B,A).",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/dispatch/manifest.mjs",
+      "lineEnd": 11,
+      "lineStart": 3
+     },
+     {
+      "filePath": "src/dispatch/manifest.mjs",
+      "line": 42
+     }
+    ],
+    "requirementSource": {
+     "filePath": ".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md",
+     "line": 38,
+     "requirement": "orderedDestinationGroups returns the destination groups of the records in ascending lexical order."
+    }
+   }
+  },
+  {
+   "id": "a04",
+   "family": "strata",
+   "model": "strata-q3",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a04 在 v2 brief 与 commit-audit-v3.1 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：two blind Opus high adjudicators agree: original pool p1-288 and second-adjudicator pool r1 r1-007 (r1: anchors 38/38, synthetic 11/11)",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "COMMIT-AUDIT-GATE-1",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "`buildManifest` copies each record shallowly and `labelDriver` assigns the label onto the supplied driver object, so supplied records are mutated.",
+    "finding": "buildManifest copies each record but computes the driver through labelDriver, which calls `Object.assign(driver, {label: ...})` on the driver object supplied inside the record. The runtime check shows the supplied record's driver object is changed from `{\"label\":\"  Ada  \"}` to `{\"label\":\"Ada\"}`, so data owned by the supplied record is mutated even though the record wrapper is copied.",
+    "result": "gap",
+    "evidence": [
+     {
+      "command": "node --input-type=module -e \"const m=await import('./src/dispatch/manifest.mjs'); const recs=[{id:1,driver:{label:'  Ada  '}}]; m.buildManifest(recs); console.log(JSON.stringify(recs[0].driver));\"",
+      "exitCode": 0
+     },
+     {
+      "filePath": "src/dispatch/manifest.mjs",
+      "line": 26
+     },
+     {
+      "filePath": "src/dispatch/manifest.mjs",
+      "line": 34
+     }
+    ],
+    "requirementSource": {
+     "filePath": ".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md",
+     "line": 37,
+     "requirement": "buildManifest copies record objects instead of mutating supplied records."
+    }
+   }
+  },
+  {
+   "id": "a05",
+   "family": "anthropic",
+   "model": "opus",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a06 在 v2 brief 与 commit-audit-v3.1 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：two blind Opus high adjudicators agree: original pool p1-007 and second-adjudicator pool r1 r1-011 (r1: anchors 38/38, synthetic 11/11)",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "COMMIT-AUDIT-GATE-2",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Urgent-stop partitioning tests the raw `priority` for the remaining partition, so a text priority such as `'7'` (priority 5 under rule 15) is placed in no partition.",
+    "finding": "The urgent filter uses priorityOf while the remaining filter uses raw stop.priority; a stop with a non-finite numeric priority above 5 such as Infinity has priority 5, is not urgent, and is also excluded from remaining, so it lands in no partition.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "docs/dispatch/dispatch-policy.md",
+      "lineEnd": 16,
+      "lineStart": 15
+     },
+     {
+      "filePath": "src/dispatch/queue.mjs",
+      "line": 4
+     },
+     {
+      "filePath": "src/dispatch/queue.mjs",
+      "lineEnd": 24,
+      "lineStart": 21
+     }
+    ],
+    "requirementSource": {
+     "filePath": ".scratch/0001-dispatch-control/spec.md",
+     "line": 38,
+     "requirement": "Urgent-stop partitioning places every stop in exactly one partition according to its urgency."
+    }
+   }
+  },
+  {
+   "id": "a06",
+   "family": "strata",
+   "model": "strata-q3",
+   "expected": "not-matched",
+   "confirmed_by": "v1 锚点 a07 在 v2 brief 与 commit-audit-v3.1 场景文本下复核（F10，2026-10-25），期望 not-matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：two blind Opus high adjudicators agree: original pool p1-010 and second-adjudicator pool r1 r1-012 (r1: anchors 38/38, synthetic 11/11)",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "COMMIT-AUDIT-GATE-2",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Urgent-stop partitioning tests the raw `priority` for the remaining partition, so a text priority such as `'7'` (priority 5 under rule 15) is placed in no partition.",
+    "finding": "urgent uses priorityOf(stop) > 5 while remaining uses !(stop.priority > 5), so a stop whose priority is not a finite number is urgent under Stop priority rule 15 and also lands in remaining, appearing in both partitions instead of exactly one.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "docs/dispatch/dispatch-policy.md",
+      "lineEnd": 31,
+      "lineStart": 30
+     },
+     {
+      "filePath": "src/dispatch/queue.mjs",
+      "lineEnd": 24,
+      "lineStart": 21
+     }
+    ],
+    "requirementSource": {
+     "filePath": ".scratch/0001-dispatch-control/spec.md",
+     "line": 38,
+     "requirement": "Under docs/dispatch/dispatch-policy.md, urgent-stop partitioning places every stop in exactly one partition according to its urgency."
+    }
+   }
+  },
+  {
+   "id": "a07",
+   "family": "anthropic",
+   "model": "opus",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a08 在 v2 brief 与 commit-audit-v3.1 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：two blind Opus high adjudicators agree: original pool p1-279 and second-adjudicator pool r1 r1-014 (r1: anchors 38/38, synthetic 11/11)",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "COMMIT-AUDIT-GATE-2",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Plan serialization sorts only the top-level keys (`withSortedKeys` proxies only the plan object), so nested objects keep their insertion order and plans that differ only in nested field order hash to different values.",
+    "finding": "withSortedKeys wraps only the top-level object in a Proxy; nested objects keep their own key order in JSON.stringify, so plans differing only in nested field order serialize and hash differently.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/dispatch/serialize.mjs",
+      "line": 1
+     },
+     {
+      "filePath": "src/dispatch/serialize.mjs",
+      "line": 3
+     },
+     {
+      "filePath": "src/dispatch/serialize.mjs",
+      "line": 7
+     }
+    ],
+    "requirementSource": {
+     "filePath": ".scratch/0001-dispatch-control/spec.md",
+     "line": 35,
+     "requirement": "Two plans that differ only in nested object field order have the same plan hash."
+    }
+   }
+  },
+  {
+   "id": "a08",
+   "family": "anthropic",
+   "model": "opus",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a09 在 v2 brief 与 commit-audit-v3.1 场景文本下复核（F10，2026-10-25），期望 matched 不变：finding 转述规则 24 \"at every depth\"，v3.1 规则 24 仍含此义，只把范围限定为所引要求点名的值；spec:12 点名 authentication data，数组在其内，判法不变。v1 依据：two blind Opus high adjudicators agree: original pool p1-044 and second-adjudicator pool r1 r1-016 (r1: anchors 38/38, synthetic 11/11)",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "COMMIT-AUDIT-GATE-2",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Manifest-event redaction leaves arrays unvisited, so a credential in an object inside an array of the authentication data is not removed.",
+    "finding": "stripCredentials only recurses into values whose constructor is Object, so credentials inside arrays (or null-prototype objects) nested in `auth` are kept, contradicting rule 24 that redaction removes credentials at every depth.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "docs/dispatch/dispatch-policy.md",
+      "lineEnd": 24,
+      "lineStart": 23
+     },
+     {
+      "filePath": "src/dispatch/telemetry.mjs",
+      "line": 7
+     },
+     {
+      "filePath": "src/dispatch/telemetry.mjs",
+      "lineEnd": 14,
+      "lineStart": 13
+     }
+    ],
+    "requirementSource": {
+     "filePath": ".scratch/0001-dispatch-control/spec.md",
+     "line": 12,
+     "requirement": "Manifest-event redaction removes every credential nested inside authentication data."
+    }
+   }
+  },
+  {
+   "id": "a09",
+   "family": "anthropic",
+   "model": "opus",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a10 在 v2 brief 与 commit-audit-v3.1 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：two blind Opus high adjudicators agree: original pool p1-201 and second-adjudicator pool r1 r1-017 (r1: anchors 38/38, synthetic 11/11)",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "COMMIT-AUDIT-GATE-2",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "After `renameTemporary` rejects, the temporary bytes are locked, so the `discardTemporary` call in `writePlanAtomically` only closes the write and keeps them; `removeTemporary` is never called.",
+    "finding": "After renameTemporary rejects the temporary bytes are locked, and writePlanAtomically then calls discardTemporary, which for locked bytes only closes the write and keeps them; removeTemporary is never called, so the temporary bytes remain.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "docs/dispatch/storage-contract.md",
+      "line": 11
+     },
+     {
+      "filePath": "docs/dispatch/storage-contract.md",
+      "lineEnd": 14,
+      "lineStart": 13
+     },
+     {
+      "filePath": "src/dispatch/storage.mjs",
+      "line": 9
+     }
+    ],
+    "requirementSource": {
+     "filePath": ".scratch/0001-dispatch-control/spec.md",
+     "line": 23,
+     "requirement": "Atomic plan writes remove temporary bytes when the rename operation fails."
+    }
+   }
+  },
+  {
+   "id": "a10",
+   "family": "strata",
+   "model": "strata-q3",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a11 在 v2 brief 与 commit-audit-v3.1 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：two blind Opus high adjudicators agree: original pool p3-030 and second-adjudicator pool r1 r1-018 (r1: anchors 38/38, synthetic 11/11)",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "COMMIT-AUDIT-GATE-2",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Delivery notices are sent to the raw `phone`, so an entry whose `phone` contains spaces or hyphens is not notified at its contact phone (rule 33).",
+    "finding": "sendDeliveryNotices passes entry.phone unchanged to sms.send, so an entry whose phone contains spaces or hyphens receives the raw value instead of the contact phone that dispatch-policy rule 33 defines by removing every space and hyphen. Verified: for the entry {phone:'07 -700'} the function passes '07 -700', while manifestRecipients in the same candidate derives '07700' for the same entry.",
+    "result": "gap",
+    "evidence": [
+     {
+      "command": "node --input-type=module -e 'import {sendDeliveryNotices} from \"./src/dispatch/publisher.mjs\"; const sent = []; await sendDeliveryNotices({manifest: {entries: [{phone: \"07 -700\", packageId: \"P1\"}]}, sms: {send: (phone) => { sent.push(phone); }} }); console.log(JSON.stringify(sent));'",
+      "exitCode": 0
+     },
+     {
+      "filePath": "docs/dispatch/dispatch-policy.md",
+      "line": 66
+     },
+     {
+      "filePath": "src/dispatch/manifest.mjs",
+      "line": 44
+     },
+     {
+      "filePath": "src/dispatch/publisher.mjs",
+      "line": 31
+     }
+    ],
+    "requirementSource": {
+     "filePath": ".scratch/0001-dispatch-control/spec.md",
+     "line": 74,
+     "requirement": "Under docs/dispatch/dispatch-policy.md, delivery notices go to the contact phone of every manifest entry."
+    }
+   }
+  },
+  {
+   "id": "a11",
+   "family": "anthropic",
+   "model": "opus",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a12 在 v2 brief 与 commit-audit-v3.1 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：two blind Opus high adjudicators agree: original pool p1-307 and second-adjudicator pool r1 r1-035 (r1: anchors 38/38, synthetic 11/11)",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "COMMIT-AUDIT-GATE-1",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "`hasDuplicateRouteKeys` concatenates the depot ID and normalized route key without a separator, so different route identities can produce the same key.",
+    "finding": "Route identity is built by concatenating depotId and the normalized route key with no separator, so distinct identities such as depot `A` + key `BC` and depot `AB` + key `C` collide and are reported as duplicates.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "docs/dispatch/dispatch-policy.md",
+      "lineEnd": 20,
+      "lineStart": 19
+     },
+     {
+      "filePath": "src/dispatch/queue.mjs",
+      "lineEnd": 19,
+      "lineStart": 16
+     }
+    ],
+    "requirementSource": {
+     "filePath": ".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md",
+     "line": 29,
+     "requirement": "hasDuplicateRouteKeys reports duplicates exactly when two stops are duplicates."
+    }
+   }
+  },
+  {
+   "id": "a12",
+   "family": "strata",
+   "model": "strata-q3",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a13 在 v2 brief 与 commit-audit-v3.1 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：two blind Opus high adjudicators agree: original pool p1-067 and second-adjudicator pool r1 r1-036 (r1: anchors 38/38, synthetic 11/11)",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "COMMIT-AUDIT-GATE-2",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Route duration adds the raw `serviceMinutes`, so every stop misses the 5 minutes of parking that rule 32 includes in its service time.",
+    "finding": "routeDuration adds `stop.travelMinutes + stop.serviceMinutes` for each stop. Terms rule 32 defines a stop's service time as its `serviceMinutes` plus 5 minutes of parking, so the parking minutes are missing from every stop's contribution to the route duration.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "docs/dispatch/dispatch-policy.md",
+      "line": 65
+     },
+     {
+      "filePath": "src/dispatch/queue.mjs",
+      "line": 32
+     }
+    ],
+    "requirementSource": {
+     "filePath": ".scratch/0001-dispatch-control/spec.md",
+     "line": 11,
+     "requirement": "Under docs/dispatch/dispatch-policy.md, a route duration adds the travel minutes and the service time of every stop."
+    }
+   }
+  },
+  {
+   "id": "a13",
+   "family": "strata",
+   "model": "strata-q3",
+   "expected": "not-matched",
+   "confirmed_by": "v1 锚点 a14 在 v2 brief 与 commit-audit-v3.1 场景文本下复核（F10，2026-10-25），期望 not-matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：two blind Opus high adjudicators agree: original pool p1-263 and second-adjudicator pool r1 r1-037 (r1: anchors 38/38, synthetic 11/11)",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "COMMIT-AUDIT-GATE-2",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "`authorizeRouteBatch` accepts the batch when `findIndex` returns 0, so a batch whose first route fails depot ownership is authorized.",
+    "finding": "`authorizeRouteBatch` computes `firstRejected = routes.findIndex(route => !requireDepotOwner(actor, route))` and returns `firstRejected <= 0`, so a batch is only rejected when the very first route fails ownership; a rejection found at any later index produces a positive number and the batch is accepted. `authorizeRouteBatch({depotId: 'A'}, [{depotId: 'A'}, {depotId: 'B'}])` returns `false`, meaning the batch is authorized although its second route fails depot ownership. Recommendation: return `!routes.some(route => !requireDepotOwner(actor, route))`.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/dispatch/access.mjs",
+      "lineEnd": 9,
+      "lineStart": 7
+     },
+     {
+      "filePath": "src/dispatch/access.mjs",
+      "line": 14
+     }
+    ],
+    "requirementSource": {
+     "filePath": ".scratch/0001-dispatch-control/spec.md",
+     "line": 52,
+     "requirement": "Batch authorization rejects the batch when any route fails depot ownership."
+    }
+   }
+  },
+  {
+   "id": "a14",
+   "family": "anthropic",
+   "model": "opus",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a15 在 v2 brief 与 commit-audit-v3.1 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：two blind Opus high adjudicators agree: original pool p1-247 and second-adjudicator pool r1 r1-039 (r1: anchors 38/38, synthetic 11/11)",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "COMMIT-AUDIT-GATE-1",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "`publishManifest` maps entries through an async callback, and every resulting promise is truthy, so a manifest with invalid entries is stored.",
+    "finding": "The validity checks are mapped through an async callback, so `checks` holds Promises that are always truthy; `checks.every(Boolean)` is always true and invalid manifests are stored.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/dispatch/publisher.mjs",
+      "lineEnd": 7,
+      "lineStart": 4
+     }
+    ],
+    "requirementSource": {
+     "filePath": ".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md",
+     "line": 39,
+     "requirement": "publishManifest stores the manifest only when every entry is valid."
+    }
+   }
+  },
+  {
+   "id": "a15",
+   "family": "strata",
+   "model": "strata-q3",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a16 在 v2 brief 与 commit-audit-v3.1 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：two blind Opus high adjudicators agree: original pool p3-129 and second-adjudicator pool r1 r1-040 (r1: anchors 38/38, synthetic 11/11)",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "COMMIT-AUDIT-GATE-1",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "`chooseDeparture` moves a blackout departure to the blackout end hour without refusing it when that hour is outside the departure window.",
+    "finding": "Rules 11 to 14 are applied inconsistently. The declared window is hours 2 to 4 and the blackout is hours 3 to 5, so a departure chosen at hour 3 or 4 is inside the window and inside the blackout; rule 13 moves it to the blackout end hour 5, and rule 14, which overrides rule 13 as the later rule in the same section, requires that a departure moved outside the window is refused. `chooseDeparture` returns 2026-01-05T05:00:00.000Z for both inputs instead of refusing, so it hands back a departure outside the departure window.",
+    "result": "gap",
+    "evidence": [
+     {
+      "command": "node --input-type=module -e 'import(\"./src/dispatch/schedule.mjs\").then(m=>console.log(m.chooseDeparture(new Date(Date.UTC(2026,0,5,3,30))).toISOString(),m.chooseDeparture(new Date(Date.UTC(2026,0,5,4,0))).toISOString(),String(m.chooseDeparture(new Date(Date.UTC(2026,0,5,5,0))))))'",
+      "exitCode": 0
+     },
+     {
+      "filePath": "docs/dispatch/dispatch-policy.md",
+      "lineEnd": 26,
+      "lineStart": 20
+     },
+     {
+      "filePath": "src/dispatch/schedule.mjs",
+      "line": 1
+     },
+     {
+      "filePath": "src/dispatch/schedule.mjs",
+      "lineEnd": 7,
+      "lineStart": 3
+     },
+     {
+      "filePath": "src/dispatch/schedule.mjs",
+      "line": 9
+     },
+     {
+      "filePath": "src/dispatch/schedule.mjs",
+      "line": 18
+     },
+     {
+      "filePath": "src/dispatch/schedule.mjs",
+      "line": 20
+     }
+    ],
+    "requirementSource": {
+     "filePath": ".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md",
+     "line": 23,
+     "requirement": "Under `docs/dispatch/dispatch-policy.md`, `chooseDeparture` applies every Departure timing rule."
+    }
+   }
+  },
+  {
+   "id": "a16",
+   "family": "anthropic",
+   "model": "opus",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a17 在 v2 brief 与 commit-audit-v3.1 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：two blind Opus high adjudicators agree: original pool p1-217 and second-adjudicator pool r1 r1-042 (r1: anchors 38/38, synthetic 11/11)",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "COMMIT-AUDIT-GATE-2",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "The weighing contract does not state the unit of the weight that `scale.read` resolves to, so it cannot be established that weighed package weights are in grams.",
+    "finding": "weighPackages records scale.read results directly, but the Weighing Contract does not state the unit scale.read returns, so it cannot be established that recorded weights are in grams.",
+    "result": "uncertain",
+    "evidence": [
+     {
+      "filePath": "docs/dispatch/adapter-contracts.md",
+      "line": 8
+     },
+     {
+      "filePath": "docs/dispatch/dispatch-policy.md",
+      "line": 28
+     },
+     {
+      "filePath": "src/dispatch/capacity.mjs",
+      "line": 20
+     }
+    ],
+    "requirementSource": {
+     "filePath": ".scratch/0001-dispatch-control/spec.md",
+     "line": 53,
+     "requirement": "Package weighing records each package weight in grams as the Vehicle capacity rules give."
+    }
+   }
+  },
+  {
+   "id": "a17",
+   "family": "strata",
+   "model": "strata-q3",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a18 在 v2 brief 与 commit-audit-v3.1 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：two blind Opus high adjudicators agree: original pool p1-023 and second-adjudicator pool r1 r1-043 (r1: anchors 38/38, synthetic 11/11)",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "COMMIT-AUDIT-GATE-2",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Arguments are evaluated before `unlessForbidden` runs, so authorized execution invokes dispatch before it can reject the caller.",
+    "finding": "executeAuthorizedPlan evaluates await dispatchRoute(dispatch, route) while building the argument list for unlessForbidden, so dispatch runs for every caller before the authorization result is applied. For an actor with no held scopes and a route depot it does not own, the dispatch callback was invoked once and the call then returned {ok:false,error:'forbidden'}.",
+    "result": "gap",
+    "evidence": [
+     {
+      "command": "node -e \"import('./src/dispatch/executor.mjs').then(async e=>{const c=[];const r=await e.executeAuthorizedPlan({actor:{scopes:[],depotId:'D1',claims:[]},route:{depotId:'D2'},now:0,dispatch:()=>{c.push(1);return{ok:true}}});console.log(c.length,r.ok)})\"",
+      "exitCode": 0
+     },
+     {
+      "filePath": "src/dispatch/executor.mjs",
+      "line": 4
+     },
+     {
+      "filePath": "src/dispatch/executor.mjs",
+      "line": 6
+     }
+    ],
+    "requirementSource": {
+     "filePath": ".scratch/0001-dispatch-control/spec.md",
+     "line": 55,
+     "requirement": "Authorized execution rejects a caller before invoking dispatch."
+    }
+   }
+  },
+  {
+   "id": "a18",
+   "family": "strata",
+   "model": "strata-q3",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a19 在 v2 brief 与 commit-audit-v3.1 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：two blind Opus high adjudicators agree: original pool p1-222 and second-adjudicator pool r1 r1-044 (r1: anchors 38/38, synthetic 11/11)",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "COMMIT-AUDIT-GATE-1",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "`canPlanRoute` checks `routes:admin` in the actor's own scopes instead of its held scopes, so an admin scope held through an active claim does not meet the ownership requirement.",
+    "finding": "Rule 4 defines an actor's held scopes as its own scopes plus the scope of every active claim, and rule 3 lets any held `routes:admin` satisfy the depot ownership requirement. `canPlanRoute` tests `actor.scopes.includes('routes:admin')`, which looks only at the actor's own scopes and ignores the claim scopes that `effectiveScopes` just computed. An actor with `scopes: []` and an active `routes:admin` claim planning a route at depot `Z` while its own `depotId` is `A` is refused, so the admin exemption is not applied to admin held through a claim. Recommendation: test the admin scope on the same effective scope list used for `routes:plan`.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "docs/dispatch/dispatch-policy.md",
+      "lineEnd": 10,
+      "lineStart": 7
+     },
+     {
+      "filePath": "src/dispatch/access.mjs",
+      "line": 3
+     },
+     {
+      "filePath": "src/dispatch/access.mjs",
+      "line": 5
+     },
+     {
+      "filePath": "src/dispatch/access.mjs",
+      "line": 14
+     }
+    ],
+    "requirementSource": {
+     "filePath": ".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md",
+     "line": 50,
+     "requirement": "Under `docs/dispatch/dispatch-policy.md`, `canPlanRoute` treats an actor holding `routes:admin` as owning every depot."
+    }
+   }
+  },
+  {
+   "id": "a19",
+   "family": "strata",
+   "model": "strata-q3",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a20 在 v2 brief 与 commit-audit-v3.1 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：two blind Opus high adjudicators agree: original pool p1-193 and second-adjudicator pool r1 r1-045 (r1: anchors 38/38, synthetic 11/11)",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "COMMIT-AUDIT-GATE-1",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "`stopsForDriver` compares each stop's own `driver`, so a stop with a `reassignment` is returned for its original driver and not for the driver of its `reassignment`, which rule 30 makes its assigned driver.",
+    "finding": "stopsForDriver compares only `stop.driver` and never consults `stop.reassignment`, while Terms rule 30 defines the assigned driver as the reassignment driver when a reassignment exists; the probe returned [] for stopsForDriver([{driver:\"A\",reassignment:{driver:\"B\"}}], \"B\") although that stop is assigned to driver B, and driverWorkload in the same staged candidate counts the same stop as 1.",
+    "result": "gap",
+    "evidence": [
+     {
+      "command": "node --input-type=module -e \"import('./src/dispatch/queue.mjs').then(m=>console.log(m.stopsForDriver([{driver:'A',reassignment:{driver:'B'}}],'B').length))\"",
+      "exitCode": 0
+     },
+     {
+      "filePath": "docs/dispatch/dispatch-policy.md",
+      "line": 63
+     },
+     {
+      "filePath": "src/dispatch/capacity.mjs",
+      "line": 18
+     },
+     {
+      "filePath": "src/dispatch/queue.mjs",
+      "line": 30
+     }
+    ],
+    "requirementSource": {
+     "filePath": ".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md",
+     "line": 21,
+     "requirement": "Under docs/dispatch/dispatch-policy.md, stopsForDriver returns exactly the stops whose assigned driver is the given driver."
+    }
+   }
+  },
+  {
+   "id": "a20",
+   "family": "anthropic",
+   "model": "opus",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a21 在 v2 brief 与 commit-audit-v3.1 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：two blind Opus high adjudicators agree: original pool p1-171 and second-adjudicator pool r1 r1-046 (r1: anchors 38/38, synthetic 11/11)",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "COMMIT-AUDIT-GATE-1",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "`coalesceAcrossGroups` records raw package IDs but filters normalized IDs, so a duplicate that differs only in surrounding whitespace survives in a later group.",
+    "finding": "coalesceAcrossGroups filters normalized (trimmed) IDs against `seen` but adds the raw untrimmed IDs to `seen`, so an ID such as `' P1'` in one group does not suppress `'P1'` in a later group and duplicates remain across the manifest.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/dispatch/manifest.mjs",
+      "line": 13
+     },
+     {
+      "filePath": "src/dispatch/manifest.mjs",
+      "lineEnd": 39,
+      "lineStart": 36
+     },
+     {
+      "filePath": "src/dispatch/normalize.mjs",
+      "line": 11
+     }
+    ],
+    "requirementSource": {
+     "filePath": ".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md",
+     "line": 48,
+     "requirement": "coalescePackages removes duplicate package IDs across the complete manifest."
+    }
+   }
+  },
+  {
+   "id": "a21",
+   "family": "anthropic",
+   "model": "opus",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a22 在 v2 brief 与 commit-audit-v3.1 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：two blind Opus high adjudicators agree: original pool p1-124 and second-adjudicator pool r1 r1-048 (r1: anchors 38/38, synthetic 11/11)",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "COMMIT-AUDIT-GATE-1",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "No available contract establishes when `store.write` invokes `onCommit`, so it cannot be established that `plan.created` is emitted only after storage succeeds.",
+    "finding": "emitPlanCreated relies on store.write(plan, {onCommit}) invoking onCommit only after storage succeeds, but no Plan Store adapter contract defines store.write or its onCommit semantics, so it cannot be established that plan.created is emitted only after storage succeeds.",
+    "result": "uncertain",
+    "evidence": [
+     {
+      "filePath": "docs/dispatch/storage-contract.md",
+      "lineEnd": 15,
+      "lineStart": 9
+     },
+     {
+      "filePath": "src/dispatch/executor.mjs",
+      "lineEnd": 17,
+      "lineStart": 14
+     },
+     {
+      "filePath": "src/dispatch/storage.mjs",
+      "lineEnd": 5,
+      "lineStart": 1
+     }
+    ],
+    "requirementSource": {
+     "filePath": ".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md",
+     "line": 28,
+     "requirement": "emitPlanCreated emits plan.created only after storage succeeds."
+    }
+   }
+  },
+  {
+   "id": "a22",
+   "family": "anthropic",
+   "model": "opus",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a23 在 v2 brief 与 commit-audit-v3.1 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：two blind Opus high adjudicators agree: original pool p1-062 and second-adjudicator pool r1 r1-049 (r1: anchors 38/38, synthetic 11/11)",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "COMMIT-AUDIT-GATE-2",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Retry-count parsing accepts any text that `Number` converts to an integer from 0 through 3, including text that is not base-10 digits such as `'0x2'`.",
+    "finding": "parseRetryCount coerces with Number(value), so invalid inputs such as the empty string, whitespace-padded text, `0x2`, `1e0`, null and true are accepted as valid retry counts although rule 22 requires text to be one or more base-10 digits.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "docs/dispatch/dispatch-policy.md",
+      "lineEnd": 22,
+      "lineStart": 21
+     },
+     {
+      "filePath": "src/dispatch/retry.mjs",
+      "lineEnd": 6,
+      "lineStart": 1
+     }
+    ],
+    "requirementSource": {
+     "filePath": ".scratch/0001-dispatch-control/spec.md",
+     "line": 59,
+     "requirement": "Retry-count parsing accepts exactly the valid retry counts and rejects every other value."
+    }
+   }
+  },
+  {
+   "id": "a23",
+   "family": "openai",
+   "model": "gpt-6-luna",
+   "expected": "not-matched",
+   "confirmed_by": "v1 锚点 a24 在 v2 brief 与 commit-audit-v3.1 场景文本下复核（F10，2026-10-25），期望 not-matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法；可执行检查：node benchmarks/multi-model-v1/anchors/checks/ca-checks.mjs <v2 物化 candidate> 输出与 v1 记录相同。v1 依据：Main executable check 10-21 (worker, benchmarks/multi-model-v1/anchors/checks/ca-checks.mjs; node on a read-only copy of the first-batch view): canPlanRoute of a suspended actor with an active routes:plan claim is true (expectation true); the finding only says the policy was not in the evidence and has none of suspend/claim/scope/effectiveScopes; brief 01:51 requires naming the retained active-claim scopes; first-batch blind Opus high ca-21-062 decided not-matched, consistent",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "COMMIT-AUDIT-GATE-1",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "`effectiveScopes` drops only the actor's own scopes when it is suspended and still adds active-claim scopes, so a suspended actor with an active `routes:plan` claim can plan.",
+    "finding": "The staged evidence requires semantic validation against the referenced governance policy or adapter contract, which was not included in the authorized Gate 2 document set.",
+    "result": "uncertain",
+    "evidence": [
+     {
+      "filePath": "src/dispatch/access.mjs",
+      "line": 3
+     },
+     {
+      "filePath": "src/dispatch/access.mjs",
+      "line": 5
+     }
+    ],
+    "requirementSource": {
+     "filePath": ".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md",
+     "line": 51,
+     "requirement": "Under `docs/dispatch/dispatch-policy.md`, `canPlanRoute` refuses every suspended actor."
+    }
+   }
+  },
+  {
+   "id": "a24",
+   "family": "openai",
+   "model": "gpt-6.1-sol",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a25 在 v2 brief 与 commit-audit-v3.1 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法；可执行检查：node benchmarks/multi-model-v1/anchors/checks/ca-checks.mjs <v2 物化 candidate> 输出与 v1 记录相同。v1 依据：Main executable check 10-21 (worker, benchmarks/multi-model-v1/anchors/checks/ca-checks.mjs; node on a read-only copy of the first-batch view): nextRetryDelay(0, 0) is 250 (backoff) and nextRetryDelay(0, 1) is 1000 (expectation true); the finding names retryAfter 0 falling back to backoff, the brief spec:75 wording; first-batch blind Opus high ca-7-099 decided matched, consistent",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "COMMIT-AUDIT-GATE-2",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "A server-provided `retryAfter` of 0 is falsy, so `nextRetryDelay` uses the computed backoff instead of the server delay.",
+    "finding": "A finite numeric retryAfter of 0 uses backoff instead of the server delay; truthy nonnumeric values also bypass the finite numeric requirement.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/dispatch/retry.mjs",
+      "line": 8
+     },
+     {
+      "filePath": "src/dispatch/retry.mjs",
+      "line": 18
+     },
+     {
+      "filePath": "src/dispatch/retry.mjs",
+      "line": 22
+     },
+     {
+      "filePath": "src/dispatch/retry.mjs",
+      "line": 24
+     }
+    ],
+    "requirementSource": {
+     "filePath": ".scratch/0001-dispatch-control/spec.md",
+     "line": 75,
+     "requirement": "Under `docs/dispatch/dispatch-policy.md`, the next retry delay follows the Retry timing rules whenever the server provides `retryAfter`."
+    }
+   }
+  },
+  {
+   "id": "a25",
+   "family": "anthropic",
+   "model": "sonnet",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a26 在 v2 brief 与 commit-audit-v3.1 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法；可执行检查：node benchmarks/multi-model-v1/anchors/checks/ca-checks.mjs <v2 物化 candidate> 输出与 v1 记录相同。v1 依据：Main executable check 10-21 (worker, benchmarks/multi-model-v1/anchors/checks/ca-checks.mjs; node on a read-only copy of the first-batch view): pendingStops([delivered, handedOver, queued]) returns handedOver and queued (expectation true; dispatch-policy rule 31); the finding names handedOver and rule 31, the brief 01:32 wording; first-batch blind Opus high ca-8-066 decided matched, consistent",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "COMMIT-AUDIT-GATE-1",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "`pendingStops` drops only stops whose `state` is `delivered`, so a stop whose `state` is `handedOver`, which rule 31 makes a delivered stop, is still returned.",
+    "finding": "pendingStops filters only state === \"delivered\"; a delivered stop also includes state \"handedOver\" (Terms rule 31), so handed-over stops are wrongly returned as pending.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "docs/dispatch/dispatch-policy.md",
+      "line": 64
+     },
+     {
+      "filePath": "src/dispatch/executor.mjs",
+      "line": 19
+     }
+    ],
+    "requirementSource": {
+     "filePath": ".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md",
+     "line": 32,
+     "requirement": "pendingStops returns every stop except the delivered stops"
+    }
+   }
+  },
+  {
+   "id": "a26",
+   "family": "anthropic",
+   "model": "haiku",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a27 在 v2 brief 与 commit-audit-v3.1 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法；可执行检查：node benchmarks/multi-model-v1/anchors/checks/ca-checks.mjs <v2 物化 candidate> 输出与 v1 记录相同。v1 依据：Main executable check 10-21 (worker, benchmarks/multi-model-v1/anchors/checks/ca-checks.mjs; node on a read-only copy of the first-batch view): publishManifest with an entry for which manifestEntryIsValid is false returns ok true and stores the manifest (expectation true); the finding names the async callback, truthy promises and checks.every(Boolean); first-batch blind Opus high ca-19-005 decided matched, consistent",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "COMMIT-AUDIT-GATE-1",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "`publishManifest` maps entries through an async callback, and every resulting promise is truthy, so a manifest with invalid entries is stored.",
+    "finding": "checks is an array of Promises produced by an async arrow function. Promise objects are always truthy, so checks.every(Boolean) is always true and publishManifest stores invalid manifests.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/dispatch/manifest.mjs",
+      "line": 22
+     },
+     {
+      "filePath": "src/dispatch/publisher.mjs",
+      "lineEnd": 7,
+      "lineStart": 4
+     }
+    ],
+    "requirementSource": {
+     "filePath": ".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md",
+     "line": 39,
+     "requirement": "publishManifest stores the manifest only when every entry is valid."
+    }
+   }
+  },
+  {
+   "id": "a27",
+   "family": "strata",
+   "model": "strata-q3",
+   "expected": "not-matched",
+   "confirmed_by": "v1 锚点 a28 在 v2 brief 与 commit-audit-v3.1 场景文本下复核（F10，2026-10-25），期望 not-matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法；可执行检查：node benchmarks/multi-model-v1/anchors/checks/ca-checks.mjs <v2 物化 candidate> 输出与 v1 记录相同。v1 依据：Main executable check 10-21 (worker, benchmarks/multi-model-v1/anchors/checks/ca-checks.mjs; node on a read-only copy of the first-batch view): authorizeRouteBatch is true when the first route fails and false when only the second fails (expectation true, finding claim false: it says a later failure is accepted); finding text has no findIndex or index 0; first-batch blind Opus high ca-17-068 decided not-matched, consistent",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "COMMIT-AUDIT-GATE-2",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "`authorizeRouteBatch` accepts the batch when `findIndex` returns 0, so a batch whose first route fails depot ownership is authorized.",
+    "finding": "authorizeRouteBatch returns `firstRejected <= 0`, so a batch whose first route passes ownership but a later route fails depot ownership is accepted (probe batchBadSecond=true), failing to reject the batch when any route fails.",
+    "result": "gap",
+    "evidence": [
+     {
+      "command": "node probe.mjs",
+      "exitCode": 0
+     },
+     {
+      "filePath": "src/dispatch/access.mjs",
+      "lineEnd": 10,
+      "lineStart": 7
+     }
+    ],
+    "requirementSource": {
+     "filePath": ".scratch/0001-dispatch-control/spec.md",
+     "line": 52,
+     "requirement": "Batch authorization rejects the batch when any route fails depot ownership."
+    }
+   }
+  },
+  {
+   "id": "a28",
+   "family": "strata",
+   "model": "strata-q3",
+   "expected": "not-matched",
+   "confirmed_by": "v1 锚点 a29 在 v2 brief 与 commit-audit-v3.1 场景文本下复核（F10，2026-10-25），期望 not-matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法；可执行检查：node benchmarks/multi-model-v1/anchors/checks/ca-checks.mjs <v2 物化 candidate> 输出与 v1 记录相同。v1 依据：Main executable check 10-21 (worker, benchmarks/multi-model-v1/anchors/checks/ca-checks.mjs; node on a read-only copy of the first-batch view): with a store whose get returns a copy, publishWithAnnouncement after a send failure leaves the manifest stored and calls only store.remove, never removeTemporary (expectation true, finding claim false: it says removeTemporary is called); finding text has no get or copy; brief 02:22 requires naming the get copy; first-batch blind Opus high ca-35-033 decided not-matched, consistent",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "COMMIT-AUDIT-GATE-1",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "`handleAnnouncementFailure` removes the copy returned by `store.get`, and `store.remove` removes only the exact stored object, so the stored manifest is not removed.",
+    "finding": "The announcement failure path reaches handleAnnouncementFailure, which removes the manifest with store.removeTemporary(). The Plan Store Contract defines removeTemporary as deleting temporary bytes, while the Manifest Store Contract requires store.remove(storedObject) to remove a stored manifest, so the stored manifest is not removed when announcement delivery fails.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "docs/dispatch/storage-contract.md",
+      "line": 7
+     },
+     {
+      "filePath": "docs/dispatch/storage-contract.md",
+      "line": 14
+     },
+     {
+      "filePath": "src/dispatch/manifest.mjs",
+      "line": 32
+     },
+     {
+      "filePath": "src/dispatch/publisher.mjs",
+      "line": 10
+     },
+     {
+      "filePath": "src/dispatch/publisher.mjs",
+      "line": 13
+     }
+    ],
+    "requirementSource": {
+     "filePath": ".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md",
+     "line": 22,
+     "requirement": "publishWithAnnouncement removes the stored manifest when announcement delivery fails."
+    }
+   }
+  }
+ ],
+ "synthetic": [
+  {
+   "id": "s01",
+   "type": "mismatch",
+   "family": "strata",
+   "model": "strata-q3",
+   "expected": "not-matched",
+   "from": "CA v3 r1 r1-005 (finding of p1-063 under another expectation)",
+   "item": {
+    "kind": "association",
+    "check": "COMMIT-AUDIT-GATE-2",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "`nextDispatchTime` checks the blackout with the host-local hour instead of the UTC hour, so on a non-UTC host a time inside the blackout is not moved.",
+    "finding": "routeDuration sums stop.travelMinutes + stop.serviceMinutes for every stop, but policy rule 32 defines a stop's service time as its serviceMinutes plus 5 minutes of parking, so every stop is understated by 5 minutes: routeDuration([{travelMinutes:10,serviceMinutes:5}]) returns 15 instead of 20. src/dispatch/schedule.mjs:28 applies the +5 for a single stop, so the two operations disagree about the same stop.",
+    "result": "gap",
+    "evidence": [
+     {
+      "command": "node -e \"import('./src/dispatch/queue.mjs').then(q=>console.log(q.routeDuration([{travelMinutes:10,serviceMinutes:5}])))\"",
+      "exitCode": 0
+     },
+     {
+      "filePath": "docs/dispatch/dispatch-policy.md",
+      "line": 65
+     },
+     {
+      "filePath": "src/dispatch/queue.mjs",
+      "line": 32
+     },
+     {
+      "filePath": "src/dispatch/schedule.mjs",
+      "line": 28
+     }
+    ],
+    "requirementSource": {
+     "filePath": ".scratch/0001-dispatch-control/spec.md",
+     "line": 11,
+     "requirement": "Under docs/dispatch/dispatch-policy.md, a route duration adds the travel minutes and the service time of every stop."
+    }
+   },
+   "confirmed_by": "v1 合成题 s01 在 v2 brief 与 commit-audit-v3.1 场景文本下复核（F10，2026-10-25），期望 not-matched 不变"
+  },
+  {
+   "id": "s02",
+   "type": "mismatch",
+   "family": "strata",
+   "model": "strata-q3",
+   "expected": "not-matched",
+   "from": "CA v3 r1 r1-006 (finding of p1-303 under another expectation)",
+   "item": {
+    "kind": "association",
+    "check": "COMMIT-AUDIT-GATE-1",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "`withinVehicleCapacity` converts the limit to grams and requires the clamped remainder to be above zero, so a total equal to the limit (remainder 0) is rejected.",
+    "finding": "The route identity is encoded by concatenating depotId and normalizeRouteKey(routeKey) with no delimiter, so two stops with different route identities collide into the same string. The runtime check reports duplicates for depotId 'A' with routeKey 'BC' and depotId 'AB' with routeKey 'C', which are not duplicates under Route identity rules 19 and 20.",
+    "result": "gap",
+    "evidence": [
+     {
+      "command": "node --input-type=module -e \"const q=await import('./src/dispatch/queue.mjs'); console.log(q.hasDuplicateRouteKeys([{depotId:'A',routeKey:'BC'},{depotId:'AB',routeKey:'C'}]));\"",
+      "exitCode": 0
+     },
+     {
+      "filePath": "docs/dispatch/dispatch-policy.md",
+      "lineEnd": 38,
+      "lineStart": 37
+     },
+     {
+      "filePath": "src/dispatch/queue.mjs",
+      "lineEnd": 19,
+      "lineStart": 16
+     }
+    ],
+    "requirementSource": {
+     "filePath": ".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md",
+     "line": 29,
+     "requirement": "Under docs/dispatch/dispatch-policy.md, hasDuplicateRouteKeys reports duplicates exactly when two stops are duplicates."
+    }
+   },
+   "confirmed_by": "v1 合成题 s02 在 v2 brief 与 commit-audit-v3.1 场景文本下复核（F10，2026-10-25），期望 not-matched 不变"
+  },
+  {
+   "id": "s03",
+   "type": "mismatch",
+   "family": "strata",
+   "model": "strata-q3",
+   "expected": "not-matched",
+   "from": "CA v3 r1 r1-008 (finding of p1-190 under another expectation)",
+   "item": {
+    "kind": "association",
+    "check": "COMMIT-AUDIT-GATE-1",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "`buildManifest` copies each record shallowly and `labelDriver` assigns the label onto the supplied driver object, so supplied records are mutated.",
+    "finding": "Policy rule 30 defines a stop's assigned driver as the `driver` of the stop's `reassignment` when the stop has one, and otherwise the stop's own `driver`. `stopsForDriver` compares only `stop.driver`, so a reassigned stop is matched against its original driver instead of its assigned driver. For `[{driver: 'd1', reassignment: {driver: 'd2'}}]` and driver `'d2'` it returns 0 stops, while `driverWorkload` in src/dispatch/capacity.mjs, which uses `(stop.reassignment || stop).driver`, returns 1 for the same input. Recommendation: use the assigned-driver expression `(stop.reassignment || stop).driver` in `stopsForDriver`.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "docs/dispatch/dispatch-policy.md",
+      "line": 63
+     },
+     {
+      "filePath": "src/dispatch/queue.mjs",
+      "line": 30
+     }
+    ],
+    "requirementSource": {
+     "filePath": ".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md",
+     "line": 21,
+     "requirement": "Under `docs/dispatch/dispatch-policy.md`, `stopsForDriver` returns exactly the stops whose assigned driver is the given driver."
+    }
+   },
+   "confirmed_by": "v1 合成题 s03 在 v2 brief 与 commit-audit-v3.1 场景文本下复核（F10，2026-10-25），期望 not-matched 不变"
+  },
+  {
+   "id": "s05",
+   "type": "mismatch",
+   "family": "strata",
+   "model": "strata-q3",
+   "expected": "not-matched",
+   "from": "CA v3 r1 r1-015 (finding of p1-258 under another expectation)",
+   "item": {
+    "kind": "association",
+    "check": "COMMIT-AUDIT-GATE-2",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Manifest-event redaction leaves arrays unvisited, so a credential in an object inside an array of the authentication data is not removed.",
+    "finding": "authorizeRouteBatch computes `firstRejected <= 0`, so it returns true (accepted) when the first route in the list is the one that fails requireDepotOwner, and it returns false when a later route fails; the probe returned true for routes [{depotId:\"D2\"},{depotId:\"D1\"}] against an actor with depotId \"D1\", and false for the same failure in the second position.",
+    "result": "gap",
+    "evidence": [
+     {
+      "command": "node --input-type=module -e \"import('./src/dispatch/access.mjs').then(m=>console.log(m.authorizeRouteBatch({depotId:'D1',scopes:[]},[{depotId:'D2'},{depotId:'D1'}])))\"",
+      "exitCode": 0
+     },
+     {
+      "filePath": "src/dispatch/access.mjs",
+      "lineEnd": 10,
+      "lineStart": 7
+     },
+     {
+      "filePath": "src/dispatch/access.mjs",
+      "line": 14
+     }
+    ],
+    "requirementSource": {
+     "filePath": ".scratch/0001-dispatch-control/spec.md",
+     "line": 52,
+     "requirement": "Batch authorization rejects the batch when any route fails depot ownership."
+    }
+   },
+   "confirmed_by": "v1 合成题 s05 在 v2 brief 与 commit-audit-v3.1 场景文本下复核（F10，2026-10-25），期望 not-matched 不变"
+  },
+  {
+   "id": "s06",
+   "type": "false-fact",
+   "family": "strata",
+   "model": "strata-q3",
+   "expected": "unsupported",
+   "from": "CA v3 r1 r1-019 (written after p3-071)",
+   "item": {
+    "kind": "finding",
+    "check": "COMMIT-AUDIT-GATE-2",
+    "allowedDecisions": [
+     "unsupported",
+     "supported",
+     "problem-4"
+    ],
+    "expectation": null,
+    "finding": "`writePlanAtomically` writes the plan bytes directly with `fs.writeFileSync` and never calls the store, so the plan store contract is bypassed.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/dispatch/storage.mjs",
+      "lineEnd": 11,
+      "lineStart": 7
+     }
+    ],
+    "requirementSource": {
+     "filePath": ".scratch/0001-dispatch-control/spec.md",
+     "line": 22,
+     "requirement": "Under docs/dispatch/storage-contract.md, atomic plan writes remove temporary bytes when the rename operation fails."
+    },
+    "problemOptions": [
+     {
+      "decision": "problem-4",
+      "expectation": "Package coalescing compares normalized IDs against raw IDs seen in earlier groups, so whitespace variants of one ID are kept across groups."
+     }
+    ],
+    "cleanTargets": []
+   },
+   "confirmed_by": "v1 合成题 s06 在 v2 brief 与 commit-audit-v3.1 场景文本下复核（F10，2026-10-25），期望 unsupported 不变"
+  },
+  {
+   "id": "s07",
+   "type": "near-miss",
+   "family": "strata",
+   "model": "strata-q3",
+   "expected": "not-matched",
+   "from": "CA v3 r1 r1-028 (written after p1-146)",
+   "item": {
+    "kind": "association",
+    "check": "COMMIT-AUDIT-GATE-1",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "`effectiveScopes` drops only the actor's own scopes when it is suspended and still adds active-claim scopes, so a suspended actor with an active `routes:plan` claim can plan.",
+    "finding": "`effectiveScopes` never checks whether the actor is suspended, so a suspended actor keeps its permissions.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/dispatch/access.mjs",
+      "line": 3
+     },
+     {
+      "filePath": "src/dispatch/access.mjs",
+      "line": 5
+     }
+    ],
+    "requirementSource": {
+     "filePath": ".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md",
+     "line": 51,
+     "requirement": "Under `docs/dispatch/dispatch-policy.md`, `canPlanRoute` refuses every suspended actor."
+    }
+   },
+   "confirmed_by": "v1 合成题 s07 在 v2 brief 与 commit-audit-v3.1 场景文本下复核（F10，2026-10-25），期望 not-matched 不变"
+  },
+  {
+   "id": "s08",
+   "type": "false-fact",
+   "family": "strata",
+   "model": "strata-q3",
+   "expected": "unsupported",
+   "from": "CA v3 r1 r1-033 (written after p2-007)",
+   "item": {
+    "kind": "finding",
+    "check": "COMMIT-AUDIT-GATE-1",
+    "allowedDecisions": [
+     "unsupported",
+     "supported",
+     "problem-2"
+    ],
+    "expectation": null,
+    "finding": "`retry.mjs` passes the server-provided `retryAfter` text to `eval`, so a crafted retry header executes arbitrary code in the dispatcher.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/dispatch/retry.mjs",
+      "line": 8
+     }
+    ],
+    "requirementSource": {
+     "filePath": ".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md",
+     "line": 19,
+     "requirement": "Under docs/dispatch/dispatch-policy.md, nextRetryDelay applies the Retry timing rules to every server-provided retryAfter."
+    },
+    "problemOptions": [
+     {
+      "decision": "problem-2",
+      "expectation": "`nextRetryDelay` tests `retryAfter` by truthiness, so a server-provided `retryAfter` of 0 falls back to the computed backoff instead of a 0 ms delay."
+     }
+    ],
+    "cleanTargets": []
+   },
+   "confirmed_by": "v1 合成题 s08 在 v2 brief 与 commit-audit-v3.1 场景文本下复核（F10，2026-10-25），期望 unsupported 不变"
+  },
+  {
+   "id": "s09",
+   "type": "mismatch",
+   "family": "strata",
+   "model": "strata-q3",
+   "expected": "not-matched",
+   "from": "CA v3 r1 r1-038 (finding of p1-115 under another expectation)",
+   "item": {
+    "kind": "association",
+    "check": "COMMIT-AUDIT-GATE-2",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "A failure marked `transient: false` that carries a finite `retryAfter` is rewrapped as transient, so publication retries do not stop for it.",
+    "finding": "Rule 33 defines an entry's contact phone as its `phone` with every space and hyphen removed, and `manifestRecipients` applies that normalization. `sendDeliveryNotices` is the operation that actually sends the notices and it passes the raw `entry.phone` to `sms.send`, so a notice for an entry whose phone is `'070 - 1234-5678'` is sent to `'070 - 1234-5678'` rather than to the contact phone `'07012345678'`, and the normalized recipient list computed by `manifestRecipients` is not used by the sending path. Recommendation: send through the contact-phone normalization, for example by reusing `manifestRecipients` or applying the same replacement in `sendDeliveryNotices`.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "docs/dispatch/dispatch-policy.md",
+      "line": 63
+     },
+     {
+      "filePath": "src/dispatch/manifest.mjs",
+      "line": 44
+     },
+     {
+      "filePath": "src/dispatch/publisher.mjs",
+      "line": 31
+     }
+    ],
+    "requirementSource": {
+     "filePath": ".scratch/0001-dispatch-control/spec.md",
+     "line": 74,
+     "requirement": "Under `docs/dispatch/dispatch-policy.md`, delivery notices go to the contact phone of every manifest entry."
+    }
+   },
+   "confirmed_by": "v1 合成题 s09 在 v2 brief 与 commit-audit-v3.1 场景文本下复核（F10，2026-10-25），期望 not-matched 不变"
+  },
+  {
+   "id": "s10",
+   "type": "mismatch",
+   "family": "anthropic",
+   "model": "opus",
+   "expected": "not-matched",
+   "from": "CA v3 r1 r1-041 (finding of p1-241 under another expectation)",
+   "item": {
+    "kind": "association",
+    "check": "COMMIT-AUDIT-GATE-1",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "`chooseDeparture` moves a blackout departure to the blackout end hour without refusing it when that hour is outside the departure window.",
+    "finding": "publishManifest maps entries with an async callback, so checks is an array of Promises that are always truthy; checks.every(Boolean) is always true and invalid manifests are stored (verified with a blank packageId: result ok true).",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/dispatch/manifest.mjs",
+      "line": 22
+     },
+     {
+      "filePath": "src/dispatch/manifest.mjs",
+      "line": 30
+     },
+     {
+      "filePath": "src/dispatch/publisher.mjs",
+      "lineEnd": 8,
+      "lineStart": 4
+     }
+    ],
+    "requirementSource": {
+     "filePath": ".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md",
+     "line": 39,
+     "requirement": "publishManifest stores the manifest only when every entry is valid."
+    }
+   },
+   "confirmed_by": "v1 合成题 s10 在 v2 brief 与 commit-audit-v3.1 场景文本下复核（F10，2026-10-25），期望 not-matched 不变"
+  },
+  {
+   "id": "s11",
+   "type": "near-miss",
+   "family": "anthropic",
+   "model": "opus",
+   "expected": "not-matched",
+   "from": "CA v3 r1 r1-047 (written after p1-267)",
+   "item": {
+    "kind": "association",
+    "check": "COMMIT-AUDIT-GATE-2",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "The stop comparator coerces a text `sequence` such as `'2'` to a number, so a stop without a finite numeric sequence does not follow the equal-priority stops that have one.",
+    "finding": "The stop comparator does not place stops that have no `sequence` field after the equal-priority stops that do have one.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "docs/dispatch/dispatch-policy.md",
+      "lineEnd": 18,
+      "lineStart": 15
+     },
+     {
+      "filePath": "src/dispatch/queue.mjs",
+      "line": 4
+     },
+     {
+      "filePath": "src/dispatch/queue.mjs",
+      "line": 6
+     },
+     {
+      "filePath": "src/dispatch/queue.mjs",
+      "line": 8
+     }
+    ],
+    "requirementSource": {
+     "filePath": ".scratch/0001-dispatch-control/spec.md",
+     "line": 50,
+     "requirement": "The ordinary stop-ordering operation follows the Stop priority rules."
+    }
+   },
+   "confirmed_by": "v1 合成题 s11 在 v2 brief 与 commit-audit-v3.1 场景文本下复核（F10，2026-10-25），期望 not-matched 不变"
+  },
+  {
+   "id": "s12",
+   "type": "finding-problem",
+   "family": "anthropic",
+   "model": "opus",
+   "expected": "problem-20",
+   "from": "CA v3 r1 r1-003 (matched, problem 20 of COMMIT-AUDIT-GATE-2)",
+   "item": {
+    "kind": "finding",
+    "check": "COMMIT-AUDIT-GATE-2",
+    "allowedDecisions": [
+     "unsupported",
+     "supported",
+     "problem-20"
+    ],
+    "expectation": null,
+    "finding": "nextRetryDelay tests retryAfter for truthiness instead of finite numeric value: a server-provided retryAfter of 0 falls back to computeBackoff instead of replacing it with a 0 ms delay (rule 7), and a non-finite truthy value such as Infinity replaces the backoff with 2000 ms although rule 7 only applies to a finite numeric retryAfter.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "docs/dispatch/dispatch-policy.md",
+      "lineEnd": 8,
+      "lineStart": 6
+     },
+     {
+      "filePath": "src/dispatch/retry.mjs",
+      "line": 8
+     },
+     {
+      "filePath": "src/dispatch/retry.mjs",
+      "line": 18
+     },
+     {
+      "filePath": "src/dispatch/retry.mjs",
+      "line": 22
+     },
+     {
+      "filePath": "src/dispatch/retry.mjs",
+      "line": 24
+     }
+    ],
+    "requirementSource": {
+     "filePath": ".scratch/0001-dispatch-control/spec.md",
+     "line": 75,
+     "requirement": "The next retry delay follows the Retry timing rules whenever the server provides retryAfter."
+    },
+    "problemOptions": [
+     {
+      "decision": "problem-20",
+      "expectation": "A server-provided `retryAfter` of 0 is falsy, so `nextRetryDelay` uses the computed backoff instead of the server delay."
+     }
+    ],
+    "cleanTargets": []
+   },
+   "confirmed_by": "v1 合成题 s12 在 v2 brief 与 commit-audit-v3.1 场景文本下复核（F10，2026-10-25），期望 problem-20 不变"
+  },
+  {
+   "id": "s13",
+   "type": "finding-problem",
+   "family": "strata",
+   "model": "strata-q3",
+   "expected": "problem-1",
+   "from": "CA v3 r1 r1-013 (matched, problem 1 of COMMIT-AUDIT-GATE-1)",
+   "item": {
+    "kind": "finding",
+    "check": "COMMIT-AUDIT-GATE-1",
+    "allowedDecisions": [
+     "unsupported",
+     "supported",
+     "problem-1"
+    ],
+    "expectation": null,
+    "finding": "src/dispatch/index.mjs re-exports eleven dispatch modules but never re-exports ./executor.mjs, and no staged file imports executor.mjs, so the execution operations executeAuthorizedPlan, executeDryRun, runEligibleStops, emitPlanCreated, pendingStops and planFailure are unreachable from the public dispatch entry.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/dispatch/executor.mjs",
+      "line": 4
+     },
+     {
+      "filePath": "src/dispatch/executor.mjs",
+      "line": 8
+     },
+     {
+      "filePath": "src/dispatch/executor.mjs",
+      "line": 12
+     },
+     {
+      "filePath": "src/dispatch/executor.mjs",
+      "line": 14
+     },
+     {
+      "filePath": "src/dispatch/executor.mjs",
+      "line": 19
+     },
+     {
+      "filePath": "src/dispatch/index.mjs",
+      "lineEnd": 11,
+      "lineStart": 1
+     }
+    ],
+    "requirementSource": {
+     "filePath": ".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md",
+     "line": 7,
+     "requirement": "Connect dispatch planning and execution through the public dispatch entry."
+    },
+    "problemOptions": [
+     {
+      "decision": "problem-1",
+      "expectation": "The public dispatch entry omits the executor surface."
+     }
+    ],
+    "cleanTargets": []
+   },
+   "confirmed_by": "v1 合成题 s13 在 v2 brief 与 commit-audit-v3.1 场景文本下复核（F10，2026-10-25），期望 problem-1 不变"
+  },
+  {
+   "id": "s14",
+   "type": "finding-problem",
+   "family": "openai",
+   "model": null,
+   "expected": "problem-2",
+   "from": "written 2026-10-20 (OpenAI style; GATE-1 problem 2)",
+   "item": {
+    "kind": "finding",
+    "check": "COMMIT-AUDIT-GATE-1",
+    "allowedDecisions": [
+     "unsupported",
+     "supported",
+     "problem-2"
+    ],
+    "expectation": null,
+    "finding": "nextRetryDelay checks retryAfter by truthiness, so a server-provided retryAfter of 0 uses the computed backoff instead of a zero delay.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/dispatch/retry.mjs",
+      "line": 24
+     }
+    ],
+    "requirementSource": {
+     "filePath": ".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md",
+     "line": 19,
+     "requirement": "Under `docs/dispatch/dispatch-policy.md`, `nextRetryDelay` applies the Retry timing rules to every server-provided `retryAfter`."
+    },
+    "problemOptions": [
+     {
+      "decision": "problem-2",
+      "expectation": "`nextRetryDelay` tests `retryAfter` by truthiness, so a server-provided `retryAfter` of 0 falls back to the computed backoff instead of a 0 ms delay."
+     }
+    ],
+    "cleanTargets": []
+   },
+   "confirmed_by": "v1 合成题 s14 在 v2 brief 与 commit-audit-v3.1 场景文本下复核（F10，2026-10-25），期望 problem-2 不变"
+  },
+  {
+   "id": "s15",
+   "type": "mismatch",
+   "family": "openai",
+   "model": null,
+   "expected": "not-matched",
+   "from": "written 2026-10-20 (OpenAI style; finding of GATE-1 problem 7) under problem 8",
+   "item": {
+    "kind": "association",
+    "check": "COMMIT-AUDIT-GATE-1",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "`parseRetryCount` converts text with `Number`, so text that is not base-10 digits, such as `'0x2'`, `'2e0'`, `' 2'` or `''`, is accepted as a retry count.",
+    "finding": "hasDuplicateRouteKeys joins depotId and the normalized route key without a separator, so different route identities such as A/BC and AB/C produce the same key.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/dispatch/queue.mjs",
+      "lineEnd": 19,
+      "lineStart": 16
+     }
+    ],
+    "requirementSource": {
+     "filePath": ".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md",
+     "line": 29,
+     "requirement": "Duplicate route detection distinguishes every route identity."
+    }
+   },
+   "confirmed_by": "v1 合成题 s15 在 v2 brief 与 commit-audit-v3.1 场景文本下复核（F10，2026-10-25），期望 not-matched 不变"
+  },
+  {
+   "id": "s16",
+   "type": "false-fact",
+   "family": "openai",
+   "model": null,
+   "expected": "false-positive:clean-9",
+   "from": "written 2026-10-20 (OpenAI style)",
+   "item": {
+    "kind": "finding",
+    "check": "COMMIT-AUDIT-GATE-2",
+    "allowedDecisions": [
+     "unsupported",
+     "supported",
+     "false-positive:clean-9"
+    ],
+    "expectation": null,
+    "finding": "normalizePackageIds removes duplicates before it trims, so \" A\" and \"A\" both survive.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/dispatch/normalize.mjs",
+      "line": 11
+     }
+    ],
+    "requirementSource": {
+     "filePath": ".scratch/0001-dispatch-control/spec.md",
+     "line": 21,
+     "requirement": "Package IDs are trimmed, deduplicated, and sorted lexically."
+    },
+    "problemOptions": [],
+    "cleanTargets": [
+     {
+      "cleanCaseIndex": 9,
+      "decision": "false-positive:clean-9",
+      "expectation": "The implementation satisfies: Package IDs are trimmed, deduplicated, and sorted lexically."
+     }
+    ]
+   },
+   "confirmed_by": "v1 合成题 s16 在 v2 brief 与 commit-audit-v3.1 场景文本下复核（F10，2026-10-25），期望 false-positive:clean-9 不变"
+  },
+  {
+   "id": "s17",
+   "type": "false-fact",
+   "family": "anthropic",
+   "model": "opus",
+   "expected": "false-positive:clean-11",
+   "from": "written 2026-10-20 (Anthropic style)",
+   "item": {
+    "kind": "finding",
+    "check": "COMMIT-AUDIT-GATE-2",
+    "allowedDecisions": [
+     "unsupported",
+     "supported",
+     "false-positive:clean-11"
+    ],
+    "expectation": null,
+    "finding": "runEligibleStops filters with stop.state === 'cancelled', so it keeps only the cancelled stops and dispatches them instead of excluding them. Verified: executor.mjs line 12.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/dispatch/executor.mjs",
+      "line": 12
+     }
+    ],
+    "requirementSource": {
+     "filePath": ".scratch/0001-dispatch-control/spec.md",
+     "line": 25,
+     "requirement": "Eligible-stop execution excludes cancelled stops."
+    },
+    "problemOptions": [],
+    "cleanTargets": [
+     {
+      "cleanCaseIndex": 11,
+      "decision": "false-positive:clean-11",
+      "expectation": "The implementation satisfies: Eligible-stop execution excludes cancelled stops."
+     }
+    ]
+   },
+   "confirmed_by": "v1 合成题 s17 在 v2 brief 与 commit-audit-v3.1 场景文本下复核（F10，2026-10-25），期望 false-positive:clean-11 不变"
+  },
+  {
+   "id": "s18",
+   "type": "false-fact",
+   "family": "strata",
+   "model": "strata-q3",
+   "expected": "false-positive:clean-16",
+   "from": "written 2026-10-20 (Strata style)",
+   "item": {
+    "kind": "finding",
+    "check": "COMMIT-AUDIT-GATE-2",
+    "allowedDecisions": [
+     "unsupported",
+     "supported",
+     "false-positive:clean-16"
+    ],
+    "expectation": null,
+    "finding": "retryTransient returns Boolean(error.transient), so any truthy marker such as 'yes' or 1 is classified as transient, although the requirement asks for an explicit true marker.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/dispatch/retry.mjs",
+      "line": 10
+     }
+    ],
+    "requirementSource": {
+     "filePath": ".scratch/0001-dispatch-control/spec.md",
+     "line": 36,
+     "requirement": "Transient retry classification requires an explicit true marker."
+    },
+    "problemOptions": [],
+    "cleanTargets": [
+     {
+      "cleanCaseIndex": 16,
+      "decision": "false-positive:clean-16",
+      "expectation": "The implementation satisfies: Transient retry classification requires an explicit true marker."
+     }
+    ]
+   },
+   "confirmed_by": "v1 合成题 s18 在 v2 brief 与 commit-audit-v3.1 场景文本下复核（F10，2026-10-25），期望 false-positive:clean-16 不变"
+  }
+ ]
+}

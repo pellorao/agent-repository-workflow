@@ -1,95 +1,44 @@
 #!/usr/bin/env node
-// 把一个 Reviewer 能力场景搭成独立 Git 仓库, 按角色准备审核输入, 输出可直接交给 `arw background-agent` 的 spawn_agent input.
-// 用法: node scripts/reviewer-capability.mjs <scenario-directory> <new-target-directory>
+// Reviewer capability suite entry: node scripts/reviewer-capability.mjs <setup|score|pool> ...
+//   setup <scenario-directory> <new-target-directory>
+//   score <scenario-directory> <report> [--instance ID] [--decisions FILE ...]
+//   pool build <scenario-directory> <root> <name> <candidates-file ...>
+//   pool prompt|split|override <root> <name> [<decisions-file> | <id> <decision> <reason>]
+// JSON goes to stdout, diagnostics to stderr; exit 0 succeeded, 1 blocked or failed, 2 usage error.
 
-import {execFileSync} from 'node:child_process';
-import {cp, mkdir, readFile, readdir, writeFile} from 'node:fs/promises';
-import {basename, dirname, join, resolve} from 'node:path';
-import {fileURLToPath} from 'node:url';
+import {setupScenario} from '../lib/reviewer-capability-setup.mjs';
+import {pool, score} from '../lib/reviewer-capability/operations.mjs';
 
-import {prepareCommitAudit} from '../lib/commit-audit/commit-audit.mjs';
-import {prepareSpecReadiness} from '../lib/spec-readiness/spec-readiness.mjs';
-
-const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
-// Reviewer 规则引用的指令文件, 复制进场景仓库, 让 Reviewer 只读场景仓库也能读到.
-const INSTRUCTIONS = ['docs/agents/reviewer.md', 'docs/agents/agent-writes.md', 'docs/agents/writing.md', 'docs/agents/roles',
-    '.agents/skills/issue-tracking/SKILL.md', '.agents/skills/domain-modeling/SKILL.md'];
-const IDENTITY = {platform: 'codex', sessionId: 'reviewer-capability'};
-const SPEC_READINESS_INPUT_ROLES = {'specs/': 'governing-spec', 'docs/adr/': 'adr', 'rules/': 'architecture-evidence',
-    'context/': 'domain-context', 'architecture/': 'architecture-evidence'};
-
-const [scenarioArgument, targetArgument] = process.argv.slice(2);
-if (!scenarioArgument || !targetArgument) throw new Error('Usage: node scripts/reviewer-capability.mjs <scenario-directory> <new-target-directory>');
-const scenario = resolve(scenarioArgument);
-const target = resolve(targetArgument);
-const role = basename(dirname(scenario));
-
-const git = (/** @type {string[]} */ ...args) => execFileSync('git', args, {cwd: target, encoding: 'utf8'});
-const overlay = async (/** @type {string} */ part) => {
-    for (const source of [join(dirname(scenario), 'common', part), join(scenario, part)]) {
-        await cp(source, target, {recursive: true}).catch(error => { if (error.code !== 'ENOENT') throw error; });
-    }
+const usage = (/** @type {string} */ message) => {
+    process.stderr.write(`${message}\n`);
+    process.exit(2);
 };
-const listFiles = async (/** @type {string} */ directory) => (await readdir(directory, {recursive: true, withFileTypes: true}))
-    .filter(entry => entry.isFile() && !entry.parentPath.includes(join(directory, '.git')))
-    .map(entry => join(entry.parentPath, entry.name).slice(directory.length + 1).split('\\').join('/'));
 
-await mkdir(dirname(target), {recursive: true});
-await mkdir(target);
-await overlay('base');
-for (const path of INSTRUCTIONS) await cp(join(ROOT, path), join(target, path), {recursive: true});
-git('init', '-q');
-git('add', '-A');
-git('-c', 'user.name=Reviewer Capability', '-c', 'user.email=capability@example.test', 'commit', '-qm', 'scenario base');
-await overlay('candidate');
-git('add', '-A');
-
-const files = await listFiles(target);
-const issueIds = files.flatMap(path => {
-    const match = /^\.scratch\/(\d{4})-[^/]+\/issues\/(\d{2})-[^/]+\.md$/.exec(path);
-    return match ? [`issue:${match[1]}:${match[2]}`] : [];
-}).sort();
-const review = join(target, '.tmp', 'review');
-let reportPath = join(review, 'reports', 'report.txt');
-let task = `Review the staged comparison: \`git diff --cached HEAD\`; read staged bytes with \`git show :<path>\`. Write the complete review to \`${reportPath}\`.`;
-if (role === 'requirements-reviewer') {
-    await mkdir(review, {recursive: true});
-    await writeFile(join(review, 'input.json'), JSON.stringify({authorizingIssueIds: issueIds}));
-    const round = await prepareCommitAudit({inputPath: join(review, 'input.json'), platformAdapter: {getCurrentAgentIdentity: () => IDENTITY}, repositoryRoot: target});
-    const requestPath = join(round.roundDirectory, 'request.json');
-    reportPath = JSON.parse(await readFile(requestPath, 'utf8')).reviewPath;
-    task = `Commit review. The Request is \`${requestPath}\`; write the review to its \`reviewPath\`.`;
-} else if (role === 'spec-readiness-reviewer') {
-    const inputs = files.flatMap(filePath => {
-        const prefix = Object.keys(SPEC_READINESS_INPUT_ROLES).find(entry => filePath.startsWith(entry));
-        return prefix ? [{filePath, role: SPEC_READINESS_INPUT_ROLES[/** @type {keyof typeof SPEC_READINESS_INPUT_ROLES} */ (prefix)]}] : [];
-    }).sort((left, right) => left.filePath.localeCompare(right.filePath));
-    const prepared = await prepareSpecReadiness({input: {inputs}, issueId: issueIds[0],
-        platformAdapter: {getCurrentAgentIdentity: () => IDENTITY}, repositoryRoot: target});
-    reportPath = prepared.draftPath;
-    task = `The Reviewer Request is in \`${prepared.path}\`; write the draft to \`${reportPath}\`.`;
-} else {
-    await mkdir(dirname(reportPath), {recursive: true});
-    await writeFile(reportPath, '');
+const [command, ...rest] = process.argv.slice(2);
+/** @type {string[]} */
+const positional = [];
+/** @type {string[]} */
+const decisions = [];
+let instance;
+for (let index = 0; index < rest.length; index += 1) {
+    if (rest[index] === '--instance') instance = rest[++index];
+    else if (rest[index] === '--decisions') decisions.push(rest[++index]);
+    else positional.push(rest[index]);
 }
+if ([...positional, ...decisions].some(value => value === undefined || value.startsWith('--'))) usage('Unknown or incomplete option.');
 
-// 恢复记录须在调用方仓库的会话临时目录内, 场景目录按 Skill 放在那里, 所以用它的父目录.
-const stateDirectory = join(dirname(target), 'state');
-await mkdir(stateDirectory, {recursive: true});
-const extra = await readFile(join(scenario, 'handoff.md'), 'utf8').catch(() => '');
-const instructions = await Promise.all([`docs/agents/roles/${role}.md`, 'docs/agents/reviewer.md'].map(path => readFile(join(ROOT, path), 'utf8')));
-process.stdout.write(`${JSON.stringify({
-    role,
-    identity: {kind: 'isolated', instanceId: basename(target)},
-    instructions: instructions.join('\n'),
-    handoff: [
-        `The Repository under review is \`${target}\`; work only inside it and use it as the working directory.`,
-        'Only the Agent instruction files present in this Repository apply; references to absent files do not apply.',
-        task,
-        extra.trim(),
-    ].filter(Boolean).join('\n\n'),
-    cwd: target,
-    writePaths: [dirname(reportPath)],
-    reportPath,
-    stateDirectory,
-})}\n`);
+let result;
+if (command === 'setup' && positional.length === 2) result = await setupScenario({scenario: positional[0], target: positional[1]});
+else if (command === 'score' && positional.length === 2) result = await score({decisions, instance, report: positional[1], scenario: positional[0]});
+else if (command === 'pool' && positional[0] === 'build' && positional.length >= 5) {
+    result = await pool({action: 'build', candidates: positional.slice(4), name: positional[3], root: positional[2], scenario: positional[1]});
+} else if (command === 'pool' && positional[0] === 'prompt' && positional.length === 3) result = await pool({action: 'prompt', name: positional[2], root: positional[1]});
+else if (command === 'pool' && positional[0] === 'split' && positional.length === 4) result = await pool({action: 'split', decisions: positional[3], name: positional[2], root: positional[1]});
+else if (command === 'pool' && positional[0] === 'override' && positional.length === 6) {
+    result = await pool({action: 'override', decision: positional[4], id: positional[3], name: positional[2], reason: positional[5], root: positional[1]});
+} else usage('Usage: reviewer-capability.mjs setup|score|pool ... (see the header of this file)');
+
+const {diagnostics = [], ...payload} = /** @type {{diagnostics?: string[], status: string}} */ (result);
+for (const diagnostic of diagnostics) process.stderr.write(`${diagnostic}\n`);
+process.stdout.write(`${JSON.stringify(payload)}\n`);
+process.exit(payload.status === 'succeeded' ? 0 : 1);

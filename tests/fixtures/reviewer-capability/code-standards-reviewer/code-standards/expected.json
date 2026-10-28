@@ -1,0 +1,2209 @@
+{
+ "scopes": [
+  {
+   "cleanCases": [
+    {
+     "evidence": [
+      {
+       "filePath": "src/catering/catering-policy.mjs",
+       "line": 24
+      }
+     ],
+     "expectation": "needsStaff (headcount above CATERING.staffThreshold) is the site rule for sending serving staff; it is not the vendor selection rule of vendorFor, ignores dietary needs, and is set and changed independently.",
+     "findingTerms": [
+      [
+       "needsStaff",
+       "staffThreshold"
+      ],
+      [
+       "vendorFor",
+       "LARGE_ORDER",
+       "duplicate",
+       "duplicates",
+       "duplicated",
+       "duplication",
+       "reimplement",
+       "reimplements",
+       "merge",
+       "merged"
+      ]
+     ],
+     "k": 1
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/platform/site-settings.mjs",
+       "line": 24
+      },
+      {
+       "filePath": "src/platform/site-settings.mjs",
+       "line": 18
+      }
+     ],
+     "evidenceAlternatives": [
+      [
+       {
+        "filePath": "src/platform/site-settings.mjs",
+        "line": 24
+       },
+       {
+        "filePath": "src/platform/time.mjs",
+        "line": 5
+       }
+      ]
+     ],
+     "expectation": "CATERING.cancelCutoff is a catering fact; equal minute values elsewhere in site settings are different facts.",
+     "findingTerms": [
+      [
+       "cancelCutoff"
+      ],
+      [
+       "BADGE_SETTINGS",
+       "1440",
+       "duplicate",
+       "duplicates",
+       "duplicated",
+       "duplication",
+       "reimplement",
+       "reimplements",
+       "merge",
+       "merged"
+      ]
+     ],
+     "k": 1
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/catering/catering-pricing.mjs",
+       "line": 16
+      }
+     ],
+     "expectation": "The service charge rounds up with Math.ceil, which differs from roundedTax half-up rounding (101 at 12% gives 13, roundedTax gives 12), so it is not a duplicate of roundedTax.",
+     "findingTerms": [
+      [
+       "serviceCharge",
+       "service charge"
+      ],
+      [
+       "roundedTax",
+       "duplicate",
+       "duplicates",
+       "duplicated",
+       "duplication",
+       "reimplement",
+       "reimplements",
+       "merge",
+       "merged"
+      ]
+     ],
+     "k": 1
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/catering/catering-service.mjs",
+       "line": 124
+      }
+     ],
+     "expectation": "upcomingOrders filters and sorts without a page limit or cursor; the repository uses pageOf only for paged queries, and listInvoices and listMembers also filter and sort directly.",
+     "findingTerms": [
+      [
+       "upcomingOrders"
+      ],
+      [
+       "pageOf",
+       "paging",
+       "paged",
+       "listing"
+      ]
+     ],
+     "k": 1
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/catering/menu.mjs",
+       "line": 54
+      }
+     ],
+     "expectation": "isOffered checks the menu item end date (an item without offeredUntil stays offered); it looks like the suspension check but is a different fact with the opposite default.",
+     "findingTerms": [
+      [
+       "isOffered",
+       "offeredUntil"
+      ],
+      [
+       "isSuspended",
+       "suspension",
+       "duplicate",
+       "duplicates",
+       "duplicated",
+       "duplication",
+       "reimplement",
+       "reimplements",
+       "merge",
+       "merged"
+      ]
+     ],
+     "k": 1
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/catering/catering-policy.mjs",
+       "line": 22
+      }
+     ],
+     "expectation": "deliveryWindow is the catering delivery window (deliveryLead before deliverAt), not a copy of the reservation access window.",
+     "findingTerms": [
+      [
+       "deliveryWindow",
+       "delivery window"
+      ],
+      [
+       "accessWindow",
+       "access window"
+      ]
+     ],
+     "k": 1
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/catering/catering-policy.mjs",
+       "line": 37
+      }
+     ],
+     "expectation": "clashesWith detects overlapping delivery windows of any non-canceled order in the room; it is a different rule from the confirmed-and-contained selection used for manifests and the front desk.",
+     "findingTerms": [
+      [
+       "clashesWith"
+      ],
+      [
+       "deskDeliveries",
+       "kitchenManifests",
+       "manifest",
+       "isDueIn",
+       "duplicate",
+       "duplicates",
+       "duplicated",
+       "duplication",
+       "reimplement",
+       "reimplements",
+       "merge",
+       "merged"
+      ]
+     ],
+     "k": 1
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/catering/catering-pricing.mjs",
+       "line": 22
+      }
+     ],
+     "evidenceAlternatives": [
+      [
+       {
+        "filePath": "src/catering/catering-pricing.mjs",
+        "line": 26
+       }
+      ],
+      [
+       {
+        "filePath": "src/catering/catering-pricing.mjs",
+        "line": 23
+       }
+      ]
+     ],
+     "expectation": "chargeOf is the catering billing rule (delivered or confirmed orders billed at subtotal plus service charge, cancellation fees); it differs from the reservation chargeFor in line-items.mjs.",
+     "findingTerms": [
+      [
+       "chargeOf",
+       "chargeFor"
+      ],
+      [
+       "switch",
+       "duplicate",
+       "duplicates",
+       "duplicated",
+       "duplication",
+       "reimplement",
+       "reimplements",
+       "merge",
+       "merged"
+      ]
+     ],
+     "k": 1
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/catering/catering-service.mjs",
+       "line": 18
+      },
+      {
+       "filePath": "src/catering/catering-service.mjs",
+       "line": 20
+      }
+     ],
+     "expectation": "menuFor is in a service module, which may catch (rule 4.1), and it preserves the caught error as cause.",
+     "findingTerms": [
+      [
+       "cause",
+       "catch",
+       "catches"
+      ],
+      [
+       "menuFor",
+       "menu of"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/catering/catering-service.mjs",
+       "line": 115
+      },
+      {
+       "filePath": "src/catering/catering-service.mjs",
+       "line": 118
+      }
+     ],
+     "expectation": "cancelForReservation passes its now function on to cancelOrder, an exported service function, which rule 6.3 allows.",
+     "findingTerms": [
+      [
+       "now",
+       "clock"
+      ],
+      [
+       "cancelForReservation",
+       "cancelOrder",
+       "once"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/catering/catering-service.mjs",
+       "line": 3
+      },
+      {
+       "filePath": "src/catering/catering-service.mjs",
+       "line": 56
+      }
+     ],
+     "evidenceAlternatives": [
+      [
+       {
+        "filePath": "src/catering/catering-service.mjs",
+        "line": 3
+       },
+       {
+        "filePath": "src/catering/catering-service.mjs",
+        "line": 57
+       }
+      ]
+     ],
+     "expectation": "catering-service.mjs imports reservations/catalog.mjs, a rule module of another feature, which rule 7.2 allows.",
+     "findingTerms": [
+      [
+       "catalog",
+       "reservations"
+      ],
+      [
+       "import",
+       "imports",
+       "feature"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/catering/catering-service.mjs",
+       "line": 99
+      },
+      {
+       "filePath": "src/catering/catering-service.mjs",
+       "line": 100
+      }
+     ],
+     "expectation": "confirmOrder saves the new record built by advanceOrder; it does not change the order it was given.",
+     "findingTerms": [
+      [
+       "confirmOrder",
+       "confirmed"
+      ],
+      [
+       "mutate",
+       "mutates",
+       "Object.assign",
+       "in place"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/catering/catering-notices.mjs",
+       "line": 30
+      },
+      {
+       "filePath": "src/catering/catering-notices.mjs",
+       "line": 33
+      }
+     ],
+     "expectation": "canceledNotice takes the cancellation time from the order stamp set from the injected clock.",
+     "findingTerms": [
+      [
+       "canceledAt",
+       "canceledNotice"
+      ],
+      [
+       "Date.now",
+       "clock"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/catering/menu.mjs",
+       "line": 4
+      },
+      {
+       "filePath": "src/catering/menu.mjs",
+       "line": 8
+      }
+     ],
+     "expectation": "DIETARY_LABELS is frozen before export.",
+     "findingTerms": [
+      [
+       "DIETARY_LABELS"
+      ],
+      [
+       "frozen",
+       "freeze",
+       "mutable"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/catering/catering-notices.mjs",
+       "line": 9
+      },
+      {
+       "filePath": "src/catering/catering-notices.mjs",
+       "line": 11
+      }
+     ],
+     "expectation": "menuLines sorts the array produced by map, not the caller order.lines.",
+     "findingTerms": [
+      [
+       "sort"
+      ],
+      [
+       "mutate",
+       "mutates",
+       "in place",
+       "in-place"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/catering/catering-states.mjs",
+       "line": 32
+      }
+     ],
+     "expectation": "advanceOrder builds a new history array instead of mutating the order history.",
+     "findingTerms": [
+      [
+       "history"
+      ],
+      [
+       "mutate",
+       "mutates",
+       "push",
+       "in place"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/catering/menu.mjs",
+       "line": 58
+      }
+     ],
+     "expectation": "servesDietary applies the dietary policy (vegan satisfies vegetarian) to every need, so it is not a pure forwarding wrapper.",
+     "findingTerms": [
+      [
+       "servesDietary"
+      ],
+      [
+       "forward",
+       "forwards",
+       "forwarding",
+       "wrapper",
+       "alias",
+       "middle man"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/catering/catering-service.mjs",
+       "line": 124
+      }
+     ],
+     "expectation": "upcomingOrders adds selection and ordering policy over the store, so it is not a pure forwarding wrapper.",
+     "findingTerms": [
+      [
+       "upcomingOrders"
+      ],
+      [
+       "forward",
+       "forwards",
+       "forwarding",
+       "wrapper",
+       "middle man"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/catering/vendors.mjs",
+       "line": 3
+      },
+      {
+       "filePath": "src/catering/vendors.mjs",
+       "line": 4
+      }
+     ],
+     "expectation": "VENDORS and each vendor entry are frozen before export.",
+     "findingTerms": [
+      [
+       "VENDORS"
+      ],
+      [
+       "frozen",
+       "freeze",
+       "mutable"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/platform/site-settings.mjs",
+       "line": 21
+      },
+      {
+       "filePath": "src/platform/site-settings.mjs",
+       "line": 27
+      }
+     ],
+     "expectation": "The new CATERING settings object is frozen before export.",
+     "findingTerms": [
+      [
+       "CATERING"
+      ],
+      [
+       "frozen",
+       "freeze",
+       "mutable"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/catering/catering-fields.mjs",
+       "line": 17
+      }
+     ],
+     "expectation": "prepareNeeds sorts a new Set-derived array, not the caller dietary array.",
+     "findingTerms": [
+      [
+       "sort"
+      ],
+      [
+       "mutate",
+       "mutates",
+       "in place",
+       "in-place"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/billing/line-items.mjs",
+       "line": 26
+      }
+     ],
+     "expectation": "The new extraCharges parameter of buildLineItems is passed by its only caller, draftFor in invoice-service.mjs.",
+     "findingTerms": [
+      [
+       "extraCharges"
+      ],
+      [
+       "speculative",
+       "unused"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/catering/catering-pricing.mjs",
+       "line": 35
+      },
+      {
+       "filePath": "src/reservations/policy.mjs",
+       "line": 46
+      }
+     ],
+     "evidenceAlternatives": [
+      [
+       {
+        "filePath": "src/catering/catering-pricing.mjs",
+        "line": 35
+       },
+       {
+        "filePath": "src/platform/invoice-terms.mjs",
+        "line": 8
+       }
+      ]
+     ],
+     "expectation": "cancellationFee is a catering rule (food subtotal inside the cancel cutoff) that differs from reservations lateFee and platform invoice-terms lateFee.",
+     "findingTerms": [
+      [
+       "cancellationFee",
+       "cancellation fee"
+      ],
+      [
+       "lateFee",
+       "late fee",
+       "duplicate",
+       "duplicates",
+       "duplicated",
+       "duplication",
+       "reimplement",
+       "reimplements",
+       "merge",
+       "merged"
+      ]
+     ],
+     "k": 1
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/catering/menu.mjs",
+       "line": 56
+      },
+      {
+       "filePath": "src/catering/menu.mjs",
+       "line": 58
+      }
+     ],
+     "evidenceAlternatives": [
+      [
+       {
+        "filePath": "src/catering/menu.mjs",
+        "line": 56
+       }
+      ],
+      [
+       {
+        "filePath": "src/catering/menu.mjs",
+        "line": 58
+       }
+      ]
+     ],
+     "expectation": "servesDietary encodes catering dietary policy (vegan satisfies vegetarian) and belongs in the catering module.",
+     "findingTerms": [
+      [
+       "servesDietary",
+       "satisfies"
+      ],
+      [
+       "generic",
+       "common",
+       "platform",
+       "public module"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/catering/catering-fields.mjs",
+       "line": 3
+      }
+     ],
+     "expectation": "catering-fields.mjs reuses requiredText and optionalKey from platform/text.mjs.",
+     "findingTerms": [
+      [
+       "requiredText",
+       "optionalKey"
+      ],
+      [
+       "duplicate",
+       "duplicates",
+       "reimplement",
+       "reimplements"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/catering/catering-policy.mjs",
+       "line": 41
+      }
+     ],
+     "expectation": "clashesWith reuses platform/periods.mjs overlaps.",
+     "findingTerms": [
+      [
+       "overlaps"
+      ],
+      [
+       "duplicate",
+       "duplicates",
+       "reimplement",
+       "reimplements"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/catering/catering-service.mjs",
+       "line": 56
+      },
+      {
+       "filePath": "src/catering/catering-service.mjs",
+       "line": 57
+      }
+     ],
+     "evidenceAlternatives": [
+      [
+       {
+        "filePath": "src/catering/catering-service.mjs",
+        "line": 56
+       }
+      ],
+      [
+       {
+        "filePath": "src/catering/catering-service.mjs",
+        "line": 57
+       }
+      ]
+     ],
+     "expectation": "placeOrder reuses findRoom, loadRooms and hasAmenities from reservations/catalog.mjs.",
+     "findingTerms": [
+      [
+       "findRoom",
+       "hasAmenities",
+       "loadRooms"
+      ],
+      [
+       "duplicate",
+       "duplicates",
+       "reimplement",
+       "reimplements"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/catering/catering-service.mjs",
+       "line": 118
+      }
+     ],
+     "expectation": "cancelForReservation cancels orders one by one because each cancellation is saved and notified separately and the store has no batch interface.",
+     "findingTerms": [
+      [
+       "batch",
+       "batched"
+      ],
+      [
+       "cancelForReservation",
+       "cancelOrder"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/billing/invoice-service.mjs",
+       "line": 22
+      }
+     ],
+     "evidenceAlternatives": [
+      [
+       {
+        "filePath": "src/billing/invoice-service.mjs",
+        "line": 32
+       }
+      ],
+      [
+       {
+        "filePath": "src/catering/catering-pricing.mjs",
+        "line": 30
+       }
+      ],
+      [
+       {
+        "filePath": "src/catering/catering-service.mjs",
+        "line": 148
+       }
+      ]
+     ],
+     "expectation": "previewInvoice and issueInvoice take extraCharges as part of their entry contract; like the other service entry points they are called from outside the repository, and the catering entry point memberInvoiceCharges builds that input with invoiceCharges.",
+     "findingTerms": [
+      [
+       "extraCharges",
+       "invoiceCharges"
+      ],
+      [
+       "speculative",
+       "unused"
+      ]
+     ],
+     "k": 1
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/platform/site-settings.mjs",
+       "line": 21
+      },
+      {
+       "filePath": "src/platform/site-settings.mjs",
+       "line": 27
+      }
+     ],
+     "expectation": "CATERING follows the repository convention of keeping site settings, including feature settings such as PAYMENT_TERMS and BADGE_SETTINGS, in platform/site-settings.mjs.",
+     "findingTerms": [
+      [
+       "CATERING"
+      ],
+      [
+       "platform",
+       "business",
+       "feature",
+       "belongs"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/catering/catering-policy.mjs",
+       "line": 20
+      }
+     ],
+     "evidenceAlternatives": [
+      [
+       {
+        "filePath": "src/catering/kitchen-manifest.mjs",
+        "line": 54
+       }
+      ]
+     ],
+     "expectation": "Text ordering in the catering policy and manifest reuses compareText from platform/text.mjs.",
+     "findingTerms": [
+      [
+       "compareText",
+       "comparator",
+       "compare"
+      ],
+      [
+       "duplicate",
+       "duplicates",
+       "reimplement",
+       "generic",
+       "common"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/billing/line-items.mjs",
+       "line": 33
+      }
+     ],
+     "expectation": "buildLineItems sorts the newly built line-item array, not caller data.",
+     "findingTerms": [
+      [
+       "sort"
+      ],
+      [
+       "mutate",
+       "mutates",
+       "in place",
+       "in-place"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/catering/catering-service.mjs",
+       "line": 150
+      }
+     ],
+     "expectation": "catering-service.mjs holds the entry points of the catering feature, including vendorManifests and deskDeliveries, as every *-service.mjs module in the repository does for its feature.",
+     "findingTerms": [
+      [
+       "catering-service",
+       "vendorManifests"
+      ],
+      [
+       "divergent",
+       "responsibilities",
+       "mixes",
+       "mixed",
+       "cohesion"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/catering/catering-pricing.mjs",
+       "line": 2
+      }
+     ],
+     "expectation": "catering-pricing.mjs imports the generic sumOf from platform/amounts.mjs.",
+     "findingTerms": [
+      [
+       "sumOf"
+      ],
+      [
+       "billing",
+       "totals",
+       "cross",
+       "domain",
+       "feature"
+      ]
+     ]
+    },
+    {
+     "noOtherSupportedFinding": true
+    }
+   ],
+   "problemCases": [
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/catering/catering-states.mjs",
+       "line": 35
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/catering/catering-states.mjs",
+       "line": 35
+      },
+      {
+       "filePath": "src/catering/catering-service.mjs",
+       "line": 10
+      }
+     ],
+     "expectation": "catering-states.mjs exports advanceOrder as a default export and catering-service.mjs imports it as one, violating the named-export rule.",
+     "findingTerms": [
+      [
+       "default export",
+       "export default"
+      ],
+      [
+       "advanceOrder"
+      ]
+     ],
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/catering/catering-notices.mjs",
+       "line": 54
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/catering/catering-notices.mjs",
+       "line": 54
+      }
+     ],
+     "expectation": "vendorNotice reads the clock with Date.now(); only service modules may read the current time, through the injected now function, and the notices module is a rule module.",
+     "findingTerms": [
+      [
+       "Date.now"
+      ],
+      [
+       "now",
+       "clock",
+       "inject",
+       "injected"
+      ]
+     ],
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/catering/kitchen-manifest.mjs",
+       "line": 1
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/catering/kitchen-manifest.mjs",
+       "line": 1
+      },
+      {
+       "filePath": "src/catering/kitchen-manifest.mjs",
+       "line": 46
+      }
+     ],
+     "expectation": "kitchen-manifest.mjs is a rule module but imports the Node.js built-in node:crypto; rule 2 allows built-in imports only in store and platform modules (the node: prefix alone is not enough).",
+     "findingTerms": [
+      [
+       "crypto",
+       "built-in",
+       "builtin"
+      ],
+      [
+       "rule",
+       "store",
+       "platform"
+      ]
+     ],
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/catering/menu.mjs",
+       "line": 39
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/catering/menu.mjs",
+       "line": 39
+      },
+      {
+       "filePath": "src/catering/menu.mjs",
+       "line": 40
+      }
+     ],
+     "expectation": "loadMenu in menu.mjs, a rule module, catches the JSON parse error; rule 4.1 forbids catching in rule modules even when the replacement keeps the cause, and menuFor in the service already wraps menu failures.",
+     "findingTerms": [
+      [
+       "catch",
+       "catches",
+       "caught"
+      ],
+      [
+       "rule",
+       "loadMenu",
+       "propagate"
+      ]
+     ],
+     "result": "gap"
+    },
+    {
+     "expectation": "cancelOrder passes its whole argument object, including the injected now function, to cancellationFee in catering-pricing.mjs, a rule module, which calls context.now() (rule 6.1 and 6.2: rule modules take instants); cancelOrder thereby reads the clock twice in one call (rule 6.3).",
+     "findingTerms": [
+      [
+       "now",
+       "clock"
+      ],
+      [
+       "cancellationFee"
+      ]
+     ],
+     "placements": [
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/catering/catering-pricing.mjs",
+         "line": 35
+        }
+       ],
+       "check": "CODE-STANDARDS-FINDINGS",
+       "evidence": [
+        {
+         "filePath": "src/catering/catering-pricing.mjs",
+         "line": 35
+        },
+        {
+         "filePath": "src/catering/catering-service.mjs",
+         "line": 111
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/catering/catering-service.mjs",
+         "line": 111
+        }
+       ],
+       "check": "CODE-STANDARDS-FINDINGS",
+       "evidence": [
+        {
+         "filePath": "src/catering/catering-pricing.mjs",
+         "line": 35
+        },
+        {
+         "filePath": "src/catering/catering-service.mjs",
+         "line": 111
+        }
+       ]
+      }
+     ],
+     "result": "gap"
+    },
+    {
+     "expectation": "upcomingOrders hands now to the private helper isUpcoming, whose returned predicate calls now() once per order; rule 6.3 allows one read per call and passing now on only to another exported service function.",
+     "findingTerms": [
+      [
+       "now"
+      ],
+      [
+       "isUpcoming",
+       "upcomingOrders",
+       "filter",
+       "once",
+       "per order",
+       "each order"
+      ]
+     ],
+     "placements": [
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/catering/catering-service.mjs",
+         "line": 122
+        }
+       ],
+       "check": "CODE-STANDARDS-FINDINGS",
+       "evidence": [
+        {
+         "filePath": "src/catering/catering-service.mjs",
+         "line": 122
+        },
+        {
+         "filePath": "src/catering/catering-service.mjs",
+         "line": 125
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/catering/catering-service.mjs",
+         "line": 125
+        }
+       ],
+       "check": "CODE-STANDARDS-FINDINGS",
+       "evidence": [
+        {
+         "filePath": "src/catering/catering-service.mjs",
+         "line": 122
+        },
+        {
+         "filePath": "src/catering/catering-service.mjs",
+         "line": 125
+        }
+       ]
+      }
+     ],
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/catering/catering-service.mjs",
+       "line": 94
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/catering/catering-service.mjs",
+       "line": 90
+      },
+      {
+       "filePath": "src/catering/catering-service.mjs",
+       "line": 94
+      }
+     ],
+     "expectation": "postponeOrder changes the record returned by store.find in place with Object.assign before validating it; rule 5 treats store records as caller-supplied, and a rejected postponement leaves the stored order already changed.",
+     "findingTerms": [
+      [
+       "Object.assign",
+       "mutate",
+       "mutates",
+       "mutation",
+       "in place"
+      ],
+      [
+       "store",
+       "postponeOrder",
+       "record"
+      ]
+     ],
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/catering/catering-service.mjs",
+       "line": 4
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/catering/catering-service.mjs",
+       "line": 4
+      },
+      {
+       "filePath": "src/catering/catering-service.mjs",
+       "line": 40
+      }
+     ],
+     "expectation": "catering-service.mjs imports isFrontDeskOpen from schedules/front-desk-service.mjs, a service module of another feature (rule 7.2); the rule module schedules/desk-policy.mjs (isDeskOpen) can be used with the injected desk store (moving the capability to platform under rule 7.4 is also an acceptable fix).",
+     "findingTerms": [
+      [
+       "front-desk-service",
+       "isFrontDeskOpen"
+      ],
+      [
+       "import",
+       "imports",
+       "service"
+      ]
+     ],
+     "result": "gap"
+    },
+    {
+     "expectation": "CateringStore.save chains each write onto this.#writes with .catch(() => undefined) and returns that same swallowed promise, so a failed save (request key already used) resolves with undefined instead of rejecting; rule 4.3 allows the catch only to keep the queue usable, and the caller must still see the original error.",
+     "findingTerms": [
+      [
+       "catch",
+       "swallow",
+       "swallows",
+       "swallowed",
+       "undefined"
+      ],
+      [
+       "save",
+       "write",
+       "writes",
+       "reject",
+       "error"
+      ]
+     ],
+     "placements": [
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/catering/catering-store.mjs",
+         "line": 39
+        }
+       ],
+       "check": "CODE-STANDARDS-FINDINGS",
+       "evidence": [
+        {
+         "filePath": "src/catering/catering-store.mjs",
+         "line": 33
+        },
+        {
+         "filePath": "src/catering/catering-store.mjs",
+         "line": 34
+        },
+        {
+         "filePath": "src/catering/catering-store.mjs",
+         "line": 39
+        },
+        {
+         "filePath": "src/catering/catering-store.mjs",
+         "line": 40
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/catering/catering-store.mjs",
+         "line": 40
+        }
+       ],
+       "check": "CODE-STANDARDS-FINDINGS",
+       "evidence": [
+        {
+         "filePath": "src/catering/catering-store.mjs",
+         "line": 33
+        },
+        {
+         "filePath": "src/catering/catering-store.mjs",
+         "line": 34
+        },
+        {
+         "filePath": "src/catering/catering-store.mjs",
+         "line": 39
+        },
+        {
+         "filePath": "src/catering/catering-store.mjs",
+         "line": 40
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/catering/catering-store.mjs",
+         "line": 34
+        }
+       ],
+       "check": "CODE-STANDARDS-FINDINGS",
+       "evidence": [
+        {
+         "filePath": "src/catering/catering-store.mjs",
+         "line": 33
+        },
+        {
+         "filePath": "src/catering/catering-store.mjs",
+         "line": 34
+        },
+        {
+         "filePath": "src/catering/catering-store.mjs",
+         "line": 39
+        },
+        {
+         "filePath": "src/catering/catering-store.mjs",
+         "line": 40
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/catering/catering-store.mjs",
+         "line": 33
+        }
+       ],
+       "check": "CODE-STANDARDS-FINDINGS",
+       "evidence": [
+        {
+         "filePath": "src/catering/catering-store.mjs",
+         "line": 33
+        },
+        {
+         "filePath": "src/catering/catering-store.mjs",
+         "line": 34
+        },
+        {
+         "filePath": "src/catering/catering-store.mjs",
+         "line": 39
+        },
+        {
+         "filePath": "src/catering/catering-store.mjs",
+         "line": 40
+        }
+       ]
+      }
+     ],
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/catering/menu.mjs",
+       "line": 11
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/catering/menu.mjs",
+       "line": 11
+      }
+     ],
+     "expectation": "DIETARY_TAGS is exported directly from menu.mjs as Object.keys(DIETARY_LABELS), a new array that is not frozen although DIETARY_LABELS is.",
+     "findingTerms": [
+      [
+       "DIETARY_TAGS"
+      ],
+      [
+       "frozen",
+       "freeze"
+      ]
+     ],
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/catering/catering-service.mjs",
+       "line": 35
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/catering/catering-service.mjs",
+       "line": 31
+      },
+      {
+       "filePath": "src/catering/catering-service.mjs",
+       "line": 35
+      }
+     ],
+     "expectation": "notifyVendor replaces the caught notifier error with new Error(message, error); the caught error is passed as the options argument, not as {cause: error}, so the new error has no cause.",
+     "findingTerms": [
+      [
+       "cause"
+      ],
+      [
+       "notifyVendor",
+       "vendor",
+       "options"
+      ]
+     ],
+     "result": "gap"
+    },
+    {
+     "expectation": "kitchenManifests passes the caller's orders array to inDeliveryOrder, which sorts it in place with Array.prototype.sort, so the exported function reorders caller data (rule 5).",
+     "findingTerms": [
+      [
+       "sort",
+       "inDeliveryOrder"
+      ],
+      [
+       "mutate",
+       "mutates",
+       "in place",
+       "in-place",
+       "reorder",
+       "reorders"
+      ]
+     ],
+     "placements": [
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/catering/kitchen-manifest.mjs",
+         "line": 27
+        }
+       ],
+       "check": "CODE-STANDARDS-FINDINGS",
+       "evidence": [
+        {
+         "filePath": "src/catering/kitchen-manifest.mjs",
+         "line": 27
+        },
+        {
+         "filePath": "src/catering/kitchen-manifest.mjs",
+         "line": 51
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/catering/kitchen-manifest.mjs",
+         "line": 51
+        }
+       ],
+       "check": "CODE-STANDARDS-FINDINGS",
+       "evidence": [
+        {
+         "filePath": "src/catering/kitchen-manifest.mjs",
+         "line": 27
+        },
+        {
+         "filePath": "src/catering/kitchen-manifest.mjs",
+         "line": 51
+        }
+       ]
+      }
+     ],
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/catering/catering-service.mjs",
+       "line": 74
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/catering/catering-service.mjs",
+       "line": 73
+      },
+      {
+       "filePath": "src/catering/catering-service.mjs",
+       "line": 74
+      }
+     ],
+     "expectation": "addLine copies the order with a shallow spread and then pushes into amended.lines, which is still the caller's order.lines array, mutating caller data.",
+     "findingTerms": [
+      [
+       "lines"
+      ],
+      [
+       "mutate",
+       "mutates",
+       "shallow",
+       "push"
+      ]
+     ],
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/catering/catering-store.mjs",
+       "line": 12
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/catering/catering-store.mjs",
+       "line": 12
+      },
+      {
+       "filePath": "src/catering/catering-store.mjs",
+       "line": 44
+      }
+     ],
+     "expectation": "catering-store.mjs implements the store as a class although no external Interface requires one; repository stores are factory closures (writing.md: avoid class unless an external Interface requires it).",
+     "findingTerms": [
+      [
+       "class"
+      ],
+      [
+       "CateringStore",
+       "store"
+      ]
+     ],
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/catering/menu.mjs",
+       "line": 52
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/catering/menu.mjs",
+       "line": 52
+      },
+      {
+       "filePath": "src/catering/catering-notices.mjs",
+       "line": 10
+      }
+     ],
+     "expectation": "findMenuItem in menu.mjs only forwards to requireMenuItem with the same arguments and hides no complexity (writing.md: no pure forwarding wrappers); catering-notices.mjs can call requireMenuItem directly.",
+     "findingTerms": [
+      [
+       "findMenuItem"
+      ],
+      [
+       "forward",
+       "forwards",
+       "forwarding",
+       "wrapper",
+       "alias",
+       "middle man",
+       "delegate",
+       "delegates",
+       "requireMenuItem"
+      ]
+     ],
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/catering/catering-time.mjs",
+       "line": 1
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/catering/catering-time.mjs",
+       "line": 1
+      }
+     ],
+     "expectation": "catering-time.mjs only re-exports DAY and addMinutes from platform/time.mjs, a forwarding module that hides no complexity.",
+     "findingTerms": [
+      [
+       "catering-time",
+       "re-export",
+       "re-exports",
+       "reexport"
+      ],
+      [
+       "platform/time",
+       "forward",
+       "forwarding",
+       "wrapper",
+       "middle man"
+      ]
+     ],
+     "result": "gap"
+    },
+    {
+     "expectation": "kitchenFor in kitchen-manifest.mjs re-derives the vendor with a predicate table (halal first, then headcount >= 31) that is the same rule as vendorFor in vendors.mjs (halal, then headcount > LARGE_ORDER = 30); the two can be merged by grouping on the vendorId already stored on each order (single authoritative source).",
+     "findingTerms": [
+      [
+       "kitchenFor",
+       "KITCHENS",
+       "vendorFor"
+      ],
+      [
+       "vendorFor",
+       "vendors"
+      ]
+     ],
+     "k": 1,
+     "placements": [
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/catering/kitchen-manifest.mjs",
+         "line": 25
+        }
+       ],
+       "check": "CODE-STANDARDS-FINDINGS",
+       "evidence": [
+        {
+         "filePath": "src/catering/kitchen-manifest.mjs",
+         "line": 19
+        },
+        {
+         "filePath": "src/catering/kitchen-manifest.mjs",
+         "line": 25
+        },
+        {
+         "filePath": "src/catering/kitchen-manifest.mjs",
+         "line": 53
+        },
+        {
+         "filePath": "src/catering/vendors.mjs",
+         "line": 9
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/catering/kitchen-manifest.mjs",
+         "line": 19
+        }
+       ],
+       "check": "CODE-STANDARDS-FINDINGS",
+       "evidence": [
+        {
+         "filePath": "src/catering/kitchen-manifest.mjs",
+         "line": 19
+        },
+        {
+         "filePath": "src/catering/kitchen-manifest.mjs",
+         "line": 25
+        },
+        {
+         "filePath": "src/catering/kitchen-manifest.mjs",
+         "line": 53
+        },
+        {
+         "filePath": "src/catering/vendors.mjs",
+         "line": 9
+        }
+       ]
+      }
+     ],
+     "result": "gap"
+    },
+    {
+     "expectation": "confirmedNotice states a 14-day payment term that restates the repository payment terms (PAYMENT_TERMS.dueMinutes = 20160 minutes, used by invoice-terms dueAt) for the invoice that bills the catering charge; it should be derived from that setting.",
+     "findingTerms": [
+      [
+       "PAYABLE_WITHIN_DAYS",
+       "14"
+      ],
+      [
+       "PAYMENT_TERMS",
+       "dueMinutes",
+       "invoice-terms"
+      ]
+     ],
+     "k": 1,
+     "placements": [
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/catering/catering-notices.mjs",
+         "line": 5
+        }
+       ],
+       "check": "CODE-STANDARDS-FINDINGS",
+       "evidence": [
+        {
+         "filePath": "src/catering/catering-notices.mjs",
+         "line": 5
+        },
+        {
+         "filePath": "src/catering/catering-notices.mjs",
+         "line": 27
+        },
+        {
+         "filePath": "src/platform/site-settings.mjs",
+         "line": 10
+        },
+        {
+         "filePath": "src/platform/invoice-terms.mjs",
+         "line": 4
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/catering/catering-notices.mjs",
+         "line": 27
+        }
+       ],
+       "check": "CODE-STANDARDS-FINDINGS",
+       "evidence": [
+        {
+         "filePath": "src/catering/catering-notices.mjs",
+         "line": 5
+        },
+        {
+         "filePath": "src/catering/catering-notices.mjs",
+         "line": 27
+        },
+        {
+         "filePath": "src/platform/site-settings.mjs",
+         "line": 10
+        },
+        {
+         "filePath": "src/platform/invoice-terms.mjs",
+         "line": 4
+        }
+       ]
+      }
+     ],
+     "result": "gap"
+    },
+    {
+     "expectation": "orderCharge rounds tax through the private helper share (Math.round of amount * basisPoints / 1e4), which equals billing/totals.mjs roundedTax (floor of taxable * basisPoints + BASIS / 2) for the non-negative amounts here; orderCharge can call roundedTax.",
+     "findingTerms": [
+      [
+       "tax",
+       "share"
+      ],
+      [
+       "roundedTax",
+       "totals"
+      ]
+     ],
+     "k": 1,
+     "placements": [
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/catering/catering-pricing.mjs",
+         "line": 9
+        }
+       ],
+       "check": "CODE-STANDARDS-FINDINGS",
+       "evidence": [
+        {
+         "filePath": "src/catering/catering-pricing.mjs",
+         "line": 9
+        },
+        {
+         "filePath": "src/catering/catering-pricing.mjs",
+         "line": 18
+        },
+        {
+         "filePath": "src/billing/totals.mjs",
+         "line": 5
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/catering/catering-pricing.mjs",
+         "line": 18
+        }
+       ],
+       "check": "CODE-STANDARDS-FINDINGS",
+       "evidence": [
+        {
+         "filePath": "src/catering/catering-pricing.mjs",
+         "line": 9
+        },
+        {
+         "filePath": "src/catering/catering-pricing.mjs",
+         "line": 18
+        },
+        {
+         "filePath": "src/billing/totals.mjs",
+         "line": 5
+        }
+       ]
+      }
+     ],
+     "result": "gap"
+    },
+    {
+     "expectation": "listOrders sorts by byDelivery, finds the first order after the cursor and slices page.limit orders; this is the same result as platform/listing.mjs pageOf with the predicate byDelivery(order, page.after) > 0, so it can be replaced by pageOf.",
+     "findingTerms": [
+      [
+       "listOrders"
+      ],
+      [
+       "pageOf",
+       "listing"
+      ]
+     ],
+     "k": 1,
+     "placements": [
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/catering/catering-service.mjs",
+         "line": 128
+        }
+       ],
+       "check": "CODE-STANDARDS-FINDINGS",
+       "evidence": [
+        {
+         "filePath": "src/catering/catering-service.mjs",
+         "line": 128
+        },
+        {
+         "filePath": "src/catering/catering-service.mjs",
+         "line": 130
+        },
+        {
+         "filePath": "src/catering/catering-service.mjs",
+         "line": 131
+        },
+        {
+         "filePath": "src/platform/listing.mjs",
+         "line": 1
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/catering/catering-service.mjs",
+         "line": 130
+        }
+       ],
+       "check": "CODE-STANDARDS-FINDINGS",
+       "evidence": [
+        {
+         "filePath": "src/catering/catering-service.mjs",
+         "line": 128
+        },
+        {
+         "filePath": "src/catering/catering-service.mjs",
+         "line": 130
+        },
+        {
+         "filePath": "src/catering/catering-service.mjs",
+         "line": 131
+        },
+        {
+         "filePath": "src/platform/listing.mjs",
+         "line": 1
+        }
+       ]
+      }
+     ],
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/catering/catering-service.mjs",
+       "line": 55
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/catering/catering-service.mjs",
+       "line": 55
+      },
+      {
+       "filePath": "src/members/suspension.mjs",
+       "line": 6
+      }
+     ],
+     "expectation": "placeOrder rejects members with at < (member.suspension?.expiresAt ?? at), the same suspension rule as members/suspension.mjs isSuspended, which owns it; placeOrder can call isSuspended.",
+     "findingTerms": [
+      [
+       "suspension",
+       "suspended",
+       "expiresAt"
+      ],
+      [
+       "isSuspended"
+      ]
+     ],
+     "k": 1,
+     "result": "gap"
+    },
+    {
+     "expectation": "fitsReservation recomputes the reservation building-access window, duplicating reservations/policy.mjs accessWindow and its SETTINGS (partySize > 8 is largeParty, 30 and 15 minutes early are largeAccessMinutes and accessMinutes, 15 minutes after is accessMinutes); it can be contains(accessWindow(reservation), deliveryWindow(order)).",
+     "findingTerms": [
+      [
+       "guestsArriveFrom",
+       "guestsLeaveBy",
+       "fitsReservation"
+      ],
+      [
+       "accessWindow",
+       "accessLead",
+       "largeAccessMinutes",
+       "accessMinutes"
+      ]
+     ],
+     "k": 1,
+     "placements": [
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/catering/catering-policy.mjs",
+         "line": 26
+        }
+       ],
+       "check": "CODE-STANDARDS-FINDINGS",
+       "evidence": [
+        {
+         "filePath": "src/catering/catering-policy.mjs",
+         "line": 26
+        },
+        {
+         "filePath": "src/catering/catering-policy.mjs",
+         "line": 28
+        },
+        {
+         "filePath": "src/catering/catering-policy.mjs",
+         "line": 33
+        },
+        {
+         "filePath": "src/reservations/policy.mjs",
+         "line": 56
+        },
+        {
+         "filePath": "src/reservations/policy.mjs",
+         "line": 52
+        },
+        {
+         "filePath": "src/reservations/calendar.mjs",
+         "line": 9
+        },
+        {
+         "filePath": "src/reservations/calendar.mjs",
+         "line": 15
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/catering/catering-policy.mjs",
+         "line": 28
+        }
+       ],
+       "check": "CODE-STANDARDS-FINDINGS",
+       "evidence": [
+        {
+         "filePath": "src/catering/catering-policy.mjs",
+         "line": 26
+        },
+        {
+         "filePath": "src/catering/catering-policy.mjs",
+         "line": 28
+        },
+        {
+         "filePath": "src/catering/catering-policy.mjs",
+         "line": 33
+        },
+        {
+         "filePath": "src/reservations/policy.mjs",
+         "line": 56
+        },
+        {
+         "filePath": "src/reservations/policy.mjs",
+         "line": 52
+        },
+        {
+         "filePath": "src/reservations/calendar.mjs",
+         "line": 9
+        },
+        {
+         "filePath": "src/reservations/calendar.mjs",
+         "line": 15
+        }
+       ]
+      }
+     ],
+     "result": "gap"
+    },
+    {
+     "expectation": "deskDeliveries selects confirmed orders whose delivery window (deliverAt - deliveryLead to deliverAt) lies inside the day, the same selection rule that kitchenManifests applies with contains(period, deliveryWindow(order)), written out with a loop and inline arithmetic; the rule can live in one policy helper used by both, with the building filter as the only difference.",
+     "findingTerms": [
+      [
+       "deskDeliveries"
+      ],
+      [
+       "kitchenManifests",
+       "deliveryWindow",
+       "kitchen-manifest"
+      ]
+     ],
+     "k": 1,
+     "placements": [
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/catering/catering-service.mjs",
+         "line": 134
+        }
+       ],
+       "check": "CODE-STANDARDS-FINDINGS",
+       "evidence": [
+        {
+         "filePath": "src/catering/catering-service.mjs",
+         "line": 134
+        },
+        {
+         "filePath": "src/catering/catering-service.mjs",
+         "line": 137
+        },
+        {
+         "filePath": "src/catering/kitchen-manifest.mjs",
+         "line": 52
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/catering/catering-service.mjs",
+         "line": 137
+        }
+       ],
+       "check": "CODE-STANDARDS-FINDINGS",
+       "evidence": [
+        {
+         "filePath": "src/catering/catering-service.mjs",
+         "line": 134
+        },
+        {
+         "filePath": "src/catering/catering-service.mjs",
+         "line": 137
+        },
+        {
+         "filePath": "src/catering/kitchen-manifest.mjs",
+         "line": 52
+        }
+       ]
+      }
+     ],
+     "result": "gap"
+    },
+    {
+     "expectation": "Course facts are kept in three places: the prepMinutes switch in catering-policy.mjs, the SERVING_ORDER map in catering-notices.mjs (which repeats the order of the COURSES list) and COURSES in menu.mjs; a course added only to COURSES passes menu validation and then makes placeOrder throw and the notice sort compare undefined. One course table can hold them.",
+     "findingTerms": [
+      [
+       "course",
+       "courses",
+       "COURSES"
+      ],
+      [
+       "COURSES",
+       "SERVING_ORDER",
+       "prepMinutes"
+      ]
+     ],
+     "k": 1,
+     "placements": [
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/catering/catering-policy.mjs",
+         "line": 6
+        }
+       ],
+       "check": "CODE-STANDARDS-FINDINGS",
+       "evidence": [
+        {
+         "filePath": "src/catering/catering-policy.mjs",
+         "line": 6
+        },
+        {
+         "filePath": "src/catering/catering-notices.mjs",
+         "line": 7
+        },
+        {
+         "filePath": "src/catering/menu.mjs",
+         "line": 13
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/catering/catering-notices.mjs",
+         "line": 7
+        }
+       ],
+       "check": "CODE-STANDARDS-FINDINGS",
+       "evidence": [
+        {
+         "filePath": "src/catering/catering-policy.mjs",
+         "line": 6
+        },
+        {
+         "filePath": "src/catering/catering-notices.mjs",
+         "line": 7
+        },
+        {
+         "filePath": "src/catering/menu.mjs",
+         "line": 13
+        }
+       ]
+      }
+     ],
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/catering/catering-notices.mjs",
+       "line": 41
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/catering/catering-notices.mjs",
+       "line": 41
+      },
+      {
+       "filePath": "src/catering/catering-statements.mjs",
+       "line": 5
+      }
+     ],
+     "expectation": "deliveredNotice in catering-notices.mjs sums line servings with its own reduce, the same fact that servingsOf in catering-statements.mjs computes; the notice can call servingsOf so the servings total keeps one authority.",
+     "findingTerms": [
+      [
+       "servings",
+       "servingsOf",
+       "reduce"
+      ],
+      [
+       "servingsOf",
+       "catering-statements"
+      ]
+     ],
+     "k": 1,
+     "result": "gap"
+    },
+    {
+     "expectation": "vendorStatement takes a withCanceled option that its only caller, vendorStatements, never passes; catering-statements.mjs is a rule module, not an entry point, so the option is machinery for an assumed future need (writing.md minimal sufficient contracts) and can be removed.",
+     "findingTerms": [
+      [
+       "withCanceled",
+       "vendorStatement"
+      ],
+      [
+       "unused",
+       "no caller",
+       "never passed",
+       "never passes",
+       "speculative",
+       "not passed",
+       "future"
+      ]
+     ],
+     "k": 1,
+     "placements": [
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/catering/catering-statements.mjs",
+         "line": 14
+        }
+       ],
+       "check": "CODE-STANDARDS-FINDINGS",
+       "evidence": [
+        {
+         "filePath": "src/catering/catering-statements.mjs",
+         "line": 14
+        },
+        {
+         "filePath": "src/catering/catering-statements.mjs",
+         "line": 15
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/catering/catering-statements.mjs",
+         "line": 15
+        }
+       ],
+       "check": "CODE-STANDARDS-FINDINGS",
+       "evidence": [
+        {
+         "filePath": "src/catering/catering-statements.mjs",
+         "line": 14
+        },
+        {
+         "filePath": "src/catering/catering-statements.mjs",
+         "line": 15
+        }
+       ]
+      }
+     ],
+     "result": "gap"
+    }
+   ],
+   "scope": "CODE-STANDARDS-FINDINGS"
+  }
+ ]
+}

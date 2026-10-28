@@ -1,0 +1,2147 @@
+{
+ "scopes": [
+  {
+   "cleanCases": [
+    {
+     "evidence": [
+      {
+       "filePath": "src/reservations/catalog.mjs",
+       "line": 14
+      },
+      {
+       "filePath": "governing-spec.md",
+       "line": 76
+      }
+     ],
+     "expectation": "A room can host a party whose size is at most its capacity.",
+     "findingTerms": [
+      [
+       "capacity"
+      ],
+      [
+       "at most",
+       "<="
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/reservations/policy.mjs",
+       "line": 42
+      },
+      {
+       "filePath": "src/reservations/calendar.mjs",
+       "line": 19
+      },
+      {
+       "filePath": "governing-spec.md",
+       "line": 279
+      }
+     ],
+     "expectation": "The member limit compares the counted open reservations with maxOpenPerMember using <, so a count of two rejects creation.",
+     "findingTerms": [
+      [
+       "limit",
+       "quota",
+       "two",
+       "open"
+      ],
+      [
+       "< ",
+       "already",
+       "reject",
+       "two"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/reservations/calendar.mjs",
+       "line": 12
+      },
+      {
+       "filePath": "src/reservations/calendar.mjs",
+       "line": 13
+      },
+      {
+       "filePath": "governing-spec.md",
+       "line": 120
+      }
+     ],
+     "expectation": "holdExpiry selects largeHold exactly when partySize is greater than 8 (strictly greater; a party of 8 gets the regular hold).",
+     "findingTerms": [
+      [
+       "large",
+       "party",
+       "30"
+      ],
+      [
+       "hold",
+       "expir"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/reservations/policy.mjs",
+       "line": 27
+      },
+      {
+       "filePath": "governing-spec.md",
+       "line": 121
+      }
+     ],
+     "expectation": "Expiry never changes the stored state; isExpired is a check, not a transition.",
+     "findingTerms": [
+      [
+       "expir"
+      ],
+      [
+       "state",
+       "still held",
+       "transition"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/audit/retention.mjs",
+       "line": 9
+      },
+      {
+       "filePath": "src/audit/retention.mjs",
+       "line": 11
+      },
+      {
+       "filePath": "src/audit/retention.mjs",
+       "line": 4
+      },
+      {
+       "filePath": "governing-spec.md",
+       "line": 175
+      },
+      {
+       "filePath": "governing-spec.md",
+       "line": 151
+      }
+     ],
+     "expectation": "AUDIT_LIMITS.retention is minutes(43200), converted to milliseconds once, retentionCutoff subtracts it from now(), and isRetained keeps an entry whose at equals the cutoff, so a query matches an entry exactly 43200 minutes old and excludes one a millisecond older.",
+     "findingTerms": [
+      [
+       "retention",
+       "cutoff",
+       "isRetained"
+      ],
+      [
+       "43200",
+       "boundary",
+       "unit",
+       "earlier",
+       ">="
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/audit/redaction.mjs",
+       "line": 5
+      },
+      {
+       "filePath": "src/audit/redaction.mjs",
+       "line": 12
+      },
+      {
+       "filePath": "src/audit/audit-service.mjs",
+       "line": 19
+      },
+      {
+       "filePath": "governing-spec.md",
+       "line": 96
+      }
+     ],
+     "expectation": "recordEntry stores redact(prepared.details); redact maps arrays and rebuilds plain objects, replacing the value of every key whose lowercase form is note, email or phone with '[redacted]' at any depth and keeping other keys and values, so the stored details are redacted and the supplied details are not modified.",
+     "findingTerms": [
+      [
+       "redact",
+       "details",
+       "sensitive"
+      ],
+      [
+       "case",
+       "nested",
+       "depth",
+       "array",
+       "modified",
+       "lowercase"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/badges/badge-policy.mjs",
+       "line": 18
+      },
+      {
+       "filePath": "src/platform/site-settings.mjs",
+       "line": 16
+      },
+      {
+       "filePath": "governing-spec.md",
+       "line": 28
+      }
+     ],
+     "expectation": "isRepeatedSwipe uses a strict < against repeatWindow, which is minutes(3) in milliseconds, so swipes exactly 3 minutes apart are both recorded and only closer ones are repeats.",
+     "findingTerms": [
+      [
+       "repeat",
+       "swipe"
+      ],
+      [
+       "3 minutes",
+       "strict",
+       "boundary",
+       "unit",
+       "<"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/badges/badge-policy.mjs",
+       "line": 25
+      },
+      {
+       "filePath": "src/platform/site-settings.mjs",
+       "line": 17
+      },
+      {
+       "filePath": "src/badges/badge-service.mjs",
+       "line": 14
+      },
+      {
+       "filePath": "governing-spec.md",
+       "line": 178
+      }
+     ],
+     "expectation": "isLate compares now() - at with lateLimit, minutes(1440) in milliseconds, using >, so an event exactly 1440 minutes old is accepted and one a millisecond older is rejected.",
+     "findingTerms": [
+      [
+       "late",
+       "isLate",
+       "1440"
+      ],
+      [
+       "boundary",
+       "strict",
+       "unit",
+       "more than",
+       ">"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/exports/csv-format.mjs",
+       "line": 5
+      }
+     ],
+     "expectation": "NEEDS_QUOTES has no g flag, but it is only used with test(), where a non-global regex keeps no lastIndex state, so every field containing a comma, double quote, carriage return or line feed is quoted on every row.",
+     "findingTerms": [
+      [
+       "NEEDS_QUOTES",
+       "quote",
+       "comma"
+      ],
+      [
+       "/g",
+       "g flag",
+       "global",
+       "lastIndex",
+       "stateful"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/exports/export-filter.mjs",
+       "line": 31
+      },
+      {
+       "filePath": "src/exports/export-filter.mjs",
+       "line": 5
+      },
+      {
+       "filePath": "governing-spec.md",
+       "line": 220
+      }
+     ],
+     "expectation": "prepareFilter rejects a window only when until - from is greater than minutes(44640), so a window of exactly 44640 minutes is accepted and the limit is converted to milliseconds once.",
+     "findingTerms": [
+      [
+       "export",
+       "window",
+       "44640"
+      ],
+      [
+       "too long",
+       "boundary",
+       "strict",
+       "unit",
+       ">"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/members/periods.mjs",
+       "line": 7
+      },
+      {
+       "filePath": "governing-spec.md",
+       "line": 180
+      }
+     ],
+     "expectation": "usageMonth ends the month at Date.UTC(year, month, 1), which rolls December over to January of the next year, so a reservation starting exactly at the next month's first instant is not counted and one starting on the last day is.",
+     "findingTerms": [
+      [
+       "month",
+       "usageMonth",
+       "Date.UTC"
+      ],
+      [
+       "December",
+       "roll over",
+       "rollover",
+       "next year",
+       "month - 1",
+       "0-based",
+       "zero-based",
+       "zero-indexed",
+       "off by one month"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/members/suspension.mjs",
+       "line": 6
+      },
+      {
+       "filePath": "src/members/suspension.mjs",
+       "line": 18
+      },
+      {
+       "filePath": "governing-spec.md",
+       "line": 190
+      }
+     ],
+     "expectation": "suspend sets expiresAt to at + minutes(durationMinutes), one conversion, and isSuspended uses a strict at < expiresAt, so the member is suspended until one millisecond before expiresAt and reported active from expiresAt on.",
+     "findingTerms": [
+      [
+       "suspension",
+       "suspended",
+       "expiresAt"
+      ],
+      [
+       "boundary",
+       "strict",
+       "unit",
+       "minutes(",
+       "<"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/messaging/template-render.mjs",
+       "line": 11
+      },
+      {
+       "filePath": "governing-spec.md",
+       "line": 159
+      }
+     ],
+     "expectation": "escapeText uses /[&<>\"']/g with the global flag, so every occurrence of each special character in a rendered value is escaped.",
+     "findingTerms": [
+      [
+       "escape",
+       "escapeText",
+       "rendered"
+      ],
+      [
+       "/g",
+       "global",
+       "g flag",
+       "only one",
+       "first"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/messaging/messaging-service.mjs",
+       "line": 33
+      },
+      {
+       "filePath": "src/messaging/digest.mjs",
+       "line": 3
+      },
+      {
+       "filePath": "governing-spec.md",
+       "line": 206
+      }
+     ],
+     "expectation": "The queue limit check rejects a quiet-hours message when the member already has QUEUE_LIMIT (50) queued messages, using >=, so the 50th queued message is accepted and the 51st is rejected.",
+     "findingTerms": [
+      [
+       "QUEUE_LIMIT",
+       "queuedFor",
+       "queue limit"
+      ],
+      [
+       "off by one",
+       ">=",
+       "51st",
+       "50th",
+       "50",
+       "boundary",
+       "greater than or equal"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/visitors/lobby-policy.mjs",
+       "line": 5
+      },
+      {
+       "filePath": "src/visitors/lobby-policy.mjs",
+       "line": 27
+      },
+      {
+       "filePath": "src/platform/site-settings.mjs",
+       "line": 4
+      },
+      {
+       "filePath": "governing-spec.md",
+       "line": 188
+      }
+     ],
+     "expectation": "checkInOpens is addMinutes(expectedAt, -earlyArrivalMinutes), a count of minutes converted once, and isInCheckInWindow uses <= at the start, so a guest may check in exactly 30 minutes before expectedAt but not a millisecond earlier.",
+     "findingTerms": [
+      [
+       "check-in",
+       "checkInFrom",
+       "window"
+      ],
+      [
+       "unit",
+       "minutes",
+       "boundary",
+       "inclusive",
+       "<=",
+       "early"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/visitors/guest-fields.mjs",
+       "line": 3
+      },
+      {
+       "filePath": "governing-spec.md",
+       "line": 83
+      }
+     ],
+     "expectation": "normalizeGuestName replaces /\\s+/g with one space after trimming, so every inner whitespace run of a guest name, not only the first, becomes one space.",
+     "findingTerms": [
+      [
+       "name",
+       "whitespace",
+       "normalizeGuestName"
+      ],
+      [
+       "/g",
+       "global",
+       "g flag",
+       "only one",
+       "first"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/billing/line-items.mjs",
+       "line": 2
+      },
+      {
+       "filePath": "governing-spec.md",
+       "line": 134
+      },
+      {
+       "filePath": "governing-spec.md",
+       "line": 147
+      }
+     ],
+     "expectation": "startsInPeriod includes periodStart and excludes periodEnd, as the half-open billing period requires; a reservation starting exactly at periodEnd is correctly not billed.",
+     "findingTerms": [
+      [
+       "period",
+       "periodEnd",
+       "periodStart"
+      ],
+      [
+       "boundary",
+       "excluded",
+       "included",
+       "<=",
+       "strict"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/billing/totals.mjs",
+       "line": 10
+      },
+      {
+       "filePath": "governing-spec.md",
+       "line": 138
+      }
+     ],
+     "expectation": "invoiceTotals applies Math.min(available, subtotal), so credits larger than the subtotal reduce it to 0 and the unapplied rest is reported as creditRemaining, as required.",
+     "findingTerms": [
+      [
+       "credit",
+       "creditRemaining"
+      ],
+      [
+       "cap",
+       "Math.min",
+       "exceed",
+       "negative",
+       "unapplied",
+       "leftover"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/maintenance/ticket-policy.mjs",
+       "line": 8
+      },
+      {
+       "filePath": "src/maintenance/ticket-policy.mjs",
+       "line": 4
+      },
+      {
+       "filePath": "governing-spec.md",
+       "line": 187
+      }
+     ],
+     "expectation": "respondBy converts the priority response minutes to milliseconds exactly once with minutes(...), so respondBy is openedAt plus 60, 240, 1440 or 4320 minutes as required.",
+     "findingTerms": [
+      [
+       "respondBy",
+       "response"
+      ],
+      [
+       "unit",
+       "millisecond",
+       "minutes(",
+       "twice",
+       "double"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/maintenance/ticket-service.mjs",
+       "line": 66
+      },
+      {
+       "filePath": "src/platform/periods.mjs",
+       "line": 5
+      },
+      {
+       "filePath": "governing-spec.md",
+       "line": 289
+      }
+     ],
+     "expectation": "planWork rejects a ticket that already has a planned window, so a ticket being planned has no window of its own and conflictingTicket needs no self-exclusion; overlaps uses strict comparisons, so touching half-open windows do not conflict, as required.",
+     "findingTerms": [
+      [
+       "conflict",
+       "window",
+       "plannedWork"
+      ],
+      [
+       "already",
+       "reject",
+       "itself",
+       "own",
+       "half-open",
+       "strict"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/platform/invoice-terms.mjs",
+       "line": 6
+      },
+      {
+       "filePath": "src/payments/payment-service.mjs",
+       "line": 53
+      },
+      {
+       "filePath": "governing-spec.md",
+       "line": 179
+      }
+     ],
+     "expectation": "isLate treats now() equal to dueAt as late with >=, and paymentStatus reads issuedAt from the received invoice, as required.",
+     "findingTerms": [
+      [
+       "late",
+       "due",
+       "isLate"
+      ],
+      [
+       ">=",
+       "boundary",
+       "exactly at",
+       "at dueAt",
+       "same instant",
+       "equal"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/payments/payment-service.mjs",
+       "line": 17
+      },
+      {
+       "filePath": "src/payments/payment-policy.mjs",
+       "line": 7
+      },
+      {
+       "filePath": "governing-spec.md",
+       "line": 268
+      }
+     ],
+     "expectation": "createPaymentIntent lists the intents of prepared.invoiceId, the trimmed invoice id string, so an authorized, captured or refunded intent of the same invoice blocks a new intent while intents of other invoices do not, as required.",
+     "findingTerms": [
+      [
+       "block",
+       "active",
+       "invoice",
+       "intent"
+      ],
+      [
+       "invoiceId",
+       "string",
+       "object",
+       "listByInvoice"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/schedules/desk-policy.mjs",
+       "line": 10
+      },
+      {
+       "filePath": "src/schedules/desk-policy.mjs",
+       "line": 11
+      },
+      {
+       "filePath": "governing-spec.md",
+       "line": 260
+      }
+     ],
+     "expectation": "withinHours truncates the time of day to whole minutes and compares it with integer openMinute and closeMinute; for integer bounds this is the same as comparing milliseconds, so the desk opens at openMinute and closes exactly at closeMinute, as required.",
+     "findingTerms": [
+      [
+       "open",
+       "openMinute",
+       "closeMinute"
+      ],
+      [
+       "trunc",
+       "minute",
+       "second",
+       "boundary"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/schedules/closures.mjs",
+       "line": 10
+      },
+      {
+       "filePath": "governing-spec.md",
+       "line": 184
+      }
+     ],
+     "expectation": "prepareClosure compares the closure length in milliseconds with minutes(20160), converted once, so a closure of exactly 20160 minutes is accepted and one millisecond more is rejected, as required.",
+     "findingTerms": [
+      [
+       "closure",
+       "20160",
+       "too long"
+      ],
+      [
+       "unit",
+       "millisecond",
+       "minutes(",
+       ">",
+       "boundary"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/utilization/counting-rules.mjs",
+       "line": 4
+      },
+      {
+       "filePath": "governing-spec.md",
+       "line": 148
+      }
+     ],
+     "expectation": "isCounted counts a held reservation only while expiresAt is strictly later than now(), as required; a hold whose expiresAt equals now() is correctly not counted.",
+     "findingTerms": [
+      [
+       "held",
+       "expiresAt",
+       "counted"
+      ],
+      [
+       "strict",
+       "equal",
+       "boundary",
+       ">"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/utilization/report-window.mjs",
+       "line": 16
+      },
+      {
+       "filePath": "src/utilization/utilization-service.mjs",
+       "line": 12
+      },
+      {
+       "filePath": "governing-spec.md",
+       "line": 58
+      }
+     ],
+     "expectation": "bookedMinutes floors the total contribution length to whole minutes with toWholeMinutes, as required.",
+     "findingTerms": [
+      [
+       "bookedMinutes"
+      ],
+      [
+       "floor",
+       "round",
+       "minute",
+       "trunc"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/waitlist/queue.mjs",
+       "line": 42
+      },
+      {
+       "filePath": "src/waitlist/queue.mjs",
+       "line": 7
+      },
+      {
+       "filePath": "governing-spec.md",
+       "line": 45
+      }
+     ],
+     "expectation": "withinMemberLimit requires fewer than MAX_ACTIVE_ENTRIES active entries, so a member may hold 3 active entries and joining is rejected only when the member already has 3, as required.",
+     "findingTerms": [
+      [
+       "limit",
+       "active",
+       "3"
+      ],
+      [
+       "<",
+       "<=",
+       "off-by-one",
+       "boundary"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/waitlist/entry-states.mjs",
+       "line": 25
+      },
+      {
+       "filePath": "src/waitlist/queue.mjs",
+       "line": 9
+      },
+      {
+       "filePath": "governing-spec.md",
+       "line": 49
+      },
+      {
+       "filePath": "governing-spec.md",
+       "line": 182
+      }
+     ],
+     "expectation": "An offer sets expiresAt 15 minutes after now() with the minutes conversion applied once, and isExpired treats now() equal to expiresAt as expired, as required.",
+     "findingTerms": [
+      [
+       "offer",
+       "expiresAt",
+       "expired"
+      ],
+      [
+       "15",
+       "boundary",
+       "equal",
+       ">=",
+       "minutes("
+      ]
+     ]
+    },
+    {
+     "noOtherSupportedFinding": true
+    }
+   ],
+   "problemCases": [
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/reservations/catalog.mjs",
+       "line": 16
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/reservations/catalog.mjs",
+       "line": 16
+      },
+      {
+       "filePath": "src/reservations/catalog.mjs",
+       "line": 5
+      },
+      {
+       "filePath": "governing-spec.md",
+       "line": 77
+      }
+     ],
+     "expectation": "hasAmenities compares the size of the union with room.amenities.length; after lowercasing, a room amenity list with duplicates (Whiteboard, whiteboard) has a union smaller than its length, so that room is never eligible even when it has every requested amenity.",
+     "findingTerms": [
+      [
+       "amenit"
+      ],
+      [
+       "duplicate",
+       "size",
+       "length",
+       "Set"
+      ]
+     ],
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/reservations/transitions.mjs",
+       "line": 17
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/reservations/transitions.mjs",
+       "line": 17
+      },
+      {
+       "filePath": "src/reservations/transitions.mjs",
+       "line": 16
+      },
+      {
+       "filePath": "governing-spec.md",
+       "line": 8
+      }
+     ],
+     "expectation": "applyTransition copies the record with a shallow spread and then pushes onto next.history, which is the same array as the received record's history, so confirm, cancel and reschedule modify the reservation object they receive.",
+     "findingTerms": [
+      [
+       "history"
+      ],
+      [
+       "mutat",
+       "modif",
+       "shared",
+       "shallow",
+       "same array",
+       "push"
+      ]
+     ],
+     "result": "gap"
+    },
+    {
+     "expectation": "rescheduleReservation never applies the 240-minute duration limit to the snapped new window.",
+     "findingTerms": [
+      [
+       "reschedul"
+      ],
+      [
+       "duration",
+       "240",
+       "too long",
+       "limit",
+       "exceedsMaxDuration"
+      ]
+     ],
+     "placements": [
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/reservations/reservation-service.mjs",
+         "line": 56
+        }
+       ],
+       "check": "CODE-SPEC-FINDINGS",
+       "evidence": [
+        {
+         "filePath": "src/reservations/reservation-service.mjs",
+         "line": 56
+        },
+        {
+         "filePath": "src/reservations/reservation-service.mjs",
+         "line": 53
+        },
+        {
+         "filePath": "governing-spec.md",
+         "line": 197
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/reservations/reservation-service.mjs",
+         "line": 53
+        }
+       ],
+       "check": "CODE-SPEC-FINDINGS",
+       "evidence": [
+        {
+         "filePath": "src/reservations/reservation-service.mjs",
+         "line": 56
+        },
+        {
+         "filePath": "src/reservations/reservation-service.mjs",
+         "line": 53
+        },
+        {
+         "filePath": "governing-spec.md",
+         "line": 197
+        }
+       ]
+      }
+     ],
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/badges/badge-service.mjs",
+       "line": 6
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/badges/badge-service.mjs",
+       "line": 6
+      },
+      {
+       "filePath": "src/badges/badge-service.mjs",
+       "line": 16
+      },
+      {
+       "filePath": "src/badges/badge-service.mjs",
+       "line": 19
+      },
+      {
+       "filePath": "src/badges/badge-fields.mjs",
+       "line": 22
+      },
+      {
+       "filePath": "src/platform/append-log.mjs",
+       "line": 6
+      },
+      {
+       "filePath": "governing-spec.md",
+       "line": 167
+      }
+     ],
+     "expectation": "recordBadgeEvent looks up the event key through findKeyedEvent(store, prepared), which reads store.list(event); the event carries the event's buildingId, which the badge store (createAppendLog) destructures as a building filter, so a key already recorded for an event in another building is not found and the event is recorded again.",
+     "findingTerms": [
+      [
+       "eventKey",
+       "event key",
+       "key",
+       "idempot"
+      ],
+      [
+       "building",
+       "buildingId",
+       "filter",
+       "other building",
+       "across"
+      ]
+     ],
+     "result": "gap"
+    },
+    {
+     "expectation": "countedReservations tests overlaps(instant(startAt), period), but instant is a zero-length interval and overlaps uses strict comparisons, so a confirmed reservation starting exactly at the first instant of the month is not counted in used minutes, although the month is half-open and its start is inside it.",
+     "findingTerms": [
+      [
+       "used",
+       "allowance",
+       "month",
+       "countedReservations"
+      ],
+      [
+       "boundary",
+       "instant",
+       "zero",
+       "strict",
+       "exactly",
+       "first",
+       "midnight",
+       "start of the month"
+      ]
+     ],
+     "placements": [
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/members/allowance.mjs",
+         "line": 12
+        }
+       ],
+       "check": "CODE-SPEC-FINDINGS",
+       "evidence": [
+        {
+         "filePath": "src/members/allowance.mjs",
+         "line": 12
+        },
+        {
+         "filePath": "src/platform/periods.mjs",
+         "line": 1
+        },
+        {
+         "filePath": "src/platform/periods.mjs",
+         "line": 5
+        },
+        {
+         "filePath": "src/members/allowance.mjs",
+         "line": 15
+        },
+        {
+         "filePath": "governing-spec.md",
+         "line": 180
+        },
+        {
+         "filePath": "governing-spec.md",
+         "line": 154
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/platform/periods.mjs",
+         "line": 1
+        }
+       ],
+       "check": "CODE-SPEC-FINDINGS",
+       "evidence": [
+        {
+         "filePath": "src/members/allowance.mjs",
+         "line": 12
+        },
+        {
+         "filePath": "src/platform/periods.mjs",
+         "line": 1
+        },
+        {
+         "filePath": "src/platform/periods.mjs",
+         "line": 5
+        },
+        {
+         "filePath": "src/members/allowance.mjs",
+         "line": 15
+        },
+        {
+         "filePath": "governing-spec.md",
+         "line": 180
+        },
+        {
+         "filePath": "governing-spec.md",
+         "line": 154
+        }
+       ]
+      }
+     ],
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/audit/audit-query.mjs",
+       "line": 51
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/audit/audit-query.mjs",
+       "line": 51
+      },
+      {
+       "filePath": "src/platform/listing.mjs",
+       "line": 1
+      },
+      {
+       "filePath": "src/audit/audit-query.mjs",
+       "line": 41
+      },
+      {
+       "filePath": "governing-spec.md",
+       "line": 146
+      },
+      {
+       "filePath": "governing-spec.md",
+       "line": 151
+      }
+     ],
+     "expectation": "summarizeActors counts the entries returned by selectEntries, which keeps only the first limit matches, so an actor summary stops counting at the query limit (500 when absent), although an actor summary counts every entry its (valid) query matches, ignoring limit.",
+     "findingTerms": [
+      [
+       "summary",
+       "actor",
+       "count"
+      ],
+      [
+       "limit",
+       "500",
+       "slice",
+       "truncat",
+       "cap",
+       "first"
+      ]
+     ],
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/exports/csv-format.mjs",
+       "line": 7
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/exports/csv-format.mjs",
+       "line": 7
+      },
+      {
+       "filePath": "src/exports/csv-format.mjs",
+       "line": 9
+      },
+      {
+       "filePath": "governing-spec.md",
+       "line": 241
+      }
+     ],
+     "expectation": "quoteField doubles inner double quotes with /\"/ without the g flag, so replace doubles only the first one and a field with two or more double quotes is written as malformed CSV (the field a\"b\"c is written as \"a\"\"b\"c\" instead of \"a\"\"b\"\"c\").",
+     "findingTerms": [
+      [
+       "quote",
+       "double quote",
+       "quoteField"
+      ],
+      [
+       "/g",
+       "global",
+       "g flag",
+       "only one",
+       "first",
+       "only the first"
+      ]
+     ],
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/messaging/messaging-service.mjs",
+       "line": 54
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/messaging/messaging-service.mjs",
+       "line": 54
+      },
+      {
+       "filePath": "src/messaging/messaging-service.mjs",
+       "line": 55
+      },
+      {
+       "filePath": "governing-spec.md",
+       "line": 207
+      }
+     ],
+     "expectation": "sendMessage starts store.save without awaiting it and then awaits send; the outbox store applies each write later through its write queue, so send receives the message before the queued write of the sent message completes.",
+     "findingTerms": [
+      [
+       "send",
+       "sent",
+       "message"
+      ],
+      [
+       "await",
+       "before",
+       "saved",
+       "order"
+      ]
+     ],
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/maintenance/ticket-service.mjs",
+       "line": 85
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/maintenance/ticket-service.mjs",
+       "line": 85
+      },
+      {
+       "filePath": "src/maintenance/ticket-states.mjs",
+       "line": 18
+      },
+      {
+       "filePath": "src/platform/records.mjs",
+       "line": 3
+      },
+      {
+       "filePath": "src/maintenance/ticket-service.mjs",
+       "line": 71
+      },
+      {
+       "filePath": "src/maintenance/ticket-policy.mjs",
+       "line": 47
+      },
+      {
+       "filePath": "governing-spec.md",
+       "line": 288
+      },
+      {
+       "filePath": "governing-spec.md",
+       "line": 290
+      }
+     ],
+     "expectation": "replan(ticket, null) deletes plannedWork from its copy, but clearPlannedWork spreads the original ticket first and that copy second; spreading only overrides keys that exist, so the saved ticket keeps its old plannedWork: it is still listed as the room's planned work, still blocks other tickets' windows, and the ticket can never be planned again because planWork rejects a ticket that already has a planned window.",
+     "findingTerms": [
+      [
+       "plannedWork",
+       "planned work",
+       "clear"
+      ],
+      [
+       "spread",
+       "merge",
+       "kept",
+       "remain",
+       "still",
+       "retain",
+       "survive",
+       "stale"
+      ]
+     ],
+     "result": "gap"
+    },
+    {
+     "expectation": "intentRequest rebuilds the request from a fixed list of invoice fields that leaves out issuedAt, so newIntent, which computes the fee with lateFee(prepared.total, prepared.issuedAt, at), gets a due instant of NaN and an intent created while its invoice is late has a fee of 0 and an amount equal to the total.",
+     "findingTerms": [
+      [
+       "fee",
+       "late"
+      ],
+      [
+       "issuedAt",
+       "drop",
+       "missing",
+       "undefined",
+       "omit",
+       "lost",
+       "NaN"
+      ]
+     ],
+     "placements": [
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/payments/payment-service.mjs",
+         "line": 8
+        }
+       ],
+       "check": "CODE-SPEC-FINDINGS",
+       "evidence": [
+        {
+         "filePath": "src/payments/payment-service.mjs",
+         "line": 8
+        },
+        {
+         "filePath": "src/payments/payment-service.mjs",
+         "line": 9
+        },
+        {
+         "filePath": "src/payments/payment-policy.mjs",
+         "line": 14
+        },
+        {
+         "filePath": "src/platform/invoice-terms.mjs",
+         "line": 4
+        },
+        {
+         "filePath": "src/payments/payment-service.mjs",
+         "line": 13
+        },
+        {
+         "filePath": "governing-spec.md",
+         "line": 267
+        },
+        {
+         "filePath": "governing-spec.md",
+         "line": 179
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/payments/payment-service.mjs",
+         "line": 9
+        }
+       ],
+       "check": "CODE-SPEC-FINDINGS",
+       "evidence": [
+        {
+         "filePath": "src/payments/payment-service.mjs",
+         "line": 8
+        },
+        {
+         "filePath": "src/payments/payment-service.mjs",
+         "line": 9
+        },
+        {
+         "filePath": "src/payments/payment-policy.mjs",
+         "line": 14
+        },
+        {
+         "filePath": "src/platform/invoice-terms.mjs",
+         "line": 4
+        },
+        {
+         "filePath": "src/payments/payment-service.mjs",
+         "line": 13
+        },
+        {
+         "filePath": "governing-spec.md",
+         "line": 267
+        },
+        {
+         "filePath": "governing-spec.md",
+         "line": 179
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/payments/payment-policy.mjs",
+         "line": 14
+        }
+       ],
+       "check": "CODE-SPEC-FINDINGS",
+       "evidence": [
+        {
+         "filePath": "src/payments/payment-service.mjs",
+         "line": 8
+        },
+        {
+         "filePath": "src/payments/payment-service.mjs",
+         "line": 9
+        },
+        {
+         "filePath": "src/payments/payment-policy.mjs",
+         "line": 14
+        },
+        {
+         "filePath": "src/platform/invoice-terms.mjs",
+         "line": 4
+        },
+        {
+         "filePath": "src/payments/payment-service.mjs",
+         "line": 13
+        },
+        {
+         "filePath": "governing-spec.md",
+         "line": 267
+        },
+        {
+         "filePath": "governing-spec.md",
+         "line": 179
+        }
+       ]
+      }
+     ],
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/schedules/closures.mjs",
+       "line": 26
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/schedules/closures.mjs",
+       "line": 26
+      },
+      {
+       "filePath": "src/platform/time.mjs",
+       "line": 9
+      },
+      {
+       "filePath": "src/schedules/front-desk-service.mjs",
+       "line": 31
+      },
+      {
+       "filePath": "src/schedules/front-desk-service.mjs",
+       "line": 56
+      },
+      {
+       "filePath": "governing-spec.md",
+       "line": 184
+      },
+      {
+       "filePath": "governing-spec.md",
+       "line": 189
+      }
+     ],
+     "expectation": "hasEnded compares minutesBetween(at, endAt), whole minutes truncated toward zero, with 0, so a closure with less than one minute left (for example 30 seconds) counts as ended: adding it is rejected and it is left out of the upcoming closures.",
+     "findingTerms": [
+      [
+       "closure",
+       "ended",
+       "hasEnded"
+      ],
+      [
+       "minute",
+       "trunc",
+       "second",
+       "sub-minute",
+       "less than one"
+      ]
+     ],
+     "result": "gap"
+    },
+    {
+     "expectation": "The single withdraw rule for waiting and offered entries carries the 60-minute cutoff, so a waiting entry whose startAt is less than 60 minutes from now cannot be withdrawn, although the limit applies only to offered entries.",
+     "findingTerms": [
+      [
+       "waiting"
+      ],
+      [
+       "60",
+       "cutoff",
+       "limit",
+       "too late"
+      ]
+     ],
+     "placements": [
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/waitlist/entry-states.mjs",
+         "line": 9
+        }
+       ],
+       "check": "CODE-SPEC-FINDINGS",
+       "evidence": [
+        {
+         "filePath": "src/waitlist/entry-states.mjs",
+         "line": 9
+        },
+        {
+         "filePath": "src/waitlist/entry-states.mjs",
+         "line": 22
+        },
+        {
+         "filePath": "governing-spec.md",
+         "line": 183
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/waitlist/entry-states.mjs",
+         "line": 22
+        }
+       ],
+       "check": "CODE-SPEC-FINDINGS",
+       "evidence": [
+        {
+         "filePath": "src/waitlist/entry-states.mjs",
+         "line": 9
+        },
+        {
+         "filePath": "src/waitlist/entry-states.mjs",
+         "line": 22
+        },
+        {
+         "filePath": "governing-spec.md",
+         "line": 183
+        }
+       ]
+      }
+     ],
+     "result": "gap"
+    },
+    {
+     "expectation": "ENTRY_DEFAULTS gives active: true and prepareRoom spreads it under the room entry, so a room entry without an active value becomes active and is selected for the report, although only rooms whose active value is true may be.",
+     "findingTerms": [
+      [
+       "active"
+      ],
+      [
+       "default",
+       "missing",
+       "absent",
+       "no active",
+       "without"
+      ]
+     ],
+     "placements": [
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/utilization/room-directory.mjs",
+         "line": 7
+        }
+       ],
+       "check": "CODE-SPEC-FINDINGS",
+       "evidence": [
+        {
+         "filePath": "src/utilization/room-directory.mjs",
+         "line": 7
+        },
+        {
+         "filePath": "src/utilization/room-directory.mjs",
+         "line": 10
+        },
+        {
+         "filePath": "src/utilization/room-directory.mjs",
+         "line": 15
+        },
+        {
+         "filePath": "src/utilization/room-directory.mjs",
+         "line": 36
+        },
+        {
+         "filePath": "governing-spec.md",
+         "line": 149
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/utilization/room-directory.mjs",
+         "line": 10
+        }
+       ],
+       "check": "CODE-SPEC-FINDINGS",
+       "evidence": [
+        {
+         "filePath": "src/utilization/room-directory.mjs",
+         "line": 7
+        },
+        {
+         "filePath": "src/utilization/room-directory.mjs",
+         "line": 10
+        },
+        {
+         "filePath": "src/utilization/room-directory.mjs",
+         "line": 15
+        },
+        {
+         "filePath": "src/utilization/room-directory.mjs",
+         "line": 36
+        },
+        {
+         "filePath": "governing-spec.md",
+         "line": 149
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/utilization/room-directory.mjs",
+         "line": 15
+        }
+       ],
+       "check": "CODE-SPEC-FINDINGS",
+       "evidence": [
+        {
+         "filePath": "src/utilization/room-directory.mjs",
+         "line": 7
+        },
+        {
+         "filePath": "src/utilization/room-directory.mjs",
+         "line": 10
+        },
+        {
+         "filePath": "src/utilization/room-directory.mjs",
+         "line": 15
+        },
+        {
+         "filePath": "src/utilization/room-directory.mjs",
+         "line": 36
+        },
+        {
+         "filePath": "governing-spec.md",
+         "line": 149
+        }
+       ]
+      }
+     ],
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/billing/invoice-request.mjs",
+       "line": 12
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/billing/invoice-request.mjs",
+       "line": 12
+      },
+      {
+       "filePath": "governing-spec.md",
+       "line": 135
+      }
+     ],
+     "expectation": "A credit reason is trimmed instead of being stored exactly as supplied.",
+     "findingTerms": [
+      [
+       "reason",
+       "credit"
+      ],
+      [
+       "trim",
+       "exact",
+       "as supplied"
+      ]
+     ],
+     "result": "gap"
+    },
+    {
+     "expectation": "newIntent passes PAYMENT_TERMS.authorizationHold, which is already minutes(10080) in milliseconds, to addMinutes, which multiplies by a minute again, so a new authorization expires 604,800,000 minutes later instead of 10080 minutes: an old authorization keeps blocking new intents for its invoice and can still be captured long after it should have expired.",
+     "findingTerms": [
+      [
+       "expiresAt",
+       "authorization",
+       "hold",
+       "expir"
+      ],
+      [
+       "millisecond",
+       "unit",
+       "604800000",
+       "604,800,000",
+       "minutes(",
+       "twice",
+       "double"
+      ]
+     ],
+     "placements": [
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/payments/payment-policy.mjs",
+         "line": 25
+        }
+       ],
+       "check": "CODE-SPEC-FINDINGS",
+       "evidence": [
+        {
+         "filePath": "src/payments/payment-policy.mjs",
+         "line": 25
+        },
+        {
+         "filePath": "src/platform/site-settings.mjs",
+         "line": 11
+        },
+        {
+         "filePath": "src/platform/time.mjs",
+         "line": 7
+        },
+        {
+         "filePath": "src/payments/payment-policy.mjs",
+         "line": 5
+        },
+        {
+         "filePath": "src/payments/payment-policy.mjs",
+         "line": 7
+        },
+        {
+         "filePath": "governing-spec.md",
+         "line": 114
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/platform/site-settings.mjs",
+         "line": 11
+        }
+       ],
+       "check": "CODE-SPEC-FINDINGS",
+       "evidence": [
+        {
+         "filePath": "src/payments/payment-policy.mjs",
+         "line": 25
+        },
+        {
+         "filePath": "src/platform/site-settings.mjs",
+         "line": 11
+        },
+        {
+         "filePath": "src/platform/time.mjs",
+         "line": 7
+        },
+        {
+         "filePath": "src/payments/payment-policy.mjs",
+         "line": 5
+        },
+        {
+         "filePath": "src/payments/payment-policy.mjs",
+         "line": 7
+        },
+        {
+         "filePath": "governing-spec.md",
+         "line": 114
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/platform/time.mjs",
+         "line": 7
+        }
+       ],
+       "check": "CODE-SPEC-FINDINGS",
+       "evidence": [
+        {
+         "filePath": "src/payments/payment-policy.mjs",
+         "line": 25
+        },
+        {
+         "filePath": "src/platform/site-settings.mjs",
+         "line": 11
+        },
+        {
+         "filePath": "src/platform/time.mjs",
+         "line": 7
+        },
+        {
+         "filePath": "src/payments/payment-policy.mjs",
+         "line": 5
+        },
+        {
+         "filePath": "src/payments/payment-policy.mjs",
+         "line": 7
+        },
+        {
+         "filePath": "governing-spec.md",
+         "line": 114
+        }
+       ]
+      }
+     ],
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/payments/payment-service.mjs",
+       "line": 54
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/payments/payment-service.mjs",
+       "line": 54
+      },
+      {
+       "filePath": "src/payments/payment-policy.mjs",
+       "line": 53
+      },
+      {
+       "filePath": "src/payments/payment-policy.mjs",
+       "line": 54
+      },
+      {
+       "filePath": "src/payments/payment-service.mjs",
+       "line": 49
+      },
+      {
+       "filePath": "governing-spec.md",
+       "line": 179
+      }
+     ],
+     "expectation": "paymentStatus passes the invoice record current to netPaid as its invoiceId argument; netPaid compares each intent's invoiceId (a string) with it using ===, and a string never equals an object, so no intent matches and the status reports paid 0 even after an intent of the invoice was captured.",
+     "findingTerms": [
+      [
+       "paid",
+       "status",
+       "paymentStatus"
+      ],
+      [
+       "object",
+       "invoiceId",
+       "current.id",
+       "record",
+       "string"
+      ]
+     ],
+     "result": "gap"
+    },
+    {
+     "expectation": "AUDIT_LIMITS.maxQueryWindow is minutes(10080), a number of milliseconds, but prepareQuery compares it with windowSpan(query), which counts minutes ((until - from) / MINUTE), so the 10080-minute limit never triggers and longer query windows are accepted.",
+     "findingTerms": [
+      [
+       "10080",
+       "window",
+       "maxQueryWindow",
+       "too long",
+       "limit"
+      ],
+      [
+       "millisecond",
+       "unit",
+       "604800000",
+       "604,800,000",
+       "minutes("
+      ]
+     ],
+     "placements": [
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/audit/retention.mjs",
+         "line": 5
+        }
+       ],
+       "check": "CODE-SPEC-FINDINGS",
+       "evidence": [
+        {
+         "filePath": "src/audit/retention.mjs",
+         "line": 5
+        },
+        {
+         "filePath": "src/audit/audit-query.mjs",
+         "line": 9
+        },
+        {
+         "filePath": "src/audit/retention.mjs",
+         "line": 13
+        },
+        {
+         "filePath": "src/platform/time.mjs",
+         "line": 1
+        },
+        {
+         "filePath": "governing-spec.md",
+         "line": 97
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/audit/audit-query.mjs",
+         "line": 9
+        }
+       ],
+       "check": "CODE-SPEC-FINDINGS",
+       "evidence": [
+        {
+         "filePath": "src/audit/retention.mjs",
+         "line": 5
+        },
+        {
+         "filePath": "src/audit/audit-query.mjs",
+         "line": 9
+        },
+        {
+         "filePath": "src/audit/retention.mjs",
+         "line": 13
+        },
+        {
+         "filePath": "src/platform/time.mjs",
+         "line": 1
+        },
+        {
+         "filePath": "governing-spec.md",
+         "line": 97
+        }
+       ]
+      }
+     ],
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/messaging/quiet-hours.mjs",
+       "line": 35
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/messaging/quiet-hours.mjs",
+       "line": 35
+      },
+      {
+       "filePath": "src/messaging/quiet-hours.mjs",
+       "line": 19
+      },
+      {
+       "filePath": "src/messaging/quiet-hours.mjs",
+       "line": 34
+      },
+      {
+       "filePath": "src/messaging/messaging-service.mjs",
+       "line": 49
+      },
+      {
+       "filePath": "governing-spec.md",
+       "line": 206
+      }
+     ],
+     "expectation": "releaseTime rounds now() up to a whole minute with minuteStart(at + MINUTE - 1) and then adds wait, but wait is counted from the local minute of day, which localMinuteOfDay takes from the start of the current minute; when now() is not on a minute boundary the result is one minute late (22:59:30 local with endMinute 23:00 gives 23:01 instead of 23:00), so releaseAt is not the first minute boundary after now() whose local minute is endMinute.",
+     "findingTerms": [
+      [
+       "releaseAt",
+       "releaseTime",
+       "release"
+      ],
+      [
+       "one minute",
+       "minute late",
+       "23:01",
+       "off by one",
+       "rounds up",
+       "ceil",
+       "boundary"
+      ]
+     ],
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/exports/value-format.mjs",
+       "line": 29
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/exports/value-format.mjs",
+       "line": 29
+      },
+      {
+       "filePath": "src/exports/value-format.mjs",
+       "line": 9
+      },
+      {
+       "filePath": "src/exports/value-format.mjs",
+       "line": 5
+      },
+      {
+       "filePath": "governing-spec.md",
+       "line": 243
+      },
+      {
+       "filePath": "governing-spec.md",
+       "line": 242
+      }
+     ],
+     "expectation": "formatList writes each item through formatText, so a list item that starts with =, +, - or @ gets the ' prefix (for example the list ['-a', 'b'] is written '-a;b), although only text values get that prefix and a list's items are written as stored.",
+     "findingTerms": [
+      [
+       "list item",
+       "items",
+       "formatList",
+       "amenities"
+      ],
+      [
+       "prefix",
+       "quote prefix",
+       "apostrophe",
+       "formula",
+       "formatText",
+       "escape",
+       "as stored"
+      ]
+     ],
+     "result": "gap"
+    },
+    {
+     "expectation": "acceptOffer checks expiry with isLapsing(next, at), where next is the record returned by the accept transition, whose state is already accepted, while isLapsing is true only for an offered entry; so the check never fires and an expired offer can be accepted.",
+     "findingTerms": [
+      [
+       "accept",
+       "expir",
+       "offer"
+      ],
+      [
+       "accepted",
+       "state",
+       "isLapsing",
+       "never",
+       "after"
+      ]
+     ],
+     "placements": [
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/waitlist/waitlist-service.mjs",
+         "line": 61
+        }
+       ],
+       "check": "CODE-SPEC-FINDINGS",
+       "evidence": [
+        {
+         "filePath": "src/waitlist/waitlist-service.mjs",
+         "line": 61
+        },
+        {
+         "filePath": "src/waitlist/queue.mjs",
+         "line": 13
+        },
+        {
+         "filePath": "src/waitlist/waitlist-service.mjs",
+         "line": 60
+        },
+        {
+         "filePath": "src/waitlist/entry-states.mjs",
+         "line": 7
+        },
+        {
+         "filePath": "governing-spec.md",
+         "line": 50
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/waitlist/queue.mjs",
+         "line": 13
+        }
+       ],
+       "check": "CODE-SPEC-FINDINGS",
+       "evidence": [
+        {
+         "filePath": "src/waitlist/waitlist-service.mjs",
+         "line": 61
+        },
+        {
+         "filePath": "src/waitlist/queue.mjs",
+         "line": 13
+        },
+        {
+         "filePath": "src/waitlist/waitlist-service.mjs",
+         "line": 60
+        },
+        {
+         "filePath": "src/waitlist/entry-states.mjs",
+         "line": 7
+        },
+        {
+         "filePath": "governing-spec.md",
+         "line": 50
+        }
+       ]
+      }
+     ],
+     "result": "gap"
+    }
+   ],
+   "scope": "CODE-SPEC-FINDINGS"
+  }
+ ]
+}

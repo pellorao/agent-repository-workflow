@@ -8,11 +8,11 @@
 
 ### Runtime Migration
 
-同一次交付新增 tracked state persistence. Operation 先写 temporary baseline, 验证完成后最后 commit tracked state. Expected failure 保留 prior tracked state, rollback failure 返回 structured recovery result.
+同一次交付发布 promotion runtime migration. Operation 先验证 artifact, 再写 temporary baseline, 最后 commit tracked state. Expected failure 保留 prior tracked state, rollback failure 返回 structured recovery result.
 
 ### Authentication Boundary
 
-Protected promotion 只接受已由 existing caller boundary 完成认证及授权的内部请求. 可信身份来自 security authority Input, operation 使用已批准的 access policy, 不接受 caller 自报身份或 credentials.
+Protected promotion 只接受已完成 access control 的内部请求. 可信身份来自 security authority Input; promotion 不评估或选择授权 policy, 不接受 caller 自报身份或 credentials.
 
 ### Rollout Ownership
 
@@ -42,4 +42,4 @@ Caller-visible success, expected failure 和 recovery representations 都复用�
 
 ## Testing Decisions
 
-通过 public promotion lifecycle 测试 successful persistence, expected filesystem failure, rollback failure, denied authorization 和 no-partial-commit behavior. 文档链接另做静态路径检查.
+通过 public promotion lifecycle 测试 successful persistence, expected filesystem failure, rollback failure 和 no-partial-commit behavior. 文档链接另做静态路径检查.

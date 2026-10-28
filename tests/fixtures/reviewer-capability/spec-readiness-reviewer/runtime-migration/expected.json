@@ -1,0 +1,625 @@
+{
+ "scopes": [
+  {
+   "cleanCases": [
+    {
+     "evidence": [
+      {
+       "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
+       "line": 10
+      }
+     ],
+     "expectation": "The subject accurately selects the supplied validation-report requirement and should not be reported as absent.",
+     "findingTerms": [
+      [
+       "validation-report",
+       "validation report"
+      ],
+      [
+       "missing",
+       "not supplied",
+       "absent"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "architecture/05-validation-report.md",
+       "line": 65
+      }
+     ],
+     "expectation": "The clean Artifact reader design is supported by explicit architecture evidence.",
+     "findingTerms": [
+      "architecture evidence"
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "rules/06-isolation.md",
+       "line": 5
+      }
+     ],
+     "expectation": "The immutable request isolation boundary is complete and usable as supplied.",
+     "findingTerms": [
+      "immutable request"
+     ]
+    },
+    {
+     "noOtherSupportedFinding": true
+    }
+   ],
+   "problemCases": [
+    {
+     "expectation": "The subject selects specs/request-consistency.md, but no matching governing Input was supplied.",
+     "findingTerms": [
+      "request-consistency.md",
+      [
+       "missing",
+       "not supplied",
+       "absent"
+      ],
+      "Input"
+     ],
+     "placements": [
+      {
+       "associationEvidence": [
+        {
+         "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
+         "line": 21
+        }
+       ],
+       "check": "SPEC-READINESS-INPUTS",
+       "evidence": [
+        {
+         "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
+         "line": 21
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
+         "line": 21
+        }
+       ],
+       "check": "SPEC-READINESS-REQUIREMENTS",
+       "evidence": [
+        {
+         "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
+         "line": 21
+        },
+        {
+         "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
+         "line": 3
+        }
+       ]
+      }
+     ],
+     "result": "gap"
+    }
+   ],
+   "scope": "SPEC-READINESS-INPUTS"
+  },
+  {
+   "cleanCases": [
+    {
+     "evidence": [
+      {
+       "filePath": "specs/diagnostic-wording.md",
+       "line": 9
+      }
+     ],
+     "expectation": "The clean wording requirement preserves the structured diagnostic code and payload contract.",
+     "findingTerms": [
+      "structured diagnostic"
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "specs/validation-report.md",
+       "line": 19
+      }
+     ],
+     "expectation": "The clean report read-failure requirement lists a complete set of result fields.",
+     "findingTerms": [
+      [
+       "artifact-read-failed",
+       "read failure"
+      ],
+      [
+       "missing",
+       "incomplete",
+       "undefined"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "specs/reader-index.md",
+       "line": 9
+      }
+     ],
+     "expectation": "The clean documentation-only reader-index requirement is a complete stable-path documentation change.",
+     "findingTerms": [
+      "stable path"
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "architecture/05-validation-report.md",
+       "line": 5
+      }
+     ],
+     "expectation": "The stable boundary correctly separates Engine, Reviewer, and Input-author responsibilities.",
+     "findingTerms": [
+      "Engine",
+      "Reviewer"
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "specs/validation-report.md",
+       "line": 11
+      }
+     ],
+     "expectation": "The Requirements do not need to prescribe internal parser, helper, or storage implementation details.",
+     "findingTerms": [
+      [
+       "internal implementation",
+       "parser",
+       "helper",
+       "storage"
+      ],
+      [
+       "missing",
+       "must specify",
+       "required detail"
+      ]
+     ]
+    },
+    {
+     "noOtherSupportedFinding": true
+    }
+   ],
+   "problemCases": [
+    {
+     "expectation": "Runtime Migration successful result omits the summary required by Result Summary.",
+     "findingTerms": [
+      "summary",
+      "successful result",
+      [
+       "missing",
+       "omits",
+       "conflict",
+       "incompatible"
+      ]
+     ],
+     "placements": [
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/runtime-migration.md",
+         "line": 23
+        }
+       ],
+       "check": "SPEC-READINESS-REQUIREMENTS",
+       "evidence": [
+        {
+         "filePath": "specs/runtime-migration.md",
+         "line": 23
+        },
+        {
+         "filePath": "specs/result-summary.md",
+         "line": 11
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/result-summary.md",
+         "line": 11
+        }
+       ],
+       "check": "SPEC-READINESS-REQUIREMENTS",
+       "evidence": [
+        {
+         "filePath": "specs/result-summary.md",
+         "line": 11
+        },
+        {
+         "filePath": "specs/runtime-migration.md",
+         "line": 23
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/promotion-runtime.md",
+         "line": 37
+        }
+       ],
+       "check": "SPEC-READINESS-REQUIREMENTS",
+       "evidence": [
+        {
+         "filePath": "specs/runtime-migration.md",
+         "line": 23
+        },
+        {
+         "filePath": "specs/promotion-runtime.md",
+         "line": 37
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/runtime-migration.md",
+         "line": 23
+        }
+       ],
+       "check": "SPEC-READINESS-REQUIREMENTS",
+       "evidence": [
+        {
+         "filePath": "specs/runtime-migration.md",
+         "line": 23
+        },
+        {
+         "filePath": "specs/result-summary.md",
+         "line": 11
+        },
+        {
+         "filePath": "specs/promotion-runtime.md",
+         "line": 37
+        }
+       ]
+      }
+     ],
+     "result": "gap"
+    },
+    {
+     "expectation": "Runtime Migration expected filesystem failure omits the operation field required by Promotion Runtime.",
+     "findingTerms": [
+      "operation field",
+      "expected filesystem failure",
+      [
+       "missing",
+       "omits",
+       "conflict",
+       "incompatible"
+      ]
+     ],
+     "placements": [
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/runtime-migration.md",
+         "line": 23
+        }
+       ],
+       "check": "SPEC-READINESS-REQUIREMENTS",
+       "evidence": [
+        {
+         "filePath": "specs/runtime-migration.md",
+         "line": 23
+        },
+        {
+         "filePath": "specs/promotion-runtime.md",
+         "line": 41
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/promotion-runtime.md",
+         "line": 41
+        }
+       ],
+       "check": "SPEC-READINESS-REQUIREMENTS",
+       "evidence": [
+        {
+         "filePath": "specs/promotion-runtime.md",
+         "line": 41
+        },
+        {
+         "filePath": "specs/runtime-migration.md",
+         "line": 23
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/runtime-migration.md",
+         "line": 23
+        }
+       ],
+       "check": "SPEC-READINESS-REQUIREMENTS",
+       "evidence": [
+        {
+         "filePath": "specs/runtime-migration.md",
+         "line": 23
+        },
+        {
+         "filePath": "specs/promotion-runtime.md",
+         "line": 41
+        },
+        {
+         "filePath": "specs/promotion-runtime.md",
+         "line": 11
+        }
+       ]
+      }
+     ],
+     "result": "gap"
+    },
+    {
+     "expectation": "The subject adds image-preview cleanup that is not needed to implement this issue.",
+     "findingTerms": [
+      "image",
+      [
+       "preview cleanup",
+       "preview cache"
+      ],
+      [
+       "outside",
+       "not needed",
+       "unrelated",
+       "scope"
+      ]
+     ],
+     "k": 1,
+     "placements": [
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/image-cache.md",
+         "line": 5
+        }
+       ],
+       "check": "SPEC-READINESS-REQUIREMENTS",
+       "evidence": [
+        {
+         "filePath": "specs/image-cache.md",
+         "line": 5
+        },
+        {
+         "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
+         "line": 3
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/image-cache.md",
+         "line": 5
+        }
+       ],
+       "check": "SPEC-READINESS-REQUIREMENTS",
+       "evidence": [
+        {
+         "filePath": "specs/image-cache.md",
+         "line": 5
+        },
+        {
+         "filePath": "specs/reader-index.md",
+         "line": 5
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/image-cache.md",
+         "line": 5
+        }
+       ],
+       "check": "SPEC-READINESS-REQUIREMENTS",
+       "evidence": [
+        {
+         "filePath": "specs/image-cache.md",
+         "line": 5
+        },
+        {
+         "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
+         "line": 3
+        },
+        {
+         "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
+         "line": 20
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
+         "line": 20
+        }
+       ],
+       "check": "SPEC-READINESS-REQUIREMENTS",
+       "evidence": [
+        {
+         "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
+         "line": 20
+        },
+        {
+         "filePath": "specs/image-cache.md",
+         "line": 5
+        }
+       ]
+      }
+     ],
+     "result": "gap"
+    },
+    {
+     "expectation": "The conditional export-retention section applies only if the new reader-index target is a generated artifact; no supplied Input establishes whether docs/reference/validation-report.md is generated, so whether the section belongs to this issue cannot be determined.",
+     "findingTerms": [
+      "export",
+      [
+       "belongs",
+       "scope",
+       "required by this issue"
+      ],
+      [
+       "uncertain",
+       "cannot establish",
+       "cannot determine"
+      ]
+     ],
+     "placements": [
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/export-retention.md",
+         "line": 5
+        }
+       ],
+       "check": "SPEC-READINESS-REQUIREMENTS",
+       "evidence": [
+        {
+         "filePath": "specs/export-retention.md",
+         "line": 5
+        },
+        {
+         "filePath": "specs/reader-index.md",
+         "line": 9
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/export-retention.md",
+         "line": 5
+        }
+       ],
+       "check": "SPEC-READINESS-REQUIREMENTS",
+       "evidence": [
+        {
+         "filePath": "specs/export-retention.md",
+         "line": 5
+        },
+        {
+         "filePath": "architecture/05-validation-report.md",
+         "line": 49
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/export-retention.md",
+         "line": 5
+        }
+       ],
+       "check": "SPEC-READINESS-REQUIREMENTS",
+       "evidence": [
+        {
+         "filePath": "specs/export-retention.md",
+         "line": 5
+        },
+        {
+         "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
+         "line": 3
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/export-retention.md",
+         "line": 5
+        }
+       ],
+       "check": "SPEC-READINESS-INPUTS",
+       "evidence": [
+        {
+         "filePath": "specs/export-retention.md",
+         "line": 5
+        },
+        {
+         "filePath": "architecture/05-validation-report.md",
+         "line": 49
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
+         "line": 19
+        }
+       ],
+       "check": "SPEC-READINESS-REQUIREMENTS",
+       "evidence": [
+        {
+         "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
+         "line": 19
+        },
+        {
+         "filePath": "specs/export-retention.md",
+         "line": 5
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
+         "line": 19
+        }
+       ],
+       "check": "SPEC-READINESS-INPUTS",
+       "evidence": [
+        {
+         "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
+         "line": 19
+        },
+        {
+         "filePath": "architecture/05-validation-report.md",
+         "line": 49
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/export-retention.md",
+         "line": 5
+        }
+       ],
+       "check": "SPEC-READINESS-INPUTS",
+       "evidence": [
+        {
+         "filePath": "specs/export-retention.md",
+         "line": 5
+        },
+        {
+         "filePath": "rules/02-external-policy.md",
+         "line": 5
+        },
+        {
+         "filePath": "architecture/05-validation-report.md",
+         "line": 49
+        }
+       ]
+      }
+     ],
+     "result": "uncertain"
+    }
+   ],
+   "scope": "SPEC-READINESS-REQUIREMENTS"
+  }
+ ]
+}

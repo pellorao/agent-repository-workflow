@@ -1,0 +1,2399 @@
+{
+ "scenario": "code-spec-v5.1",
+ "anchors": [
+  {
+   "id": "a01",
+   "family": "strata",
+   "model": "strata-q3",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a01 在 v2 brief 与 code-spec-v5.1 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：blind Opus high, Code Spec v5 formal pool q3a (q3a:c011:q3-3)",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "A credit reason is trimmed instead of being stored exactly as supplied.",
+    "finding": "6. `src/billing/invoice-request.mjs:9-13`\n   - Implementation evidence: `prepareCredit` rejects a blank reason and returns `Object.freeze({amount: credit.amount, reason: credit.reason.trim()})`, so the stored credit keeps the trimmed text. `draftFor` stores these credits on the invoice (`src/billing/invoice-service.mjs:16`).\n   - Governing requirement: `governing-spec.md` Invoices: \"each credit's `amount` must be a non-negative integer and its `reason` must not be blank after trimming; the reason is stored exactly as supplied.\"\n   - Problem and impact: a supplied reason such as `\"  annual discount  \"` is stored as `\"annual discount\"`, so the invoice no longer holds the value as supplied.\n   - Fix: keep the trimming only for the blank check and store the original value, for example `const reason = credit.reason; if (!trimmed(reason)) throw ...; return Object.freeze({amount: credit.amount, reason});`.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/billing/invoice-request.mjs",
+      "lineEnd": 13,
+      "lineStart": 9
+     },
+     {
+      "filePath": "src/billing/invoice-service.mjs",
+      "line": 16
+     }
+    ]
+   }
+  },
+  {
+   "id": "a02",
+   "family": "anthropic",
+   "model": "opus",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a02 在 v2 brief 与 code-spec-v5.1 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：blind Opus high, Code Spec v5 formal pool opus (opus:c063:opus-2)",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "paymentStatus passes the invoice record current to netPaid as its invoiceId argument; netPaid compares each intent's invoiceId (a string) with it using ===, and a string never equals an object, so no intent matches and the status reports paid 0 even after an intent of the invoice was captured.",
+    "finding": "- `src/payments/payment-service.mjs:49,54`, `src/payments/payment-policy.mjs:53-55` - `paymentStatus` passes the whole invoice object `current` to `netPaid`, which compares it against `intent.invoiceId` (a string), so no intent ever matches and `paid` is always 0. Governing requirement: `governing-spec.md:179` \"A payment status reports `dueAt`, `late` and `paid`, the sum of `captured` minus `refunded` over its `captured` and `refunded` intents.\" Impact: payment status reports invoices as unpaid even after capture. Fix: call `netPaid(await store.list(), current.id)` (or `store.listByInvoice(current.id)`).",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/payments/payment-service.mjs",
+      "line": 49
+     },
+     {
+      "filePath": "src/payments/payment-service.mjs",
+      "line": 54
+     },
+     {
+      "filePath": "src/payments/payment-policy.mjs",
+      "lineEnd": 55,
+      "lineStart": 53
+     },
+     {
+      "filePath": "governing-spec.md",
+      "line": 179
+     }
+    ]
+   }
+  },
+  {
+   "id": "a03",
+   "family": "strata",
+   "model": "strata-q3",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a03 在 v2 brief 与 code-spec-v5.1 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：blind Opus high, Code Spec v5 formal pool q3b (q3b:c019:q3-9)",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "acceptOffer checks expiry with isLapsing(next, at), where next is the record returned by the accept transition, whose state is already accepted, while isLapsing is true only for an offered entry; so the check never fires and an expired offer can be accepted.",
+    "finding": "13. `src/waitlist/waitlist-service.mjs:60-61` - The expired-offer guard tests the transitioned record, so expired offers are accepted.\n   - Implementation evidence: `src/waitlist/waitlist-service.mjs:60` first applies `moveEntry(entry, 'accept', at)`, which returns `{...entry, state: 'accepted', acceptedAt: at}` (`src/waitlist/entry-states.mjs:24`), and `src/waitlist/waitlist-service.mjs:61` then checks `isLapsing(next, at)`. `isLapsing` is `entry.state === 'offered' && isExpired(entry, at)` (`src/waitlist/queue.mjs:13`), and `next.state` is already `'accepted'`, so the condition is always false and `src/waitlist/waitlist-service.mjs:62` saves the acceptance.\n   - Governing requirement: `governing-spec.md:50` \"Only a nonexpired `offered` entry may be accepted; acceptance sets `accepted` and `acceptedAt` and books nothing.\" `governing-spec.md:182` \"A waitlist offer is expired when `now()` is equal to or later than its `expiresAt`.\"\n   - Problem and impact: an entry whose `expiresAt` (`src/waitlist/entry-states.mjs:25`, `now()` plus 15 minutes) has passed is still moved to `accepted` and persisted, so a lapsed offer is honored instead of rejected.\n   - Fix: test the received entry before the transition, `if (isExpired(entry, at)) throw new Error('offer has expired');`, then apply `moveEntry`.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/waitlist/waitlist-service.mjs",
+      "lineEnd": 61,
+      "lineStart": 60
+     },
+     {
+      "filePath": "src/waitlist/waitlist-service.mjs",
+      "line": 60
+     },
+     {
+      "filePath": "src/waitlist/entry-states.mjs",
+      "line": 24
+     },
+     {
+      "filePath": "src/waitlist/waitlist-service.mjs",
+      "line": 61
+     },
+     {
+      "filePath": "src/waitlist/queue.mjs",
+      "line": 13
+     },
+     {
+      "filePath": "src/waitlist/waitlist-service.mjs",
+      "line": 62
+     },
+     {
+      "filePath": "governing-spec.md",
+      "line": 50
+     },
+     {
+      "filePath": "governing-spec.md",
+      "line": 182
+     },
+     {
+      "filePath": "src/waitlist/entry-states.mjs",
+      "line": 25
+     }
+    ]
+   }
+  },
+  {
+   "id": "a04",
+   "family": "anthropic",
+   "model": "opus",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a04 在 v2 brief 与 code-spec-v5.1 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：blind Opus high, Code Spec v5 formal pool opus (opus:c020:opus-3)",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "summarizeActors counts the entries returned by selectEntries, which keeps only the first limit matches, so an actor summary stops counting at the query limit (500 when absent), although an actor summary counts every entry its (valid) query matches, ignoring limit.",
+    "finding": "- `src/audit/audit-query.mjs:41,49-51`, `src/platform/listing.mjs:1` - `summarizeActors` counts the output of `selectEntries`, which applies `pageOf(...).slice(0, page.limit)`, so only the first `limit` matches are counted. Governing requirement: \"An actor summary takes a query that is valid under the audit query rules, `limit` included, and counts every entry it matches, ignoring `limit`\" (`governing-spec.md:146`). Impact: with more matching entries than `limit` (default 500), actor counts are truncated and ordering may be wrong. Fix: validate the limit as now, but count over `entries.filter((entry) => matches(entry, query, at))` without slicing.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/audit/audit-query.mjs",
+      "line": 41
+     },
+     {
+      "filePath": "src/audit/audit-query.mjs",
+      "lineEnd": 51,
+      "lineStart": 49
+     },
+     {
+      "filePath": "src/platform/listing.mjs",
+      "line": 1
+     },
+     {
+      "filePath": "governing-spec.md",
+      "line": 146
+     }
+    ]
+   }
+  },
+  {
+   "id": "a05",
+   "family": "anthropic",
+   "model": "opus",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a05 在 v2 brief 与 code-spec-v5.1 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：blind Opus high, Code Spec v5 formal pool opus (opus:c036:opus-1)",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "ENTRY_DEFAULTS gives active: true and prepareRoom spreads it under the room entry, so a room entry without an active value becomes active and is selected for the report, although only rooms whose active value is true may be.",
+    "finding": "- `src/utilization/room-directory.mjs:7,10,15,36` - `prepareRoom` merges `ENTRY_DEFAULTS = {active: true, ...}` under each room entry, so an entry that omits `active` (or has it undefined) is treated as `active: true` and selected. Requirement: \"only rooms whose `active` value is `true` and that contain every requested amenity are selected.\" (`governing-spec.md:149`). Impact: rooms without an `active` value of `true` get rows, contribute reservations and appear in building totals and the notice. Fix: drop the `active` default and keep the supplied value so `room.active === true` filters it out.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/utilization/room-directory.mjs",
+      "line": 7
+     },
+     {
+      "filePath": "src/utilization/room-directory.mjs",
+      "line": 10
+     },
+     {
+      "filePath": "src/utilization/room-directory.mjs",
+      "line": 15
+     },
+     {
+      "filePath": "src/utilization/room-directory.mjs",
+      "line": 36
+     },
+     {
+      "filePath": "governing-spec.md",
+      "line": 149
+     }
+    ]
+   }
+  },
+  {
+   "id": "a06",
+   "family": "anthropic",
+   "model": "opus",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a06 在 v2 brief 与 code-spec-v5.1 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：blind Opus high, Code Spec v5 formal pool opus (opus:c046:opus-1)",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "hasAmenities compares the size of the union with room.amenities.length; after lowercasing, a room amenity list with duplicates (Whiteboard, whiteboard) has a union smaller than its length, so that room is never eligible even when it has every requested amenity.",
+    "finding": "- `src/reservations/catalog.mjs:16`, `src/reservations/reservation-service.mjs:18,31` - `hasAmenities` compares the size of the union set with `room.amenities.length`; when a room's amenity list contains a repeated name (e.g. `['wifi', 'WiFi']` after lowercasing, or `['wifi', 'wifi']`), the set is smaller than the array and the room is reported as lacking amenities even for an empty request. Requirement: \"Amenity names are compared case-insensitively, and a room must contain every requested amenity.\" (`governing-spec.md:77`). Impact: such rooms can never be booked or listed. Fix: test membership, e.g. `const offered = new Set(room.amenities); return amenities.every((name) => offered.has(name));`.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/reservations/catalog.mjs",
+      "line": 16
+     },
+     {
+      "filePath": "src/reservations/reservation-service.mjs",
+      "line": 18
+     },
+     {
+      "filePath": "src/reservations/reservation-service.mjs",
+      "line": 31
+     },
+     {
+      "filePath": "governing-spec.md",
+      "line": 77
+     }
+    ]
+   }
+  },
+  {
+   "id": "a07",
+   "family": "anthropic",
+   "model": "opus",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a07 在 v2 brief 与 code-spec-v5.1 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：blind Opus high, Code Spec v5 formal pool opus (opus:c026:opus-2)",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "rescheduleReservation never applies the 240-minute duration limit to the snapped new window.",
+    "finding": "- `src/reservations/reservation-service.mjs:53-58` - `rescheduleReservation` snaps the new window and checks availability but never applies the duration limit (`exceedsMaxDuration`), unlike `createReservation` at line 14. Governing requirement: `governing-spec.md:197` \"It is then snapped, and the snapped window must satisfy the duration limit and be available.\" and `governing-spec.md:21` \"A snapped window lasts at most 240 minutes.\" Impact: a reservation can be rescheduled to a window longer than 240 minutes and stored with a price for that window. Fix: after snapping, reject with `if (exceedsMaxDuration(window)) throw new Error('reservation is too long');`.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/reservations/reservation-service.mjs",
+      "lineEnd": 58,
+      "lineStart": 53
+     },
+     {
+      "filePath": "governing-spec.md",
+      "line": 197
+     },
+     {
+      "filePath": "governing-spec.md",
+      "line": 21
+     }
+    ]
+   }
+  },
+  {
+   "id": "a08",
+   "family": "anthropic",
+   "model": "opus",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a08 在 v2 brief 与 code-spec-v5.1 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：blind Opus high, Code Spec v5 formal pool opus (opus:c047:opus-3)",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "formatList writes each item through formatText, so a list item that starts with =, +, - or @ gets the ' prefix (for example the list ['-a', 'b'] is written '-a;b), although only text values get that prefix and a list's items are written as stored.",
+    "finding": "- `src/exports/value-format.mjs:27-29` - `formatList` passes each list item through `formatText`, which prefixes `'` to items starting with `=`, `+`, `-` or `@`. Governing requirement: \"a `list` of strings is joined with `;`, its items written as stored.\" (`governing-spec.md:243`); the `'` prefix rule applies only to `text` values (`governing-spec.md:242`). Impact: list columns such as room `amenities` are written with altered items (e.g. `-wifi` becomes `'-wifi`). Fix: return `value.join(';')` after the string-item check.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/exports/value-format.mjs",
+      "lineEnd": 29,
+      "lineStart": 27
+     },
+     {
+      "filePath": "governing-spec.md",
+      "line": 243
+     },
+     {
+      "filePath": "governing-spec.md",
+      "line": 242
+     }
+    ]
+   }
+  },
+  {
+   "id": "a09",
+   "family": "strata",
+   "model": "strata-q3",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a09 在 v2 brief 与 code-spec-v5.1 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：blind Opus high, Code Spec v5 formal pool q3a (q3a:c085:q3-5)",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "sendMessage starts store.save without awaiting it and then awaits send; the outbox store applies each write later through its write queue, so send receives the message before the queued write of the sent message completes.",
+    "finding": "4. `src/messaging/messaging-service.mjs:53-56` delivers the `send` notification before the message is stored.\n   - Implementation evidence: the non-quiet path is `const sent = {...base, state: 'sent', sentAt: at}; const saved = store.save(sent); await send(sentNotice(sent)); return saved;` (`src/messaging/messaging-service.mjs:53-56`). `store.save` only chains the write onto a promise queue and returns that promise without the caller awaiting it: `save: (message) => { writes = writes.then(() => { messages.set(message.id, message); return message; }); return writes; }` (`src/messaging/outbox-store.mjs:13-19`). `send(sentNotice(sent))` is therefore invoked in the same synchronous step, before the queued `messages.set` microtask runs. Every other module in the comparison awaits the write first, for example `const saved = await store.save(invoice); await send(saved);` (`src/billing/invoice-notices.mjs:20-23`), `const saved = await store.save(guest); await send(saved);` (`src/visitors/visitor-service.mjs:27-31`), and `await store.save(job); await deliver(deliveryNotice(job));` (`src/exports/export-service.mjs:43-44`).\n   - Governing requirement: \"A message created outside quiet hours is saved as `sent` with `sentAt` from `now()` before `send` receives `{messageId, memberId, body}`.\" (governing-spec.md, \"Message delivery\")\n   - Problem and impact: a `send` implementation that reads the outbox when it receives the payload (`store.findById(messageId)`, `src/messaging/outbox-store.mjs:6`) gets `null`, because the record is not in the store yet. The notification is also built from the local `sent` object rather than the value the store persisted, so the ordering guarantee the contract states is not met.\n   - Fix: `const saved = await store.save(sent); await send(sentNotice(saved)); return saved;` in `src/messaging/messaging-service.mjs:53-56`.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/messaging/messaging-service.mjs",
+      "lineEnd": 56,
+      "lineStart": 53
+     },
+     {
+      "filePath": "src/messaging/outbox-store.mjs",
+      "lineEnd": 19,
+      "lineStart": 13
+     },
+     {
+      "filePath": "src/billing/invoice-notices.mjs",
+      "lineEnd": 23,
+      "lineStart": 20
+     },
+     {
+      "filePath": "src/visitors/visitor-service.mjs",
+      "lineEnd": 31,
+      "lineStart": 27
+     },
+     {
+      "filePath": "src/exports/export-service.mjs",
+      "lineEnd": 44,
+      "lineStart": 43
+     },
+     {
+      "filePath": "src/messaging/outbox-store.mjs",
+      "line": 6
+     }
+    ]
+   }
+  },
+  {
+   "id": "a10",
+   "family": "strata",
+   "model": "strata-q3",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a10 在 v2 brief 与 code-spec-v5.1 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：blind Opus high, Code Spec v5 formal pool q3a (q3a:c058:q3-1)",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "quoteField doubles inner double quotes with /\"/ without the g flag, so replace doubles only the first one and a field with two or more double quotes is written as malformed CSV (the field a\"b\"c is written as \"a\"\"b\"c\" instead of \"a\"\"b\"\"c\").",
+    "finding": "10. `src/exports/csv-format.mjs:7` - only the first double quote in a field is doubled, so quoted CSV fields are malformed.\n   - Implementation evidence: `src/exports/csv-format.mjs:7` is `export const quoteField = (text) => (NEEDS_QUOTES.test(text) ? `\"${text.replace(/\"/, '\"\"')}\"` : text);`. The replacement pattern `/\"/` has no `g` flag, so `String.prototype.replace` substitutes only the first `\"`; `NEEDS_QUOTES` (`src/exports/csv-format.mjs:5`) decides quoting for any field containing `\"`, `,`, `\\r` or `\\n`. `formatLine` (`src/exports/csv-format.mjs:9`) joins these fields for the header and every row of `buildCsv` (`src/exports/csv-format.mjs:22-26`), which becomes the `csv` of the stored export job (`src/exports/export-service.mjs:30,41`) and the payload given to `deliver` (`src/exports/export-service.mjs:7`).\n   - Governing requirement: `governing-spec.md` CSV exports states \"A field containing a comma, double quote, carriage return or line feed is wrapped in double quotes, with inner double quotes doubled; other fields are written unchanged.\"\n   - Problem and impact: A `note` value such as `said \"ok\" then \"stop\"` is written as `\"said \"\"ok\" then \"stop\"`, whose remaining unescaped quotes end the quoted field early, so a reader parses that row with the wrong number of columns and shifted values. Reservation exports carry a `text` `note` column (`src/exports/reservation-columns.mjs:15`), so ordinary reservation notes reach this path.\n   - Fix: Use a global replacement, for example `text.replace(/\"/g, '\"\"')`.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/exports/csv-format.mjs",
+      "line": 7
+     },
+     {
+      "filePath": "src/exports/csv-format.mjs",
+      "line": 5
+     },
+     {
+      "filePath": "src/exports/csv-format.mjs",
+      "line": 9
+     },
+     {
+      "filePath": "src/exports/csv-format.mjs",
+      "lineEnd": 26,
+      "lineStart": 22
+     },
+     {
+      "filePath": "src/exports/export-service.mjs",
+      "line": 30
+     },
+     {
+      "filePath": "src/exports/export-service.mjs",
+      "line": 41
+     },
+     {
+      "filePath": "src/exports/export-service.mjs",
+      "line": 7
+     },
+     {
+      "filePath": "src/exports/reservation-columns.mjs",
+      "line": 15
+     }
+    ]
+   }
+  },
+  {
+   "id": "a11",
+   "family": "strata",
+   "model": "strata-q3",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a11 在 v2 brief 与 code-spec-v5.1 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：blind Opus high, Code Spec v5 formal pool q3a (q3a:c014:q3-5)",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "AUDIT_LIMITS.maxQueryWindow is minutes(10080), a number of milliseconds, but prepareQuery compares it with windowSpan(query), which counts minutes ((until - from) / MINUTE), so the 10080-minute limit never triggers and longer query windows are accepted.",
+    "finding": "1. `src/audit/audit-query.mjs:9` and `src/audit/retention.mjs:5,13` do not enforce the audit query window limit.\n   - Implementation evidence: `prepareQuery` rejects the window with `if (windowSpan(query) > AUDIT_LIMITS.maxQueryWindow) throw new Error('audit query window is too long');` (`src/audit/audit-query.mjs:9`). `windowSpan` returns a value in minutes: `export const windowSpan = (window) => (window.until - window.from) / MINUTE;` (`src/audit/retention.mjs:13`), while `AUDIT_LIMITS.maxQueryWindow` is a millisecond duration: `maxQueryWindow: minutes(10_080)` (`src/audit/retention.mjs:5`), and `minutes(count) => count * MINUTE` with `MINUTE = 60_000` (`src/platform/time.mjs:1-3`).\n   - Governing requirement: \"An audit query has integer `from` and `until`, `until` later than `from` by at most 10080 minutes, and a `limit` that is an integer from 1 to 500, or 500 when absent (undefined or null).\" (governing-spec.md, \"Audit trail\")\n   - Problem and impact: the comparison divides by `MINUTE` on one side and multiplies by `MINUTE` on the other, so the effective ceiling is 604800000 minutes (about 1149 years) instead of 10080 minutes. A query such as `{from: 0, until: minutes(43_200)}` (30 days, span 43200) passes `src/audit/audit-query.mjs:9` and is accepted by `queryEntries` (`src/audit/audit-service.mjs:42-45`) and `actorSummary` (`src/audit/audit-service.mjs:47-50`), even though the contract requires rejection of any window longer than 10080 minutes.\n   - Fix: compare in one unit. Either keep `maxQueryWindow` in minutes (`maxQueryWindow: 10_080`) so `windowSpan(query) > AUDIT_LIMITS.maxQueryWindow` is a minutes-to-minutes comparison, or compare the raw span: `query.until - query.from > AUDIT_LIMITS.maxQueryWindow`.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/audit/audit-query.mjs",
+      "line": 9
+     },
+     {
+      "filePath": "src/audit/retention.mjs",
+      "line": 5
+     },
+     {
+      "filePath": "src/audit/retention.mjs",
+      "line": 13
+     },
+     {
+      "filePath": "src/platform/time.mjs",
+      "lineEnd": 3,
+      "lineStart": 1
+     },
+     {
+      "filePath": "src/audit/audit-service.mjs",
+      "lineEnd": 45,
+      "lineStart": 42
+     },
+     {
+      "filePath": "src/audit/audit-service.mjs",
+      "lineEnd": 50,
+      "lineStart": 47
+     }
+    ]
+   }
+  },
+  {
+   "id": "a12",
+   "family": "strata",
+   "model": "strata-q3",
+   "expected": "not-matched",
+   "confirmed_by": "v1 锚点 a12 在 v2 brief 与 code-spec-v5.1 场景文本下复核（F10，2026-10-25），期望 not-matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：blind Opus high, Code Spec v5 formal pool q3b (q3b:c062:q3-9)",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "applyTransition copies the record with a shallow spread and then pushes onto next.history, which is the same array as the received record's history, so confirm, cancel and reschedule modify the reservation object they receive.",
+    "finding": "2. `src/reservations/reservation-service.mjs:53-57` - Rescheduling never applies the snapped-window duration limit.\n   - Implementation evidence: `src/reservations/reservation-service.mjs:54-57` validates only `endAt > startAt`, snaps with `snapWindow({startAt, endAt})` and then checks `isRoomAvailable`. Nothing calls `exceedsMaxDuration` (defined at `src/reservations/policy.mjs:5`, used on the creation path at `src/reservations/reservation-service.mjs:14`), and `src/reservations/transitions.mjs:3-9,11-20` contains no duration rule.\n   - Governing requirement: `governing-spec.md:197` \"The new window must have an `endAt` value later than its `startAt` value. It is then snapped, and the snapped window must satisfy the duration limit and be available.\" `governing-spec.md:21` \"A snapped window lasts at most 240 minutes.\"\n   - Problem and impact: a reschedule to a window longer than 240 minutes is accepted and stored with the over-long snapped window (`src/reservations/reservation-service.mjs:64-65`) and priced for the whole over-long window by `src/reservations/policy.mjs:9`, while the same window is rejected at creation.\n   - Fix: after snapping in `rescheduleReservation`, reject when `exceedsMaxDuration(window)` is true, as the creation path does.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/reservations/reservation-service.mjs",
+      "lineEnd": 57,
+      "lineStart": 53
+     },
+     {
+      "filePath": "src/reservations/reservation-service.mjs",
+      "lineEnd": 57,
+      "lineStart": 54
+     },
+     {
+      "filePath": "src/reservations/policy.mjs",
+      "line": 5
+     },
+     {
+      "filePath": "src/reservations/reservation-service.mjs",
+      "line": 14
+     },
+     {
+      "filePath": "src/reservations/transitions.mjs",
+      "lineEnd": 9,
+      "lineStart": 3
+     },
+     {
+      "filePath": "src/reservations/transitions.mjs",
+      "lineEnd": 20,
+      "lineStart": 11
+     },
+     {
+      "filePath": "governing-spec.md",
+      "line": 197
+     },
+     {
+      "filePath": "governing-spec.md",
+      "line": 21
+     },
+     {
+      "filePath": "src/reservations/reservation-service.mjs",
+      "lineEnd": 65,
+      "lineStart": 64
+     },
+     {
+      "filePath": "src/reservations/policy.mjs",
+      "line": 9
+     }
+    ]
+   }
+  },
+  {
+   "id": "a13",
+   "family": "openai",
+   "model": "gpt-6.1-sol",
+   "expected": "not-matched",
+   "confirmed_by": "v1 锚点 a13 在 v2 brief 与 code-spec-v5.1 场景文本下复核（F10，2026-10-25），期望 not-matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：blind Opus high, pilot pool 2026-10-20 (p026; anchors 12/12 and synthetic 8/8 right)",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "rescheduleReservation never applies the 240-minute duration limit to the snapped new window.",
+    "finding": "- Slot snapping rounds negative starts toward zero instead of down. `src/reservations/calendar.mjs:22,26-28` subtracts JavaScript's signed remainder, so a start of `-1` snaps to `0` instead of `-900000`. A held reservation may be rescheduled to `startAt: -1, endAt: 1` through `src/reservations/reservation-service.mjs:53-56,64-67`; `governing-spec.md:196-197` imposes no past-start restriction on rescheduling. The stored start is therefore later than the requested start, violating outward snapping under `governing-spec.md:19-20`. Use mathematical floor for the lower slot boundary and a corresponding ceiling calculation for the upper boundary.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/reservations/calendar.mjs",
+      "line": 22
+     },
+     {
+      "filePath": "src/reservations/calendar.mjs",
+      "lineEnd": 28,
+      "lineStart": 26
+     },
+     {
+      "filePath": "src/reservations/reservation-service.mjs",
+      "lineEnd": 56,
+      "lineStart": 53
+     },
+     {
+      "filePath": "src/reservations/reservation-service.mjs",
+      "lineEnd": 67,
+      "lineStart": 64
+     },
+     {
+      "filePath": "governing-spec.md",
+      "lineEnd": 197,
+      "lineStart": 196
+     },
+     {
+      "filePath": "governing-spec.md",
+      "lineEnd": 20,
+      "lineStart": 19
+     }
+    ]
+   }
+  },
+  {
+   "id": "a14",
+   "family": "openai",
+   "model": "gpt-6.1-sol",
+   "expected": "not-matched",
+   "confirmed_by": "v1 锚点 a14 在 v2 brief 与 code-spec-v5.1 场景文本下复核（F10，2026-10-25），期望 not-matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：blind Opus high, pilot pool 2026-10-20 (p027; anchors 12/12 and synthetic 8/8 right)",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "rescheduleReservation never applies the 240-minute duration limit to the snapped new window.",
+    "finding": "- Reservation window validation allows an unordered endpoint to reach storage. `src/reservations/request-validation.mjs:14` and `src/reservations/reservation-service.mjs:54` reject only `endAt <= startAt`, so a numeric `NaN` endpoint passes. With an otherwise valid creation request and `endAt: NaN`, snapping produces a `NaN` end, the duration and overlap comparisons do not reject it, and `newHold` stores that end and a `NaN` price (`src/reservations/reservation-service.mjs:13-24`, `src/reservations/policy.mjs:5-9,18-21`). Rescheduling can likewise save that invalid end at `src/reservations/reservation-service.mjs:56-67`. This violates the strictly later end required by `governing-spec.md:70,197`. Reject whenever the required positive relation `endAt > startAt` is not satisfied before lookup, snapping or persistence.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/reservations/request-validation.mjs",
+      "line": 14
+     },
+     {
+      "filePath": "src/reservations/reservation-service.mjs",
+      "line": 54
+     },
+     {
+      "filePath": "src/reservations/reservation-service.mjs",
+      "lineEnd": 24,
+      "lineStart": 13
+     },
+     {
+      "filePath": "src/reservations/policy.mjs",
+      "lineEnd": 9,
+      "lineStart": 5
+     },
+     {
+      "filePath": "src/reservations/policy.mjs",
+      "lineEnd": 21,
+      "lineStart": 18
+     },
+     {
+      "filePath": "src/reservations/reservation-service.mjs",
+      "lineEnd": 67,
+      "lineStart": 56
+     },
+     {
+      "filePath": "governing-spec.md",
+      "line": 70
+     },
+     {
+      "filePath": "governing-spec.md",
+      "line": 197
+     }
+    ]
+   }
+  },
+  {
+   "id": "a15",
+   "family": "openai",
+   "model": "gpt-6.1-sol",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a15 在 v2 brief 与 code-spec-v5.1 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：blind Opus high, pilot pool 2026-10-20 (p004; anchors 12/12 and synthetic 8/8 right)",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "paymentStatus passes the invoice record current to netPaid as its invoiceId argument; netPaid compares each intent's invoiceId (a string) with it using ===, and a string never equals an object, so no intent matches and the status reports paid 0 even after an intent of the invoice was captured.",
+    "finding": "- Payment status always reports zero paid for ordinary invoice ids. `src/payments/payment-service.mjs:47-54` passes the entire normalized invoice object as the second argument to `netPaid`; `src/payments/payment-policy.mjs:53-55` compares that argument directly with each intent's string `invoiceId`. Consequently captured and refunded intents never match, contrary to the net paid sum required by `governing-spec.md:179`. Pass `current.id` to `netPaid` so the status includes captured amounts less refunds for that invoice.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/payments/payment-service.mjs",
+      "lineEnd": 54,
+      "lineStart": 47
+     },
+     {
+      "filePath": "src/payments/payment-policy.mjs",
+      "lineEnd": 55,
+      "lineStart": 53
+     },
+     {
+      "filePath": "governing-spec.md",
+      "line": 179
+     }
+    ]
+   }
+  },
+  {
+   "id": "a16",
+   "family": "openai",
+   "model": "gpt-6.1-sol",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a16 在 v2 brief 与 code-spec-v5.1 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：blind Opus high, pilot pool 2026-10-20 (p021; anchors 12/12 and synthetic 8/8 right)",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "hasAmenities compares the size of the union with room.amenities.length; after lowercasing, a room amenity list with duplicates (Whiteboard, whiteboard) has a union smaller than its length, so that room is never eligible even when it has every requested amenity.",
+    "finding": "- Room amenity matching uses set cardinality instead of containment. `src/reservations/catalog.mjs:3-5,16` preserves duplicate room amenities but compares the size of their union with requested amenities against the original array length; booking and listing call this predicate in `src/reservations/reservation-service.mjs:18,28-32`. Under `governing-spec.md:77`, every requested amenity must be present. For a room with `['wifi', 'wifi']`, requesting `['projector']` incorrectly passes, while requesting `['wifi']` incorrectly fails. Normalize room amenities to a set and test each requested amenity for membership.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/reservations/catalog.mjs",
+      "lineEnd": 5,
+      "lineStart": 3
+     },
+     {
+      "filePath": "src/reservations/catalog.mjs",
+      "line": 16
+     },
+     {
+      "filePath": "src/reservations/reservation-service.mjs",
+      "line": 18
+     },
+     {
+      "filePath": "src/reservations/reservation-service.mjs",
+      "lineEnd": 32,
+      "lineStart": 28
+     },
+     {
+      "filePath": "governing-spec.md",
+      "line": 77
+     }
+    ]
+   }
+  },
+  {
+   "id": "a17",
+   "family": "openai",
+   "model": "gpt-6.1-sol",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a17 在 v2 brief 与 code-spec-v5.1 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：blind Opus high, pilot pool 2026-10-20 (p031; anchors 12/12 and synthetic 8/8 right)",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "formatList writes each item through formatText, so a list item that starts with =, +, - or @ gets the ' prefix (for example the list ['-a', 'b'] is written '-a;b), although only text values get that prefix and a list's items are written as stored.",
+    "finding": "- CSV list formatting changes list items instead of writing them as stored. `src/exports/value-format.mjs:27-30` sends each list item through `formatText`, which prefixes formula-like strings with an apostrophe at lines 5-9. For example, `['-west', '@desk']` becomes `'-west;'@desk`. `governing-spec.md:243` requires list items to be joined with `;` as stored; the prefix rule in `governing-spec.md:242` applies to text values. Join the validated original strings directly and let CSV field quoting handle delimiters.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/exports/value-format.mjs",
+      "lineEnd": 30,
+      "lineStart": 27
+     },
+     {
+      "filePath": "governing-spec.md",
+      "line": 243
+     },
+     {
+      "filePath": "governing-spec.md",
+      "line": 242
+     }
+    ]
+   }
+  },
+  {
+   "id": "a18",
+   "family": "openai",
+   "model": "gpt-6.1-sol",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a18 在 v2 brief 与 code-spec-v5.1 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：blind Opus high, pilot pool 2026-10-20 (p043; anchors 12/12 and synthetic 8/8 right)",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "quoteField doubles inner double quotes with /\"/ without the g flag, so replace doubles only the first one and a field with two or more double quotes is written as malformed CSV (the field a\"b\"c is written as \"a\"\"b\"c\" instead of \"a\"\"b\"\"c\").",
+    "finding": "- CSV quoting doubles only the first embedded double quote. `src/exports/csv-format.mjs:7,9,25-26` uses `text.replace(/\"/, '\"\"')` for every quoted field. A field containing two or more double quotes leaves later quotes unescaped, producing malformed CSV or changing parsed values. `governing-spec.md:241` requires inner double quotes to be doubled throughout the field. Use a global replacement when quoting headers and row values.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/exports/csv-format.mjs",
+      "line": 7
+     },
+     {
+      "filePath": "src/exports/csv-format.mjs",
+      "line": 9
+     },
+     {
+      "filePath": "src/exports/csv-format.mjs",
+      "lineEnd": 26,
+      "lineStart": 25
+     },
+     {
+      "filePath": "governing-spec.md",
+      "line": 241
+     }
+    ]
+   }
+  },
+  {
+   "id": "a19",
+   "family": "anthropic",
+   "model": "haiku",
+   "expected": "not-matched",
+   "confirmed_by": "v1 锚点 a19 在 v2 brief 与 code-spec-v5.1 场景文本下复核（F10，2026-10-25），期望 not-matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法；可执行检查：node benchmarks/multi-model-v1/anchors/checks/cs-checks.mjs <v2 物化 candidate> 输出与 v1 记录相同。v1 依据：Main executable check 10-21 (worker, benchmarks/multi-model-v1/anchors/checks/cs-checks.mjs; node on a read-only copy of the first-batch view): rescheduleReservation accepts a 300-minute window (expectation true: the defect exists); applyTransition(confirm) grows the input history from 1 to 2 (the finding describes this other, real defect, which is problem 2 of the key); finding text has none of 240/duration/too long/exceedsMaxDuration/snap; first-batch blind Opus high cs-1-044 decided not-matched, consistent",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "rescheduleReservation never applies the 240-minute duration limit to the snapped new window.",
+    "finding": "- `src/reservations/transitions.mjs:17`, `src/reservations/reservation-service.mjs:55-62`: `applyTransition` builds `next` with a shallow copy `{...record, state}` and then calls `next.history.push(...)`, which mutates the `history` array shared with the reservation object the caller passed in. `confirmReservation`, `cancelReservation` and `rescheduleReservation` all pass their input through this path, so the caller's original reservation gains a history entry. Governing spec `governing-spec.md:8` says \"Operations never modify a reservation object they receive; they return new records.\" Fix: build the new history as a copy, e.g. `history: [...record.history, {state: rule.to, at}]`.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/reservations/transitions.mjs",
+      "line": 17
+     },
+     {
+      "filePath": "src/reservations/reservation-service.mjs",
+      "lineEnd": 62,
+      "lineStart": 55
+     },
+     {
+      "filePath": "governing-spec.md",
+      "line": 8
+     }
+    ]
+   }
+  },
+  {
+   "id": "a20",
+   "family": "anthropic",
+   "model": "haiku",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a20 在 v2 brief 与 code-spec-v5.1 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法；可执行检查：node benchmarks/multi-model-v1/anchors/checks/cs-checks.mjs <v2 物化 candidate> 输出与 v1 记录相同。v1 依据：Main executable check 10-21 (worker, benchmarks/multi-model-v1/anchors/checks/cs-checks.mjs; node on a read-only copy of the first-batch view): quoteField('a\"b\"c') returns \"a\"\"b\"c\" (only the first quote doubled, as the expectation says); the finding cites csv-format.mjs:7 (association line) and names the missing g flag; first-batch blind Opus high cs-8-064 decided matched, consistent",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "quoteField doubles inner double quotes with /\"/ without the g flag, so replace doubles only the first one and a field with two or more double quotes is written as malformed CSV (the field a\"b\"c is written as \"a\"\"b\"c\" instead of \"a\"\"b\"\"c\").",
+    "finding": "- CSV quoting doubles only the first inner double quote. `src/exports/csv-format.mjs:7` uses `text.replace(/\"/, '\"\"')`, which has no `g` flag. Governing spec `governing-spec.md:241` says a field containing a double quote is wrapped in double quotes \"with inner double quotes doubled\". Failing case: a `text` value `say \"hi\" now` is written as `\"say \"\"hi\" now\"`, which is malformed CSV because the second inner quote is not doubled. Fix: use `text.replace(/\"/g, '\"\"')`.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/exports/csv-format.mjs",
+      "line": 7
+     },
+     {
+      "filePath": "governing-spec.md",
+      "line": 241
+     }
+    ]
+   }
+  },
+  {
+   "id": "a21",
+   "family": "anthropic",
+   "model": "sonnet",
+   "expected": "not-matched",
+   "confirmed_by": "v1 锚点 a21 在 v2 brief 与 code-spec-v5.1 场景文本下复核（F10，2026-10-25），期望 not-matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法；可执行检查：node benchmarks/multi-model-v1/anchors/checks/cs-checks.mjs <v2 物化 candidate> 输出与 v1 记录相同。v1 依据：Main executable check 10-21 (worker, benchmarks/multi-model-v1/anchors/checks/cs-checks.mjs; node on a read-only copy of the first-batch view): createPaymentIntent on a late invoice gives fee 0, amount = total (expectation true); paymentStatus with a captured 500 intent reports paid 0 (the finding describes this other defect, netPaid gets the invoice object); finding text has no issuedAt, fee, intentRequest or newIntent; first-batch blind Opus high cs-4-027 decided not-matched, consistent",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "intentRequest rebuilds the request from a fixed list of invoice fields that leaves out issuedAt, so newIntent, which computes the fee with lateFee(prepared.total, prepared.issuedAt, at), gets a due instant of NaN and an intent created while its invoice is late has a fee of 0 and an amount equal to the total.",
+    "finding": "- `src/payments/payment-service.mjs:8-10,49-54`: `paymentStatus` always reports `paid` as 0.\n  - Spec evidence: Time limits and expiry: \"A payment status reports `dueAt`, `late` and `paid`, the sum of `captured` minus `refunded` over its `captured` and `refunded` intents.\"\n  - Implementation evidence: `netPaid(intents, invoiceId)` filters on `intent.invoiceId === invoiceId` (`src/payments/payment-policy.mjs:53-55`). `paymentStatus` passes the whole `current` object as `invoiceId`.\n  - Impact: no intent matches an object, so `paid` is always 0.\n  - Fix: pass `current.id`.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/payments/payment-service.mjs",
+      "lineEnd": 10,
+      "lineStart": 8
+     },
+     {
+      "filePath": "src/payments/payment-service.mjs",
+      "lineEnd": 54,
+      "lineStart": 49
+     },
+     {
+      "filePath": "src/payments/payment-policy.mjs",
+      "lineEnd": 55,
+      "lineStart": 53
+     }
+    ]
+   }
+  },
+  {
+   "id": "a22",
+   "family": "anthropic",
+   "model": "sonnet",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a22 在 v2 brief 与 code-spec-v5.1 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法；可执行检查：node benchmarks/multi-model-v1/anchors/checks/cs-checks.mjs <v2 物化 candidate> 输出与 v1 记录相同。v1 依据：Main executable check 10-21 (worker, benchmarks/multi-model-v1/anchors/checks/cs-checks.mjs; node on a read-only copy of the first-batch view): hasEnded({endAt: at+30s}, at) is true, +60s false (expectation true); the finding cites closures.mjs:26 (association line) and names the whole-minute truncation of minutesBetween; first-batch blind Opus high cs-11-121 decided matched, consistent",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "hasEnded compares minutesBetween(at, endAt), whole minutes truncated toward zero, with 0, so a closure with less than one minute left (for example 30 seconds) counts as ended: adding it is rejected and it is left out of the upcoming closures.",
+    "finding": "- `src/schedules/closures.mjs:26`, used at `src/schedules/front-desk-service.mjs:31,56`: `hasEnded` treats a closure that ends less than a minute from now as already ended.\n  - Spec evidence: Time limits and expiry: \"A closure whose `endAt` is not later than `now()` is rejected.\" Upcoming desk closures are \"active closures whose `endAt` is later than `now()`\".\n  - Implementation evidence: `hasEnded` returns `minutesBetween(at, closure.endAt) <= 0`, and `minutesBetween` truncates to whole minutes. An `endAt` 30 seconds after `now()` yields 0, so `hasEnded` is true.\n  - Impact: `addClosure` rejects a valid closure whose `endAt` is later than `now()`, and `upcomingClosures` omits closures that end within the next minute.\n  - Fix: compare instants directly, `closure.endAt <= at`.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/schedules/closures.mjs",
+      "line": 26
+     },
+     {
+      "filePath": "src/schedules/front-desk-service.mjs",
+      "line": 31
+     },
+     {
+      "filePath": "src/schedules/front-desk-service.mjs",
+      "line": 56
+     }
+    ]
+   }
+  },
+  {
+   "id": "a23",
+   "family": "strata",
+   "model": "strata-q3",
+   "expected": "not-matched",
+   "confirmed_by": "v1 锚点 a23 在 v2 brief 与 code-spec-v5.1 场景文本下复核（F10，2026-10-25），期望 not-matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法；可执行检查：node benchmarks/multi-model-v1/anchors/checks/cs-checks.mjs <v2 物化 candidate> 输出与 v1 记录相同。v1 依据：Main executable check 10-21 (worker, benchmarks/multi-model-v1/anchors/checks/cs-checks.mjs; node on a read-only copy of the first-batch view): withdrawEntry of a waiting entry starting in 30 min throws too late to withdraw (expectation true); acceptOffer of an offered entry with expiresAt passed is accepted (the finding describes this other defect); finding text has none of waiting/withdraw/60/cutoff; first-batch blind Opus high cs-4-098 decided not-matched, consistent",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "The single withdraw rule for waiting and offered entries carries the 60-minute cutoff, so a waiting entry whose startAt is less than 60 minutes from now cannot be withdrawn, although the limit applies only to offered entries.",
+    "finding": "7. `- src/waitlist/waitlist-service.mjs:58-61` (with `src/waitlist/queue.mjs:13`, `src/waitlist/entry-states.mjs:7,17-25`)\n   - Governing requirement: `governing-spec.md` Waitlist: \"Only a nonexpired `offered` entry may be accepted; acceptance sets `accepted` and `acceptedAt` and books nothing.\" Time limits and expiry: \"A waitlist offer is expired when `now()` is equal to or later than its `expiresAt`.\"\n   - Implementation evidence: `acceptOffer` runs `const next = moveEntry(entry, 'accept', at); if (isLapsing(next, at)) throw new Error('offer has expired');`. `moveEntry` for `accept` returns `{...entry, state: 'accepted', acceptedAt: at}` (rule `{action: 'accept', from: ['offered'], to: 'accepted', stamp: 'acceptedAt'}`), and `isLapsing` is `(entry, at) => entry.state === 'offered' && isExpired(entry, at)`.\n   - Problem: The expiry guard is evaluated on the post-transition record, whose `state` is already `accepted`, so `isLapsing(next, at)` is always false and the guard can never fire. The pre-transition `entry` (still `offered`) is never checked for expiry.\n   - Impact: An offer whose `expiresAt` has passed (state still `offered` because no opening has lapsed it yet) is accepted: `acceptOffer` saves the entry as `accepted` with `acceptedAt` instead of rejecting it, so expired offers remain acceptable and the member-limit accounting in `src/waitlist/queue.mjs` (`isActive`/`isLiveOffer`) no longer sees them.\n   - Fix: Check expiry on the entry before transitioning, for example `if (isExpired(entry, at)) throw new Error('offer has expired');` (or `if (!isLiveOffer(entry, at)) throw ...`) before calling `moveEntry(entry, 'accept', at)`.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "- src/waitlist/waitlist-service.mjs",
+      "lineEnd": 61,
+      "lineStart": 58
+     },
+     {
+      "filePath": "src/waitlist/queue.mjs",
+      "line": 13
+     },
+     {
+      "filePath": "src/waitlist/entry-states.mjs",
+      "line": 7
+     },
+     {
+      "filePath": "src/waitlist/entry-states.mjs",
+      "lineEnd": 25,
+      "lineStart": 17
+     }
+    ]
+   }
+  },
+  {
+   "id": "a24",
+   "family": "strata",
+   "model": "strata-q3",
+   "expected": "not-matched",
+   "confirmed_by": "v1 锚点 a24 在 v2 brief 与 code-spec-v5.1 场景文本下复核（F10，2026-10-25），期望 not-matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法；可执行检查：node benchmarks/multi-model-v1/anchors/checks/cs-checks.mjs <v2 物化 candidate> 输出与 v1 记录相同。v1 依据：Main executable check 10-21 (worker, benchmarks/multi-model-v1/anchors/checks/cs-checks.mjs; node on a read-only copy of the first-batch view): applyTransition(confirm) grows the input history from 1 to 2 (expectation true); rescheduleReservation accepts a 300-minute window (the finding describes this other, real defect, problem 3 of the key); its evidence range transitions.mjs:3-20 covers the association line 17, but the text names only the missing duration check and has none of history/mutat/modif/shared/shallow/push; first-batch blind Opus high cs-2-046 decided not-matched, consistent",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "applyTransition copies the record with a shallow spread and then pushes onto next.history, which is the same array as the received record's history, so confirm, cancel and reschedule modify the reservation object they receive.",
+    "finding": "2. `src/reservations/reservation-service.mjs:53-69`\n   - Evidence: `rescheduleReservation` validates only `if (endAt <= startAt)` (line 54), snaps the window (line 56) and checks `isRoomAvailable` (line 57). `exceedsMaxDuration` is imported (line 4) and used only in `createReservation` (line 14); no duration check appears anywhere in the reschedule path or in `applyTransition` (`src/reservations/transitions.mjs:3-20`).\n   - Governing requirement: Rescheduling, `governing-spec.md`: \"It is then snapped, and the snapped window must satisfy the duration limit and be available.\" Slots, `governing-spec.md`: \"A snapped window lasts at most 240 minutes.\"\n   - Problem and impact: a reschedule to a window longer than 240 snapped minutes is accepted, priced by `price(room, window)` and saved, so a reservation can end up occupying the room and being billed for a window that creation would reject.\n   - Fix: after `snapWindow`, call `if (exceedsMaxDuration(window)) throw new Error('reservation is too long');` before the availability check and the save.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/reservations/reservation-service.mjs",
+      "lineEnd": 69,
+      "lineStart": 53
+     },
+     {
+      "filePath": "src/reservations/transitions.mjs",
+      "lineEnd": 20,
+      "lineStart": 3
+     }
+    ]
+   }
+  }
+ ],
+ "synthetic": [
+  {
+   "id": "s01",
+   "type": "mismatch",
+   "family": "anthropic",
+   "model": "opus",
+   "expected": "not-matched",
+   "from": "opus:c054:opus-1",
+   "item": {
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "paymentStatus passes the invoice record current to netPaid as its invoiceId argument; netPaid compares each intent's invoiceId (a string) with it using ===, and a string never equals an object, so no intent matches and the status reports paid 0 even after an intent of the invoice was captured.",
+    "finding": "- `src/payments/payment-policy.mjs:25`, `src/platform/site-settings.mjs:9-13`, `src/platform/time.mjs:7` - `PAYMENT_TERMS.authorizationHold` is already `minutes(10_080)` (milliseconds), and `newIntent` passes it to `addMinutes`, which multiplies by 60,000 again. Requirement: a new payment intent has \"a hold `expiresAt` 10080 minutes later\" (`governing-spec.md:114`). Impact: authorizations expire about 60,000 times later than specified, so expired holds still block new intents and remain capturable (`governing-spec.md:186,268`). Fix: use `at + PAYMENT_TERMS.authorizationHold`, or store the hold as `10_080` minutes and keep `addMinutes`.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/payments/payment-policy.mjs",
+      "line": 25
+     },
+     {
+      "filePath": "src/platform/site-settings.mjs",
+      "lineEnd": 13,
+      "lineStart": 9
+     },
+     {
+      "filePath": "src/platform/time.mjs",
+      "line": 7
+     },
+     {
+      "filePath": "governing-spec.md",
+      "line": 114
+     },
+     {
+      "filePath": "governing-spec.md",
+      "line": 186
+     },
+     {
+      "filePath": "governing-spec.md",
+      "line": 268
+     }
+    ]
+   },
+   "confirmed_by": "v1 合成题 s01 在 v2 brief 与 code-spec-v5.1 场景文本下复核（F10，2026-10-25），期望 not-matched 不变"
+  },
+  {
+   "id": "s02",
+   "type": "mismatch",
+   "family": "anthropic",
+   "model": "opus",
+   "expected": "not-matched",
+   "from": "opus:c051:opus-3",
+   "item": {
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "formatList writes each item through formatText, so a list item that starts with =, +, - or @ gets the ' prefix (for example the list ['-a', 'b'] is written '-a;b), although only text values get that prefix and a list's items are written as stored.",
+    "finding": "- `src/exports/csv-format.mjs:7` - `quoteField` uses `text.replace(/\"/, '\"\"')`, a non-global regular expression, so only the first inner double quote is doubled. Governing requirement: \"A field containing a comma, double quote, carriage return or line feed is wrapped in double quotes, with inner double quotes doubled\" (`governing-spec.md:241`). Impact: a value with two or more double quotes produces malformed CSV (e.g. `a\"b\"c` becomes `\"a\"\"b\"c\"`). Fix: use `text.replaceAll('\"', '\"\"')` or `/\"/g`.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/exports/csv-format.mjs",
+      "line": 7
+     },
+     {
+      "filePath": "governing-spec.md",
+      "line": 241
+     }
+    ]
+   },
+   "confirmed_by": "v1 合成题 s02 在 v2 brief 与 code-spec-v5.1 场景文本下复核（F10，2026-10-25），期望 not-matched 不变"
+  },
+  {
+   "id": "s03",
+   "type": "mismatch",
+   "family": "anthropic",
+   "model": "opus",
+   "expected": "not-matched",
+   "from": "opus:c041:opus-1",
+   "item": {
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "sendMessage starts store.save without awaiting it and then awaits send; the outbox store applies each write later through its write queue, so send receives the message before the queued write of the sent message completes.",
+    "finding": "- `src/messaging/quiet-hours.mjs:16-21,32-35` - `releaseTime` computes `wait` from the local minute of the floored instant but adds it to the instant rounded up (`minuteStart(at + MINUTE - 1)`). When `now()` is not on a minute boundary the result lands on local minute `endMinute + 1`, one minute late (e.g. local 10:30:30 with `endMinute` 631 gives 10:32:00 instead of 10:31:00). Requirement: \"`releaseAt` at the first minute boundary after `now()` whose local minute is `endMinute`\" (`governing-spec.md:206`). Impact: queued messages are released one minute late in the common case. Fix: base the result on the floored minute, `minuteStart(at) + minutes(wait)` (with `wait` >= 1 while in quiet hours, this is after `now()`).",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/messaging/quiet-hours.mjs",
+      "lineEnd": 21,
+      "lineStart": 16
+     },
+     {
+      "filePath": "src/messaging/quiet-hours.mjs",
+      "lineEnd": 35,
+      "lineStart": 32
+     },
+     {
+      "filePath": "governing-spec.md",
+      "line": 206
+     }
+    ]
+   },
+   "confirmed_by": "v1 合成题 s03 在 v2 brief 与 code-spec-v5.1 场景文本下复核（F10，2026-10-25），期望 not-matched 不变"
+  },
+  {
+   "id": "s04",
+   "type": "mismatch",
+   "family": "anthropic",
+   "model": "opus",
+   "expected": "not-matched",
+   "from": "opus:c023:opus-1",
+   "item": {
+    "kind": "association",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "applyTransition copies the record with a shallow spread and then pushes onto next.history, which is the same array as the received record's history, so confirm, cancel and reschedule modify the reservation object they receive.",
+    "finding": "- `src/reservations/reservation-service.mjs:53-58` - `rescheduleReservation` snaps the new window and checks availability but never checks the duration limit (`exceedsMaxDuration`), so a reschedule to a snapped window longer than 240 minutes is accepted and stored. Requirement: \"It is then snapped, and the snapped window must satisfy the duration limit and be available.\" (`governing-spec.md:197`) and \"A snapped window lasts at most 240 minutes.\" (`governing-spec.md:21`). Impact: reservations longer than the contract maximum can be created via reschedule. Fix: after snapping, reject with `if (exceedsMaxDuration(window)) throw ...` before the availability check.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/reservations/reservation-service.mjs",
+      "lineEnd": 58,
+      "lineStart": 53
+     },
+     {
+      "filePath": "governing-spec.md",
+      "line": 197
+     },
+     {
+      "filePath": "governing-spec.md",
+      "line": 21
+     }
+    ]
+   },
+   "confirmed_by": "v1 合成题 s04 在 v2 brief 与 code-spec-v5.1 场景文本下复核（F10，2026-10-25），期望 not-matched 不变"
+  },
+  {
+   "id": "s05",
+   "type": "finding-problem",
+   "family": "anthropic",
+   "model": "opus",
+   "expected": "problem-12",
+   "from": "opus:c055:opus-1",
+   "item": {
+    "kind": "finding",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "unsupported",
+     "supported",
+     "problem-1",
+     "problem-2",
+     "problem-3",
+     "problem-4",
+     "problem-5",
+     "problem-6",
+     "problem-7",
+     "problem-8",
+     "problem-9",
+     "problem-10",
+     "problem-11",
+     "problem-12",
+     "problem-13",
+     "problem-14",
+     "problem-15",
+     "problem-16",
+     "problem-17",
+     "problem-18",
+     "problem-19",
+     "problem-20"
+    ],
+    "expectation": null,
+    "finding": "- `src/waitlist/entry-states.mjs:9,22`, `src/waitlist/waitlist-service.mjs:66-67` - The single `withdraw` rule covers both `waiting` and `offered` entries and carries `cutoff: WITHDRAW_CUTOFF_MINUTES`, so `moveEntry` rejects withdrawing a `waiting` entry whose `startAt` is less than 60 minutes after `now()`. Requirement: \"Withdrawing an `offered` waitlist entry is rejected when its `startAt` is less than 60 minutes after `now()`. A `waiting` entry has no such limit.\" (`governing-spec.md:183`), with `waiting` entries withdrawable per `governing-spec.md:51`. Impact: members cannot withdraw waiting entries close to their start. Fix: split the rule so only `from: ['offered']` has the cutoff and `from: ['waiting']` has none.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/waitlist/entry-states.mjs",
+      "line": 9
+     },
+     {
+      "filePath": "src/waitlist/entry-states.mjs",
+      "line": 22
+     },
+     {
+      "filePath": "src/waitlist/waitlist-service.mjs",
+      "lineEnd": 67,
+      "lineStart": 66
+     },
+     {
+      "filePath": "governing-spec.md",
+      "line": 183
+     },
+     {
+      "filePath": "governing-spec.md",
+      "line": 51
+     }
+    ],
+    "problemOptions": [
+     {
+      "decision": "problem-1",
+      "expectation": "hasAmenities compares the size of the union with room.amenities.length; after lowercasing, a room amenity list with duplicates (Whiteboard, whiteboard) has a union smaller than its length, so that room is never eligible even when it has every requested amenity."
+     },
+     {
+      "decision": "problem-2",
+      "expectation": "applyTransition copies the record with a shallow spread and then pushes onto next.history, which is the same array as the received record's history, so confirm, cancel and reschedule modify the reservation object they receive."
+     },
+     {
+      "decision": "problem-3",
+      "expectation": "rescheduleReservation never applies the 240-minute duration limit to the snapped new window."
+     },
+     {
+      "decision": "problem-4",
+      "expectation": "recordBadgeEvent looks up the event key through findKeyedEvent(store, prepared), which reads store.list(event); the event carries the event's buildingId, which the badge store (createAppendLog) destructures as a building filter, so a key already recorded for an event in another building is not found and the event is recorded again."
+     },
+     {
+      "decision": "problem-5",
+      "expectation": "countedReservations tests overlaps(instant(startAt), period), but instant is a zero-length interval and overlaps uses strict comparisons, so a confirmed reservation starting exactly at the first instant of the month is not counted in used minutes, although the month is half-open and its start is inside it."
+     },
+     {
+      "decision": "problem-6",
+      "expectation": "summarizeActors counts the entries returned by selectEntries, which keeps only the first limit matches, so an actor summary stops counting at the query limit (500 when absent), although an actor summary counts every entry its (valid) query matches, ignoring limit."
+     },
+     {
+      "decision": "problem-7",
+      "expectation": "quoteField doubles inner double quotes with /\"/ without the g flag, so replace doubles only the first one and a field with two or more double quotes is written as malformed CSV (the field a\"b\"c is written as \"a\"\"b\"c\" instead of \"a\"\"b\"\"c\")."
+     },
+     {
+      "decision": "problem-8",
+      "expectation": "sendMessage starts store.save without awaiting it and then awaits send; the outbox store applies each write later through its write queue, so send receives the message before the queued write of the sent message completes."
+     },
+     {
+      "decision": "problem-9",
+      "expectation": "replan(ticket, null) deletes plannedWork from its copy, but clearPlannedWork spreads the original ticket first and that copy second; spreading only overrides keys that exist, so the saved ticket keeps its old plannedWork: it is still listed as the room's planned work, still blocks other tickets' windows, and the ticket can never be planned again because planWork rejects a ticket that already has a planned window."
+     },
+     {
+      "decision": "problem-10",
+      "expectation": "intentRequest rebuilds the request from a fixed list of invoice fields that leaves out issuedAt, so newIntent, which computes the fee with lateFee(prepared.total, prepared.issuedAt, at), gets a due instant of NaN and an intent created while its invoice is late has a fee of 0 and an amount equal to the total."
+     },
+     {
+      "decision": "problem-11",
+      "expectation": "hasEnded compares minutesBetween(at, endAt), whole minutes truncated toward zero, with 0, so a closure with less than one minute left (for example 30 seconds) counts as ended: adding it is rejected and it is left out of the upcoming closures."
+     },
+     {
+      "decision": "problem-12",
+      "expectation": "The single withdraw rule for waiting and offered entries carries the 60-minute cutoff, so a waiting entry whose startAt is less than 60 minutes from now cannot be withdrawn, although the limit applies only to offered entries."
+     },
+     {
+      "decision": "problem-13",
+      "expectation": "ENTRY_DEFAULTS gives active: true and prepareRoom spreads it under the room entry, so a room entry without an active value becomes active and is selected for the report, although only rooms whose active value is true may be."
+     },
+     {
+      "decision": "problem-14",
+      "expectation": "A credit reason is trimmed instead of being stored exactly as supplied."
+     },
+     {
+      "decision": "problem-15",
+      "expectation": "newIntent passes PAYMENT_TERMS.authorizationHold, which is already minutes(10080) in milliseconds, to addMinutes, which multiplies by a minute again, so a new authorization expires 604,800,000 minutes later instead of 10080 minutes: an old authorization keeps blocking new intents for its invoice and can still be captured long after it should have expired."
+     },
+     {
+      "decision": "problem-16",
+      "expectation": "paymentStatus passes the invoice record current to netPaid as its invoiceId argument; netPaid compares each intent's invoiceId (a string) with it using ===, and a string never equals an object, so no intent matches and the status reports paid 0 even after an intent of the invoice was captured."
+     },
+     {
+      "decision": "problem-17",
+      "expectation": "AUDIT_LIMITS.maxQueryWindow is minutes(10080), a number of milliseconds, but prepareQuery compares it with windowSpan(query), which counts minutes ((until - from) / MINUTE), so the 10080-minute limit never triggers and longer query windows are accepted."
+     },
+     {
+      "decision": "problem-18",
+      "expectation": "releaseTime rounds now() up to a whole minute with minuteStart(at + MINUTE - 1) and then adds wait, but wait is counted from the local minute of day, which localMinuteOfDay takes from the start of the current minute; when now() is not on a minute boundary the result is one minute late (22:59:30 local with endMinute 23:00 gives 23:01 instead of 23:00), so releaseAt is not the first minute boundary after now() whose local minute is endMinute."
+     },
+     {
+      "decision": "problem-19",
+      "expectation": "formatList writes each item through formatText, so a list item that starts with =, +, - or @ gets the ' prefix (for example the list ['-a', 'b'] is written '-a;b), although only text values get that prefix and a list's items are written as stored."
+     },
+     {
+      "decision": "problem-20",
+      "expectation": "acceptOffer checks expiry with isLapsing(next, at), where next is the record returned by the accept transition, whose state is already accepted, while isLapsing is true only for an offered entry; so the check never fires and an expired offer can be accepted."
+     }
+    ],
+    "cleanTargets": []
+   },
+   "confirmed_by": "v1 合成题 s05 在 v2 brief 与 code-spec-v5.1 场景文本下复核（F10，2026-10-25），期望 problem-12 不变"
+  },
+  {
+   "id": "s06",
+   "type": "finding-problem",
+   "family": "anthropic",
+   "model": "opus",
+   "expected": "problem-11",
+   "from": "opus:c037:opus-2",
+   "item": {
+    "kind": "finding",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "unsupported",
+     "supported",
+     "problem-1",
+     "problem-2",
+     "problem-3",
+     "problem-4",
+     "problem-5",
+     "problem-6",
+     "problem-7",
+     "problem-8",
+     "problem-9",
+     "problem-10",
+     "problem-11",
+     "problem-12",
+     "problem-13",
+     "problem-14",
+     "problem-15",
+     "problem-16",
+     "problem-17",
+     "problem-18",
+     "problem-19",
+     "problem-20"
+    ],
+    "expectation": null,
+    "finding": "- `src/schedules/closures.mjs:26`, `src/platform/time.mjs:9`, `src/schedules/front-desk-service.mjs:31,56` - `hasEnded` uses `minutesBetween(at, closure.endAt) <= 0`, which truncates to whole minutes, so a closure whose `endAt` is later than `now()` by less than one minute counts as ended. Governing requirements: `governing-spec.md:184` \"A closure whose `endAt` is not later than `now()` is rejected.\" and `governing-spec.md:189` \"Upcoming desk closures are the building's active closures whose `endAt` is later than `now()`\". Impact: `addClosure` rejects valid closures ending within the next minute, and `upcomingClosures` omits active closures that have not ended yet. Fix: compare instants directly, `closure.endAt <= at`.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/schedules/closures.mjs",
+      "line": 26
+     },
+     {
+      "filePath": "src/platform/time.mjs",
+      "line": 9
+     },
+     {
+      "filePath": "src/schedules/front-desk-service.mjs",
+      "line": 31
+     },
+     {
+      "filePath": "src/schedules/front-desk-service.mjs",
+      "line": 56
+     },
+     {
+      "filePath": "governing-spec.md",
+      "line": 184
+     },
+     {
+      "filePath": "governing-spec.md",
+      "line": 189
+     }
+    ],
+    "problemOptions": [
+     {
+      "decision": "problem-1",
+      "expectation": "hasAmenities compares the size of the union with room.amenities.length; after lowercasing, a room amenity list with duplicates (Whiteboard, whiteboard) has a union smaller than its length, so that room is never eligible even when it has every requested amenity."
+     },
+     {
+      "decision": "problem-2",
+      "expectation": "applyTransition copies the record with a shallow spread and then pushes onto next.history, which is the same array as the received record's history, so confirm, cancel and reschedule modify the reservation object they receive."
+     },
+     {
+      "decision": "problem-3",
+      "expectation": "rescheduleReservation never applies the 240-minute duration limit to the snapped new window."
+     },
+     {
+      "decision": "problem-4",
+      "expectation": "recordBadgeEvent looks up the event key through findKeyedEvent(store, prepared), which reads store.list(event); the event carries the event's buildingId, which the badge store (createAppendLog) destructures as a building filter, so a key already recorded for an event in another building is not found and the event is recorded again."
+     },
+     {
+      "decision": "problem-5",
+      "expectation": "countedReservations tests overlaps(instant(startAt), period), but instant is a zero-length interval and overlaps uses strict comparisons, so a confirmed reservation starting exactly at the first instant of the month is not counted in used minutes, although the month is half-open and its start is inside it."
+     },
+     {
+      "decision": "problem-6",
+      "expectation": "summarizeActors counts the entries returned by selectEntries, which keeps only the first limit matches, so an actor summary stops counting at the query limit (500 when absent), although an actor summary counts every entry its (valid) query matches, ignoring limit."
+     },
+     {
+      "decision": "problem-7",
+      "expectation": "quoteField doubles inner double quotes with /\"/ without the g flag, so replace doubles only the first one and a field with two or more double quotes is written as malformed CSV (the field a\"b\"c is written as \"a\"\"b\"c\" instead of \"a\"\"b\"\"c\")."
+     },
+     {
+      "decision": "problem-8",
+      "expectation": "sendMessage starts store.save without awaiting it and then awaits send; the outbox store applies each write later through its write queue, so send receives the message before the queued write of the sent message completes."
+     },
+     {
+      "decision": "problem-9",
+      "expectation": "replan(ticket, null) deletes plannedWork from its copy, but clearPlannedWork spreads the original ticket first and that copy second; spreading only overrides keys that exist, so the saved ticket keeps its old plannedWork: it is still listed as the room's planned work, still blocks other tickets' windows, and the ticket can never be planned again because planWork rejects a ticket that already has a planned window."
+     },
+     {
+      "decision": "problem-10",
+      "expectation": "intentRequest rebuilds the request from a fixed list of invoice fields that leaves out issuedAt, so newIntent, which computes the fee with lateFee(prepared.total, prepared.issuedAt, at), gets a due instant of NaN and an intent created while its invoice is late has a fee of 0 and an amount equal to the total."
+     },
+     {
+      "decision": "problem-11",
+      "expectation": "hasEnded compares minutesBetween(at, endAt), whole minutes truncated toward zero, with 0, so a closure with less than one minute left (for example 30 seconds) counts as ended: adding it is rejected and it is left out of the upcoming closures."
+     },
+     {
+      "decision": "problem-12",
+      "expectation": "The single withdraw rule for waiting and offered entries carries the 60-minute cutoff, so a waiting entry whose startAt is less than 60 minutes from now cannot be withdrawn, although the limit applies only to offered entries."
+     },
+     {
+      "decision": "problem-13",
+      "expectation": "ENTRY_DEFAULTS gives active: true and prepareRoom spreads it under the room entry, so a room entry without an active value becomes active and is selected for the report, although only rooms whose active value is true may be."
+     },
+     {
+      "decision": "problem-14",
+      "expectation": "A credit reason is trimmed instead of being stored exactly as supplied."
+     },
+     {
+      "decision": "problem-15",
+      "expectation": "newIntent passes PAYMENT_TERMS.authorizationHold, which is already minutes(10080) in milliseconds, to addMinutes, which multiplies by a minute again, so a new authorization expires 604,800,000 minutes later instead of 10080 minutes: an old authorization keeps blocking new intents for its invoice and can still be captured long after it should have expired."
+     },
+     {
+      "decision": "problem-16",
+      "expectation": "paymentStatus passes the invoice record current to netPaid as its invoiceId argument; netPaid compares each intent's invoiceId (a string) with it using ===, and a string never equals an object, so no intent matches and the status reports paid 0 even after an intent of the invoice was captured."
+     },
+     {
+      "decision": "problem-17",
+      "expectation": "AUDIT_LIMITS.maxQueryWindow is minutes(10080), a number of milliseconds, but prepareQuery compares it with windowSpan(query), which counts minutes ((until - from) / MINUTE), so the 10080-minute limit never triggers and longer query windows are accepted."
+     },
+     {
+      "decision": "problem-18",
+      "expectation": "releaseTime rounds now() up to a whole minute with minuteStart(at + MINUTE - 1) and then adds wait, but wait is counted from the local minute of day, which localMinuteOfDay takes from the start of the current minute; when now() is not on a minute boundary the result is one minute late (22:59:30 local with endMinute 23:00 gives 23:01 instead of 23:00), so releaseAt is not the first minute boundary after now() whose local minute is endMinute."
+     },
+     {
+      "decision": "problem-19",
+      "expectation": "formatList writes each item through formatText, so a list item that starts with =, +, - or @ gets the ' prefix (for example the list ['-a', 'b'] is written '-a;b), although only text values get that prefix and a list's items are written as stored."
+     },
+     {
+      "decision": "problem-20",
+      "expectation": "acceptOffer checks expiry with isLapsing(next, at), where next is the record returned by the accept transition, whose state is already accepted, while isLapsing is true only for an offered entry; so the check never fires and an expired offer can be accepted."
+     }
+    ],
+    "cleanTargets": []
+   },
+   "confirmed_by": "v1 合成题 s06 在 v2 brief 与 code-spec-v5.1 场景文本下复核（F10，2026-10-25），期望 problem-11 不变"
+  },
+  {
+   "id": "s07",
+   "type": "finding-problem",
+   "family": "openai",
+   "model": "gpt-6.1-sol",
+   "expected": "problem-20",
+   "from": "pilot p010 (matched)",
+   "item": {
+    "kind": "finding",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "unsupported",
+     "supported",
+     "problem-1",
+     "problem-2",
+     "problem-3",
+     "problem-4",
+     "problem-5",
+     "problem-6",
+     "problem-7",
+     "problem-8",
+     "problem-9",
+     "problem-10",
+     "problem-11",
+     "problem-12",
+     "problem-13",
+     "problem-14",
+     "problem-15",
+     "problem-16",
+     "problem-17",
+     "problem-18",
+     "problem-19",
+     "problem-20"
+    ],
+    "expectation": null,
+    "finding": "- Expired waitlist offers can be accepted. `src/waitlist/waitlist-service.mjs:58-62` transitions the entry to `accepted` before calling `isLapsing`; `src/waitlist/queue.mjs:9-13` requires state `offered` for that predicate, so it always returns false for the transitioned entry. An offer is accepted even at or after `expiresAt`, violating `governing-spec.md:50,182`. Check expiry on the original offered entry before transitioning or saving it.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/waitlist/waitlist-service.mjs",
+      "lineEnd": 62,
+      "lineStart": 58
+     },
+     {
+      "filePath": "src/waitlist/queue.mjs",
+      "lineEnd": 13,
+      "lineStart": 9
+     },
+     {
+      "filePath": "governing-spec.md",
+      "line": 50
+     },
+     {
+      "filePath": "governing-spec.md",
+      "line": 182
+     }
+    ],
+    "problemOptions": [
+     {
+      "decision": "problem-1",
+      "expectation": "hasAmenities compares the size of the union with room.amenities.length; after lowercasing, a room amenity list with duplicates (Whiteboard, whiteboard) has a union smaller than its length, so that room is never eligible even when it has every requested amenity."
+     },
+     {
+      "decision": "problem-2",
+      "expectation": "applyTransition copies the record with a shallow spread and then pushes onto next.history, which is the same array as the received record's history, so confirm, cancel and reschedule modify the reservation object they receive."
+     },
+     {
+      "decision": "problem-3",
+      "expectation": "rescheduleReservation never applies the 240-minute duration limit to the snapped new window."
+     },
+     {
+      "decision": "problem-4",
+      "expectation": "recordBadgeEvent looks up the event key through findKeyedEvent(store, prepared), which reads store.list(event); the event carries the event's buildingId, which the badge store (createAppendLog) destructures as a building filter, so a key already recorded for an event in another building is not found and the event is recorded again."
+     },
+     {
+      "decision": "problem-5",
+      "expectation": "countedReservations tests overlaps(instant(startAt), period), but instant is a zero-length interval and overlaps uses strict comparisons, so a confirmed reservation starting exactly at the first instant of the month is not counted in used minutes, although the month is half-open and its start is inside it."
+     },
+     {
+      "decision": "problem-6",
+      "expectation": "summarizeActors counts the entries returned by selectEntries, which keeps only the first limit matches, so an actor summary stops counting at the query limit (500 when absent), although an actor summary counts every entry its (valid) query matches, ignoring limit."
+     },
+     {
+      "decision": "problem-7",
+      "expectation": "quoteField doubles inner double quotes with /\"/ without the g flag, so replace doubles only the first one and a field with two or more double quotes is written as malformed CSV (the field a\"b\"c is written as \"a\"\"b\"c\" instead of \"a\"\"b\"\"c\")."
+     },
+     {
+      "decision": "problem-8",
+      "expectation": "sendMessage starts store.save without awaiting it and then awaits send; the outbox store applies each write later through its write queue, so send receives the message before the queued write of the sent message completes."
+     },
+     {
+      "decision": "problem-9",
+      "expectation": "replan(ticket, null) deletes plannedWork from its copy, but clearPlannedWork spreads the original ticket first and that copy second; spreading only overrides keys that exist, so the saved ticket keeps its old plannedWork: it is still listed as the room's planned work, still blocks other tickets' windows, and the ticket can never be planned again because planWork rejects a ticket that already has a planned window."
+     },
+     {
+      "decision": "problem-10",
+      "expectation": "intentRequest rebuilds the request from a fixed list of invoice fields that leaves out issuedAt, so newIntent, which computes the fee with lateFee(prepared.total, prepared.issuedAt, at), gets a due instant of NaN and an intent created while its invoice is late has a fee of 0 and an amount equal to the total."
+     },
+     {
+      "decision": "problem-11",
+      "expectation": "hasEnded compares minutesBetween(at, endAt), whole minutes truncated toward zero, with 0, so a closure with less than one minute left (for example 30 seconds) counts as ended: adding it is rejected and it is left out of the upcoming closures."
+     },
+     {
+      "decision": "problem-12",
+      "expectation": "The single withdraw rule for waiting and offered entries carries the 60-minute cutoff, so a waiting entry whose startAt is less than 60 minutes from now cannot be withdrawn, although the limit applies only to offered entries."
+     },
+     {
+      "decision": "problem-13",
+      "expectation": "ENTRY_DEFAULTS gives active: true and prepareRoom spreads it under the room entry, so a room entry without an active value becomes active and is selected for the report, although only rooms whose active value is true may be."
+     },
+     {
+      "decision": "problem-14",
+      "expectation": "A credit reason is trimmed instead of being stored exactly as supplied."
+     },
+     {
+      "decision": "problem-15",
+      "expectation": "newIntent passes PAYMENT_TERMS.authorizationHold, which is already minutes(10080) in milliseconds, to addMinutes, which multiplies by a minute again, so a new authorization expires 604,800,000 minutes later instead of 10080 minutes: an old authorization keeps blocking new intents for its invoice and can still be captured long after it should have expired."
+     },
+     {
+      "decision": "problem-16",
+      "expectation": "paymentStatus passes the invoice record current to netPaid as its invoiceId argument; netPaid compares each intent's invoiceId (a string) with it using ===, and a string never equals an object, so no intent matches and the status reports paid 0 even after an intent of the invoice was captured."
+     },
+     {
+      "decision": "problem-17",
+      "expectation": "AUDIT_LIMITS.maxQueryWindow is minutes(10080), a number of milliseconds, but prepareQuery compares it with windowSpan(query), which counts minutes ((until - from) / MINUTE), so the 10080-minute limit never triggers and longer query windows are accepted."
+     },
+     {
+      "decision": "problem-18",
+      "expectation": "releaseTime rounds now() up to a whole minute with minuteStart(at + MINUTE - 1) and then adds wait, but wait is counted from the local minute of day, which localMinuteOfDay takes from the start of the current minute; when now() is not on a minute boundary the result is one minute late (22:59:30 local with endMinute 23:00 gives 23:01 instead of 23:00), so releaseAt is not the first minute boundary after now() whose local minute is endMinute."
+     },
+     {
+      "decision": "problem-19",
+      "expectation": "formatList writes each item through formatText, so a list item that starts with =, +, - or @ gets the ' prefix (for example the list ['-a', 'b'] is written '-a;b), although only text values get that prefix and a list's items are written as stored."
+     },
+     {
+      "decision": "problem-20",
+      "expectation": "acceptOffer checks expiry with isLapsing(next, at), where next is the record returned by the accept transition, whose state is already accepted, while isLapsing is true only for an offered entry; so the check never fires and an expired offer can be accepted."
+     }
+    ],
+    "cleanTargets": []
+   },
+   "confirmed_by": "v1 合成题 s07 在 v2 brief 与 code-spec-v5.1 场景文本下复核（F10，2026-10-25），期望 problem-20 不变"
+  },
+  {
+   "id": "s08",
+   "type": "registered-decoy",
+   "family": "anthropic",
+   "model": null,
+   "expected": "unsupported",
+   "from": "written 2026-10-20 in the family report style",
+   "item": {
+    "kind": "finding",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "unsupported",
+     "supported",
+     "problem-1",
+     "problem-2",
+     "problem-3",
+     "problem-4",
+     "problem-5",
+     "problem-6",
+     "problem-7",
+     "problem-8",
+     "problem-9",
+     "problem-10",
+     "problem-11",
+     "problem-12",
+     "problem-13",
+     "problem-14",
+     "problem-15",
+     "problem-16",
+     "problem-17",
+     "problem-18",
+     "problem-19",
+     "problem-20"
+    ],
+    "expectation": null,
+    "finding": "- `src/reservations/request-validation.mjs:14` — `prepareRequest` checks the window only with `request.endAt <= request.startAt`. When `startAt` or `endAt` is not a number (for example a string such as `'later'` or `undefined`), the comparison is false and the request passes validation. Requirement: `governing-spec.md:70` requires a request window whose `endAt` is later than its `startAt`. Impact: malformed windows are stored. Fix: reject non-finite timestamps before comparing.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/reservations/request-validation.mjs",
+      "line": 14
+     },
+     {
+      "filePath": "governing-spec.md",
+      "line": 70
+     }
+    ],
+    "problemOptions": [
+     {
+      "decision": "problem-1",
+      "expectation": "hasAmenities compares the size of the union with room.amenities.length; after lowercasing, a room amenity list with duplicates (Whiteboard, whiteboard) has a union smaller than its length, so that room is never eligible even when it has every requested amenity."
+     },
+     {
+      "decision": "problem-2",
+      "expectation": "applyTransition copies the record with a shallow spread and then pushes onto next.history, which is the same array as the received record's history, so confirm, cancel and reschedule modify the reservation object they receive."
+     },
+     {
+      "decision": "problem-3",
+      "expectation": "rescheduleReservation never applies the 240-minute duration limit to the snapped new window."
+     },
+     {
+      "decision": "problem-4",
+      "expectation": "recordBadgeEvent looks up the event key through findKeyedEvent(store, prepared), which reads store.list(event); the event carries the event's buildingId, which the badge store (createAppendLog) destructures as a building filter, so a key already recorded for an event in another building is not found and the event is recorded again."
+     },
+     {
+      "decision": "problem-5",
+      "expectation": "countedReservations tests overlaps(instant(startAt), period), but instant is a zero-length interval and overlaps uses strict comparisons, so a confirmed reservation starting exactly at the first instant of the month is not counted in used minutes, although the month is half-open and its start is inside it."
+     },
+     {
+      "decision": "problem-6",
+      "expectation": "summarizeActors counts the entries returned by selectEntries, which keeps only the first limit matches, so an actor summary stops counting at the query limit (500 when absent), although an actor summary counts every entry its (valid) query matches, ignoring limit."
+     },
+     {
+      "decision": "problem-7",
+      "expectation": "quoteField doubles inner double quotes with /\"/ without the g flag, so replace doubles only the first one and a field with two or more double quotes is written as malformed CSV (the field a\"b\"c is written as \"a\"\"b\"c\" instead of \"a\"\"b\"\"c\")."
+     },
+     {
+      "decision": "problem-8",
+      "expectation": "sendMessage starts store.save without awaiting it and then awaits send; the outbox store applies each write later through its write queue, so send receives the message before the queued write of the sent message completes."
+     },
+     {
+      "decision": "problem-9",
+      "expectation": "replan(ticket, null) deletes plannedWork from its copy, but clearPlannedWork spreads the original ticket first and that copy second; spreading only overrides keys that exist, so the saved ticket keeps its old plannedWork: it is still listed as the room's planned work, still blocks other tickets' windows, and the ticket can never be planned again because planWork rejects a ticket that already has a planned window."
+     },
+     {
+      "decision": "problem-10",
+      "expectation": "intentRequest rebuilds the request from a fixed list of invoice fields that leaves out issuedAt, so newIntent, which computes the fee with lateFee(prepared.total, prepared.issuedAt, at), gets a due instant of NaN and an intent created while its invoice is late has a fee of 0 and an amount equal to the total."
+     },
+     {
+      "decision": "problem-11",
+      "expectation": "hasEnded compares minutesBetween(at, endAt), whole minutes truncated toward zero, with 0, so a closure with less than one minute left (for example 30 seconds) counts as ended: adding it is rejected and it is left out of the upcoming closures."
+     },
+     {
+      "decision": "problem-12",
+      "expectation": "The single withdraw rule for waiting and offered entries carries the 60-minute cutoff, so a waiting entry whose startAt is less than 60 minutes from now cannot be withdrawn, although the limit applies only to offered entries."
+     },
+     {
+      "decision": "problem-13",
+      "expectation": "ENTRY_DEFAULTS gives active: true and prepareRoom spreads it under the room entry, so a room entry without an active value becomes active and is selected for the report, although only rooms whose active value is true may be."
+     },
+     {
+      "decision": "problem-14",
+      "expectation": "A credit reason is trimmed instead of being stored exactly as supplied."
+     },
+     {
+      "decision": "problem-15",
+      "expectation": "newIntent passes PAYMENT_TERMS.authorizationHold, which is already minutes(10080) in milliseconds, to addMinutes, which multiplies by a minute again, so a new authorization expires 604,800,000 minutes later instead of 10080 minutes: an old authorization keeps blocking new intents for its invoice and can still be captured long after it should have expired."
+     },
+     {
+      "decision": "problem-16",
+      "expectation": "paymentStatus passes the invoice record current to netPaid as its invoiceId argument; netPaid compares each intent's invoiceId (a string) with it using ===, and a string never equals an object, so no intent matches and the status reports paid 0 even after an intent of the invoice was captured."
+     },
+     {
+      "decision": "problem-17",
+      "expectation": "AUDIT_LIMITS.maxQueryWindow is minutes(10080), a number of milliseconds, but prepareQuery compares it with windowSpan(query), which counts minutes ((until - from) / MINUTE), so the 10080-minute limit never triggers and longer query windows are accepted."
+     },
+     {
+      "decision": "problem-18",
+      "expectation": "releaseTime rounds now() up to a whole minute with minuteStart(at + MINUTE - 1) and then adds wait, but wait is counted from the local minute of day, which localMinuteOfDay takes from the start of the current minute; when now() is not on a minute boundary the result is one minute late (22:59:30 local with endMinute 23:00 gives 23:01 instead of 23:00), so releaseAt is not the first minute boundary after now() whose local minute is endMinute."
+     },
+     {
+      "decision": "problem-19",
+      "expectation": "formatList writes each item through formatText, so a list item that starts with =, +, - or @ gets the ' prefix (for example the list ['-a', 'b'] is written '-a;b), although only text values get that prefix and a list's items are written as stored."
+     },
+     {
+      "decision": "problem-20",
+      "expectation": "acceptOffer checks expiry with isLapsing(next, at), where next is the record returned by the accept transition, whose state is already accepted, while isLapsing is true only for an offered entry; so the check never fires and an expired offer can be accepted."
+     }
+    ],
+    "cleanTargets": []
+   },
+   "confirmed_by": "v1 合成题 s08 在 v2 brief 与 code-spec-v5.1 场景文本下复核（F10，2026-10-25），期望 unsupported 不变"
+  },
+  {
+   "id": "s09",
+   "type": "registered-decoy",
+   "family": "openai",
+   "model": null,
+   "expected": "unsupported",
+   "from": "written 2026-10-20 in the family report style",
+   "item": {
+    "kind": "finding",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "unsupported",
+     "supported",
+     "problem-1",
+     "problem-2",
+     "problem-3",
+     "problem-4",
+     "problem-5",
+     "problem-6",
+     "problem-7",
+     "problem-8",
+     "problem-9",
+     "problem-10",
+     "problem-11",
+     "problem-12",
+     "problem-13",
+     "problem-14",
+     "problem-15",
+     "problem-16",
+     "problem-17",
+     "problem-18",
+     "problem-19",
+     "problem-20"
+    ],
+    "expectation": null,
+    "finding": "- Request windows accept non-numeric timestamps. `src/reservations/request-validation.mjs:14` validates the window only with `request.endAt <= request.startAt`; when `startAt` or `endAt` is a string such as `'later'` or `undefined`, that comparison is false and the request passes. `governing-spec.md:70` requires a request window whose `endAt` is later than its `startAt`, so malformed windows are stored. Reject non-finite timestamps before comparing.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/reservations/request-validation.mjs",
+      "line": 14
+     },
+     {
+      "filePath": "governing-spec.md",
+      "line": 70
+     }
+    ],
+    "problemOptions": [
+     {
+      "decision": "problem-1",
+      "expectation": "hasAmenities compares the size of the union with room.amenities.length; after lowercasing, a room amenity list with duplicates (Whiteboard, whiteboard) has a union smaller than its length, so that room is never eligible even when it has every requested amenity."
+     },
+     {
+      "decision": "problem-2",
+      "expectation": "applyTransition copies the record with a shallow spread and then pushes onto next.history, which is the same array as the received record's history, so confirm, cancel and reschedule modify the reservation object they receive."
+     },
+     {
+      "decision": "problem-3",
+      "expectation": "rescheduleReservation never applies the 240-minute duration limit to the snapped new window."
+     },
+     {
+      "decision": "problem-4",
+      "expectation": "recordBadgeEvent looks up the event key through findKeyedEvent(store, prepared), which reads store.list(event); the event carries the event's buildingId, which the badge store (createAppendLog) destructures as a building filter, so a key already recorded for an event in another building is not found and the event is recorded again."
+     },
+     {
+      "decision": "problem-5",
+      "expectation": "countedReservations tests overlaps(instant(startAt), period), but instant is a zero-length interval and overlaps uses strict comparisons, so a confirmed reservation starting exactly at the first instant of the month is not counted in used minutes, although the month is half-open and its start is inside it."
+     },
+     {
+      "decision": "problem-6",
+      "expectation": "summarizeActors counts the entries returned by selectEntries, which keeps only the first limit matches, so an actor summary stops counting at the query limit (500 when absent), although an actor summary counts every entry its (valid) query matches, ignoring limit."
+     },
+     {
+      "decision": "problem-7",
+      "expectation": "quoteField doubles inner double quotes with /\"/ without the g flag, so replace doubles only the first one and a field with two or more double quotes is written as malformed CSV (the field a\"b\"c is written as \"a\"\"b\"c\" instead of \"a\"\"b\"\"c\")."
+     },
+     {
+      "decision": "problem-8",
+      "expectation": "sendMessage starts store.save without awaiting it and then awaits send; the outbox store applies each write later through its write queue, so send receives the message before the queued write of the sent message completes."
+     },
+     {
+      "decision": "problem-9",
+      "expectation": "replan(ticket, null) deletes plannedWork from its copy, but clearPlannedWork spreads the original ticket first and that copy second; spreading only overrides keys that exist, so the saved ticket keeps its old plannedWork: it is still listed as the room's planned work, still blocks other tickets' windows, and the ticket can never be planned again because planWork rejects a ticket that already has a planned window."
+     },
+     {
+      "decision": "problem-10",
+      "expectation": "intentRequest rebuilds the request from a fixed list of invoice fields that leaves out issuedAt, so newIntent, which computes the fee with lateFee(prepared.total, prepared.issuedAt, at), gets a due instant of NaN and an intent created while its invoice is late has a fee of 0 and an amount equal to the total."
+     },
+     {
+      "decision": "problem-11",
+      "expectation": "hasEnded compares minutesBetween(at, endAt), whole minutes truncated toward zero, with 0, so a closure with less than one minute left (for example 30 seconds) counts as ended: adding it is rejected and it is left out of the upcoming closures."
+     },
+     {
+      "decision": "problem-12",
+      "expectation": "The single withdraw rule for waiting and offered entries carries the 60-minute cutoff, so a waiting entry whose startAt is less than 60 minutes from now cannot be withdrawn, although the limit applies only to offered entries."
+     },
+     {
+      "decision": "problem-13",
+      "expectation": "ENTRY_DEFAULTS gives active: true and prepareRoom spreads it under the room entry, so a room entry without an active value becomes active and is selected for the report, although only rooms whose active value is true may be."
+     },
+     {
+      "decision": "problem-14",
+      "expectation": "A credit reason is trimmed instead of being stored exactly as supplied."
+     },
+     {
+      "decision": "problem-15",
+      "expectation": "newIntent passes PAYMENT_TERMS.authorizationHold, which is already minutes(10080) in milliseconds, to addMinutes, which multiplies by a minute again, so a new authorization expires 604,800,000 minutes later instead of 10080 minutes: an old authorization keeps blocking new intents for its invoice and can still be captured long after it should have expired."
+     },
+     {
+      "decision": "problem-16",
+      "expectation": "paymentStatus passes the invoice record current to netPaid as its invoiceId argument; netPaid compares each intent's invoiceId (a string) with it using ===, and a string never equals an object, so no intent matches and the status reports paid 0 even after an intent of the invoice was captured."
+     },
+     {
+      "decision": "problem-17",
+      "expectation": "AUDIT_LIMITS.maxQueryWindow is minutes(10080), a number of milliseconds, but prepareQuery compares it with windowSpan(query), which counts minutes ((until - from) / MINUTE), so the 10080-minute limit never triggers and longer query windows are accepted."
+     },
+     {
+      "decision": "problem-18",
+      "expectation": "releaseTime rounds now() up to a whole minute with minuteStart(at + MINUTE - 1) and then adds wait, but wait is counted from the local minute of day, which localMinuteOfDay takes from the start of the current minute; when now() is not on a minute boundary the result is one minute late (22:59:30 local with endMinute 23:00 gives 23:01 instead of 23:00), so releaseAt is not the first minute boundary after now() whose local minute is endMinute."
+     },
+     {
+      "decision": "problem-19",
+      "expectation": "formatList writes each item through formatText, so a list item that starts with =, +, - or @ gets the ' prefix (for example the list ['-a', 'b'] is written '-a;b), although only text values get that prefix and a list's items are written as stored."
+     },
+     {
+      "decision": "problem-20",
+      "expectation": "acceptOffer checks expiry with isLapsing(next, at), where next is the record returned by the accept transition, whose state is already accepted, while isLapsing is true only for an offered entry; so the check never fires and an expired offer can be accepted."
+     }
+    ],
+    "cleanTargets": []
+   },
+   "confirmed_by": "v1 合成题 s09 在 v2 brief 与 code-spec-v5.1 场景文本下复核（F10，2026-10-25），期望 unsupported 不变"
+  },
+  {
+   "id": "s10",
+   "type": "registered-decoy",
+   "family": "strata",
+   "model": null,
+   "expected": "unsupported",
+   "from": "written 2026-10-20 in the family report style",
+   "item": {
+    "kind": "finding",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "unsupported",
+     "supported",
+     "problem-1",
+     "problem-2",
+     "problem-3",
+     "problem-4",
+     "problem-5",
+     "problem-6",
+     "problem-7",
+     "problem-8",
+     "problem-9",
+     "problem-10",
+     "problem-11",
+     "problem-12",
+     "problem-13",
+     "problem-14",
+     "problem-15",
+     "problem-16",
+     "problem-17",
+     "problem-18",
+     "problem-19",
+     "problem-20"
+    ],
+    "expectation": null,
+    "finding": "1. `src/reservations/reservation-service.mjs:54` - Rescheduled windows with non-numeric endpoints pass validation.\n   - Implementation evidence: the reschedule path rejects a window only when `endAt <= startAt`; for an `undefined` or string endpoint that comparison is false, so the window is accepted and stored.\n   - Governing requirement: `governing-spec.md:70` requires a window whose `endAt` is later than its `startAt`.\n   - Fix: check `Number.isFinite` on both endpoints before comparing.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/reservations/reservation-service.mjs",
+      "line": 54
+     },
+     {
+      "filePath": "governing-spec.md",
+      "line": 70
+     }
+    ],
+    "problemOptions": [
+     {
+      "decision": "problem-1",
+      "expectation": "hasAmenities compares the size of the union with room.amenities.length; after lowercasing, a room amenity list with duplicates (Whiteboard, whiteboard) has a union smaller than its length, so that room is never eligible even when it has every requested amenity."
+     },
+     {
+      "decision": "problem-2",
+      "expectation": "applyTransition copies the record with a shallow spread and then pushes onto next.history, which is the same array as the received record's history, so confirm, cancel and reschedule modify the reservation object they receive."
+     },
+     {
+      "decision": "problem-3",
+      "expectation": "rescheduleReservation never applies the 240-minute duration limit to the snapped new window."
+     },
+     {
+      "decision": "problem-4",
+      "expectation": "recordBadgeEvent looks up the event key through findKeyedEvent(store, prepared), which reads store.list(event); the event carries the event's buildingId, which the badge store (createAppendLog) destructures as a building filter, so a key already recorded for an event in another building is not found and the event is recorded again."
+     },
+     {
+      "decision": "problem-5",
+      "expectation": "countedReservations tests overlaps(instant(startAt), period), but instant is a zero-length interval and overlaps uses strict comparisons, so a confirmed reservation starting exactly at the first instant of the month is not counted in used minutes, although the month is half-open and its start is inside it."
+     },
+     {
+      "decision": "problem-6",
+      "expectation": "summarizeActors counts the entries returned by selectEntries, which keeps only the first limit matches, so an actor summary stops counting at the query limit (500 when absent), although an actor summary counts every entry its (valid) query matches, ignoring limit."
+     },
+     {
+      "decision": "problem-7",
+      "expectation": "quoteField doubles inner double quotes with /\"/ without the g flag, so replace doubles only the first one and a field with two or more double quotes is written as malformed CSV (the field a\"b\"c is written as \"a\"\"b\"c\" instead of \"a\"\"b\"\"c\")."
+     },
+     {
+      "decision": "problem-8",
+      "expectation": "sendMessage starts store.save without awaiting it and then awaits send; the outbox store applies each write later through its write queue, so send receives the message before the queued write of the sent message completes."
+     },
+     {
+      "decision": "problem-9",
+      "expectation": "replan(ticket, null) deletes plannedWork from its copy, but clearPlannedWork spreads the original ticket first and that copy second; spreading only overrides keys that exist, so the saved ticket keeps its old plannedWork: it is still listed as the room's planned work, still blocks other tickets' windows, and the ticket can never be planned again because planWork rejects a ticket that already has a planned window."
+     },
+     {
+      "decision": "problem-10",
+      "expectation": "intentRequest rebuilds the request from a fixed list of invoice fields that leaves out issuedAt, so newIntent, which computes the fee with lateFee(prepared.total, prepared.issuedAt, at), gets a due instant of NaN and an intent created while its invoice is late has a fee of 0 and an amount equal to the total."
+     },
+     {
+      "decision": "problem-11",
+      "expectation": "hasEnded compares minutesBetween(at, endAt), whole minutes truncated toward zero, with 0, so a closure with less than one minute left (for example 30 seconds) counts as ended: adding it is rejected and it is left out of the upcoming closures."
+     },
+     {
+      "decision": "problem-12",
+      "expectation": "The single withdraw rule for waiting and offered entries carries the 60-minute cutoff, so a waiting entry whose startAt is less than 60 minutes from now cannot be withdrawn, although the limit applies only to offered entries."
+     },
+     {
+      "decision": "problem-13",
+      "expectation": "ENTRY_DEFAULTS gives active: true and prepareRoom spreads it under the room entry, so a room entry without an active value becomes active and is selected for the report, although only rooms whose active value is true may be."
+     },
+     {
+      "decision": "problem-14",
+      "expectation": "A credit reason is trimmed instead of being stored exactly as supplied."
+     },
+     {
+      "decision": "problem-15",
+      "expectation": "newIntent passes PAYMENT_TERMS.authorizationHold, which is already minutes(10080) in milliseconds, to addMinutes, which multiplies by a minute again, so a new authorization expires 604,800,000 minutes later instead of 10080 minutes: an old authorization keeps blocking new intents for its invoice and can still be captured long after it should have expired."
+     },
+     {
+      "decision": "problem-16",
+      "expectation": "paymentStatus passes the invoice record current to netPaid as its invoiceId argument; netPaid compares each intent's invoiceId (a string) with it using ===, and a string never equals an object, so no intent matches and the status reports paid 0 even after an intent of the invoice was captured."
+     },
+     {
+      "decision": "problem-17",
+      "expectation": "AUDIT_LIMITS.maxQueryWindow is minutes(10080), a number of milliseconds, but prepareQuery compares it with windowSpan(query), which counts minutes ((until - from) / MINUTE), so the 10080-minute limit never triggers and longer query windows are accepted."
+     },
+     {
+      "decision": "problem-18",
+      "expectation": "releaseTime rounds now() up to a whole minute with minuteStart(at + MINUTE - 1) and then adds wait, but wait is counted from the local minute of day, which localMinuteOfDay takes from the start of the current minute; when now() is not on a minute boundary the result is one minute late (22:59:30 local with endMinute 23:00 gives 23:01 instead of 23:00), so releaseAt is not the first minute boundary after now() whose local minute is endMinute."
+     },
+     {
+      "decision": "problem-19",
+      "expectation": "formatList writes each item through formatText, so a list item that starts with =, +, - or @ gets the ' prefix (for example the list ['-a', 'b'] is written '-a;b), although only text values get that prefix and a list's items are written as stored."
+     },
+     {
+      "decision": "problem-20",
+      "expectation": "acceptOffer checks expiry with isLapsing(next, at), where next is the record returned by the accept transition, whose state is already accepted, while isLapsing is true only for an offered entry; so the check never fires and an expired offer can be accepted."
+     }
+    ],
+    "cleanTargets": []
+   },
+   "confirmed_by": "v1 合成题 s10 在 v2 brief 与 code-spec-v5.1 场景文本下复核（F10，2026-10-25），期望 unsupported 不变"
+  },
+  {
+   "id": "s11",
+   "type": "false-fact",
+   "family": "anthropic",
+   "model": null,
+   "expected": "false-positive:clean-1",
+   "from": "written 2026-10-20 in the family report style",
+   "item": {
+    "kind": "finding",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "unsupported",
+     "supported",
+     "false-positive:clean-1",
+     "problem-1",
+     "problem-2",
+     "problem-3",
+     "problem-4",
+     "problem-5",
+     "problem-6",
+     "problem-7",
+     "problem-8",
+     "problem-9",
+     "problem-10",
+     "problem-11",
+     "problem-12",
+     "problem-13",
+     "problem-14",
+     "problem-15",
+     "problem-16",
+     "problem-17",
+     "problem-18",
+     "problem-19",
+     "problem-20"
+    ],
+    "expectation": null,
+    "finding": "- `src/reservations/catalog.mjs:14` — `canHost` compares `partySize < room.capacity` with a strict comparison, so a party whose size equals the room capacity is rejected. `governing-spec.md:75` says a room can host a party whose size is at most its capacity. Change the comparison to `<=`.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/reservations/catalog.mjs",
+      "line": 14
+     },
+     {
+      "filePath": "governing-spec.md",
+      "line": 75
+     }
+    ],
+    "problemOptions": [
+     {
+      "decision": "problem-1",
+      "expectation": "hasAmenities compares the size of the union with room.amenities.length; after lowercasing, a room amenity list with duplicates (Whiteboard, whiteboard) has a union smaller than its length, so that room is never eligible even when it has every requested amenity."
+     },
+     {
+      "decision": "problem-2",
+      "expectation": "applyTransition copies the record with a shallow spread and then pushes onto next.history, which is the same array as the received record's history, so confirm, cancel and reschedule modify the reservation object they receive."
+     },
+     {
+      "decision": "problem-3",
+      "expectation": "rescheduleReservation never applies the 240-minute duration limit to the snapped new window."
+     },
+     {
+      "decision": "problem-4",
+      "expectation": "recordBadgeEvent looks up the event key through findKeyedEvent(store, prepared), which reads store.list(event); the event carries the event's buildingId, which the badge store (createAppendLog) destructures as a building filter, so a key already recorded for an event in another building is not found and the event is recorded again."
+     },
+     {
+      "decision": "problem-5",
+      "expectation": "countedReservations tests overlaps(instant(startAt), period), but instant is a zero-length interval and overlaps uses strict comparisons, so a confirmed reservation starting exactly at the first instant of the month is not counted in used minutes, although the month is half-open and its start is inside it."
+     },
+     {
+      "decision": "problem-6",
+      "expectation": "summarizeActors counts the entries returned by selectEntries, which keeps only the first limit matches, so an actor summary stops counting at the query limit (500 when absent), although an actor summary counts every entry its (valid) query matches, ignoring limit."
+     },
+     {
+      "decision": "problem-7",
+      "expectation": "quoteField doubles inner double quotes with /\"/ without the g flag, so replace doubles only the first one and a field with two or more double quotes is written as malformed CSV (the field a\"b\"c is written as \"a\"\"b\"c\" instead of \"a\"\"b\"\"c\")."
+     },
+     {
+      "decision": "problem-8",
+      "expectation": "sendMessage starts store.save without awaiting it and then awaits send; the outbox store applies each write later through its write queue, so send receives the message before the queued write of the sent message completes."
+     },
+     {
+      "decision": "problem-9",
+      "expectation": "replan(ticket, null) deletes plannedWork from its copy, but clearPlannedWork spreads the original ticket first and that copy second; spreading only overrides keys that exist, so the saved ticket keeps its old plannedWork: it is still listed as the room's planned work, still blocks other tickets' windows, and the ticket can never be planned again because planWork rejects a ticket that already has a planned window."
+     },
+     {
+      "decision": "problem-10",
+      "expectation": "intentRequest rebuilds the request from a fixed list of invoice fields that leaves out issuedAt, so newIntent, which computes the fee with lateFee(prepared.total, prepared.issuedAt, at), gets a due instant of NaN and an intent created while its invoice is late has a fee of 0 and an amount equal to the total."
+     },
+     {
+      "decision": "problem-11",
+      "expectation": "hasEnded compares minutesBetween(at, endAt), whole minutes truncated toward zero, with 0, so a closure with less than one minute left (for example 30 seconds) counts as ended: adding it is rejected and it is left out of the upcoming closures."
+     },
+     {
+      "decision": "problem-12",
+      "expectation": "The single withdraw rule for waiting and offered entries carries the 60-minute cutoff, so a waiting entry whose startAt is less than 60 minutes from now cannot be withdrawn, although the limit applies only to offered entries."
+     },
+     {
+      "decision": "problem-13",
+      "expectation": "ENTRY_DEFAULTS gives active: true and prepareRoom spreads it under the room entry, so a room entry without an active value becomes active and is selected for the report, although only rooms whose active value is true may be."
+     },
+     {
+      "decision": "problem-14",
+      "expectation": "A credit reason is trimmed instead of being stored exactly as supplied."
+     },
+     {
+      "decision": "problem-15",
+      "expectation": "newIntent passes PAYMENT_TERMS.authorizationHold, which is already minutes(10080) in milliseconds, to addMinutes, which multiplies by a minute again, so a new authorization expires 604,800,000 minutes later instead of 10080 minutes: an old authorization keeps blocking new intents for its invoice and can still be captured long after it should have expired."
+     },
+     {
+      "decision": "problem-16",
+      "expectation": "paymentStatus passes the invoice record current to netPaid as its invoiceId argument; netPaid compares each intent's invoiceId (a string) with it using ===, and a string never equals an object, so no intent matches and the status reports paid 0 even after an intent of the invoice was captured."
+     },
+     {
+      "decision": "problem-17",
+      "expectation": "AUDIT_LIMITS.maxQueryWindow is minutes(10080), a number of milliseconds, but prepareQuery compares it with windowSpan(query), which counts minutes ((until - from) / MINUTE), so the 10080-minute limit never triggers and longer query windows are accepted."
+     },
+     {
+      "decision": "problem-18",
+      "expectation": "releaseTime rounds now() up to a whole minute with minuteStart(at + MINUTE - 1) and then adds wait, but wait is counted from the local minute of day, which localMinuteOfDay takes from the start of the current minute; when now() is not on a minute boundary the result is one minute late (22:59:30 local with endMinute 23:00 gives 23:01 instead of 23:00), so releaseAt is not the first minute boundary after now() whose local minute is endMinute."
+     },
+     {
+      "decision": "problem-19",
+      "expectation": "formatList writes each item through formatText, so a list item that starts with =, +, - or @ gets the ' prefix (for example the list ['-a', 'b'] is written '-a;b), although only text values get that prefix and a list's items are written as stored."
+     },
+     {
+      "decision": "problem-20",
+      "expectation": "acceptOffer checks expiry with isLapsing(next, at), where next is the record returned by the accept transition, whose state is already accepted, while isLapsing is true only for an offered entry; so the check never fires and an expired offer can be accepted."
+     }
+    ],
+    "cleanTargets": [
+     {
+      "cleanCaseIndex": 1,
+      "decision": "false-positive:clean-1",
+      "expectation": "A room can host a party whose size is at most its capacity."
+     }
+    ]
+   },
+   "confirmed_by": "v1 合成题 s11 在 v2 brief 与 code-spec-v5.1 场景文本下复核（F10，2026-10-25），期望 false-positive:clean-1 不变"
+  },
+  {
+   "id": "s12",
+   "type": "false-fact",
+   "family": "openai",
+   "model": null,
+   "expected": "false-positive:clean-13",
+   "from": "written 2026-10-20 in the family report style",
+   "item": {
+    "kind": "finding",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "unsupported",
+     "supported",
+     "false-positive:clean-13",
+     "problem-1",
+     "problem-2",
+     "problem-3",
+     "problem-4",
+     "problem-5",
+     "problem-6",
+     "problem-7",
+     "problem-8",
+     "problem-9",
+     "problem-10",
+     "problem-11",
+     "problem-12",
+     "problem-13",
+     "problem-14",
+     "problem-15",
+     "problem-16",
+     "problem-17",
+     "problem-18",
+     "problem-19",
+     "problem-20"
+    ],
+    "expectation": null,
+    "finding": "- Rendered values are only partly escaped. `src/messaging/template-render.mjs:11` builds `escapeText` with `/[&<>\"']/` and no global flag, so `replace` escapes only the first special character of a value; a value such as `a<b<c` is rendered as `a&lt;b<c`. `governing-spec.md:158` requires every `&`, `<`, `>`, `\"` and `'` of a rendered value to be replaced. Add the `g` flag.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/messaging/template-render.mjs",
+      "line": 11
+     },
+     {
+      "filePath": "governing-spec.md",
+      "line": 158
+     }
+    ],
+    "problemOptions": [
+     {
+      "decision": "problem-1",
+      "expectation": "hasAmenities compares the size of the union with room.amenities.length; after lowercasing, a room amenity list with duplicates (Whiteboard, whiteboard) has a union smaller than its length, so that room is never eligible even when it has every requested amenity."
+     },
+     {
+      "decision": "problem-2",
+      "expectation": "applyTransition copies the record with a shallow spread and then pushes onto next.history, which is the same array as the received record's history, so confirm, cancel and reschedule modify the reservation object they receive."
+     },
+     {
+      "decision": "problem-3",
+      "expectation": "rescheduleReservation never applies the 240-minute duration limit to the snapped new window."
+     },
+     {
+      "decision": "problem-4",
+      "expectation": "recordBadgeEvent looks up the event key through findKeyedEvent(store, prepared), which reads store.list(event); the event carries the event's buildingId, which the badge store (createAppendLog) destructures as a building filter, so a key already recorded for an event in another building is not found and the event is recorded again."
+     },
+     {
+      "decision": "problem-5",
+      "expectation": "countedReservations tests overlaps(instant(startAt), period), but instant is a zero-length interval and overlaps uses strict comparisons, so a confirmed reservation starting exactly at the first instant of the month is not counted in used minutes, although the month is half-open and its start is inside it."
+     },
+     {
+      "decision": "problem-6",
+      "expectation": "summarizeActors counts the entries returned by selectEntries, which keeps only the first limit matches, so an actor summary stops counting at the query limit (500 when absent), although an actor summary counts every entry its (valid) query matches, ignoring limit."
+     },
+     {
+      "decision": "problem-7",
+      "expectation": "quoteField doubles inner double quotes with /\"/ without the g flag, so replace doubles only the first one and a field with two or more double quotes is written as malformed CSV (the field a\"b\"c is written as \"a\"\"b\"c\" instead of \"a\"\"b\"\"c\")."
+     },
+     {
+      "decision": "problem-8",
+      "expectation": "sendMessage starts store.save without awaiting it and then awaits send; the outbox store applies each write later through its write queue, so send receives the message before the queued write of the sent message completes."
+     },
+     {
+      "decision": "problem-9",
+      "expectation": "replan(ticket, null) deletes plannedWork from its copy, but clearPlannedWork spreads the original ticket first and that copy second; spreading only overrides keys that exist, so the saved ticket keeps its old plannedWork: it is still listed as the room's planned work, still blocks other tickets' windows, and the ticket can never be planned again because planWork rejects a ticket that already has a planned window."
+     },
+     {
+      "decision": "problem-10",
+      "expectation": "intentRequest rebuilds the request from a fixed list of invoice fields that leaves out issuedAt, so newIntent, which computes the fee with lateFee(prepared.total, prepared.issuedAt, at), gets a due instant of NaN and an intent created while its invoice is late has a fee of 0 and an amount equal to the total."
+     },
+     {
+      "decision": "problem-11",
+      "expectation": "hasEnded compares minutesBetween(at, endAt), whole minutes truncated toward zero, with 0, so a closure with less than one minute left (for example 30 seconds) counts as ended: adding it is rejected and it is left out of the upcoming closures."
+     },
+     {
+      "decision": "problem-12",
+      "expectation": "The single withdraw rule for waiting and offered entries carries the 60-minute cutoff, so a waiting entry whose startAt is less than 60 minutes from now cannot be withdrawn, although the limit applies only to offered entries."
+     },
+     {
+      "decision": "problem-13",
+      "expectation": "ENTRY_DEFAULTS gives active: true and prepareRoom spreads it under the room entry, so a room entry without an active value becomes active and is selected for the report, although only rooms whose active value is true may be."
+     },
+     {
+      "decision": "problem-14",
+      "expectation": "A credit reason is trimmed instead of being stored exactly as supplied."
+     },
+     {
+      "decision": "problem-15",
+      "expectation": "newIntent passes PAYMENT_TERMS.authorizationHold, which is already minutes(10080) in milliseconds, to addMinutes, which multiplies by a minute again, so a new authorization expires 604,800,000 minutes later instead of 10080 minutes: an old authorization keeps blocking new intents for its invoice and can still be captured long after it should have expired."
+     },
+     {
+      "decision": "problem-16",
+      "expectation": "paymentStatus passes the invoice record current to netPaid as its invoiceId argument; netPaid compares each intent's invoiceId (a string) with it using ===, and a string never equals an object, so no intent matches and the status reports paid 0 even after an intent of the invoice was captured."
+     },
+     {
+      "decision": "problem-17",
+      "expectation": "AUDIT_LIMITS.maxQueryWindow is minutes(10080), a number of milliseconds, but prepareQuery compares it with windowSpan(query), which counts minutes ((until - from) / MINUTE), so the 10080-minute limit never triggers and longer query windows are accepted."
+     },
+     {
+      "decision": "problem-18",
+      "expectation": "releaseTime rounds now() up to a whole minute with minuteStart(at + MINUTE - 1) and then adds wait, but wait is counted from the local minute of day, which localMinuteOfDay takes from the start of the current minute; when now() is not on a minute boundary the result is one minute late (22:59:30 local with endMinute 23:00 gives 23:01 instead of 23:00), so releaseAt is not the first minute boundary after now() whose local minute is endMinute."
+     },
+     {
+      "decision": "problem-19",
+      "expectation": "formatList writes each item through formatText, so a list item that starts with =, +, - or @ gets the ' prefix (for example the list ['-a', 'b'] is written '-a;b), although only text values get that prefix and a list's items are written as stored."
+     },
+     {
+      "decision": "problem-20",
+      "expectation": "acceptOffer checks expiry with isLapsing(next, at), where next is the record returned by the accept transition, whose state is already accepted, while isLapsing is true only for an offered entry; so the check never fires and an expired offer can be accepted."
+     }
+    ],
+    "cleanTargets": [
+     {
+      "cleanCaseIndex": 13,
+      "decision": "false-positive:clean-13",
+      "expectation": "escapeText uses /[&<>\"']/g with the global flag, so every occurrence of each special character in a rendered value is escaped."
+     }
+    ]
+   },
+   "confirmed_by": "v1 合成题 s12 在 v2 brief 与 code-spec-v5.1 场景文本下复核（F10，2026-10-25），期望 false-positive:clean-13 不变"
+  },
+  {
+   "id": "s13",
+   "type": "false-fact",
+   "family": "strata",
+   "model": null,
+   "expected": "false-positive:clean-16",
+   "from": "written 2026-10-20 in the family report style",
+   "item": {
+    "kind": "finding",
+    "check": "CODE-SPEC-FINDINGS",
+    "allowedDecisions": [
+     "unsupported",
+     "supported",
+     "false-positive:clean-16",
+     "problem-1",
+     "problem-2",
+     "problem-3",
+     "problem-4",
+     "problem-5",
+     "problem-6",
+     "problem-7",
+     "problem-8",
+     "problem-9",
+     "problem-10",
+     "problem-11",
+     "problem-12",
+     "problem-13",
+     "problem-14",
+     "problem-15",
+     "problem-16",
+     "problem-17",
+     "problem-18",
+     "problem-19",
+     "problem-20"
+    ],
+    "expectation": null,
+    "finding": "1. `src/visitors/guest-fields.mjs:3` - Guest names keep inner whitespace runs.\n   - Implementation evidence: `normalizeGuestName` trims the name and then calls `replace(/\\s+/, ' ')` without the global flag, so only the first whitespace run is collapsed; `'Ann   Lee   Smith'` becomes `'Ann Lee   Smith'`.\n   - Governing requirement: `governing-spec.md:83` requires each inner whitespace run to become one space.\n   - Fix: add the `g` flag.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "src/visitors/guest-fields.mjs",
+      "line": 3
+     },
+     {
+      "filePath": "governing-spec.md",
+      "line": 83
+     }
+    ],
+    "problemOptions": [
+     {
+      "decision": "problem-1",
+      "expectation": "hasAmenities compares the size of the union with room.amenities.length; after lowercasing, a room amenity list with duplicates (Whiteboard, whiteboard) has a union smaller than its length, so that room is never eligible even when it has every requested amenity."
+     },
+     {
+      "decision": "problem-2",
+      "expectation": "applyTransition copies the record with a shallow spread and then pushes onto next.history, which is the same array as the received record's history, so confirm, cancel and reschedule modify the reservation object they receive."
+     },
+     {
+      "decision": "problem-3",
+      "expectation": "rescheduleReservation never applies the 240-minute duration limit to the snapped new window."
+     },
+     {
+      "decision": "problem-4",
+      "expectation": "recordBadgeEvent looks up the event key through findKeyedEvent(store, prepared), which reads store.list(event); the event carries the event's buildingId, which the badge store (createAppendLog) destructures as a building filter, so a key already recorded for an event in another building is not found and the event is recorded again."
+     },
+     {
+      "decision": "problem-5",
+      "expectation": "countedReservations tests overlaps(instant(startAt), period), but instant is a zero-length interval and overlaps uses strict comparisons, so a confirmed reservation starting exactly at the first instant of the month is not counted in used minutes, although the month is half-open and its start is inside it."
+     },
+     {
+      "decision": "problem-6",
+      "expectation": "summarizeActors counts the entries returned by selectEntries, which keeps only the first limit matches, so an actor summary stops counting at the query limit (500 when absent), although an actor summary counts every entry its (valid) query matches, ignoring limit."
+     },
+     {
+      "decision": "problem-7",
+      "expectation": "quoteField doubles inner double quotes with /\"/ without the g flag, so replace doubles only the first one and a field with two or more double quotes is written as malformed CSV (the field a\"b\"c is written as \"a\"\"b\"c\" instead of \"a\"\"b\"\"c\")."
+     },
+     {
+      "decision": "problem-8",
+      "expectation": "sendMessage starts store.save without awaiting it and then awaits send; the outbox store applies each write later through its write queue, so send receives the message before the queued write of the sent message completes."
+     },
+     {
+      "decision": "problem-9",
+      "expectation": "replan(ticket, null) deletes plannedWork from its copy, but clearPlannedWork spreads the original ticket first and that copy second; spreading only overrides keys that exist, so the saved ticket keeps its old plannedWork: it is still listed as the room's planned work, still blocks other tickets' windows, and the ticket can never be planned again because planWork rejects a ticket that already has a planned window."
+     },
+     {
+      "decision": "problem-10",
+      "expectation": "intentRequest rebuilds the request from a fixed list of invoice fields that leaves out issuedAt, so newIntent, which computes the fee with lateFee(prepared.total, prepared.issuedAt, at), gets a due instant of NaN and an intent created while its invoice is late has a fee of 0 and an amount equal to the total."
+     },
+     {
+      "decision": "problem-11",
+      "expectation": "hasEnded compares minutesBetween(at, endAt), whole minutes truncated toward zero, with 0, so a closure with less than one minute left (for example 30 seconds) counts as ended: adding it is rejected and it is left out of the upcoming closures."
+     },
+     {
+      "decision": "problem-12",
+      "expectation": "The single withdraw rule for waiting and offered entries carries the 60-minute cutoff, so a waiting entry whose startAt is less than 60 minutes from now cannot be withdrawn, although the limit applies only to offered entries."
+     },
+     {
+      "decision": "problem-13",
+      "expectation": "ENTRY_DEFAULTS gives active: true and prepareRoom spreads it under the room entry, so a room entry without an active value becomes active and is selected for the report, although only rooms whose active value is true may be."
+     },
+     {
+      "decision": "problem-14",
+      "expectation": "A credit reason is trimmed instead of being stored exactly as supplied."
+     },
+     {
+      "decision": "problem-15",
+      "expectation": "newIntent passes PAYMENT_TERMS.authorizationHold, which is already minutes(10080) in milliseconds, to addMinutes, which multiplies by a minute again, so a new authorization expires 604,800,000 minutes later instead of 10080 minutes: an old authorization keeps blocking new intents for its invoice and can still be captured long after it should have expired."
+     },
+     {
+      "decision": "problem-16",
+      "expectation": "paymentStatus passes the invoice record current to netPaid as its invoiceId argument; netPaid compares each intent's invoiceId (a string) with it using ===, and a string never equals an object, so no intent matches and the status reports paid 0 even after an intent of the invoice was captured."
+     },
+     {
+      "decision": "problem-17",
+      "expectation": "AUDIT_LIMITS.maxQueryWindow is minutes(10080), a number of milliseconds, but prepareQuery compares it with windowSpan(query), which counts minutes ((until - from) / MINUTE), so the 10080-minute limit never triggers and longer query windows are accepted."
+     },
+     {
+      "decision": "problem-18",
+      "expectation": "releaseTime rounds now() up to a whole minute with minuteStart(at + MINUTE - 1) and then adds wait, but wait is counted from the local minute of day, which localMinuteOfDay takes from the start of the current minute; when now() is not on a minute boundary the result is one minute late (22:59:30 local with endMinute 23:00 gives 23:01 instead of 23:00), so releaseAt is not the first minute boundary after now() whose local minute is endMinute."
+     },
+     {
+      "decision": "problem-19",
+      "expectation": "formatList writes each item through formatText, so a list item that starts with =, +, - or @ gets the ' prefix (for example the list ['-a', 'b'] is written '-a;b), although only text values get that prefix and a list's items are written as stored."
+     },
+     {
+      "decision": "problem-20",
+      "expectation": "acceptOffer checks expiry with isLapsing(next, at), where next is the record returned by the accept transition, whose state is already accepted, while isLapsing is true only for an offered entry; so the check never fires and an expired offer can be accepted."
+     }
+    ],
+    "cleanTargets": [
+     {
+      "cleanCaseIndex": 16,
+      "decision": "false-positive:clean-16",
+      "expectation": "normalizeGuestName replaces /\\s+/g with one space after trimming, so every inner whitespace run of a guest name, not only the first, becomes one space."
+     }
+    ]
+   },
+   "confirmed_by": "v1 合成题 s13 在 v2 brief 与 code-spec-v5.1 场景文本下复核（F10，2026-10-25），期望 false-positive:clean-16 不变"
+  }
+ ]
+}

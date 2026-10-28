@@ -292,6 +292,8 @@ Skill 身份保持小写 ASCII 字母与单个连字符的统一范围, 优先�
 
 共享 Reviewer 原生运行控制属于产品业务责任, 正式实现与对应测试按运行控制职责进入内部责任目录, 不留旧位置的实现副本或转发入口. 它消费已准备输入和公共机械能力, 不进入 Platform Adapter 的纯投射计算或 Workflow Distribution Sync 的写入事务; 精确责任与 Interface 由[产品规格](../agent-repository-workflow/spec.md#module-design)拥有.
 
+`Reviewer Capability Module` 是只属于 Source Checkout 维护的源码专用 Module, 实现由 `lib/reviewer-capability/` (计分, 组池, 裁决库) 和同属该 Module 的顶层连接文件 `lib/reviewer-capability-setup.mjs` (场景搭建, 拥有 `setup` 的结果与错误合同, 因连接两个业务范围而位于 `lib/` 第一层) 组成; 计分与组池的测试位于 `tests/reviewer-capability/`, `setup` 的测试作为根级测试位于 `tests/reviewer-capability-setup.test.mjs`. 它不进入 Workflow Distribution 或 release 安装包. 它拥有场景搭建, 答案键与判例覆盖的读取, Reviewer 报告读取 (当前角色的 txt 输出和基线 JSONL), 召回与误报计分, 以及盲裁的组池, 提示生成, 拆分与裁决库. 它直接读取夹具中的物化结果, 不含补丁链, 冻结 ARW 源码或第二种运行时. 盲池随机部分使用与 Python 兼容的 MT19937 以便与 qwen_strata 的结果逐字节比较. 它不启动 Reviewer 或裁判, 不授权审核, 提交或发布; 这些由 `$reviewer-capability` Skill 经 `arw background-agent` 完成. 它不实现 pause, format penalty, registry sha 绑定, 锚点追加和残差截断, 只给出无惩罚分数. Commit Audit 的 txt 报告没有 satisfied 行, 因此该场景不复现 clean-observation 计分, 这是已知限制.
+
 `Repository Module`, `Filesystem Module`, `Markdown Visible Text Module`, `Document Language Analysis Module`, `JSON Module`, `Configuration Conversion Module`, `File Transaction Module` 和只拥有编码与换行规则的 `Text Policy Module` 是与 ARW 无关的通用公共能力, 位于 `lib/common/`. 与 `.scratch`, `.arwignore`, ARW 身份, 全局配置或其他 ARW 语义相关且被多个具体业务范围复用的公共能力位于 `lib/arw-common/`. Module 的长期责任方不因物理目录或跨业务消费而改变.
 
 `Repository Module` 发现最近的 Git 工作树根目录, 解析仓库相对路径并提供规范仓库身份. 它不提供业务文件读写, 不拥有 Git 暂存区恢复策略.
@@ -319,6 +321,16 @@ Windows 命令行解析是 `lib/common/` 中的纯内存能力, 拥有引号与�
 ### Interfaces
 
 除本节明确规定为直接值操作的纯内存 Interface 外, 本规格新增或改变的公开 Module 操作对合法调用使用封闭的 `status: "succeeded" | "blocked" | "failed"`. `diagnostics` 始终存在并使用稳定顺序. `succeeded` 携带该操作的完整成功载荷. `blocked` 保证没有业务持久写入, 不携带可继续 `apply` 的部分成功载荷. `failed` 表示外部依赖或执行阶段失败, 并携带 `stage` 及该操作明确规定的效果信息. 不增加 `partial` 或 `recovering` 状态. 调用参数形状无效时抛出 `TypeError`; 只有实现缺陷或不可能状态才抛出普通异常.
+
+#### Reviewer capability suite
+
+`scripts/reviewer-capability.mjs` 是该 Module 的唯一入口, 入口只解析参数, 连接输入输出并映射退出值; 子命令 `setup` 交给顶层连接实现 `lib/reviewer-capability-setup.mjs`, `score` 与 `pool` 交给 `lib/reviewer-capability/` 的同名操作. 每个操作返回 `{status, diagnostics, ...载荷}`, 入口把载荷以 JSON 写到 `stdout`, 诊断信息写到 `stderr`; `succeeded` 退出 `0`, `blocked` 或 `failed` 退出 `1`, 子命令或参数形状无效 (用法错误) 退出 `2`. `failed` 只用于文件系统或 Git 子进程 I/O 失败 (含报告文件因权限或文件系统错误读不到), `stage` 为 `fixture-read | scenario-build | report-read | pool-write`; 其他可预见的输入问题 (答案键缺失, 报告不可读, 锚点门槛不通过, 候选超限) 都是 `blocked`. 外部输入 (报告, 裁决库) 只在入口操作内校验一次, 内部各层信任; 夹具是受信任的已提交文件, 入口只检查它是否存在.
+
+夹具位于 `tests/fixtures/reviewer-capability/<role>/<scenario>/`, 含 `base/`, `candidate/`, `handoff.md`, `expected.json` (答案键: 问题用例与干净用例, 每例带 k 档位和证据位置), 盲裁 `brief.md` 与 `anchors.json` (每个锚点是已知裁决的候选, 用于检验裁判一致性); Spec Readiness 的两个子场景共享角色级 `common/`. 夹具是只读输入, 套件不写它.
+
+- `setup {scenario, target}`: 在新的 `target` 目录搭成独立 Git 仓库并返回 `{input}`, 即可交给 `arw background-agent` 的 `spawn_agent` 输入. 该操作连接 Commit Audit 与 Spec Readiness 两个业务范围, 因而是 `lib/` 第一层的顶层连接实现, 依赖它们的公开 `prepare` 操作. 按 `<role>/<scenario>` 目录分派: 只有 `requirements-reviewer/commit-audit` 调用 `prepareCommitAudit`; 角色为 `spec-readiness-reviewer` 的场景调用 `prepareSpecReadiness`; 其余场景 (如 `requirements-reviewer/code-spec`, 审核 Code Spec 比较) 只写空 `report.txt`. `target` 已存在, 场景未知或夹具缺失返回 `blocked`.
+- `score {scenario, report, instance?, decisions?}`: `instance` 让候选 id 在多份报告之间唯一; `decisions` 是已有裁决库路径(可多个), 只套用指纹与当前候选相符且裁决在其 `allowedDecisions` 内的裁决, 此时 `candidates` 只返回未裁决的候选, `scores` 按已有裁决计算. 指纹是候选的裁判可见字段 (不含 id 与 group, 含 `allowedDecisions`) 按键排序序列化 (同 Python `json.dumps(sort_keys=True, ensure_ascii=False)`) 后的 SHA-256; `allowedDecisions` 由计分随候选给出, 关联候选为 `matched | not-matched`. `report` 的扩展名决定读取方式: `.jsonl` 是基线格式 (每行一个对象, Spec Readiness 为 `{check, result, evidence, finding}`, Commit Audit 为含 `source`, `requirement`, `result`, `evidence`, `finding` 的行), 是等价性验收对 issue 18 已有基线报告的生产输入; `.txt` 或 `.md` 是当前 Reviewer 角色的自由格式要点 (`- ... path:line`), 由 txt 适配器转成同样的内部行. 返回 `{candidates, scores}`; 候选与答案键用例的匹配, 结果, 证据 F2, 原子性, 误报和缺失检查的判定细则(证据 F2, 原子性, 误报触发, 缺失检查)的权威是 `lib/reviewer-capability/` 的评分实现及其确定性测试, 来源是 qwen_strata benchmark v2 (目录 `benchmarks/multi-model-v2`) 记录的 r8.5 评分语义, 实现与它在等价性验收集上逐字节一致. 不在本规格重复细则, 因为重复会产生两份会漂移的权威: `candidates` 是需要盲裁的关联候选与发现候选, 稳定 id 形如 `<reviewerId>:<instance>:<scope>:<problem>:<check>:finding-K`; `scores` 含 `score`, `kProblemWeight`, `kEarnedProblemPoints`, `kFailedCleanWeight`, `kCleanWeight`, `kTiers`, `missingChecks`, `neutralCleanCases`. 问题用例得分为 0.4 结果加 0.4 证据 F2 加 0.2 原子性, 乘该例 k 档位 (默认 0.25, 判例 1, 拒绝 4); 干净用例的误报按 `kFailedCleanWeight` 记入负分并除以 `kCleanWeight`; 不截断, 缺失检查的干净用例中性. 不计 pause, format penalty, registry sha 绑定和 0.9 残差截断. Commit Audit 的 txt 报告没有 satisfied 行, 干净用例观察不可复现, 该场景只计问题召回, 这是已知限制. 答案键缺失, 或报告内容无法按所选格式解析返回 `blocked`.
+- `pool build {scenario, root, name, candidates}`: `root` 是盲池根目录(调用方给出的目录), `candidates` 是调用方保存的 `score` 输出中 `candidates` 的 JSON 文件路径列表. 把候选加上锚点(每池 12 个, 至少一个未匹配对照)按固定种子 20261020 洗牌后写入 `<root>/<name>/`: 裁判可见目录 `adj/` 含 `pool-<name>.json`, 裁判的 view 与 `decisions-<name>.json` 由 Skill 或 Main 放入; `key.json` (存入夹具 `brief.md`), `prompt.md` 和 `decisions.json` 在 `adj/` 之外, 裁判看不到; `prompt.md` 由 `pool prompt` 写入, `decisions.json` 由 `pool split` 创建. 只有一个池, 不拆分. 池大小上限 150, Spec Readiness 与 Code Standards 为 210; 候选超限时返回 `blocked`, 不截断也不拆分. 种子是常量, 不由调用方传入; 洗牌使用与 Python `random.Random` 兼容的 MT19937 与 `shuffle`, 因此与 qwen_strata 的池逐字节一致. `pool prompt {root, name}` 把存入 `key.json` 的 brief 中的 `<ADJ>` 与 `<名>` 替换后追加固定公平性段落, 写入 `<root>/<name>/prompt.md` 并返回其路径. `pool split {root, name, decisions}`: `decisions` 是裁判写入 `adj/` 的 `decisions-<name>.json` (不同于 split 通过后写入的 `<root>/<name>/decisions.json` 裁决库)(每个池项一条 `{id, decision, reason}`). 不检查裁判标签, 不生成 Main 复核清单. 要求锚点总体一致率(不分 family)至少 0.9 且合成对照全对, 否则返回 `blocked` 且不写任何裁决; 通过后把裁决按稳定 id 写入 `<root>/<name>/decisions.json` (`<name>` 即各 `pool` 子命令的 `name`) (含指纹, 历史和 brief 摘要), 这个裁决库是套件唯一的持久可变状态. `pool override {root, name, id, decision, reason}` 修改一条已有裁决并追加历史. 盲裁裁判由 Skill 启动, 至少 sonnet high, 不属于该 Module.
 
 #### Repository discovery
 
@@ -410,6 +422,8 @@ Repository Module 的观察 Seam 只提供最近 Git 工作树根目录和规范
 
 JSON 路径和配置转换都是没有 I/O 的确定性 Interface, 不增加生产 Adapter. JSON 路径测试直接传入 JSON 值, 配置转换测试直接传入完整来源字节, 规则对象, 验证器和转换器. 文件读取, 替换内容写入与事务失败继续通过消费转换结果的 Installation 或 Repository Workflow Seam 验证.
 
+Reviewer Capability Module 没有生产 Adapter 以外的 Seam: 夹具读取直接使用 `node:fs` (只用公共 JSON Module 的值工具); 夹具是维护者经 Git 提交的受信任只读文件, 不经过限定范围的文件系统的路径范围与符号链接检查, 场景仓库搭建使用 Git 子进程; 确定性测试直接传入报告文本, 答案键和固定种子. 启动 Reviewer 与裁判不属于该 Module, 由 Skill 经 `arw background-agent` 完成.
+
 ### Dependencies and Data Flow
 
 ```mermaid
@@ -449,12 +463,19 @@ flowchart TD
 | 两个等待式审核文件的删除结果 | 用户审核, 引用审核 Interface 验证删除结果并计算两个独立哈希 | 发布前同步 `prepare` 只消费完整审核结果 | 编辑或确认失败时不产生持久配置; 重新执行完整审核; 只有授权后的同步事务把保留列表写入投影配置 |
 | 发布前同步计划和用户授权 | Workflow Distribution Sync Module 绑定当前输入与固定重建范围, 用户提供本次授权 | `apply` 重新验证输入后直接重建生成范围 | 计划漂移或授权不匹配时零写入; 删除开始后的失败由外部 Agent 恢复 Git 状态并完整重跑; 计划自身不持久化 |
 | 完整 Workflow Distribution 字节 | Workflow Distribution Sync Module 在授权后直接形成 | 源码仓库发布, Installation Payload Module 和目标仓库工作流只读消费 | 最终验证成功是内容写入完成点, 普通 Git 提交保存源码仓库候选; 失败时不从中间目录摘取状态, 恢复后完整重跑 |
+| Reviewer 能力夹具 (`expected.json` 答案键, brief, 锚点) 与盲裁裁决库 `decisions.json` | Reviewer Capability Module 拥有合同, 夹具由维护者经普通 Git 提交修改; 裁决库由 `pool split` 与 `pool override` 写入盲池目录 | `score` 与 `pool` 只读夹具, `pool prompt` 与 `split` 读取裁决库 | 夹具缺失或报告不可读时 `blocked`, 零写入; 裁决不满足锚点门槛时不写裁决库; 最终写入点是 `pool split` 的原子替换 |
 
 实际工作流文件只有一个编写权威. 发布前同步是它到 Workflow Distribution 的唯一写入路径. Workflow Distribution 是发布, 安装和仓库工作流消费的同一完整载荷, 这些消费者不得重新构建或回写它.
 
 源码仓库验证沿该单向路径检查实际来源, 发布前同步形成的完整载荷和平台投影. 面向目标仓库的 Repository Workflow 行为在隔离的真实仓库中验证, 不把源码仓库本身转换为其 Workflow Distribution 的消费方.
 
+Reviewer Capability Module 的依赖方向是单向的: `scripts/reviewer-capability.mjs` 调用 `lib/reviewer-capability/`; 后者只依赖 `lib/common/`, node 内置模块与夹具. 需要 Commit Audit 与 Spec Readiness 请求准备的 `setup` 是 `lib/reviewer-capability-setup.mjs` 这一顶层连接实现, 复用它们的公开 `prepare` 操作(不复制), 因此遵守业务实现之间不直接依赖的布局规则. 它不依赖 `lib/reviewer-runtime/`: 启动与角色绑定由 Skill 经 `arw background-agent` 完成. 它不被 `arw.mjs` 或 Workflow Distribution 引用, 因此不进入 release 安装包. 数据流为夹具加 Reviewer 报告经计分得到候选与分数, 候选经组池和裁决库得到盲裁提示与最终分数.
+
 ### Module Design Rationale
+
+Reviewer Capability Module 保留 Source Checkout 内的评分和盲裁实现, 是因为评估角色指令需要可复现的计分和与 qwen_strata 逐字节一致的盲池; 否则只能让 Main Agent 手工裁决, 结果不可比较. 它用一个 Node 运行时取代补丁链, 冻结 ARW 评分器和 Python 工具, 换取删除约 8 千行代码和跨运行时依赖. 不移植 pause, format penalty 等 benchmark 记录数据, 因为它们不属于能力测试本身.
+
+`setup` 的放置有两个被拒绝的替代: 放进入口脚本会让入口承担业务编排, 违反薄入口规则, 且无法通过 Interface 测试; 放进 `lib/reviewer-capability/` 会让一个业务实现直接依赖另两个业务实现, 违反布局规则. 顶层连接实现的代价是多一个 `lib/` 第一层文件. 依赖方向有两个被拒绝的替代: 复制 Commit Audit 与 Spec Readiness 的请求准备会让两份准备逻辑漂移, 每次这两个流程变化都要双改; 删除这两类场景则放弃 4 个计划中的两个. 复用的代价是套件随这两个流程的公开 `prepare` 变化而变化, 由测试发现. 夹具直接保存物化结果放弃了从冻结来源与补丁重建场景的追溯能力, 与 qwen_strata 的后续同步变成人工复制, 存在数据漂移风险; 接受它是因为补丁链是约 8 千行只服务重建的代码, 而场景极少变化, 漂移由等价性验收一次性核对. 夹具读取不使用公共 Filesystem Module, 因为夹具不是外部路径而是受信任的已提交文件, 代价是不获得路径范围与符号链接拒绝, 接受它是因为套件不写夹具. 
 
 发布前同步独立于源码仓库发布, 因为前者决定和转换内容, 后者只验证并发布已经决定的候选. 把同步放进发布会让一次发布同时决定共享工作流语义. 把同步放进只读 Workflow Distribution Module 会让安装时构建边界取得源码仓库写入责任.
 
@@ -486,6 +507,8 @@ Markdown Visible Text Module 与 Document Language Analysis Module 保持独立,
 
 ### ADR Evaluation
 
+Reviewer Capability Module 是源码专用维护工具, 不改变授权主体, 持久格式, 信任根或分发边界, 也不重新决定 ADR-0026 的分发权威, 因此不需要新的 ADR.
+
 [ADR-0026](../../adr/0026-use-source-checkout-workflow-files-as-distribution-authority.md) 记录实际文件权威, 发布前同步派生, 精简配置和 Upstream Sync 的 Ours 变化. [ADR-0002](../../adr/0002-use-repository-local-managed-distribution.md) 继续拥有目标仓库的 Managed Content 与仓库自有内容边界. [ADR-0009](../../adr/0009-use-canonical-distribution-lock-contract.md) 继续拥有锁文件. [ADR-0003](../../adr/0003-use-explicit-platform-adapters.md) 继续拥有单个配置驱动的 Platform Adapter 结构, [ADR-0014](../../adr/0014-use-operation-neutral-platform-adapters.md) 继续拥有它的操作中立与纯计算边界. [ADR-0022](../../adr/0022-place-source-checkout-scripts-under-scripts.md) 继续拥有根入口, 扁平 `scripts/` 维护入口和分层 `lib/` 实现布局.
 
 [ADR-0010](../../adr/0010-use-role-fenced-managed-region-markers.md) 的受管理区域标记继续只标识内容责任, `arw-lock.json` 仍提供归属证明. [ADR-0013](../../adr/0013-use-main-agent-single-writer-orchestration.md) 拥有 Agent 写入分工: 与用户沟通的 Main Agent 负责 Git 恢复基线和 Git 写入, 允许分派的普通任务由所属 Main Agent 协调互不重叠的授权写入范围, 子 Agent 在分配范围内直接交付; 独立 Reviewer 不创建子 Agent, 独自完成审核并亲自写入绑定报告. Engine 写入继续服从适用的用户授权. [ADR-0017](../../adr/0017-use-operation-specific-recovery-baselines.md) 下, 发布前同步继续使用自身的 Git 暂存区恢复边界和完整重跑, 不建立跨生命周期的通用恢复协议.
@@ -507,7 +530,8 @@ Markdown Visible Text Module 与 Document Language Analysis Module 保持独立,
 - 发布前同步审核, 输入绑定, 授权, 固定范围重建和外部恢复边界;
 - 开发侧公共 `Repository Module`, `Filesystem Module`, `Markdown Visible Text Module`, `Document Language Analysis Module`, `JSON Module`, `Configuration Conversion Module`, `File Transaction Module` 和 `Text Policy Module` 合同;
 - `package.json`, `pnpm-lock.yaml` 与根 `tsconfig.json` 共同拥有的 pnpm 11 开发工具链, 完整严格 JavaScript 检查和独立类型检查与测试命令;
-- Workflow Distribution 到发布, 安装和仓库工作流的单向产物流.
+- Workflow Distribution 到发布, 安装和仓库工作流的单向产物流;
+- Reviewer Capability Module 的入口, 计分, 组池和裁决库合同.
 
 现有要求标识符 `ARW-DIST-001` 到 `ARW-DIST-018`, 以及 `ARW-PROJECTION-001` 到 `ARW-PROJECTION-008`, 由本文上述行为, Module Design 和 Validation `strategy` 定义.
 
@@ -522,6 +546,8 @@ Markdown Visible Text Module 与 Document Language Analysis Module 保持独立,
 源码布局验证覆盖扁平 `scripts/` 入口, `lib/common/`, `lib/arw-common/`, 具体业务责任目录和上述单向依赖. 安装运行时清单, 生成物和测试使用最终路径, 不把旧位置的转发入口作为兼容方式.
 
 JSON Module 测试覆盖字符串, 字节与限定范围内的文件解析, 严格 UTF-8, CRLF 接受, BOM 与无效 JSON 阻断, 独立复制, 路径缺失, 对象祖先创建, 标量或数组祖先阻断问题, 幂等删除, 不清理空父级, 输入不可变, `nextValue` 独立副本和无效参数. Configuration Conversion Module 测试覆盖版本唯一递增与跳号, 当前目标, 完整来源字节, 无效 JSON 阻断问题, 来源有效默认值, 可选祖先, 必需诊断信息顺序, 验证器的空或非空诊断信息合同与单一权威, 转换扇出, 重叠来源快照, 目标冲突, 转换器结果与错误, 默认值是否存在与转换后语义一致性, 未知根, 动态对象, 目标键顺序, 准确成功/阻断结果, 当前版本精确字节成功, 分组的变更条目形状/顺序和净空操作. 每个实际规则对象另外运行公共静态断言辅助程序, 并通过自己的验证器和生命周期测试证明准确版本字段与默认值. File Transaction Module 测试通过公开 Interface 证明完整写入前检查零写入, 已准备事务不公开捕获状态且只能由 `apply` 消费, 写入前重验, 成功效果, 失败阶段, 已完成操作顺序和普通文件反向回退结果; 测试不把内部准备条目作为通过条件.
+
+Reviewer Capability Module 的确定性测试覆盖: 评分器对问题用例, 干净用例, k 档位和中性缺失检查的计分; 基线 JSONL 与 txt 适配器读取同一报告得到相同候选; `setup` 对 Commit Audit, Spec Readiness 和其他场景的搭建结果与 `blocked` 路径; MT19937 与 Python 固定种子洗牌的已知输出; `pool build`, `prompt`, `split` 的锚点门槛与裁决库写入.盲裁裁判的真实运行不属于确定性测试, 由 `$reviewer-capability` Skill 按需进行. 该 Module 的计分与组池合同由本规格拥有, 发布规格只描述何时运行该套件及其分发边界.
 
 源码仓库的完整验证命令与矩阵由[源码仓库验证规则](../../agents/source-checkout-validation.md)拥有, 不依赖彼此结果的必要检查可以并行. 准确输入相同的有效结果复用, 等价普通快照和最终主仓库授权检查遵循[产品验证合同](../agent-repository-workflow/spec.md#validation-strategy), 不省略必要完整检查. Document Terms 检查当前工作树的默认范围与当前 effort; `pnpm test` 保留确定性 Document Terms Module, CLI 和 Adapter 行为覆盖. `pnpm typecheck` 只读取根 `tsconfig.json` 覆盖的受 Git 管理 `.mjs`, 不生成代码, 声明或其他产物. 源码仓库发布的候选内容, 归档, VM 和标签验证由发布长期规格补充.
 

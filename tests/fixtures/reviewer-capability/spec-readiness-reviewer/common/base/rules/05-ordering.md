@@ -1,5 +1,5 @@
-# Canonical ordering 规则
+# 权威来源表规则
 
-## Ordering
+## Authority Table
 
-Canonical readiness checks 使用注册顺序. 每个 finding 使用直接支持其结论的最窄 evidence, 不共享泛化 locator.
+每份使用完整 Module Design 的治理 spec 必须在 `Dependencies and Data Flow` 中用一张 Source/Authority 表列出其声明的每项权威来源.

@@ -26,7 +26,7 @@ Canonical check order 是:
 
 ## Invalid Artifact Contract
 
-Malformed artifact 返回 `{failureCode: "invalid-artifact", path, details: {field, reason}}`. `path` 是 caller 提供的 artifact source path. `field` 和 `reason` 是 non-empty string. Validation 按 UTF-8 encoding, JSON syntax, root object, `requestId`, `checks`, 然后各 array entry 的 `check`, `result`, `finding`, uniqueness 和 canonical order 依次检查. Array entry 按 index order 检查. Encoding, syntax 或 root object failure 使用 `field: "$"`; 其他 field 使用以 `$` 开始的 JSON path. `reason` 分别使用 `invalid-utf8`, `invalid-json`, `expected-object`, `expected-non-empty-string`, `expected-non-empty-array`, `unexpected-field`, `duplicate-check`, `out-of-order-check`, `invalid-result` 或 `input-too-large`. 非空 result 不属于允许集合时使用 `invalid-result`. 未知 check ID 使用 `out-of-order-check`. `input-too-large` 只适用于 Current Parser Contract 已声明的大小限制, 不对 renderReport 增加大小阈值. Diagnostic 只报告上述顺序中的第一个 invalid field.
+Malformed artifact 返回 `{failureCode: "invalid-artifact", path, details: {field, reason}}`. `path` 是 caller 提供的 artifact source path. `field` 和 `reason` 是 non-empty string. Validation 按 UTF-8 encoding, JSON syntax, root object, `requestId`, `checks`, 然后各 array entry 依次检查: 先检查 entry 是否为 object (否则 `expected-object`, field 为该 entry 的 JSON path), 再检查 `check`, `result`, `finding`, uniqueness 和 canonical order. Array entry 按 index order 检查. Encoding, syntax 或 root object failure 使用 `field: "$"`; 其他 field 使用以 `$` 开始的 JSON path. `reason` 分别使用 `invalid-utf8`, `invalid-json`, `expected-object`, `expected-non-empty-string`, `expected-non-empty-array`, `unexpected-field`, `duplicate-check`, `out-of-order-check`, `invalid-result` 或 `input-too-large`. 非空 result 不属于允许集合时使用 `invalid-result`. 未知 check ID 使用 `out-of-order-check`. `input-too-large` 只适用于 Current Parser Contract 已声明的大小限制, 不对 renderReport 增加大小阈值. Diagnostic 只报告上述顺序中的第一个 invalid field.
 
 ## Current Promotion Result
 
@@ -34,7 +34,7 @@ Malformed artifact 返回 `{failureCode: "invalid-artifact", path, details: {fie
 
 ## Current Invalid Input Diagnostic
 
-现有 public input validation 对 missing, non-string 或 empty `inputPath` 返回 `{failureCode: "invalid-input", path: "inputPath", details: {message: "A valid input path is required."}}`. 这三个 invalid cases 的 field 集合, code, path, details shape, ordering 和 side effects 相同.
+在 Diagnostic Wording change 之前, 现有 public input validation 对 missing, non-string 或 empty `inputPath` 返回 `{failureCode: "invalid-input", path: "inputPath", details: {message: "A valid input path is required."}}`. 这三个 invalid cases 的 field 集合, code, path, details shape, ordering 和 side effects 相同.
 
 ## Current Cache Contract
 

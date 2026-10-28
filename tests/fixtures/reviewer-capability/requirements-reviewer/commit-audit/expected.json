@@ -1,0 +1,4513 @@
+{
+ "scopes": [
+  {
+   "cleanCases": [
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/storage.mjs",
+       "line": 8
+      },
+      {
+       "filePath": "src/dispatch/storage.mjs",
+       "line": 9
+      },
+      {
+       "filePath": "docs/dispatch/storage-contract.md",
+       "line": 15
+      }
+     ],
+     "expectation": "The implementation satisfies: Under `docs/dispatch/storage-contract.md`, `writePlanAtomically` renames the temporary bytes only after they are durable.",
+     "findingTerms": [
+      "writePlanAtomically"
+     ],
+     "merge": "01:22+spec:43",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md\",\"line\":22}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/telemetry.mjs",
+       "line": 9
+      }
+     ],
+     "expectation": "The implementation satisfies: `redactNestedDriverToken` removes a nested driver token from telemetry.",
+     "findingTerms": [
+      "redactNestedDriverToken"
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md\",\"line\":24}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/capacity.mjs",
+       "line": 12
+      }
+     ],
+     "expectation": "The implementation satisfies: `remainingVehicleCapacity` never returns a negative value.",
+     "findingTerms": [
+      "remainingVehicleCapacity"
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md\",\"line\":31}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/storage.mjs",
+       "line": 15
+      }
+     ],
+     "expectation": "The implementation satisfies: `previewPlan` returns a dry-run result without invoking storage.",
+     "findingTerms": [
+      "previewPlan"
+     ],
+     "merge": "01:33+spec:29",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md\",\"line\":33}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/access.mjs",
+       "line": 12
+      }
+     ],
+     "expectation": "The implementation satisfies: `redactAccessLog` removes token and secret fields while preserving other fields.",
+     "findingTerms": [
+      "redactAccessLog"
+     ],
+     "merge": "01:34+spec:42",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md\",\"line\":34}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/schedule.mjs",
+       "line": 22
+      },
+      {
+       "filePath": "src/dispatch/schedule.mjs",
+       "line": 24
+      },
+      {
+       "filePath": "docs/dispatch/adapter-contracts.md",
+       "line": 4
+      }
+     ],
+     "expectation": "The implementation satisfies: Under `docs/dispatch/adapter-contracts.md`, `routeDistance` rejects when no road connects two consecutive points.",
+     "findingTerms": [
+      "routeDistance"
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md\",\"line\":39}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/storage.mjs",
+       "line": 2
+      },
+      {
+       "filePath": "src/dispatch/storage.mjs",
+       "line": 3
+      },
+      {
+       "filePath": "src/dispatch/storage.mjs",
+       "line": 4
+      }
+     ],
+     "expectation": "The implementation satisfies: savePlan validates a plan before the first persistent write.",
+     "findingTerms": [
+      "savePlan"
+     ],
+     "merge": "01:40+spec:16",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md\",\"line\":40}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/retry.mjs",
+       "line": 8
+      },
+      {
+       "filePath": "src/dispatch/retry.mjs",
+       "line": 22
+      }
+     ],
+     "expectation": "The implementation satisfies: `computeBackoff` doubles from 250 milliseconds and caps the result at 2000 milliseconds.",
+     "findingTerms": [
+      "computeBackoff"
+     ],
+     "merge": "01:41+spec:31",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md\",\"line\":41}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/retry.mjs",
+       "line": 10
+      }
+     ],
+     "expectation": "The implementation satisfies: `retryTransient` permits retries only for errors explicitly marked transient.",
+     "findingTerms": [
+      "retryTransient"
+     ],
+     "merge": "01:42+spec:36",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md\",\"line\":42}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/schedule.mjs",
+       "line": 11
+      }
+     ],
+     "expectation": "The implementation satisfies: `retainScheduleOffset` preserves the supplied offset exactly.",
+     "findingTerms": [
+      "retainScheduleOffset"
+     ],
+     "merge": "01:47+spec:10",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md\",\"line\":47}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/executor.mjs",
+       "line": 12
+      }
+     ],
+     "expectation": "The implementation satisfies: `runEligibleStops` skips cancelled stops while retaining the other stop order.",
+     "findingTerms": [
+      "runEligibleStops"
+     ],
+     "merge": "01:48+spec:25",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md\",\"line\":48}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/access.mjs",
+       "line": 1
+      },
+      {
+       "filePath": "src/dispatch/access.mjs",
+       "line": 16
+      }
+     ],
+     "expectation": "The implementation satisfies: `selectActiveClaims` excludes claims before their start and at or after expiry.",
+     "findingTerms": [
+      "selectActiveClaims"
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md\",\"line\":52}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/serialize.mjs",
+       "line": 7
+      }
+     ],
+     "expectation": "The implementation satisfies: `checksumPlan` hashes the bytes returned by the plan serializer.",
+     "findingTerms": [
+      "checksumPlan"
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md\",\"line\":53}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/index.mjs",
+       "line": 10
+      },
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 4
+      },
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 5
+      },
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 6
+      },
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 7
+      }
+     ],
+     "expectation": "The implementation satisfies: Connect dispatch manifest publication through the public dispatch entry.",
+     "findingTerms": [
+      "Connect dispatch manifest publication"
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md\",\"line\":7}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 29
+      }
+     ],
+     "expectation": "The implementation satisfies: `safeAnnouncement` omits a top-level credential from the announcement payload.",
+     "findingTerms": [
+      "safeAnnouncement"
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md\",\"line\":19}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/serialize.mjs",
+       "line": 11
+      }
+     ],
+     "expectation": "The implementation satisfies: `encodeUtf8` encodes publication bytes as UTF-8.",
+     "findingTerms": [
+      "encodeUtf8"
+     ],
+     "merge": "02:20+spec:72",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md\",\"line\":20}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 22
+      }
+     ],
+     "expectation": "The implementation satisfies: `manifestEntryIsValid` rejects blank package IDs.",
+     "findingTerms": [
+      "manifestEntryIsValid"
+     ],
+     "merge": "02:21+spec:57",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md\",\"line\":21}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 16
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 17
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 18
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 19
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 20
+      }
+     ],
+     "expectation": "The implementation satisfies: `chunkManifest` limits every non-empty chunk to the configured maximum.",
+     "findingTerms": [
+      "chunkManifest"
+     ],
+     "merge": "02:27+spec:67",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md\",\"line\":27}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "docs/dispatch/storage-contract.md",
+       "line": 3
+      },
+      {
+       "filePath": "docs/dispatch/storage-contract.md",
+       "line": 5
+      },
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 11
+      },
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 12
+      }
+     ],
+     "expectation": "The implementation satisfies: Under the Manifest Store contract, `publishWithAnnouncement` waits for the exact manifest to be durably stored before sending its announcement.",
+     "findingTerms": [
+      "publishWithAnnouncement"
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md\",\"line\":28}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/serialize.mjs",
+       "line": 9
+      }
+     ],
+     "expectation": "The implementation satisfies: `serializeManifestRecords` emits NDJSON with one LF after every record, including the last.",
+     "findingTerms": [
+      "serializeManifestRecords"
+     ],
+     "merge": "02:29+spec:46",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md\",\"line\":29}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 11
+      }
+     ],
+     "expectation": "The implementation satisfies: `orderManifestGroups` orders destination groups in ascending lexical order.",
+     "findingTerms": [
+      "orderManifestGroups"
+     ],
+     "merge": "02:30+spec:45",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md\",\"line\":30}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 44
+      },
+      {
+       "filePath": "docs/dispatch/dispatch-policy.md",
+       "line": 66
+      }
+     ],
+     "expectation": "The implementation satisfies: Under `docs/dispatch/dispatch-policy.md`, `manifestRecipients` lists the contact phone of every manifest entry that has a `phone`.",
+     "findingTerms": [
+      "manifestRecipients"
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md\",\"line\":31}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 21
+      }
+     ],
+     "expectation": "The implementation satisfies: `publicationResult` returns structured success and failure variants.",
+     "findingTerms": [
+      "publicationResult"
+     ],
+     "merge": "02:35+spec:56",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md\",\"line\":35}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/storage.mjs",
+       "line": 21
+      }
+     ],
+     "expectation": "The implementation satisfies: `normalizedPlanKey` trims and uppercases the route-key storage segment.",
+     "findingTerms": [
+      "normalizedPlanKey"
+     ],
+     "merge": "02:36+spec:69",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md\",\"line\":36}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 17
+      },
+      {
+       "filePath": "src/dispatch/retry.mjs",
+       "line": 13
+      },
+      {
+       "filePath": "src/dispatch/retry.mjs",
+       "line": 14
+      },
+      {
+       "filePath": "src/dispatch/retry.mjs",
+       "line": 20
+      }
+     ],
+     "expectation": "The implementation satisfies: Under `docs/dispatch/dispatch-policy.md`, `publishWithRetry` stops after the allowed number of publication attempts.",
+     "findingTerms": [
+      "publishWithRetry"
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md\",\"line\":38}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/telemetry.mjs",
+       "line": 3
+      }
+     ],
+     "expectation": "The implementation satisfies: `successTelemetry` records the success event, manifest ID, and timestamp.",
+     "findingTerms": [
+      "successTelemetry"
+     ],
+     "merge": "02:43+spec:28",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md\",\"line\":43}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 4
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 5
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 6
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 7
+      },
+      {
+       "filePath": "src/dispatch/normalize.mjs",
+       "line": 9
+      }
+     ],
+     "expectation": "The implementation satisfies: `groupByDestination` groups records using normalized destination keys.",
+     "findingTerms": [
+      "groupByDestination"
+     ],
+     "merge": "02:44+spec:51",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md\",\"line\":44}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/schedule.mjs",
+       "line": 28
+      },
+      {
+       "filePath": "docs/dispatch/dispatch-policy.md",
+       "line": 65
+      }
+     ],
+     "expectation": "The implementation satisfies: Under `docs/dispatch/dispatch-policy.md`, `departureMinute` is a stop's `arrivalMinute` plus its service time.",
+     "findingTerms": [
+      "departureMinute"
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md\",\"line\":45}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 24
+      },
+      {
+       "filePath": "src/dispatch/normalize.mjs",
+       "line": 5
+      }
+     ],
+     "evidenceAlternatives": [
+      [
+       {
+        "filePath": "src/dispatch/normalize.mjs",
+        "line": 1
+       },
+       {
+        "filePath": "src/dispatch/normalize.mjs",
+        "line": 5
+       }
+      ]
+     ],
+     "expectation": "The implementation satisfies: `preserveManifestDriver` trims driver labels without changing letter case.",
+     "findingTerms": [
+      "preserveManifestDriver"
+     ],
+     "merge": "02:47+spec:15",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md\",\"line\":47}"
+    },
+    {
+     "noOtherSupportedFinding": true
+    }
+   ],
+   "problemCases": [
+    {
+     "expectation": "The public dispatch entry omits the executor surface.",
+     "findingTerms": [
+      "Connect dispatch planning and"
+     ],
+     "merge": "01:7+spec:27",
+     "placements": [
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/dispatch/executor.mjs",
+         "line": 4
+        }
+       ],
+       "check": "COMMIT-AUDIT-GATE-1",
+       "evidence": [
+        {
+         "filePath": "src/dispatch/index.mjs",
+         "line": 1
+        },
+        {
+         "filePath": "src/dispatch/index.mjs",
+         "line": 2
+        },
+        {
+         "filePath": "src/dispatch/index.mjs",
+         "line": 3
+        },
+        {
+         "filePath": "src/dispatch/index.mjs",
+         "line": 4
+        },
+        {
+         "filePath": "src/dispatch/index.mjs",
+         "line": 5
+        },
+        {
+         "filePath": "src/dispatch/index.mjs",
+         "line": 6
+        },
+        {
+         "filePath": "src/dispatch/index.mjs",
+         "line": 7
+        },
+        {
+         "filePath": "src/dispatch/index.mjs",
+         "line": 8
+        },
+        {
+         "filePath": "src/dispatch/index.mjs",
+         "line": 9
+        },
+        {
+         "filePath": "src/dispatch/index.mjs",
+         "line": 10
+        },
+        {
+         "filePath": "src/dispatch/index.mjs",
+         "line": 11
+        },
+        {
+         "filePath": "src/dispatch/executor.mjs",
+         "line": 4
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/dispatch/executor.mjs",
+         "line": 12
+        }
+       ],
+       "check": "COMMIT-AUDIT-GATE-1",
+       "evidence": [
+        {
+         "filePath": "src/dispatch/index.mjs",
+         "line": 1
+        },
+        {
+         "filePath": "src/dispatch/index.mjs",
+         "line": 2
+        },
+        {
+         "filePath": "src/dispatch/index.mjs",
+         "line": 3
+        },
+        {
+         "filePath": "src/dispatch/index.mjs",
+         "line": 4
+        },
+        {
+         "filePath": "src/dispatch/index.mjs",
+         "line": 5
+        },
+        {
+         "filePath": "src/dispatch/index.mjs",
+         "line": 6
+        },
+        {
+         "filePath": "src/dispatch/index.mjs",
+         "line": 7
+        },
+        {
+         "filePath": "src/dispatch/index.mjs",
+         "line": 8
+        },
+        {
+         "filePath": "src/dispatch/index.mjs",
+         "line": 9
+        },
+        {
+         "filePath": "src/dispatch/index.mjs",
+         "line": 10
+        },
+        {
+         "filePath": "src/dispatch/index.mjs",
+         "line": 11
+        },
+        {
+         "filePath": "src/dispatch/executor.mjs",
+         "line": 12
+        }
+       ]
+      }
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md\",\"line\":7}",
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/dispatch/retry.mjs",
+       "line": 24
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/dispatch/retry.mjs",
+       "line": 24
+      }
+     ],
+     "expectation": "`nextRetryDelay` tests `retryAfter` by truthiness, so a server-provided `retryAfter` of 0 falls back to the computed backoff instead of a 0 ms delay.",
+     "findingTerms": [
+      "nextRetryDelay"
+     ],
+     "merge": "01:19+spec:75",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md\",\"line\":19}",
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/dispatch/executor.mjs",
+       "line": 4
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/dispatch/executor.mjs",
+       "line": 4
+      },
+      {
+       "filePath": "src/dispatch/executor.mjs",
+       "line": 6
+      },
+      {
+       "filePath": "src/dispatch/runtime.mjs",
+       "line": 5
+      }
+     ],
+     "expectation": "`executeAuthorizedPlan` awaits dispatch as an argument of `unlessForbidden`, so dispatch runs before the authorization result is applied.",
+     "findingTerms": [
+      "executeAuthorizedPlan"
+     ],
+     "merge": "01:20+spec:55",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md\",\"line\":20}",
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/dispatch/queue.mjs",
+       "line": 30
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/dispatch/queue.mjs",
+       "line": 30
+      },
+      {
+       "filePath": "docs/dispatch/dispatch-policy.md",
+       "line": 63
+      }
+     ],
+     "expectation": "`stopsForDriver` compares each stop's own `driver`, so a stop with a `reassignment` is returned for its original driver and not for the driver of its `reassignment`, which rule 30 makes its assigned driver.",
+     "findingTerms": [
+      "stopsForDriver"
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md\",\"line\":21}",
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/dispatch/schedule.mjs",
+       "line": 6
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/dispatch/schedule.mjs",
+       "line": 1
+      },
+      {
+       "filePath": "src/dispatch/schedule.mjs",
+       "line": 5
+      },
+      {
+       "filePath": "src/dispatch/schedule.mjs",
+       "line": 6
+      }
+     ],
+     "expectation": "`chooseDeparture` moves a blackout departure to the blackout end hour without refusing it when that hour is outside the departure window.",
+     "findingTerms": [
+      "chooseDeparture"
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md\",\"line\":23}",
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/dispatch/executor.mjs",
+       "line": 15
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/dispatch/executor.mjs",
+       "line": 15
+      },
+      {
+       "filePath": "src/dispatch/executor.mjs",
+       "line": 16
+      },
+      {
+       "filePath": "src/dispatch/storage.mjs",
+       "line": 1
+      },
+      {
+       "filePath": "src/dispatch/storage.mjs",
+       "line": 2
+      },
+      {
+       "filePath": "src/dispatch/storage.mjs",
+       "line": 3
+      },
+      {
+       "filePath": "src/dispatch/storage.mjs",
+       "line": 4
+      }
+     ],
+     "expectation": "No available contract establishes when `store.write` invokes `onCommit`, so it cannot be established that `plan.created` is emitted only after storage succeeds.",
+     "findingTerms": [
+      "emitPlanCreated"
+     ],
+     "merge": "01:28+spec:41",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md\",\"line\":28}",
+     "result": "uncertain"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/dispatch/queue.mjs",
+       "line": 18
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/dispatch/queue.mjs",
+       "line": 17
+      },
+      {
+       "filePath": "src/dispatch/queue.mjs",
+       "line": 18
+      }
+     ],
+     "expectation": "`hasDuplicateRouteKeys` concatenates the depot ID and normalized route key without a separator, so different route identities can produce the same key.",
+     "findingTerms": [
+      "hasDuplicateRouteKeys"
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md\",\"line\":29}",
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/dispatch/retry.mjs",
+       "line": 4
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/dispatch/retry.mjs",
+       "line": 4
+      },
+      {
+       "filePath": "src/dispatch/retry.mjs",
+       "line": 5
+      }
+     ],
+     "expectation": "`parseRetryCount` converts text with `Number`, so text that is not base-10 digits, such as `'0x2'`, `'2e0'`, `' 2'` or `''`, is accepted as a retry count.",
+     "findingTerms": [
+      "parseRetryCount"
+     ],
+     "merge": "01:30+spec:59",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md\",\"line\":30}",
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/dispatch/executor.mjs",
+       "line": 19
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/dispatch/executor.mjs",
+       "line": 19
+      },
+      {
+       "filePath": "docs/dispatch/dispatch-policy.md",
+       "line": 64
+      }
+     ],
+     "expectation": "`pendingStops` drops only stops whose `state` is `delivered`, so a stop whose `state` is `handedOver`, which rule 31 makes a delivered stop, is still returned.",
+     "findingTerms": [
+      "pendingStops"
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md\",\"line\":32}",
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 42
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 42
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 3
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 11
+      }
+     ],
+     "expectation": "`orderedDestinationGroups` passes the `Map` returned by `groupByDestination` to `orderManifestGroups`, whose comparator reads a `destination` field that the `[key, group]` entries lack, so the groups keep insertion order instead of ascending lexical order.",
+     "findingTerms": [
+      "orderedDestinationGroups"
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md\",\"line\":38}",
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/dispatch/queue.mjs",
+       "line": 34
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/dispatch/queue.mjs",
+       "line": 34
+      },
+      {
+       "filePath": "docs/dispatch/adapter-contracts.md",
+       "line": 3
+      }
+     ],
+     "expectation": "The geocoder contract defines `geocoder.lookup` only for known addresses, so it cannot be established whether an unknown address resolves to `undefined` (left out), resolves to another value (kept) or rejects (the whole call rejects).",
+     "findingTerms": [
+      "locateStops"
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md\",\"line\":43}",
+     "result": "uncertain"
+    },
+    {
+     "expectation": "`withinVehicleCapacity` converts the limit to grams and requires the clamped remainder to be above zero, so a total equal to the limit (remainder 0) is rejected.",
+     "findingTerms": [
+      "withinVehicleCapacity"
+     ],
+     "merge": "01:49+spec:26",
+     "placements": [
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/dispatch/capacity.mjs",
+         "line": 3
+        }
+       ],
+       "check": "COMMIT-AUDIT-GATE-1",
+       "evidence": [
+        {
+         "filePath": "src/dispatch/capacity.mjs",
+         "line": 3
+        },
+        {
+         "filePath": "src/dispatch/capacity.mjs",
+         "line": 12
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/dispatch/capacity.mjs",
+         "line": 14
+        }
+       ],
+       "check": "COMMIT-AUDIT-GATE-1",
+       "evidence": [
+        {
+         "filePath": "src/dispatch/capacity.mjs",
+         "line": 1
+        },
+        {
+         "filePath": "src/dispatch/capacity.mjs",
+         "line": 3
+        },
+        {
+         "filePath": "src/dispatch/capacity.mjs",
+         "line": 12
+        },
+        {
+         "filePath": "src/dispatch/capacity.mjs",
+         "line": 14
+        }
+       ]
+      }
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md\",\"line\":49}",
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/dispatch/access.mjs",
+       "line": 3
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/dispatch/access.mjs",
+       "line": 3
+      }
+     ],
+     "expectation": "`canPlanRoute` checks `routes:admin` in the actor's own scopes instead of its held scopes, so an admin scope held through an active claim does not meet the ownership requirement.",
+     "findingTerms": [
+      "routes:admin"
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md\",\"line\":50}",
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/dispatch/access.mjs",
+       "line": 5
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/dispatch/access.mjs",
+       "line": 3
+      },
+      {
+       "filePath": "src/dispatch/access.mjs",
+       "line": 5
+      }
+     ],
+     "expectation": "`effectiveScopes` drops only the actor's own scopes when it is suspended and still adds active-claim scopes, so a suspended actor with an active `routes:plan` claim can plan.",
+     "findingTerms": [
+      "suspended"
+     ],
+     "merge": "01:51+spec:73",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md\",\"line\":51}",
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 13
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 32
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 11
+      },
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 13
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 32
+      },
+      {
+       "filePath": "docs/dispatch/storage-contract.md",
+       "line": 3
+      },
+      {
+       "filePath": "docs/dispatch/storage-contract.md",
+       "line": 6
+      },
+      {
+       "filePath": "docs/dispatch/storage-contract.md",
+       "line": 7
+      }
+     ],
+     "expectation": "`handleAnnouncementFailure` removes the copy returned by `store.get`, and `store.remove` removes only the exact stored object, so the stored manifest is not removed.",
+     "findingTerms": [
+      "publishWithAnnouncement"
+     ],
+     "merge": "02:22+spec:17",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md\",\"line\":22}",
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/dispatch/telemetry.mjs",
+       "line": 7
+      },
+      {
+       "filePath": "src/dispatch/telemetry.mjs",
+       "line": 14
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/dispatch/telemetry.mjs",
+       "line": 7
+      },
+      {
+       "filePath": "src/dispatch/telemetry.mjs",
+       "line": 14
+      }
+     ],
+     "expectation": "`stripCredentials` recurses only into values whose constructor is `Object`, so credentials inside arrays below `auth` are kept.",
+     "findingTerms": [
+      "redactManifestEvent"
+     ],
+     "merge": "02:23+spec:12",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md\",\"line\":23}",
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 26
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 26
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 34
+      }
+     ],
+     "expectation": "`buildManifest` copies each record shallowly and `labelDriver` assigns the label onto the supplied driver object, so supplied records are mutated.",
+     "findingTerms": [
+      "buildManifest"
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md\",\"line\":37}",
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 5
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 5
+      },
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 6
+      },
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 7
+      }
+     ],
+     "expectation": "`publishManifest` maps entries through an async callback, and every resulting promise is truthy, so a manifest with invalid entries is stored.",
+     "findingTerms": [
+      "publishManifest"
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md\",\"line\":39}",
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 17
+      },
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 19
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 17
+      },
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 19
+      },
+      {
+       "filePath": "src/dispatch/retry.mjs",
+       "line": 10
+      }
+     ],
+     "expectation": "`asPublicationError` marks a failure transient when it has a finite `retryAfter` even if it is marked `transient: false`, so `publishWithRetry` retries a failure rule 27 makes non-transient.",
+     "findingTerms": [
+      "publishWithRetry"
+     ],
+     "merge": "02:46+spec:71",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md\",\"line\":46}",
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 13
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 13
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 37
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 38
+      }
+     ],
+     "expectation": "`coalesceAcrossGroups` records raw package IDs but filters normalized IDs, so a duplicate that differs only in surrounding whitespace survives in a later group.",
+     "findingTerms": [
+      "coalescePackages"
+     ],
+     "merge": "02:48+spec:22",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md\",\"line\":48}",
+     "result": "gap"
+    }
+   ],
+   "scope": "COMMIT-AUDIT-GATE-1"
+  },
+  {
+   "cleanCases": [
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/queue.mjs",
+       "line": 6
+      },
+      {
+       "filePath": "src/dispatch/queue.mjs",
+       "line": 8
+      }
+     ],
+     "expectation": "The implementation satisfies: Stop ordering uses descending priority followed by ascending sequence.",
+     "findingTerms": [
+      "Stop ordering uses descending"
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":7}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 24
+      },
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 25
+      }
+     ],
+     "expectation": "The implementation satisfies: Publication audit records include action, actor, and timestamp.",
+     "findingTerms": [
+      "Publication audit records include"
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":8}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/schedule.mjs",
+       "line": 9
+      }
+     ],
+     "evidenceAlternatives": [
+      [
+       {
+        "filePath": "src/dispatch/schedule.mjs",
+        "line": 1
+       },
+       {
+        "filePath": "src/dispatch/schedule.mjs",
+        "line": 5
+       }
+      ]
+     ],
+     "expectation": "The implementation satisfies: Window membership includes both the declared start and end hour.",
+     "findingTerms": [
+      "Window membership includes"
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":9}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/schedule.mjs",
+       "line": 11
+      }
+     ],
+     "expectation": "The implementation satisfies: Schedule offsets pass through without coercion.",
+     "findingTerms": [
+      "Schedule offsets pass through"
+     ],
+     "merge": "01:47+spec:10",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":10}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 28
+      }
+     ],
+     "expectation": "The implementation satisfies: Empty manifests use an empty entries array and a generated marker.",
+     "findingTerms": [
+      "Empty manifests use an"
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":13}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/telemetry.mjs",
+       "line": 5
+      }
+     ],
+     "expectation": "The implementation satisfies: Publication failure telemetry includes the manifest ID, error, and timestamp.",
+     "findingTerms": [
+      "Publication failure telemetry includes"
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":14}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/normalize.mjs",
+       "line": 1
+      },
+      {
+       "filePath": "src/dispatch/normalize.mjs",
+       "line": 5
+      }
+     ],
+     "evidenceAlternatives": [
+      [
+       {
+        "filePath": "src/dispatch/manifest.mjs",
+        "line": 24
+       },
+       {
+        "filePath": "src/dispatch/normalize.mjs",
+        "line": 5
+       }
+      ]
+     ],
+     "expectation": "The implementation satisfies: Driver labels are trimmed without changing their letter case.",
+     "findingTerms": [
+      "Driver labels are trimmed"
+     ],
+     "merge": "02:47+spec:15",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":15}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/storage.mjs",
+       "line": 2
+      },
+      {
+       "filePath": "src/dispatch/storage.mjs",
+       "line": 3
+      },
+      {
+       "filePath": "src/dispatch/storage.mjs",
+       "line": 4
+      }
+     ],
+     "expectation": "The implementation satisfies: Plan persistence completes validation before any write.",
+     "findingTerms": [
+      "Plan persistence completes"
+     ],
+     "merge": "01:40+spec:16",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":16}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/normalize.mjs",
+       "line": 11
+      }
+     ],
+     "expectation": "The implementation satisfies: Package IDs are trimmed, deduplicated, and sorted lexically.",
+     "findingTerms": [
+      "Package IDs are trimmed,"
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":21}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "docs/dispatch/storage-contract.md",
+       "line": 3
+      },
+      {
+       "filePath": "docs/dispatch/storage-contract.md",
+       "line": 4
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 30
+      },
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 7
+      }
+     ],
+     "expectation": "The implementation satisfies: Under `docs/dispatch/storage-contract.md`, `publishManifest` returns, in a success result, the manifest object that `store.put` durably stored.",
+     "findingTerms": [
+      "Valid manifest publication returns"
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":24}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/executor.mjs",
+       "line": 12
+      }
+     ],
+     "expectation": "The implementation satisfies: Eligible-stop execution excludes cancelled stops.",
+     "findingTerms": [
+      "Eligible-stop execution excludes cancelled"
+     ],
+     "merge": "01:48+spec:25",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":25}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/telemetry.mjs",
+       "line": 3
+      }
+     ],
+     "expectation": "The implementation satisfies: Publication success telemetry includes the manifest ID and timestamp.",
+     "findingTerms": [
+      "Publication success telemetry includes"
+     ],
+     "merge": "02:43+spec:28",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":28}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/storage.mjs",
+       "line": 15
+      }
+     ],
+     "expectation": "The implementation satisfies: Plan previews return without touching persistent storage.",
+     "findingTerms": [
+      "Plan previews return without"
+     ],
+     "merge": "01:33+spec:29",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":29}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/queue.mjs",
+       "line": 28
+      }
+     ],
+     "expectation": "The implementation satisfies: Appending a stable stop returns a new list.",
+     "findingTerms": [
+      "Appending a stable stop"
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":30}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/retry.mjs",
+       "line": 8
+      },
+      {
+       "filePath": "src/dispatch/retry.mjs",
+       "line": 22
+      }
+     ],
+     "expectation": "The implementation satisfies: Dispatch backoff is capped at 2000 milliseconds.",
+     "findingTerms": [
+      "Dispatch backoff is capped"
+     ],
+     "merge": "01:41+spec:31",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":31}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/retry.mjs",
+       "line": 10
+      }
+     ],
+     "expectation": "The implementation satisfies: Transient retry classification requires an explicit true marker.",
+     "findingTerms": [
+      "Transient retry classification requires"
+     ],
+     "merge": "01:42+spec:36",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":36}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/access.mjs",
+       "line": 14
+      }
+     ],
+     "expectation": "The implementation satisfies: Depot ownership requires equal actor and depot identifiers.",
+     "findingTerms": [
+      "Depot ownership requires equal"
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":37}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/normalize.mjs",
+       "line": 9
+      }
+     ],
+     "expectation": "The implementation satisfies: Destination keys are normalized with NFKC, trimmed, and uppercased.",
+     "findingTerms": [
+      "Destination keys are normalized"
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":39}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/access.mjs",
+       "line": 12
+      }
+     ],
+     "expectation": "The implementation satisfies: Access-log redaction removes both token and secret fields.",
+     "findingTerms": [
+      "Access-log redaction removes both"
+     ],
+     "merge": "01:34+spec:42",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":42}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/storage.mjs",
+       "line": 8
+      },
+      {
+       "filePath": "src/dispatch/storage.mjs",
+       "line": 9
+      },
+      {
+       "filePath": "docs/dispatch/storage-contract.md",
+       "line": 15
+      }
+     ],
+     "expectation": "The implementation satisfies: Under `docs/dispatch/storage-contract.md`, atomic plan writes rename the temporary bytes only after they are durable.",
+     "findingTerms": [
+      "atomic plan writes rename"
+     ],
+     "merge": "01:22+spec:43",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":43}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/serialize.mjs",
+       "line": 2
+      },
+      {
+       "filePath": "src/dispatch/serialize.mjs",
+       "line": 5
+      }
+     ],
+     "expectation": "The implementation satisfies: `toStableJson` uses two-space indentation and one terminal LF.",
+     "findingTerms": [
+      "toStableJson"
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":44}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 11
+      }
+     ],
+     "expectation": "The implementation satisfies: `orderManifestGroups` orders destination groups in ascending lexical order.",
+     "findingTerms": [
+      "orderManifestGroups"
+     ],
+     "merge": "02:30+spec:45",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":45}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/serialize.mjs",
+       "line": 9
+      }
+     ],
+     "expectation": "The implementation satisfies: Manifest NDJSON ends every record, including the final record, with LF.",
+     "findingTerms": [
+      "Manifest NDJSON ends every"
+     ],
+     "merge": "02:29+spec:46",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":46}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 4
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 5
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 6
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 7
+      },
+      {
+       "filePath": "src/dispatch/normalize.mjs",
+       "line": 9
+      }
+     ],
+     "expectation": "The implementation satisfies: Destination grouping uses normalized keys and copied records.",
+     "findingTerms": [
+      "Destination grouping uses normalized"
+     ],
+     "merge": "02:44+spec:51",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":51}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/schedule.mjs",
+       "line": 18
+      }
+     ],
+     "expectation": "The implementation satisfies: Blackout intervals include the start and exclude the end.",
+     "findingTerms": [
+      "Blackout intervals include the"
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":54}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 21
+      }
+     ],
+     "expectation": "The implementation satisfies: Successful publication results and failed publication results use distinct structured variants.",
+     "findingTerms": [
+      "Successful publication results and"
+     ],
+     "merge": "02:35+spec:56",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":56}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 22
+      }
+     ],
+     "expectation": "The implementation satisfies: Blank package IDs make a manifest entry invalid.",
+     "findingTerms": [
+      "Blank package IDs make"
+     ],
+     "merge": "02:21+spec:57",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":57}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/capacity.mjs",
+       "line": 18
+      },
+      {
+       "filePath": "docs/dispatch/dispatch-policy.md",
+       "line": 63
+      }
+     ],
+     "expectation": "The implementation satisfies: Under `docs/dispatch/dispatch-policy.md`, a driver's workload counts exactly the stops whose assigned driver is that driver.",
+     "findingTerms": [
+      "driver's workload counts"
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":58}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/serialize.mjs",
+       "line": 14
+      }
+     ],
+     "expectation": "The implementation satisfies: Serialized plan parsing returns structured success or failure.",
+     "findingTerms": [
+      "Serialized plan parsing returns"
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":60}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/queue.mjs",
+       "line": 36
+      },
+      {
+       "filePath": "docs/dispatch/dispatch-policy.md",
+       "line": 64
+      }
+     ],
+     "expectation": "The implementation satisfies: Under `docs/dispatch/dispatch-policy.md`, the delivered-stop count counts exactly the delivered stops.",
+     "findingTerms": [
+      "delivered-stop count"
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":61}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/queue.mjs",
+       "line": 8
+      }
+     ],
+     "expectation": "The implementation satisfies: The ordinary stop-ordering operation sorts a copy of its input.",
+     "findingTerms": [
+      "The ordinary stop-ordering operation"
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":65}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/capacity.mjs",
+       "line": 8
+      }
+     ],
+     "expectation": "The implementation satisfies: Stops at the vehicle weight limit remain in the accepted partition.",
+     "findingTerms": [
+      "Stops at the vehicle"
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":66}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 16
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 17
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 18
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 19
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 20
+      }
+     ],
+     "expectation": "The implementation satisfies: Manifest chunks never exceed their configured maximum size.",
+     "findingTerms": [
+      "Manifest chunks never exceed"
+     ],
+     "merge": "02:27+spec:67",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":67}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/normalize.mjs",
+       "line": 1
+      },
+      {
+       "filePath": "src/dispatch/normalize.mjs",
+       "line": 3
+      }
+     ],
+     "expectation": "The implementation satisfies: Route keys are normalized with NFKC before trimming and uppercasing.",
+     "findingTerms": [
+      "Route keys are normalized"
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":68}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/storage.mjs",
+       "line": 21
+      }
+     ],
+     "expectation": "The implementation satisfies: Normalized plan storage keys trim and uppercase route keys.",
+     "findingTerms": [
+      "Normalized plan storage keys"
+     ],
+     "merge": "02:36+spec:69",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":69}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/capacity.mjs",
+       "line": 16
+      },
+      {
+       "filePath": "docs/dispatch/adapter-contracts.md",
+       "line": 9
+      },
+      {
+       "filePath": "docs/dispatch/dispatch-policy.md",
+       "line": 59
+      }
+     ],
+     "expectation": "The implementation satisfies: Under `docs/dispatch/dispatch-policy.md`, measured vehicle limits use the unit that the Vehicle capacity rules give.",
+     "findingTerms": [
+      "measured vehicle limits"
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":70}"
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/serialize.mjs",
+       "line": 11
+      }
+     ],
+     "expectation": "The implementation satisfies: UTF-8 encoding uses the explicit `utf8` encoding name.",
+     "findingTerms": [
+      "utf8"
+     ],
+     "merge": "02:20+spec:72",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":72}"
+    },
+    {
+     "noOtherSupportedFinding": true
+    }
+   ],
+   "problemCases": [
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/dispatch/queue.mjs",
+       "line": 32
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/dispatch/queue.mjs",
+       "line": 32
+      },
+      {
+       "filePath": "docs/dispatch/dispatch-policy.md",
+       "line": 65
+      }
+     ],
+     "expectation": "Route duration adds the raw `serviceMinutes`, so every stop misses the 5 minutes of parking that rule 32 includes in its service time.",
+     "findingTerms": [
+      "route duration adds"
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":11}",
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/dispatch/telemetry.mjs",
+       "line": 7
+      },
+      {
+       "filePath": "src/dispatch/telemetry.mjs",
+       "line": 14
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/dispatch/telemetry.mjs",
+       "line": 7
+      },
+      {
+       "filePath": "src/dispatch/telemetry.mjs",
+       "line": 14
+      }
+     ],
+     "expectation": "Manifest-event redaction leaves arrays unvisited, so a credential in an object inside an array of the authentication data is not removed.",
+     "findingTerms": [
+      "Manifest-event redaction removes"
+     ],
+     "merge": "02:23+spec:12",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":12}",
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 13
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 32
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 11
+      },
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 13
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 32
+      },
+      {
+       "filePath": "docs/dispatch/storage-contract.md",
+       "line": 3
+      },
+      {
+       "filePath": "docs/dispatch/storage-contract.md",
+       "line": 6
+      },
+      {
+       "filePath": "docs/dispatch/storage-contract.md",
+       "line": 7
+      }
+     ],
+     "expectation": "The announcement failure branch passes the new copy from `store.get` to `store.remove`, which removes nothing for any object other than the stored one.",
+     "findingTerms": [
+      "Announcement failure rolls back"
+     ],
+     "merge": "02:22+spec:17",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":17}",
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 13
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 13
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 37
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 38
+      }
+     ],
+     "expectation": "Package coalescing compares normalized IDs against raw IDs seen in earlier groups, so whitespace variants of one ID are kept across groups.",
+     "findingTerms": [
+      "Package coalescing removes duplicate"
+     ],
+     "merge": "02:48+spec:22",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":22}",
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/dispatch/storage.mjs",
+       "line": 9
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/dispatch/storage.mjs",
+       "line": 9
+      },
+      {
+       "filePath": "docs/dispatch/storage-contract.md",
+       "line": 11
+      },
+      {
+       "filePath": "docs/dispatch/storage-contract.md",
+       "line": 13
+      }
+     ],
+     "expectation": "After `renameTemporary` rejects, the temporary bytes are locked, so the `discardTemporary` call in `writePlanAtomically` only closes the write and keeps them; `removeTemporary` is never called.",
+     "findingTerms": [
+      "atomic plan writes remove"
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":23}",
+     "result": "gap"
+    },
+    {
+     "expectation": "`canAssignAllPackages` delegates to `withinVehicleCapacity`, whose remaining-capacity test is false at zero remainder, so a total equal to the limit is rejected.",
+     "findingTerms": [
+      "assigning all packages accepts"
+     ],
+     "merge": "01:49+spec:26",
+     "placements": [
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/dispatch/capacity.mjs",
+         "line": 3
+        }
+       ],
+       "check": "COMMIT-AUDIT-GATE-2",
+       "evidence": [
+        {
+         "filePath": "src/dispatch/capacity.mjs",
+         "line": 3
+        },
+        {
+         "filePath": "src/dispatch/capacity.mjs",
+         "line": 12
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/dispatch/capacity.mjs",
+         "line": 14
+        }
+       ],
+       "check": "COMMIT-AUDIT-GATE-2",
+       "evidence": [
+        {
+         "filePath": "src/dispatch/capacity.mjs",
+         "line": 1
+        },
+        {
+         "filePath": "src/dispatch/capacity.mjs",
+         "line": 3
+        },
+        {
+         "filePath": "src/dispatch/capacity.mjs",
+         "line": 12
+        },
+        {
+         "filePath": "src/dispatch/capacity.mjs",
+         "line": 14
+        }
+       ]
+      }
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":26}",
+     "result": "gap"
+    },
+    {
+     "expectation": "The public entry does not export `executor.mjs`.",
+     "findingTerms": [
+      "The public dispatch entry"
+     ],
+     "merge": "01:7+spec:27",
+     "placements": [
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/dispatch/executor.mjs",
+         "line": 4
+        }
+       ],
+       "check": "COMMIT-AUDIT-GATE-2",
+       "evidence": [
+        {
+         "filePath": "src/dispatch/index.mjs",
+         "line": 1
+        },
+        {
+         "filePath": "src/dispatch/index.mjs",
+         "line": 2
+        },
+        {
+         "filePath": "src/dispatch/index.mjs",
+         "line": 3
+        },
+        {
+         "filePath": "src/dispatch/index.mjs",
+         "line": 4
+        },
+        {
+         "filePath": "src/dispatch/index.mjs",
+         "line": 5
+        },
+        {
+         "filePath": "src/dispatch/index.mjs",
+         "line": 6
+        },
+        {
+         "filePath": "src/dispatch/index.mjs",
+         "line": 7
+        },
+        {
+         "filePath": "src/dispatch/index.mjs",
+         "line": 8
+        },
+        {
+         "filePath": "src/dispatch/index.mjs",
+         "line": 9
+        },
+        {
+         "filePath": "src/dispatch/index.mjs",
+         "line": 10
+        },
+        {
+         "filePath": "src/dispatch/index.mjs",
+         "line": 11
+        },
+        {
+         "filePath": "src/dispatch/executor.mjs",
+         "line": 4
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "src/dispatch/executor.mjs",
+         "line": 12
+        }
+       ],
+       "check": "COMMIT-AUDIT-GATE-2",
+       "evidence": [
+        {
+         "filePath": "src/dispatch/index.mjs",
+         "line": 1
+        },
+        {
+         "filePath": "src/dispatch/index.mjs",
+         "line": 2
+        },
+        {
+         "filePath": "src/dispatch/index.mjs",
+         "line": 3
+        },
+        {
+         "filePath": "src/dispatch/index.mjs",
+         "line": 4
+        },
+        {
+         "filePath": "src/dispatch/index.mjs",
+         "line": 5
+        },
+        {
+         "filePath": "src/dispatch/index.mjs",
+         "line": 6
+        },
+        {
+         "filePath": "src/dispatch/index.mjs",
+         "line": 7
+        },
+        {
+         "filePath": "src/dispatch/index.mjs",
+         "line": 8
+        },
+        {
+         "filePath": "src/dispatch/index.mjs",
+         "line": 9
+        },
+        {
+         "filePath": "src/dispatch/index.mjs",
+         "line": 10
+        },
+        {
+         "filePath": "src/dispatch/index.mjs",
+         "line": 11
+        },
+        {
+         "filePath": "src/dispatch/executor.mjs",
+         "line": 12
+        }
+       ]
+      }
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":27}",
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/dispatch/serialize.mjs",
+       "line": 1
+      },
+      {
+       "filePath": "src/dispatch/serialize.mjs",
+       "line": 7
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/dispatch/serialize.mjs",
+       "line": 1
+      },
+      {
+       "filePath": "src/dispatch/serialize.mjs",
+       "line": 3
+      },
+      {
+       "filePath": "src/dispatch/serialize.mjs",
+       "line": 7
+      }
+     ],
+     "expectation": "Plan serialization sorts only the top-level keys (`withSortedKeys` proxies only the plan object), so nested objects keep their insertion order and plans that differ only in nested field order hash to different values.",
+     "findingTerms": [
+      "same plan hash"
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":35}",
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/dispatch/queue.mjs",
+       "line": 22
+      },
+      {
+       "filePath": "src/dispatch/queue.mjs",
+       "line": 23
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/dispatch/queue.mjs",
+       "line": 22
+      },
+      {
+       "filePath": "src/dispatch/queue.mjs",
+       "line": 23
+      }
+     ],
+     "expectation": "Urgent-stop partitioning tests the raw `priority` for the remaining partition, so a text priority such as `'7'` (priority 5 under rule 15) is placed in no partition.",
+     "findingTerms": [
+      "urgent-stop partitioning places"
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":38}",
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/dispatch/schedule.mjs",
+       "line": 15
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/dispatch/schedule.mjs",
+       "line": 1
+      },
+      {
+       "filePath": "src/dispatch/schedule.mjs",
+       "line": 15
+      }
+     ],
+     "expectation": "`nextDispatchTime` checks the blackout with the host-local hour instead of the UTC hour, so on a non-UTC host a time inside the blackout is not moved.",
+     "findingTerms": [
+      "the next dispatch time"
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":40}",
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/dispatch/executor.mjs",
+       "line": 15
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/dispatch/executor.mjs",
+       "line": 15
+      },
+      {
+       "filePath": "src/dispatch/executor.mjs",
+       "line": 16
+      },
+      {
+       "filePath": "src/dispatch/storage.mjs",
+       "line": 1
+      },
+      {
+       "filePath": "src/dispatch/storage.mjs",
+       "line": 2
+      },
+      {
+       "filePath": "src/dispatch/storage.mjs",
+       "line": 3
+      },
+      {
+       "filePath": "src/dispatch/storage.mjs",
+       "line": 4
+      }
+     ],
+     "expectation": "Plan-created telemetry depends on when the store invokes `onCommit`, which no available contract defines.",
+     "findingTerms": [
+      "Plan-created telemetry is emitted"
+     ],
+     "merge": "01:28+spec:41",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":41}",
+     "result": "uncertain"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/dispatch/queue.mjs",
+       "line": 6
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/dispatch/queue.mjs",
+       "line": 6
+      }
+     ],
+     "expectation": "The stop comparator coerces a text `sequence` such as `'2'` to a number, so a stop without a finite numeric sequence does not follow the equal-priority stops that have one.",
+     "findingTerms": [
+      "stop-ordering operation follows"
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":50}",
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/dispatch/access.mjs",
+       "line": 8
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/dispatch/access.mjs",
+       "line": 8
+      },
+      {
+       "filePath": "src/dispatch/access.mjs",
+       "line": 9
+      }
+     ],
+     "expectation": "`authorizeRouteBatch` accepts the batch when `findIndex` returns 0, so a batch whose first route fails depot ownership is authorized.",
+     "findingTerms": [
+      "Batch authorization rejects"
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":52}",
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/dispatch/capacity.mjs",
+       "line": 20
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/dispatch/capacity.mjs",
+       "line": 20
+      },
+      {
+       "filePath": "docs/dispatch/adapter-contracts.md",
+       "line": 8
+      },
+      {
+       "filePath": "docs/dispatch/dispatch-policy.md",
+       "line": 58
+      }
+     ],
+     "expectation": "The weighing contract does not state the unit of the weight that `scale.read` resolves to, so it cannot be established that weighed package weights are in grams.",
+     "findingTerms": [
+      "package weighing records"
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":53}",
+     "result": "uncertain"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/dispatch/executor.mjs",
+       "line": 4
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/dispatch/executor.mjs",
+       "line": 4
+      },
+      {
+       "filePath": "src/dispatch/executor.mjs",
+       "line": 6
+      },
+      {
+       "filePath": "src/dispatch/runtime.mjs",
+       "line": 5
+      }
+     ],
+     "expectation": "Arguments are evaluated before `unlessForbidden` runs, so authorized execution invokes dispatch before it can reject the caller.",
+     "findingTerms": [
+      "Authorized execution rejects"
+     ],
+     "merge": "01:20+spec:55",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":55}",
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/dispatch/retry.mjs",
+       "line": 4
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/dispatch/retry.mjs",
+       "line": 4
+      },
+      {
+       "filePath": "src/dispatch/retry.mjs",
+       "line": 5
+      }
+     ],
+     "expectation": "Retry-count parsing accepts any text that `Number` converts to an integer from 0 through 3, including text that is not base-10 digits such as `'0x2'`.",
+     "findingTerms": [
+      "Retry-count parsing accepts"
+     ],
+     "merge": "01:30+spec:59",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":59}",
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 17
+      },
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 19
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 17
+      },
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 19
+      },
+      {
+       "filePath": "src/dispatch/retry.mjs",
+       "line": 10
+      }
+     ],
+     "expectation": "A failure marked `transient: false` that carries a finite `retryAfter` is rewrapped as transient, so publication retries do not stop for it.",
+     "findingTerms": [
+      "Publication retries stop immediately"
+     ],
+     "merge": "02:46+spec:71",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":71}",
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/dispatch/access.mjs",
+       "line": 5
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/dispatch/access.mjs",
+       "line": 3
+      },
+      {
+       "filePath": "src/dispatch/access.mjs",
+       "line": 5
+      }
+     ],
+     "expectation": "A suspended actor keeps the scopes of its active claims in `effectiveScopes`, so `canPlanRoute` can still allow it.",
+     "findingTerms": [
+      "suspended actor"
+     ],
+     "merge": "01:51+spec:73",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":73}",
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 31
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 31
+      },
+      {
+       "filePath": "docs/dispatch/dispatch-policy.md",
+       "line": 66
+      }
+     ],
+     "expectation": "Delivery notices are sent to the raw `phone`, so an entry whose `phone` contains spaces or hyphens is not notified at its contact phone (rule 33).",
+     "findingTerms": [
+      "delivery notices go"
+     ],
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":74}",
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/dispatch/retry.mjs",
+       "line": 24
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/dispatch/retry.mjs",
+       "line": 24
+      }
+     ],
+     "expectation": "A server-provided `retryAfter` of 0 is falsy, so `nextRetryDelay` uses the computed backoff instead of the server delay.",
+     "findingTerms": [
+      "retryAfter"
+     ],
+     "merge": "01:19+spec:75",
+     "requirementSource": "{\"filePath\":\".scratch/0001-dispatch-control/spec.md\",\"line\":75}",
+     "result": "gap"
+    }
+   ],
+   "scope": "COMMIT-AUDIT-GATE-2"
+  }
+ ],
+ "auditRecords": [
+  {
+   "pathSuffix": ".scratch/0001-dispatch-control/issues/01.audit.json",
+   "requirements": [
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/index.mjs",
+       "line": 1
+      },
+      {
+       "filePath": "src/dispatch/index.mjs",
+       "line": 2
+      },
+      {
+       "filePath": "src/dispatch/index.mjs",
+       "line": 3
+      },
+      {
+       "filePath": "src/dispatch/index.mjs",
+       "line": 4
+      },
+      {
+       "filePath": "src/dispatch/index.mjs",
+       "line": 5
+      },
+      {
+       "filePath": "src/dispatch/index.mjs",
+       "line": 6
+      },
+      {
+       "filePath": "src/dispatch/index.mjs",
+       "line": 7
+      },
+      {
+       "filePath": "src/dispatch/index.mjs",
+       "line": 8
+      },
+      {
+       "filePath": "src/dispatch/index.mjs",
+       "line": 9
+      },
+      {
+       "filePath": "src/dispatch/index.mjs",
+       "line": 10
+      },
+      {
+       "filePath": "src/dispatch/index.mjs",
+       "line": 11
+      },
+      {
+       "filePath": "src/dispatch/executor.mjs",
+       "line": 4
+      }
+     ],
+     "result": "gap",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md",
+      "line": 7
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/retry.mjs",
+       "line": 24
+      }
+     ],
+     "result": "gap",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md",
+      "line": 19
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/executor.mjs",
+       "line": 4
+      },
+      {
+       "filePath": "src/dispatch/executor.mjs",
+       "line": 6
+      },
+      {
+       "filePath": "src/dispatch/runtime.mjs",
+       "line": 5
+      }
+     ],
+     "result": "gap",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md",
+      "line": 20
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/queue.mjs",
+       "line": 30
+      },
+      {
+       "filePath": "docs/dispatch/dispatch-policy.md",
+       "line": 63
+      }
+     ],
+     "result": "gap",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md",
+      "line": 21
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/storage.mjs",
+       "line": 8
+      },
+      {
+       "filePath": "src/dispatch/storage.mjs",
+       "line": 9
+      },
+      {
+       "filePath": "docs/dispatch/storage-contract.md",
+       "line": 15
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md",
+      "line": 22
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/schedule.mjs",
+       "line": 1
+      },
+      {
+       "filePath": "src/dispatch/schedule.mjs",
+       "line": 5
+      },
+      {
+       "filePath": "src/dispatch/schedule.mjs",
+       "line": 6
+      }
+     ],
+     "result": "gap",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md",
+      "line": 23
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/telemetry.mjs",
+       "line": 9
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md",
+      "line": 24
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/executor.mjs",
+       "line": 15
+      },
+      {
+       "filePath": "src/dispatch/executor.mjs",
+       "line": 16
+      },
+      {
+       "filePath": "src/dispatch/storage.mjs",
+       "line": 1
+      },
+      {
+       "filePath": "src/dispatch/storage.mjs",
+       "line": 2
+      },
+      {
+       "filePath": "src/dispatch/storage.mjs",
+       "line": 3
+      },
+      {
+       "filePath": "src/dispatch/storage.mjs",
+       "line": 4
+      }
+     ],
+     "result": "uncertain",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md",
+      "line": 28
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/queue.mjs",
+       "line": 17
+      },
+      {
+       "filePath": "src/dispatch/queue.mjs",
+       "line": 18
+      }
+     ],
+     "result": "gap",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md",
+      "line": 29
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/retry.mjs",
+       "line": 4
+      },
+      {
+       "filePath": "src/dispatch/retry.mjs",
+       "line": 5
+      }
+     ],
+     "result": "gap",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md",
+      "line": 30
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/capacity.mjs",
+       "line": 12
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md",
+      "line": 31
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/executor.mjs",
+       "line": 19
+      },
+      {
+       "filePath": "docs/dispatch/dispatch-policy.md",
+       "line": 64
+      }
+     ],
+     "result": "gap",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md",
+      "line": 32
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/storage.mjs",
+       "line": 15
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md",
+      "line": 33
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/access.mjs",
+       "line": 12
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md",
+      "line": 34
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 42
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 3
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 11
+      }
+     ],
+     "result": "gap",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md",
+      "line": 38
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/schedule.mjs",
+       "line": 22
+      },
+      {
+       "filePath": "src/dispatch/schedule.mjs",
+       "line": 24
+      },
+      {
+       "filePath": "docs/dispatch/adapter-contracts.md",
+       "line": 4
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md",
+      "line": 39
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/storage.mjs",
+       "line": 2
+      },
+      {
+       "filePath": "src/dispatch/storage.mjs",
+       "line": 3
+      },
+      {
+       "filePath": "src/dispatch/storage.mjs",
+       "line": 4
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md",
+      "line": 40
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/retry.mjs",
+       "line": 8
+      },
+      {
+       "filePath": "src/dispatch/retry.mjs",
+       "line": 22
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md",
+      "line": 41
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/retry.mjs",
+       "line": 10
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md",
+      "line": 42
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/queue.mjs",
+       "line": 34
+      },
+      {
+       "filePath": "docs/dispatch/adapter-contracts.md",
+       "line": 3
+      }
+     ],
+     "result": "uncertain",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md",
+      "line": 43
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/schedule.mjs",
+       "line": 11
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md",
+      "line": 47
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/executor.mjs",
+       "line": 12
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md",
+      "line": 48
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/capacity.mjs",
+       "line": 3
+      },
+      {
+       "filePath": "src/dispatch/capacity.mjs",
+       "line": 12
+      }
+     ],
+     "result": "gap",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md",
+      "line": 49
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/access.mjs",
+       "line": 3
+      }
+     ],
+     "result": "gap",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md",
+      "line": 50
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/access.mjs",
+       "line": 3
+      },
+      {
+       "filePath": "src/dispatch/access.mjs",
+       "line": 5
+      }
+     ],
+     "result": "gap",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md",
+      "line": 51
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/access.mjs",
+       "line": 1
+      },
+      {
+       "filePath": "src/dispatch/access.mjs",
+       "line": 16
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md",
+      "line": 52
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/serialize.mjs",
+       "line": 7
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/issues/01-assemble-dispatch-plan.md",
+      "line": 53
+     }
+    }
+   ],
+   "result": "gap"
+  },
+  {
+   "pathSuffix": ".scratch/0001-dispatch-control/issues/02.audit.json",
+   "requirements": [
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/index.mjs",
+       "line": 10
+      },
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 4
+      },
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 5
+      },
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 6
+      },
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 7
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md",
+      "line": 7
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 29
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md",
+      "line": 19
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/serialize.mjs",
+       "line": 11
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md",
+      "line": 20
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 22
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md",
+      "line": 21
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 11
+      },
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 13
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 32
+      },
+      {
+       "filePath": "docs/dispatch/storage-contract.md",
+       "line": 3
+      },
+      {
+       "filePath": "docs/dispatch/storage-contract.md",
+       "line": 6
+      },
+      {
+       "filePath": "docs/dispatch/storage-contract.md",
+       "line": 7
+      }
+     ],
+     "result": "gap",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md",
+      "line": 22
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/telemetry.mjs",
+       "line": 7
+      },
+      {
+       "filePath": "src/dispatch/telemetry.mjs",
+       "line": 14
+      }
+     ],
+     "result": "gap",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md",
+      "line": 23
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 16
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 17
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 18
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 19
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 20
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md",
+      "line": 27
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "docs/dispatch/storage-contract.md",
+       "line": 3
+      },
+      {
+       "filePath": "docs/dispatch/storage-contract.md",
+       "line": 5
+      },
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 11
+      },
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 12
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md",
+      "line": 28
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/serialize.mjs",
+       "line": 9
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md",
+      "line": 29
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 11
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md",
+      "line": 30
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 44
+      },
+      {
+       "filePath": "docs/dispatch/dispatch-policy.md",
+       "line": 66
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md",
+      "line": 31
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 21
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md",
+      "line": 35
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/storage.mjs",
+       "line": 21
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md",
+      "line": 36
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 26
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 34
+      }
+     ],
+     "result": "gap",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md",
+      "line": 37
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 17
+      },
+      {
+       "filePath": "src/dispatch/retry.mjs",
+       "line": 13
+      },
+      {
+       "filePath": "src/dispatch/retry.mjs",
+       "line": 14
+      },
+      {
+       "filePath": "src/dispatch/retry.mjs",
+       "line": 20
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md",
+      "line": 38
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 5
+      },
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 6
+      },
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 7
+      }
+     ],
+     "result": "gap",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md",
+      "line": 39
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/telemetry.mjs",
+       "line": 3
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md",
+      "line": 43
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 4
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 5
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 6
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 7
+      },
+      {
+       "filePath": "src/dispatch/normalize.mjs",
+       "line": 9
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md",
+      "line": 44
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/schedule.mjs",
+       "line": 28
+      },
+      {
+       "filePath": "docs/dispatch/dispatch-policy.md",
+       "line": 65
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md",
+      "line": 45
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 17
+      },
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 19
+      },
+      {
+       "filePath": "src/dispatch/retry.mjs",
+       "line": 10
+      }
+     ],
+     "result": "gap",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md",
+      "line": 46
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 24
+      },
+      {
+       "filePath": "src/dispatch/normalize.mjs",
+       "line": 5
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md",
+      "line": 47
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 13
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 37
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 38
+      }
+     ],
+     "result": "gap",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/issues/02-publish-dispatch-manifest.md",
+      "line": 48
+     }
+    }
+   ],
+   "result": "gap"
+  },
+  {
+   "documents": [
+    ".scratch/0001-dispatch-control/spec.md"
+   ],
+   "pathSuffix": ".scratch/0001-dispatch-control/spec-audit.json",
+   "requirements": [
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/queue.mjs",
+       "line": 6
+      },
+      {
+       "filePath": "src/dispatch/queue.mjs",
+       "line": 8
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 7
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 24
+      },
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 25
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 8
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/schedule.mjs",
+       "line": 9
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 9
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/schedule.mjs",
+       "line": 11
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 10
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/queue.mjs",
+       "line": 32
+      },
+      {
+       "filePath": "docs/dispatch/dispatch-policy.md",
+       "line": 65
+      }
+     ],
+     "result": "gap",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 11
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/telemetry.mjs",
+       "line": 7
+      },
+      {
+       "filePath": "src/dispatch/telemetry.mjs",
+       "line": 14
+      }
+     ],
+     "result": "gap",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 12
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 28
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 13
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/telemetry.mjs",
+       "line": 5
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 14
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/normalize.mjs",
+       "line": 1
+      },
+      {
+       "filePath": "src/dispatch/normalize.mjs",
+       "line": 5
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 15
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/storage.mjs",
+       "line": 2
+      },
+      {
+       "filePath": "src/dispatch/storage.mjs",
+       "line": 3
+      },
+      {
+       "filePath": "src/dispatch/storage.mjs",
+       "line": 4
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 16
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 11
+      },
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 13
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 32
+      },
+      {
+       "filePath": "docs/dispatch/storage-contract.md",
+       "line": 3
+      },
+      {
+       "filePath": "docs/dispatch/storage-contract.md",
+       "line": 6
+      },
+      {
+       "filePath": "docs/dispatch/storage-contract.md",
+       "line": 7
+      }
+     ],
+     "result": "gap",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 17
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/normalize.mjs",
+       "line": 11
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 21
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 13
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 37
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 38
+      }
+     ],
+     "result": "gap",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 22
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/storage.mjs",
+       "line": 9
+      },
+      {
+       "filePath": "docs/dispatch/storage-contract.md",
+       "line": 11
+      },
+      {
+       "filePath": "docs/dispatch/storage-contract.md",
+       "line": 13
+      }
+     ],
+     "result": "gap",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 23
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "docs/dispatch/storage-contract.md",
+       "line": 3
+      },
+      {
+       "filePath": "docs/dispatch/storage-contract.md",
+       "line": 4
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 30
+      },
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 7
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 24
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/executor.mjs",
+       "line": 12
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 25
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/capacity.mjs",
+       "line": 1
+      },
+      {
+       "filePath": "src/dispatch/capacity.mjs",
+       "line": 3
+      },
+      {
+       "filePath": "src/dispatch/capacity.mjs",
+       "line": 12
+      },
+      {
+       "filePath": "src/dispatch/capacity.mjs",
+       "line": 14
+      }
+     ],
+     "result": "gap",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 26
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/index.mjs",
+       "line": 1
+      },
+      {
+       "filePath": "src/dispatch/index.mjs",
+       "line": 2
+      },
+      {
+       "filePath": "src/dispatch/index.mjs",
+       "line": 3
+      },
+      {
+       "filePath": "src/dispatch/index.mjs",
+       "line": 4
+      },
+      {
+       "filePath": "src/dispatch/index.mjs",
+       "line": 5
+      },
+      {
+       "filePath": "src/dispatch/index.mjs",
+       "line": 6
+      },
+      {
+       "filePath": "src/dispatch/index.mjs",
+       "line": 7
+      },
+      {
+       "filePath": "src/dispatch/index.mjs",
+       "line": 8
+      },
+      {
+       "filePath": "src/dispatch/index.mjs",
+       "line": 9
+      },
+      {
+       "filePath": "src/dispatch/index.mjs",
+       "line": 10
+      },
+      {
+       "filePath": "src/dispatch/index.mjs",
+       "line": 11
+      },
+      {
+       "filePath": "src/dispatch/executor.mjs",
+       "line": 4
+      }
+     ],
+     "result": "gap",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 27
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/telemetry.mjs",
+       "line": 3
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 28
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/storage.mjs",
+       "line": 15
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 29
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/queue.mjs",
+       "line": 28
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 30
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/retry.mjs",
+       "line": 8
+      },
+      {
+       "filePath": "src/dispatch/retry.mjs",
+       "line": 22
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 31
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/serialize.mjs",
+       "line": 1
+      },
+      {
+       "filePath": "src/dispatch/serialize.mjs",
+       "line": 3
+      },
+      {
+       "filePath": "src/dispatch/serialize.mjs",
+       "line": 7
+      }
+     ],
+     "result": "gap",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 35
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/retry.mjs",
+       "line": 10
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 36
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/access.mjs",
+       "line": 14
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 37
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/queue.mjs",
+       "line": 22
+      },
+      {
+       "filePath": "src/dispatch/queue.mjs",
+       "line": 23
+      }
+     ],
+     "result": "gap",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 38
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/normalize.mjs",
+       "line": 9
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 39
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/schedule.mjs",
+       "line": 1
+      },
+      {
+       "filePath": "src/dispatch/schedule.mjs",
+       "line": 15
+      }
+     ],
+     "result": "gap",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 40
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/executor.mjs",
+       "line": 15
+      },
+      {
+       "filePath": "src/dispatch/executor.mjs",
+       "line": 16
+      },
+      {
+       "filePath": "src/dispatch/storage.mjs",
+       "line": 1
+      },
+      {
+       "filePath": "src/dispatch/storage.mjs",
+       "line": 2
+      },
+      {
+       "filePath": "src/dispatch/storage.mjs",
+       "line": 3
+      },
+      {
+       "filePath": "src/dispatch/storage.mjs",
+       "line": 4
+      }
+     ],
+     "result": "uncertain",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 41
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/access.mjs",
+       "line": 12
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 42
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/storage.mjs",
+       "line": 8
+      },
+      {
+       "filePath": "src/dispatch/storage.mjs",
+       "line": 9
+      },
+      {
+       "filePath": "docs/dispatch/storage-contract.md",
+       "line": 15
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 43
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/serialize.mjs",
+       "line": 2
+      },
+      {
+       "filePath": "src/dispatch/serialize.mjs",
+       "line": 5
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 44
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 11
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 45
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/serialize.mjs",
+       "line": 9
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 46
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/queue.mjs",
+       "line": 6
+      }
+     ],
+     "result": "gap",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 50
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 4
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 5
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 6
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 7
+      },
+      {
+       "filePath": "src/dispatch/normalize.mjs",
+       "line": 9
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 51
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/access.mjs",
+       "line": 8
+      },
+      {
+       "filePath": "src/dispatch/access.mjs",
+       "line": 9
+      }
+     ],
+     "result": "gap",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 52
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/capacity.mjs",
+       "line": 20
+      },
+      {
+       "filePath": "docs/dispatch/adapter-contracts.md",
+       "line": 8
+      },
+      {
+       "filePath": "docs/dispatch/dispatch-policy.md",
+       "line": 58
+      }
+     ],
+     "result": "uncertain",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 53
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/schedule.mjs",
+       "line": 18
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 54
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/executor.mjs",
+       "line": 4
+      },
+      {
+       "filePath": "src/dispatch/executor.mjs",
+       "line": 6
+      },
+      {
+       "filePath": "src/dispatch/runtime.mjs",
+       "line": 5
+      }
+     ],
+     "result": "gap",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 55
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 21
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 56
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 22
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 57
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/capacity.mjs",
+       "line": 18
+      },
+      {
+       "filePath": "docs/dispatch/dispatch-policy.md",
+       "line": 63
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 58
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/retry.mjs",
+       "line": 4
+      },
+      {
+       "filePath": "src/dispatch/retry.mjs",
+       "line": 5
+      }
+     ],
+     "result": "gap",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 59
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/serialize.mjs",
+       "line": 14
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 60
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/queue.mjs",
+       "line": 36
+      },
+      {
+       "filePath": "docs/dispatch/dispatch-policy.md",
+       "line": 64
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 61
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/queue.mjs",
+       "line": 8
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 65
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/capacity.mjs",
+       "line": 8
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 66
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 16
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 17
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 18
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 19
+      },
+      {
+       "filePath": "src/dispatch/manifest.mjs",
+       "line": 20
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 67
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/normalize.mjs",
+       "line": 1
+      },
+      {
+       "filePath": "src/dispatch/normalize.mjs",
+       "line": 3
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 68
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/storage.mjs",
+       "line": 21
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 69
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/capacity.mjs",
+       "line": 16
+      },
+      {
+       "filePath": "docs/dispatch/adapter-contracts.md",
+       "line": 9
+      },
+      {
+       "filePath": "docs/dispatch/dispatch-policy.md",
+       "line": 59
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 70
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 17
+      },
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 19
+      },
+      {
+       "filePath": "src/dispatch/retry.mjs",
+       "line": 10
+      }
+     ],
+     "result": "gap",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 71
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/serialize.mjs",
+       "line": 11
+      }
+     ],
+     "result": "satisfied",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 72
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/access.mjs",
+       "line": 3
+      },
+      {
+       "filePath": "src/dispatch/access.mjs",
+       "line": 5
+      }
+     ],
+     "result": "gap",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 73
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/publisher.mjs",
+       "line": 31
+      },
+      {
+       "filePath": "docs/dispatch/dispatch-policy.md",
+       "line": 66
+      }
+     ],
+     "result": "gap",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 74
+     }
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "src/dispatch/retry.mjs",
+       "line": 24
+      }
+     ],
+     "result": "gap",
+     "source": {
+      "filePath": ".scratch/0001-dispatch-control/spec.md",
+      "line": 75
+     }
+    }
+   ],
+   "result": "gap"
+  }
+ ]
+}

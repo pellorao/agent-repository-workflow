@@ -2,21 +2,21 @@
 
 ## Scope
 
-本文档新增 protected access review, 它读取 immutable request 并返回 authorization decision, 不修改 tracked state 或 retention policy.
+本文档新增 protected access review, 它读取 immutable request, 返回 authorization decision, 并在授权后返回读取的 immutable bytes, 不修改 tracked state 或 retention policy.
 
 ## Requirements
 
 ### Authentication Boundary
 
-Existing caller boundary 根据 security authority Input 验证 caller identity. Access review 只信任该 boundary 传入的 verified principal 和 requested operation, 不接受 caller 自报 identity 或 credential.
+Existing caller boundary 根据 security authority Input 验证 caller identity. Access review 只信任该 boundary 传入的 verified principal, 不接受 caller 自报 identity 或 credential.
 
 ### Authorization Behavior
 
-Authorization policy 由 Input author 提供, Reviewer 不选择 policy. Policy 精确为 `{policyId, allowedOperations}`, `policyId` 是 non-empty string, `allowedOperations` 是非空数组, 每个元素均为 non-empty string. Facts 精确为 `{resourceId, operation}`, 两项均为 non-empty string, 从 immutable request 的同名字段直接取得. Operation 在 allowedOperations 中时返回 `{allowed: true, policyId}`, 否则返回 `{allowed: false, reasonCode: "operation-not-allowed"}`. 两种结果均为 caller-visible, 不产生 persistence side effect.
+Authorization policy 由 Input author 提供, Reviewer 不选择 policy. Policy 精确为 `{policyId, allowedOperations}`, `policyId` 是 non-empty string, `allowedOperations` 是非空数组, 每个元素均为 non-empty string. Facts 精确为 `{resourceId, operation}`, 两项均为 non-empty string, 从 immutable request 的同名字段直接取得. Decision 只对 verified principal 作出, 本 policy 对所有 verified principal 相同, 只按 operation 判定. Operation 在 allowedOperations 中时读取 artifact 并返回 `{allowed: true, policyId, bytes}`, 否则返回 `{allowed: false, reasonCode: "operation-not-allowed"}` 且不读取. 两种结果均为 caller-visible, 不产生 persistence side effect. Policy 或 facts 无效, 以及 allowed 后 Artifact Reader 失败时的结果采用本文档 Interfaces 的 Other Results 合同.
 
 ## Design Rationale
 
-选择在读取 protected artifact 前执行 access review, 并接受额外一次 policy evaluation 的 latency.
+选择对每次 protected artifact read 都重新执行一次 policy evaluation, 并接受每次读取增加一次 policy evaluation 的 latency.
 
 ## Module Design
 
@@ -24,11 +24,11 @@ Authorization policy 由 Input author 提供, Reviewer 不选择 policy. Policy 
 
 #### Access Review Module
 
-`Access Review Module` 独占 policy evaluation 和 authorization decision, 不拥有 caller authentication, policy authoring, artifact reading 或 persistence.
+`Access Review Module` 独占 authorization decision, 并通过 Policy Evaluation Seam 执行 policy evaluation. Seam 返回 allowed 后, Access Review 检查 facts.operation 是否在 policy.allowedOperations 中; operation 不在其中时返回 Interfaces 的 denied decision, 不读取 artifact. 它不拥有 caller authentication, policy authoring, artifact reading 或 persistence.
 
-#### Artifact Reader Module
+#### Artifact Reading
 
-`Artifact Reader Module` 只在授权成功后读取 immutable bytes. Immutable request.resourceId 直接作为既有 `readArtifact(source)` 的 source, Reader 负责根据该 source 定位同一资源, 不解释 authorization policy 或改变 decision.
+Artifact reading 仍属于既有 Artifact Reader Interface, 不新增 Module. Immutable request.resourceId 是 canonical artifact source path, 授权成功后直接作为既有 `readArtifact(source)` 的 source; Reader 不解释 authorization policy 或改变 decision.
 
 ### Interfaces
 
@@ -38,7 +38,7 @@ Authorization policy 由 Input author 提供, Reviewer 不选择 policy. Policy 
 
 #### Authorization Failure
 
-Successful decision 精确为 `{allowed: true, policyId}`, 并允许以 immutable request.resourceId 调用既有 `readArtifact(source)`. Denied decision 精确为 `{allowed: false, reasonCode: "operation-not-allowed"}`, 并停止后续 artifact read.
+Allowed 结果精确为 `{allowed: true, policyId, bytes}`, bytes 是以 immutable request.resourceId 调用既有 `readArtifact(source)` 成功返回的 immutable bytes. Denied decision 精确为 `{allowed: false, reasonCode: "operation-not-allowed"}`, 并停止后续 artifact read.
 
 #### Other Results
 
@@ -48,15 +48,15 @@ Policy 的错类型, 缺字段或额外字段返回 `{allowed: false, failureCod
 
 #### Policy Evaluation Seam
 
-Policy Evaluation Seam 的 operation 是 `evaluate(policy, facts)`. 两个 Adapter 的 allowed, denied, invalid-policy 和 invalid-request 结果使用上述 Interfaces 的精确合同, 校验顺序和无写入约束也相同. Live Policy Adapter 根据 Input author 的 production policy 计算 decision; deterministic Policy Adapter 根据调用方提供的 policy 和 facts 配置产生上述 decision. Runtime environment 选择当前 deployment 的 Adapter pairing. 两个 Adapter 可以使用不同配置, 不承诺不同配置产生相同结果.
+Policy Evaluation Seam 的 operation 是 `evaluate(policy, facts)`. 两个 Adapter 的 allowed decision 精确为 `{allowed: true, policyId}`, denied, invalid-policy 和 invalid-request 使用上述 Interfaces 的精确合同, 校验顺序和无写入约束也相同; bytes 只由 Access Review 在 allowed 后读取. Live Policy Adapter 用 production policy engine 对传入的 policy 和 facts 求值; deterministic Policy Adapter 返回测试配置的上述结果. Runtime environment 选择当前 deployment 使用的 Adapter, 不选择 policy. 两个 Adapter 可以使用不同配置, 不承诺不同配置产生相同结果.
 
 ### Dependencies and Data Flow
 
-Caller 提供 immutable request. Existing caller boundary 提供 verified identity, Input author 提供 policy. Access Review 从 request 取得 resourceId 和 operation 形成 facts, 调用 Policy Evaluation Seam. Allowed decision 后, Access Review 直接把同一 immutable request.resourceId 作为既有 `readArtifact(source)` 的 source, Artifact Reader 负责定位同一资源并读取 immutable bytes; 其余 decision 停止读取. Reader failure 原样返回 caller. 所有结果都没有 persistence write 或 cycle.
+Caller 提供 immutable request. Existing caller boundary 提供 verified identity, Input author 提供 policy. Access Review 从 request 取得 resourceId 和 operation 形成 facts, 调用 Policy Evaluation Seam. Allowed decision 后, Access Review 直接把同一 immutable request.resourceId 作为既有 `readArtifact(source)` 的 source 读取 immutable bytes, 并以 `{allowed: true, policyId, bytes}` 返回 caller; 其余 decision 停止读取. Reader failure 原样返回 caller. 所有结果都没有 persistence write 或 cycle.
 
 | Source | Authority |
 | --- | --- |
-| Input author | Authorization policy |
+| Input author 的部署配置 | Authorization policy |
 | Existing caller boundary | Verified identity |
 | Immutable request | Resource and operation facts |
 
@@ -76,13 +76,13 @@ Caller 提供 immutable request. Existing caller boundary 提供 verified identi
 
 #### Reader Dependency
 
-选择先由 Access Review 决定再调用 Artifact Reader, 而不是让 Reader 先读取后过滤, 优先避免未授权读取. 拒绝先读取, 因为过滤不能撤销已经发生的访问, 接受的成本是读取前增加一次 decision 调用. 授权成功后选择直接把 immutable request.resourceId 作为既有 Reader source, 而不是由 Access Review 构造物理路径, 优先保持授权事实与读取对象一致; 拒绝在 Access Review 中定位存储, 因为这会混合 authorization 与 artifact location 责任, 接受的成本是 Reader 必须根据该 source 定位同一资源.
+选择先由 Access Review 决定再调用 Artifact Reader, 而不是让 Reader 先读取后过滤, 优先避免未授权读取. 拒绝先读取, 因为过滤不能撤销已经发生的访问, 接受的成本是读取前增加一次 decision 调用. 授权成功后选择直接把 immutable request.resourceId 作为既有 Reader source, 而不是由 Access Review 构造物理路径, 优先保持授权事实与读取对象一致; 拒绝在 Access Review 中定位存储, 因为这会混合 authorization 与 artifact location 责任, 接受的限制是 resourceId 必须是 canonical artifact source path.
 
 ### ADR Evaluation
 
 #### Security Boundary
 
-既有 caller boundary 继续拥有认证, Access Review 是 security authority Input 已要求的 review boundary, 只接收其 verified identity 和 requested operation, 并在 protected artifact read 前执行 Input author 已选择的 operation policy. 这个 pre-read authorization boundary 落实现有 boundary 对当前只读调用的要求, 不新增或移动 identity authority, policy authority, credential 来源或持久状态, 因而没有新的 durable security decision, 不需要新 ADR.
+既有 caller boundary 继续拥有认证, Access Review 是 security authority Input 已要求的 review boundary, 只接收其 verified identity, 并在 protected artifact read 前执行 Input author 已选择的 operation policy. 这个 pre-read authorization boundary 落实现有 boundary 对当前只读调用的要求, 不新增或移动 identity authority, policy authority, credential 来源或持久状态, 因而没有新的 durable security decision, 不需要新 ADR.
 
 #### Other Decisions
 
@@ -90,4 +90,4 @@ Caller 提供 immutable request. Existing caller boundary 提供 verified identi
 
 ## Testing Decisions
 
-通过 `reviewAccess` public lifecycle 测试 allowed, denied, invalid-policy, invalid-request, Policy Adapter failure 和 Artifact Reader failure. 验证 verified-principal 必须来自现有 caller boundary, 不接受自报身份; allowed 时 Reader 接收 immutable request.resourceId 作为 source 并定位同一资源, denied 和输入错误时不读取 artifact. 验证各结果无 persistence side effect, Reader failure 完整原样传播. 两个 Adapter 使用相同 policy/facts 时比较 caller-visible decision, 使用不同配置时分别遵守同一结果合同.
+通过 `reviewAccess` public lifecycle 测试 allowed, denied, invalid-policy, invalid-request, Policy Adapter failure 和 Artifact Reader failure. 验证 verified-principal 必须来自现有 caller boundary, 不接受自报身份; allowed 时 Reader 接收 immutable request.resourceId 作为 source 且结果返回同一 bytes, denied 和输入错误时不读取 artifact. 验证各结果无 persistence side effect, Reader failure 完整原样传播. 两个 Adapter 使用相同 policy/facts 时比较 caller-visible decision, 使用不同配置时分别遵守同一结果合同.

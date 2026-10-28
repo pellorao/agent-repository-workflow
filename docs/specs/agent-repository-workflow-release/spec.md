@@ -27,7 +27,7 @@
 
 ## Reviewer capability tests
 
-Reviewer 能力测试不是发布门禁. 维护者需要时显式调用源码专用的 `$reviewer-capability` Skill (`.agents/skills/reviewer-capability/`): 用 `tests/fixtures/reviewer-capability/<role>/<scenario>/` 中带隐藏预期的场景, 通过 `arw background-agent` 在 Codex 和 Claude 后端运行 Reviewer, 由 Main Agent 对照预期裁决召回和误报. 结果用于评估角色指令, 模型和报告格式, 不授权审核, 提交或发布.
+Reviewer 能力测试不是发布门禁. 维护者需要时显式调用源码专用的 `$reviewer-capability` Skill (`.agents/skills/reviewer-capability/`): 用 `tests/fixtures/reviewer-capability/<role>/<scenario>/` 中带隐藏预期的场景 (qwen_strata benchmark v2 (`benchmarks/multi-model-v2`) 的 4 个计划, 夹具直接保存物化结果, 不含补丁链), 通过 `arw background-agent` 在 Codex 和 Claude 后端运行 Reviewer, 再用 `scripts/reviewer-capability.mjs` 计分并组盲池, 由盲裁裁判 (至少 sonnet high) 裁决候选的召回和误报. 套件只属于 Source Checkout, 不进入 Workflow Distribution 和 release 安装包; 评分与盲裁工具的合同由[开发规格](../agent-repository-workflow-development/spec.md#module-design)拥有. 结果用于评估角色指令, 模型和报告格式, 不授权审核, 提交或发布.
 
 ## Failure recovery and authorization
 
@@ -37,7 +37,7 @@ Reviewer 能力测试不是发布门禁. 维护者需要时显式调用源码专
 
 ## Design rationale
 
-Reviewer 能力测试只在角色指令, 模型或报告格式变化时才有意义, 不随每次发布运行. 旧的发布能力门禁用程序准备, 评分, 折减和会话检查, 这些代码大多校验程序自己产生的数据; 现在由 Agent 按 Skill 运行场景并裁决匹配, 只保留场景, 隐藏预期和一个搭建脚本.
+Reviewer 能力测试只在角色指令, 模型或报告格式变化时才有意义, 不随每次发布运行. 旧的发布能力门禁用程序准备, 评分, 折减和会话检查, 这些代码大多校验程序自己产生的数据; 现在由 Agent 按 Skill 运行场景; 保留场景, 隐藏预期, 一个入口脚本及其评分与盲裁实现, 这些是评估角色指令的方法本身, 不校验程序自己产生的数据.
 
 VM 验证只证明用户实际依赖的结果: 安装, PATH 登记, 初始化和卸载在真实 Windows 与 Linux 上可用. 它由 Agent 按 Skill 运行一个短检查脚本, 不再由程序维护场景登记表, 归档和一致性校验; 这些机制校验的大多是验证程序自己产生的数据, 维护成本远高于它们发现问题的价值. 升级, 降级, 真实目标仓库矩阵和初始化 issue 生命周期不属于发布门禁, 需要时由维护者另行要求.
 

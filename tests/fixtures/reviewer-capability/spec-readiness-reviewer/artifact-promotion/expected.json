@@ -1,0 +1,2525 @@
+{
+ "scopes": [
+  {
+   "cleanCases": [
+    {
+     "noOtherSupportedFinding": true
+    }
+   ],
+   "problemCases": [],
+   "scope": "SPEC-READINESS-INPUTS"
+  },
+  {
+   "cleanCases": [
+    {
+     "noOtherSupportedFinding": true
+    }
+   ],
+   "problemCases": [],
+   "scope": "SPEC-READINESS-REQUIREMENTS"
+  },
+  {
+   "cleanCases": [
+    {
+     "evidence": [
+      {
+       "filePath": "specs/validation-report.md",
+       "line": 23
+      }
+     ],
+     "expectation": "The clean full-form common rationale includes an alternative, rejection reason, and accepted cost.",
+     "findingTerms": [
+      "alternative",
+      [
+       "cost",
+       "limitation",
+       "trade-off",
+       "tradeoff"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "specs/reader-index.md",
+       "line": 9
+      }
+     ],
+     "expectation": "The routine clean documentation edit does not require invented product alternatives.",
+     "findingTerms": [
+      "alternative"
+     ]
+    },
+    {
+     "noOtherSupportedFinding": true
+    }
+   ],
+   "problemCases": [
+    {
+     "associationEvidence": [
+      {
+       "filePath": "specs/access-review.md",
+       "line": 19
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "specs/access-review.md",
+       "line": 19
+      }
+     ],
+     "expectation": "The access-review common rationale selects re-evaluating policy on every protected read and states its latency cost, but omits the alternative (such as reusing an earlier decision) and its rejection reason.",
+     "findingTerms": [
+      [
+       "policy evaluation",
+       "every read",
+       "per-read"
+      ],
+      [
+       "alternative",
+       "rejection reason"
+      ],
+      [
+       "missing",
+       "omits",
+       "lacks"
+      ]
+     ],
+     "result": "gap"
+    }
+   ],
+   "scope": "SPEC-READINESS-RATIONALE"
+  },
+  {
+   "cleanCases": [
+    {
+     "evidence": [
+      {
+       "filePath": "specs/diagnostic-wording.md",
+       "line": 17
+      }
+     ],
+     "expectation": "The clean exemption correctly concludes that its reversible wording implementation needs no ADR.",
+     "findingTerms": [
+      "ADR"
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "specs/validation-report.md",
+       "line": 100
+      }
+     ],
+     "expectation": "The clean full-form ADR evaluation covers its report contract, testing boundary, and existing decisions.",
+     "findingTerms": [
+      "ADR"
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "specs/reader-index.md",
+       "line": 13
+      }
+     ],
+     "expectation": "The clean documentation-only change correctly concludes that no ADR is required.",
+     "findingTerms": [
+      "ADR"
+     ]
+    },
+    {
+     "noOtherSupportedFinding": true
+    }
+   ],
+   "problemCases": [
+    {
+     "expectation": "The recovery ADR evaluation treats the new public recovery-result contract and failure lifecycle as covered by an existing rollback responsibility without evaluating that new decision.",
+     "findingTerms": [
+      "recovery result",
+      "ADR",
+      [
+       "new",
+       "independent"
+      ],
+      [
+       "existing responsibility",
+       "rollback responsibility",
+       "not evaluated"
+      ]
+     ],
+     "placements": [
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 95
+        }
+       ],
+       "check": "SPEC-READINESS-ADR-EVALUATION",
+       "evidence": [
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 95
+        },
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 15
+        },
+        {
+         "filePath": "docs/adr/0001-persistence.md",
+         "line": 5
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 95
+        }
+       ],
+       "check": "SPEC-READINESS-ADR-EVALUATION",
+       "evidence": [
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 95
+        },
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 47
+        },
+        {
+         "filePath": "docs/adr/0001-persistence.md",
+         "line": 5
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 95
+        }
+       ],
+       "check": "SPEC-READINESS-ADR-EVALUATION",
+       "evidence": [
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 95
+        },
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 91
+        },
+        {
+         "filePath": "docs/adr/0001-persistence.md",
+         "line": 5
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 95
+        }
+       ],
+       "check": "SPEC-READINESS-ADR-EVALUATION",
+       "evidence": [
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 95
+        },
+        {
+         "filePath": "docs/adr/0001-persistence.md",
+         "line": 5
+        },
+        {
+         "filePath": "architecture/02-commit.md",
+         "line": 5
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 95
+        }
+       ],
+       "check": "SPEC-READINESS-ADR-EVALUATION",
+       "evidence": [
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 95
+        },
+        {
+         "filePath": "docs/adr/0001-persistence.md",
+         "line": 5
+        }
+       ]
+      }
+     ],
+     "result": "gap"
+    }
+   ],
+   "scope": "SPEC-READINESS-ADR-EVALUATION"
+  },
+  {
+   "cleanCases": [
+    {
+     "evidence": [
+      {
+       "filePath": "specs/diagnostic-wording.md",
+       "line": 13
+      }
+     ],
+     "expectation": "The clean runtime-wording change correctly uses a specific Not required form.",
+     "findingTerms": [
+      "Not required"
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "specs/validation-report.md",
+       "line": 31
+      },
+      {
+       "filePath": "specs/validation-report.md",
+       "line": 41
+      },
+      {
+       "filePath": "specs/validation-report.md",
+       "line": 59
+      },
+      {
+       "filePath": "specs/validation-report.md",
+       "line": 77
+      },
+      {
+       "filePath": "specs/validation-report.md",
+       "line": 90
+      }
+     ],
+     "expectation": "The new Validation Report Module correctly uses the complete Module Design form.",
+     "findingTerms": [
+      "complete"
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "specs/reader-index.md",
+       "line": 5
+      }
+     ],
+     "expectation": "The documentation-only clean spec correctly omits Module Design.",
+     "findingTerms": [
+      "documentation"
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "specs/promotion-runtime.md",
+       "line": 31
+      },
+      {
+       "filePath": "specs/promotion-runtime.md",
+       "line": 37
+      },
+      {
+       "filePath": "specs/promotion-runtime.md",
+       "line": 51
+      },
+      {
+       "filePath": "specs/promotion-runtime.md",
+       "line": 57
+      },
+      {
+       "filePath": "specs/promotion-runtime.md",
+       "line": 73
+      }
+     ],
+     "expectation": "The problem-bearing promotion design still correctly uses the complete Module Design form.",
+     "findingTerms": [
+      "complete"
+     ]
+    },
+    {
+     "noOtherSupportedFinding": true
+    }
+   ],
+   "problemCases": [
+    {
+     "expectation": "The result-summary change alters a caller-visible Interface and therefore cannot use the Module Design exemption.",
+     "findingTerms": [
+      "summary",
+      [
+       "caller-visible",
+       "Interface"
+      ],
+      [
+       "exemption",
+       "Not required"
+      ],
+      [
+       "wrong",
+       "cannot",
+       "requires complete"
+      ]
+     ],
+     "placements": [
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/result-summary.md",
+         "line": 19
+        }
+       ],
+       "check": "MODULE-DESIGN-APPLICABILITY",
+       "evidence": [
+        {
+         "filePath": "specs/result-summary.md",
+         "line": 19
+        },
+        {
+         "filePath": "specs/result-summary.md",
+         "line": 11
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/result-summary.md",
+         "line": 19
+        }
+       ],
+       "check": "MODULE-DESIGN-APPLICABILITY",
+       "evidence": [
+        {
+         "filePath": "specs/result-summary.md",
+         "line": 19
+        },
+        {
+         "filePath": "specs/result-summary.md",
+         "line": 5
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/result-summary.md",
+         "line": 19
+        }
+       ],
+       "check": "MODULE-DESIGN-APPLICABILITY",
+       "evidence": [
+        {
+         "filePath": "specs/result-summary.md",
+         "line": 19
+        },
+        {
+         "filePath": "specs/result-summary.md",
+         "line": 11
+        },
+        {
+         "filePath": "specs/result-summary.md",
+         "line": 5
+        }
+       ]
+      }
+     ],
+     "result": "gap"
+    }
+   ],
+   "scope": "MODULE-DESIGN-APPLICABILITY"
+  },
+  {
+   "cleanCases": [
+    {
+     "evidence": [
+      {
+       "filePath": "specs/diagnostic-wording.md",
+       "line": 13
+      }
+     ],
+     "expectation": "The clean exemption specifically explains why the runtime change preserves every Module boundary.",
+     "findingTerms": [
+      [
+       "unchanged",
+       "preserves",
+       "same"
+      ],
+      [
+       "Interface",
+       "responsibility",
+       "data flow"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "specs/cache-indexing.md",
+       "line": 17
+      }
+     ],
+     "expectation": "The internal cache index change has a concrete valid Module Design exemption.",
+     "findingTerms": [
+      "cache",
+      [
+       "exemption",
+       "Not required"
+      ],
+      [
+       "invalid",
+       "generic",
+       "circular"
+      ]
+     ]
+    },
+    {
+     "noOtherSupportedFinding": true
+    }
+   ],
+   "problemCases": [
+    {
+     "associationEvidence": [
+      {
+       "filePath": "specs/parser-scan.md",
+       "line": 17
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "specs/parser-scan.md",
+       "line": 17
+      }
+     ],
+     "expectation": "The parser exemption is applicable but only generically claims unchanged architecture without explaining why its Module boundaries remain unchanged.",
+     "findingTerms": [
+      "parser",
+      [
+       "generic",
+       "does not explain",
+       "not specific"
+      ],
+      [
+       "Module boundary",
+       "Module boundaries",
+       "Interface"
+      ]
+     ],
+     "result": "gap"
+    }
+   ],
+   "scope": "MODULE-DESIGN-EXEMPTION"
+  },
+  {
+   "cleanCases": [
+    {
+     "evidence": [
+      {
+       "filePath": "specs/validation-report.md",
+       "line": 31
+      }
+     ],
+     "expectation": "Validation Report Module solely owns renderReport report validation and rendering; renderReport and parseArtifact are separate operations that each validate against the architecture Invalid Artifact Contract, so this is neither duplicate validation ownership nor an undeclared dependency on parseArtifact.",
+     "findingTerms": [
+      "Validation Report Module",
+      [
+       "validation",
+       "rendering"
+      ]
+     ],
+     "k": 1
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "specs/validation-report.md",
+       "line": 35
+      }
+     ],
+     "expectation": "Readiness Module retains its existing non-report responsibilities without overlap.",
+     "findingTerms": [
+      "Readiness Module",
+      [
+       "promotion ordering",
+       "artifact generation"
+      ]
+     ],
+     "k": 1
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "specs/promotion-runtime.md",
+       "line": 31
+      },
+      {
+       "filePath": "specs/promotion-recovery.md",
+       "line": 41
+      }
+     ],
+     "expectation": "Promotion Module owns the persistence precondition checks and Recovery Module validates the recovery input; these are different obligations on different inputs, not duplicate validation ownership.",
+     "findingTerms": [
+      "precondition",
+      [
+       "duplicate",
+       "overlap",
+       "both"
+      ]
+     ],
+     "k": 1
+    },
+    {
+     "noOtherSupportedFinding": true
+    }
+   ],
+   "problemCases": [
+    {
+     "expectation": "Readiness Module and Promotion Module duplicate validation ownership.",
+     "findingTerms": [
+      "Readiness Module",
+      "Promotion Module",
+      "validation",
+      [
+       "duplicate",
+       "both",
+       "overlap"
+      ]
+     ],
+     "k": 1,
+     "placements": [
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/promotion-runtime.md",
+         "line": 27
+        }
+       ],
+       "check": "MODULE-DESIGN-MODULES",
+       "evidence": [
+        {
+         "filePath": "specs/promotion-runtime.md",
+         "line": 27
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/promotion-runtime.md",
+         "line": 27
+        }
+       ],
+       "check": "MODULE-DESIGN-MODULES",
+       "evidence": [
+        {
+         "filePath": "specs/promotion-runtime.md",
+         "line": 27
+        },
+        {
+         "filePath": "specs/promotion-runtime.md",
+         "line": 11
+        }
+       ]
+      }
+     ],
+     "result": "gap"
+    },
+    {
+     "expectation": "Promotion Module and Recovery Module duplicate validation ownership of the recovery input. This includes the consequence that Promotion returns the diagnostic itself and bypasses the Recovery handoff, which no longer matches the unconditional handoff and propagation described in promotion-runtime.md (Promotion Persistence Interface, Failure Results, Promotion Flow), promotion-recovery.md (Commit Failure Input, Recovery Propagation) and architecture/02-commit.md.",
+     "findingTerms": [
+      "Promotion Module",
+      "Recovery Module",
+      [
+       "validation",
+       "validate",
+       "validates",
+       "Invalid Input Diagnostic"
+      ],
+      [
+       "duplicate",
+       "both",
+       "overlap",
+       "twice"
+      ]
+     ],
+     "k": 1,
+     "placements": [
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 31
+        }
+       ],
+       "check": "MODULE-DESIGN-MODULES",
+       "evidence": [
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 31
+        },
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 65
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 31
+        }
+       ],
+       "check": "MODULE-DESIGN-MODULES",
+       "evidence": [
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 31
+        },
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 41
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 31
+        }
+       ],
+       "check": "MODULE-DESIGN-MODULES",
+       "evidence": [
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 31
+        },
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 19
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 65
+        }
+       ],
+       "check": "MODULE-DESIGN-MODULES",
+       "evidence": [
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 65
+        },
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 31
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 31
+        }
+       ],
+       "check": "MODULE-DESIGN-MODULES",
+       "evidence": [
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 31
+        },
+        {
+         "filePath": "specs/promotion-runtime.md",
+         "line": 31
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 31
+        }
+       ],
+       "check": "MODULE-DESIGN-DEPENDENCIES-DATA-FLOW",
+       "evidence": [
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 31
+        },
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 65
+        }
+       ]
+      }
+     ],
+     "result": "gap"
+    }
+   ],
+   "scope": "MODULE-DESIGN-MODULES"
+  },
+  {
+   "cleanCases": [
+    {
+     "evidence": [
+      {
+       "filePath": "specs/validation-report.md",
+       "line": 41
+      }
+     ],
+     "expectation": "The clean successful report Interface completely defines fields and invariants.",
+     "findingTerms": [
+      "successful report",
+      [
+       "fields",
+       "invariants"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "specs/validation-report.md",
+       "line": 45
+      }
+     ],
+     "expectation": "The malformed-artifact Interface defines the diagnostic envelope and field locator; it does not omit those fields.",
+     "findingTerms": [
+      "malformed artifact",
+      [
+       "diagnostic envelope",
+       "field locator"
+      ],
+      [
+       "missing",
+       "omits",
+       "does not define",
+       "undefined",
+       "lacks"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "specs/validation-report.md",
+       "line": 104
+      }
+     ],
+     "expectation": "Validation Report specifies tests for encoding, syntax, structural and field validation, and the ordering rules that are defined; the unexpected-field ordering contract remains a separate problem.",
+     "findingTerms": [
+      [
+       "UTF-8",
+       "JSON syntax",
+       "first-invalid",
+       "first error",
+       "field validation"
+      ],
+      [
+       "test",
+       "Testing Decisions",
+       "coverage"
+      ],
+      [
+       "missing",
+       "omits",
+       "does not cover",
+       "not tested"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "specs/validation-report.md",
+       "line": 104
+      }
+     ],
+     "expectation": "Representative inputs for one shared field-validation rule do not require a separate Testing Decisions item for every field and value combination.",
+     "findingTerms": [
+      [
+       "every field",
+       "each field",
+       "every value",
+       "each value"
+      ],
+      [
+       "test",
+       "Testing Decisions"
+      ],
+      [
+       "missing",
+       "must",
+       "required"
+      ]
+     ]
+    },
+    {
+     "noOtherSupportedFinding": true
+    }
+   ],
+   "problemCases": [
+    {
+     "expectation": "Access Review Interface does not provide the verified-principal input required by its authentication boundary.",
+     "findingTerms": [
+      "verified principal",
+      [
+       "input",
+       "handoff"
+      ],
+      [
+       "missing",
+       "omits",
+       "does not define",
+       "undefined",
+       "lacks"
+      ]
+     ],
+     "placements": [
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 37
+        }
+       ],
+       "check": "MODULE-DESIGN-INTERFACES",
+       "evidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 37
+        },
+        {
+         "filePath": "specs/access-review.md",
+         "line": 11
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 37
+        }
+       ],
+       "check": "MODULE-DESIGN-INTERFACES",
+       "evidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 37
+        },
+        {
+         "filePath": "rules/01-required-inputs.md",
+         "line": 5
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 55
+        }
+       ],
+       "check": "MODULE-DESIGN-INTERFACES",
+       "evidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 55
+        },
+        {
+         "filePath": "specs/access-review.md",
+         "line": 11
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 11
+        }
+       ],
+       "check": "MODULE-DESIGN-INTERFACES",
+       "evidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 11
+        },
+        {
+         "filePath": "specs/access-review.md",
+         "line": 37
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 55
+        }
+       ],
+       "check": "MODULE-DESIGN-DEPENDENCIES-DATA-FLOW",
+       "evidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 55
+        },
+        {
+         "filePath": "specs/access-review.md",
+         "line": 37
+        }
+       ]
+      }
+     ],
+     "result": "gap"
+    },
+    {
+     "expectation": "Access Review and its Policy Evaluation Seam define allowed, denied and input-error results but no caller-visible result or common Adapter contract for Policy Adapter execution failure, although Testing Decisions require testing it. It may be reported under the Interface or the Seam.",
+     "findingTerms": [
+      [
+       "Policy Adapter failure",
+       "Adapter failure",
+       "evaluation failure",
+       "infrastructure failure",
+       "Policy Evaluation"
+      ],
+      [
+       "caller-visible result",
+       "public result",
+       "result contract"
+      ],
+      [
+       "missing",
+       "omits",
+       "does not define",
+       "undefined",
+       "lacks"
+      ]
+     ],
+     "placements": [
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 45
+        }
+       ],
+       "check": "MODULE-DESIGN-INTERFACES",
+       "evidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 45
+        },
+        {
+         "filePath": "specs/access-review.md",
+         "line": 93
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 41
+        }
+       ],
+       "check": "MODULE-DESIGN-INTERFACES",
+       "evidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 41
+        },
+        {
+         "filePath": "specs/access-review.md",
+         "line": 93
+        },
+        {
+         "filePath": "specs/access-review.md",
+         "line": 45
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 51
+        }
+       ],
+       "check": "MODULE-DESIGN-INTERFACES",
+       "evidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 51
+        },
+        {
+         "filePath": "specs/access-review.md",
+         "line": 45
+        },
+        {
+         "filePath": "specs/access-review.md",
+         "line": 93
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 51
+        }
+       ],
+       "check": "MODULE-DESIGN-SEAMS-ADAPTERS",
+       "evidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 51
+        },
+        {
+         "filePath": "architecture/04-seams.md",
+         "line": 5
+        },
+        {
+         "filePath": "specs/access-review.md",
+         "line": 93
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 51
+        }
+       ],
+       "check": "MODULE-DESIGN-SEAMS-ADAPTERS",
+       "evidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 51
+        },
+        {
+         "filePath": "specs/access-review.md",
+         "line": 93
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 93
+        }
+       ],
+       "check": "MODULE-DESIGN-INTERFACES",
+       "evidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 93
+        },
+        {
+         "filePath": "specs/access-review.md",
+         "line": 45
+        }
+       ]
+      }
+     ],
+     "result": "gap"
+    },
+    {
+     "expectation": "Rollback-failure result does not define whether failureCode identifies the commit or rollback failure.",
+     "findingTerms": [
+      "failureCode",
+      [
+       "commit failure",
+       "commit code"
+      ],
+      [
+       "rollback failure",
+       "restore failure"
+      ],
+      [
+       "ambiguous",
+       "does not define",
+       "unclear"
+      ]
+     ],
+     "placements": [
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 47
+        }
+       ],
+       "check": "MODULE-DESIGN-INTERFACES",
+       "evidence": [
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 47
+        },
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 35
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 47
+        }
+       ],
+       "check": "MODULE-DESIGN-INTERFACES",
+       "evidence": [
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 47
+        },
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 59
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 59
+        }
+       ],
+       "check": "MODULE-DESIGN-SEAMS-ADAPTERS",
+       "evidence": [
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 59
+        },
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 47
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 15
+        }
+       ],
+       "check": "MODULE-DESIGN-INTERFACES",
+       "evidence": [
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 15
+        },
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 35
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 15
+        }
+       ],
+       "check": "MODULE-DESIGN-INTERFACES",
+       "evidence": [
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 15
+        },
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 59
+        }
+       ]
+      }
+     ],
+     "result": "gap"
+    },
+    {
+     "expectation": "Recovery Testing Decisions omit the public lifecycle for rollback-failure results; Promotion Runtime tests rollback failure only through promote, not through the recoverPromotion public lifecycle that defines this result.",
+     "findingTerms": [
+      "rollback failure",
+      [
+       "public lifecycle",
+       "test",
+       "Testing Decisions"
+      ],
+      [
+       "missing",
+       "omits",
+       "does not define",
+       "undefined",
+       "lacks"
+      ]
+     ],
+     "placements": [
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 103
+        }
+       ],
+       "check": "MODULE-DESIGN-INTERFACES",
+       "evidence": [
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 103
+        },
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 47
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 103
+        }
+       ],
+       "check": "MODULE-DESIGN-INTERFACES",
+       "evidence": [
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 103
+        },
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 15
+        }
+       ]
+      }
+     ],
+     "result": "gap"
+    },
+    {
+     "expectation": "The Malformed Artifact Interface returns unexpected-field for an extra field not allowed by the input schema, but neither it nor the Invalid Artifact Contract validation order it adopts gives unexpected-field a position, so the single first diagnostic is undefined when an extra field coexists with another invalid field or with further extra fields.",
+     "findingTerms": [
+      "unexpected-field",
+      [
+       "first error",
+       "first diagnostic",
+       "first invalid field",
+       "order",
+       "position"
+      ],
+      [
+       "missing",
+       "omits",
+       "does not define",
+       "undefined",
+       "lacks",
+       "not ordered"
+      ]
+     ],
+     "placements": [
+      {
+       "associationEvidence": [
+        {
+         "filePath": "architecture/05-validation-report.md",
+         "line": 29
+        }
+       ],
+       "check": "MODULE-DESIGN-INTERFACES",
+       "evidence": [
+        {
+         "filePath": "architecture/05-validation-report.md",
+         "line": 29
+        },
+        {
+         "filePath": "architecture/05-validation-report.md",
+         "line": 9
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "architecture/05-validation-report.md",
+         "line": 29
+        }
+       ],
+       "check": "MODULE-DESIGN-INTERFACES",
+       "evidence": [
+        {
+         "filePath": "architecture/05-validation-report.md",
+         "line": 29
+        },
+        {
+         "filePath": "specs/validation-report.md",
+         "line": 104
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/validation-report.md",
+         "line": 45
+        }
+       ],
+       "check": "MODULE-DESIGN-INTERFACES",
+       "evidence": [
+        {
+         "filePath": "specs/validation-report.md",
+         "line": 45
+        },
+        {
+         "filePath": "architecture/05-validation-report.md",
+         "line": 29
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/validation-report.md",
+         "line": 45
+        }
+       ],
+       "check": "MODULE-DESIGN-INTERFACES",
+       "evidence": [
+        {
+         "filePath": "specs/validation-report.md",
+         "line": 45
+        },
+        {
+         "filePath": "architecture/05-validation-report.md",
+         "line": 29
+        },
+        {
+         "filePath": "specs/validation-report.md",
+         "line": 104
+        }
+       ]
+      }
+     ],
+     "result": "gap"
+    },
+    {
+     "expectation": "renderReport requires source but defines neither its input type (the result for a non-string or empty source) nor how the artifact-read-failed diagnostic path is obtained from it.",
+     "findingTerms": [
+      "renderReport",
+      "source",
+      [
+       "type",
+       "diagnostic path"
+      ],
+      [
+       "missing",
+       "omits",
+       "does not define",
+       "undefined",
+       "lacks"
+      ]
+     ],
+     "placements": [
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/validation-report.md",
+         "line": 11
+        }
+       ],
+       "check": "MODULE-DESIGN-INTERFACES",
+       "evidence": [
+        {
+         "filePath": "specs/validation-report.md",
+         "line": 11
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/validation-report.md",
+         "line": 41
+        }
+       ],
+       "check": "MODULE-DESIGN-INTERFACES",
+       "evidence": [
+        {
+         "filePath": "specs/validation-report.md",
+         "line": 41
+        },
+        {
+         "filePath": "specs/validation-report.md",
+         "line": 59
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/validation-report.md",
+         "line": 11
+        }
+       ],
+       "check": "MODULE-DESIGN-INTERFACES",
+       "evidence": [
+        {
+         "filePath": "specs/validation-report.md",
+         "line": 11
+        },
+        {
+         "filePath": "architecture/05-validation-report.md",
+         "line": 29
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/validation-report.md",
+         "line": 49
+        }
+       ],
+       "check": "MODULE-DESIGN-INTERFACES",
+       "evidence": [
+        {
+         "filePath": "specs/validation-report.md",
+         "line": 49
+        },
+        {
+         "filePath": "specs/validation-report.md",
+         "line": 11
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/validation-report.md",
+         "line": 19
+        }
+       ],
+       "check": "MODULE-DESIGN-INTERFACES",
+       "evidence": [
+        {
+         "filePath": "specs/validation-report.md",
+         "line": 19
+        },
+        {
+         "filePath": "specs/validation-report.md",
+         "line": 11
+        }
+       ]
+      }
+     ],
+     "result": "gap"
+    }
+   ],
+   "scope": "MODULE-DESIGN-INTERFACES"
+  },
+  {
+   "cleanCases": [
+    {
+     "evidence": [
+      {
+       "filePath": "specs/validation-report.md",
+       "line": 63
+      },
+      {
+       "filePath": "architecture/05-validation-report.md",
+       "line": 57
+      }
+     ],
+     "expectation": "The production Artifact reader Adapter implements the stated Interface and returns immutable bytes.",
+     "findingTerms": [
+      "Production Adapter",
+      "bytes"
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "specs/validation-report.md",
+       "line": 67
+      },
+      {
+       "filePath": "architecture/05-validation-report.md",
+       "line": 65
+      }
+     ],
+     "expectation": "The deterministic Artifact reader Adapter implements the same Interface with proven observable equivalence.",
+     "findingTerms": [
+      "Deterministic Adapter",
+      [
+       "equivalent",
+       "same Interface",
+       "same bytes"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "specs/validation-report.md",
+       "line": 71
+      }
+     ],
+     "expectation": "The external Main Agent presentation and Human decision remain outside non-test runtime code and do not require a Module Interface or Adapter.",
+     "findingTerms": [
+      "Main Agent",
+      [
+       "Module Interface",
+       "runtime Interface",
+       "Adapter"
+      ],
+      [
+       "missing",
+       "requires",
+       "must define",
+       "must provide"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "specs/promotion-recovery.md",
+       "line": 57
+      },
+      {
+       "filePath": "specs/promotion-recovery.md",
+       "line": 59
+      }
+     ],
+     "expectation": "The Recovery Adapters share the exact recoveryState for both restore outcomes; different configurations may produce different outcomes, which is not a defect, and no proof of existing runtime equivalence is claimed or needed.",
+     "findingTerms": [
+      [
+       "Recovery Storage Seam",
+       "Recovery Storage"
+      ],
+      [
+       "same result",
+       "equivalence",
+       "equal outcomes"
+      ],
+      [
+       "architecture evidence",
+       "proof",
+       "not proven",
+       "unsupported"
+      ]
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "specs/validation-report.md",
+       "line": 59
+      },
+      {
+       "filePath": "specs/validation-report.md",
+       "line": 92
+      }
+     ],
+     "expectation": "The Artifact Reader Adapters only supply bytes; report validation and result policy stay in Validation Report Module, so no runtime domain policy is duplicated across the Adapters.",
+     "findingTerms": [
+      [
+       "Artifact Reader",
+       "Adapter"
+      ],
+      [
+       "policy",
+       "validation"
+      ],
+      [
+       "duplicate",
+       "duplicated",
+       "both",
+       "overlap"
+      ]
+     ],
+     "k": 1
+    },
+    {
+     "noOtherSupportedFinding": true
+    }
+   ],
+   "problemCases": [
+    {
+     "expectation": "After the Policy Evaluation Seam returns allowed, Access Review Module itself checks facts.operation against policy.allowedOperations, so the same runtime authorization policy is owned by both the Module and the Policy Adapters.",
+     "findingTerms": [
+      [
+       "Access Review Module",
+       "Access Review"
+      ],
+      [
+       "allowedOperations",
+       "operation"
+      ],
+      [
+       "Policy Evaluation Seam",
+       "Policy Adapter",
+       "Seam",
+       "Adapter"
+      ],
+      [
+       "duplicate",
+       "duplicates",
+       "both",
+       "twice",
+       "overlap",
+       "re-check",
+       "re-evaluate"
+      ]
+     ],
+     "k": 1,
+     "placements": [
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 27
+        }
+       ],
+       "check": "MODULE-DESIGN-SEAMS-ADAPTERS",
+       "evidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 27
+        },
+        {
+         "filePath": "specs/access-review.md",
+         "line": 51
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 27
+        }
+       ],
+       "check": "MODULE-DESIGN-SEAMS-ADAPTERS",
+       "evidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 27
+        },
+        {
+         "filePath": "specs/access-review.md",
+         "line": 15
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 27
+        }
+       ],
+       "check": "MODULE-DESIGN-SEAMS-ADAPTERS",
+       "evidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 27
+        },
+        {
+         "filePath": "specs/access-review.md",
+         "line": 51
+        },
+        {
+         "filePath": "specs/access-review.md",
+         "line": 15
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 27
+        }
+       ],
+       "check": "MODULE-DESIGN-MODULES",
+       "evidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 27
+        },
+        {
+         "filePath": "specs/access-review.md",
+         "line": 51
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 27
+        }
+       ],
+       "check": "MODULE-DESIGN-MODULES",
+       "evidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 27
+        },
+        {
+         "filePath": "specs/access-review.md",
+         "line": 15
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 27
+        }
+       ],
+       "check": "MODULE-DESIGN-MODULES",
+       "evidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 27
+        },
+        {
+         "filePath": "specs/access-review.md",
+         "line": 51
+        },
+        {
+         "filePath": "specs/access-review.md",
+         "line": 15
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 27
+        }
+       ],
+       "check": "MODULE-DESIGN-SEAMS-ADAPTERS",
+       "evidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 27
+        },
+        {
+         "filePath": "architecture/04-seams.md",
+         "line": 5
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 27
+        }
+       ],
+       "check": "MODULE-DESIGN-DEPENDENCIES-DATA-FLOW",
+       "evidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 27
+        },
+        {
+         "filePath": "specs/access-review.md",
+         "line": 55
+        }
+       ]
+      }
+     ],
+     "result": "gap"
+    }
+   ],
+   "scope": "MODULE-DESIGN-SEAMS-ADAPTERS"
+  },
+  {
+   "cleanCases": [
+    {
+     "evidence": [
+      {
+       "filePath": "specs/validation-report.md",
+       "line": 83
+      },
+      {
+       "filePath": "specs/validation-report.md",
+       "line": 86
+      }
+     ],
+     "expectation": "Artifact Reader-returned immutable canonical bytes are the clean report flow's sole validation-input authority.",
+     "findingTerms": [
+      "artifact bytes",
+      "authority"
+     ]
+    },
+    {
+     "evidence": [
+      {
+       "filePath": "context/04-lifecycle.md",
+       "line": 5
+      }
+     ],
+     "expectation": "The current tracked state remains the sole authoritative result until a successful tracked commit makes the new tracked state authoritative.",
+     "findingTerms": [
+      "tracked state",
+      "authoritative"
+     ]
+    },
+    {
+     "noOtherSupportedFinding": true
+    }
+   ],
+   "problemCases": [
+    {
+     "expectation": "Recovery Dependencies and Data Flow omits the required authoritative-source table even though its source facts are described.",
+     "findingTerms": [
+      "authoritative-source table",
+      [
+       "missing",
+       "omits",
+       "no table"
+      ]
+     ],
+     "placements": [
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 65
+        }
+       ],
+       "check": "MODULE-DESIGN-DEPENDENCIES-DATA-FLOW",
+       "evidence": [
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 65
+        },
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 69
+        },
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 73
+        },
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 77
+        },
+        {
+         "filePath": "rules/05-ordering.md",
+         "line": 5
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 77
+        }
+       ],
+       "check": "MODULE-DESIGN-DEPENDENCIES-DATA-FLOW",
+       "evidence": [
+        {
+         "filePath": "specs/promotion-recovery.md",
+         "line": 77
+        },
+        {
+         "filePath": "rules/05-ordering.md",
+         "line": 5
+        }
+       ]
+      }
+     ],
+     "result": "gap"
+    },
+    {
+     "expectation": "Promotion Flow does not include the call to the declared Artifact Storage read operation, so the caller and dependency direction of that Seam are undefined and unjustified.",
+     "findingTerms": [
+      "Artifact Storage",
+      [
+       "Promotion Flow",
+       "data flow"
+      ],
+      [
+       "read call",
+       "read operation"
+      ],
+      [
+       "missing",
+       "omits",
+       "does not define",
+       "undefined",
+       "lacks"
+      ]
+     ],
+     "placements": [
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/promotion-runtime.md",
+         "line": 57
+        }
+       ],
+       "check": "MODULE-DESIGN-DEPENDENCIES-DATA-FLOW",
+       "evidence": [
+        {
+         "filePath": "specs/promotion-runtime.md",
+         "line": 57
+        },
+        {
+         "filePath": "specs/promotion-runtime.md",
+         "line": 51
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/promotion-runtime.md",
+         "line": 57
+        }
+       ],
+       "check": "MODULE-DESIGN-DEPENDENCIES-DATA-FLOW",
+       "evidence": [
+        {
+         "filePath": "specs/promotion-runtime.md",
+         "line": 57
+        },
+        {
+         "filePath": "architecture/05-validation-report.md",
+         "line": 69
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/promotion-runtime.md",
+         "line": 79
+        }
+       ],
+       "check": "MODULE-DESIGN-RATIONALE",
+       "evidence": [
+        {
+         "filePath": "specs/promotion-runtime.md",
+         "line": 79
+        },
+        {
+         "filePath": "specs/promotion-runtime.md",
+         "line": 51
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/promotion-runtime.md",
+         "line": 51
+        }
+       ],
+       "check": "MODULE-DESIGN-DEPENDENCIES-DATA-FLOW",
+       "evidence": [
+        {
+         "filePath": "specs/promotion-runtime.md",
+         "line": 51
+        },
+        {
+         "filePath": "specs/promotion-runtime.md",
+         "line": 57
+        }
+       ]
+      }
+     ],
+     "result": "gap"
+    }
+   ],
+   "scope": "MODULE-DESIGN-DEPENDENCIES-DATA-FLOW"
+  },
+  {
+   "cleanCases": [
+    {
+     "evidence": [
+      {
+       "filePath": "specs/validation-report.md",
+       "line": 90
+      }
+     ],
+     "expectation": "The clean Module rationale includes its alternative, rejection reason, and accepted cost.",
+     "findingTerms": [
+      "alternative",
+      [
+       "cost",
+       "limitation",
+       "trade-off",
+       "tradeoff"
+      ]
+     ]
+    },
+    {
+     "noOtherSupportedFinding": true
+    }
+   ],
+   "problemCases": [
+    {
+     "expectation": "The rationale selects a separate Access Review Module but does not compare it with an authorization-ownership alternative such as keeping authorization in the caller, and gives no reason for rejecting it.",
+     "findingTerms": [
+      [
+       "Access Review Module",
+       "authorization Module"
+      ],
+      [
+       "authorization ownership",
+       "authorization responsibility",
+       "authorization"
+      ],
+      [
+       "caller",
+       "caller-side",
+       "inline"
+      ],
+      [
+       "alternative",
+       "inline",
+       "merge",
+       "combine"
+      ],
+      [
+       "rejection reason",
+       "reject"
+      ],
+      [
+       "missing",
+       "omits",
+       "does not define",
+       "undefined",
+       "lacks",
+       "does not compare",
+       "gives no"
+      ]
+     ],
+     "placements": [
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 67
+        }
+       ],
+       "check": "MODULE-DESIGN-RATIONALE",
+       "evidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 67
+        },
+        {
+         "filePath": "specs/access-review.md",
+         "line": 79
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 67
+        }
+       ],
+       "check": "MODULE-DESIGN-RATIONALE",
+       "evidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 67
+        },
+        {
+         "filePath": "specs/access-review.md",
+         "line": 71
+        }
+       ]
+      }
+     ],
+     "result": "gap"
+    },
+    {
+     "expectation": "The access-review Module Design Rationale justifies the identity and facts authorities but not the authorization-policy authority: choosing the Input author's deployment configuration rather than a request-supplied policy has no alternative, priority, cost or rejection reason.",
+     "findingTerms": [
+      "policy authority",
+      [
+       "deployment configuration",
+       "request-supplied policy",
+       "alternative"
+      ],
+      [
+       "missing",
+       "omits",
+       "does not justify",
+       "lacks"
+      ]
+     ],
+     "placements": [
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 75
+        }
+       ],
+       "check": "MODULE-DESIGN-RATIONALE",
+       "evidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 75
+        },
+        {
+         "filePath": "specs/access-review.md",
+         "line": 55
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 75
+        }
+       ],
+       "check": "MODULE-DESIGN-RATIONALE",
+       "evidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 75
+        },
+        {
+         "filePath": "specs/access-review.md",
+         "line": 15
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 75
+        }
+       ],
+       "check": "MODULE-DESIGN-RATIONALE",
+       "evidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 75
+        },
+        {
+         "filePath": "specs/access-review.md",
+         "line": 59
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 59
+        }
+       ],
+       "check": "MODULE-DESIGN-RATIONALE",
+       "evidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 59
+        },
+        {
+         "filePath": "specs/access-review.md",
+         "line": 75
+        }
+       ]
+      }
+     ],
+     "result": "gap"
+    },
+    {
+     "expectation": "The access-review rationale does not justify the dependency direction from Access Review Module to Policy Evaluation Seam.",
+     "findingTerms": [
+      "Access Review",
+      "Policy Evaluation",
+      [
+       "dependency direction",
+       "dependency"
+      ],
+      [
+       "rationale",
+       "justify"
+      ],
+      [
+       "missing",
+       "omits",
+       "does not define",
+       "undefined",
+       "lacks"
+      ]
+     ],
+     "placements": [
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 79
+        }
+       ],
+       "check": "MODULE-DESIGN-RATIONALE",
+       "evidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 79
+        },
+        {
+         "filePath": "specs/access-review.md",
+         "line": 55
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 55
+        }
+       ],
+       "check": "MODULE-DESIGN-RATIONALE",
+       "evidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 55
+        },
+        {
+         "filePath": "specs/access-review.md",
+         "line": 79
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 27
+        }
+       ],
+       "check": "MODULE-DESIGN-RATIONALE",
+       "evidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 27
+        },
+        {
+         "filePath": "specs/access-review.md",
+         "line": 67
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 67
+        }
+       ],
+       "check": "MODULE-DESIGN-RATIONALE",
+       "evidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 67
+        },
+        {
+         "filePath": "specs/access-review.md",
+         "line": 27
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 27
+        }
+       ],
+       "check": "MODULE-DESIGN-RATIONALE",
+       "evidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 27
+        },
+        {
+         "filePath": "specs/access-review.md",
+         "line": 71
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 71
+        }
+       ],
+       "check": "MODULE-DESIGN-RATIONALE",
+       "evidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 71
+        },
+        {
+         "filePath": "specs/access-review.md",
+         "line": 27
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 27
+        }
+       ],
+       "check": "MODULE-DESIGN-RATIONALE",
+       "evidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 27
+        },
+        {
+         "filePath": "specs/access-review.md",
+         "line": 79
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 79
+        }
+       ],
+       "check": "MODULE-DESIGN-RATIONALE",
+       "evidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 79
+        },
+        {
+         "filePath": "specs/access-review.md",
+         "line": 27
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 55
+        }
+       ],
+       "check": "MODULE-DESIGN-RATIONALE",
+       "evidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 55
+        },
+        {
+         "filePath": "specs/access-review.md",
+         "line": 67
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 67
+        }
+       ],
+       "check": "MODULE-DESIGN-RATIONALE",
+       "evidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 67
+        },
+        {
+         "filePath": "specs/access-review.md",
+         "line": 55
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 55
+        }
+       ],
+       "check": "MODULE-DESIGN-RATIONALE",
+       "evidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 55
+        },
+        {
+         "filePath": "specs/access-review.md",
+         "line": 71
+        }
+       ]
+      },
+      {
+       "associationEvidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 71
+        }
+       ],
+       "check": "MODULE-DESIGN-RATIONALE",
+       "evidence": [
+        {
+         "filePath": "specs/access-review.md",
+         "line": 71
+        },
+        {
+         "filePath": "specs/access-review.md",
+         "line": 55
+        }
+       ]
+      }
+     ],
+     "result": "gap"
+    }
+   ],
+   "scope": "MODULE-DESIGN-RATIONALE"
+  }
+ ]
+}

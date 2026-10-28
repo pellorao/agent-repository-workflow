@@ -12,7 +12,7 @@
 
 ### No Side Effects
 
-Module 不修改 artifact source, returned bytes, request, temporary baseline 或 tracked state. Malformed artifact 返回稳定 structured diagnostic, 不抛出 arbitrary exception, 不写文件或改变 authority.
+Module 不修改 artifact source, returned bytes, request, temporary baseline 或 tracked state. Malformed artifact 返回 `architecture/05-validation-report.md#invalid-artifact-contract` 定义的 structured diagnostic, 不抛出 arbitrary exception, 不写文件或改变 authority.
 
 ### Artifact Read Failure
 
@@ -28,11 +28,11 @@ Artifact Reader 的 expected read 或 filesystem failure 返回 `{failureCode: "
 
 #### Validation Report Module
 
-`Validation Report Module` 独占 report validation, derived result checking 和 rendering. 它不拥有 request validation, artifact generation, promotion 或 persistence.
+`Validation Report Module` 独占 `renderReport` 对 Artifact Reader 返回 bytes 的 report validation, derived result checking 和 rendering. `renderReport` 与 Parser Module 的 `parseArtifact` 是两个独立 operation, 各自引用 architecture 的 Invalid Artifact Contract 校验, 且 `renderReport` 不适用 Parser 的大小限制, 因而不调用 `parseArtifact`. 它不拥有 request validation, artifact generation, promotion, persistence 或 `parseArtifact`.
 
 #### Readiness Module
 
-`Readiness Module` 继续独占 request validation, artifact generation 和 promotion. 它不拥有 report rendering 或 reader presentation.
+`Readiness Module` 继续独占 artifact generation 和 promotion ordering. 它不拥有 report rendering 或 reader presentation.
 
 ### Interfaces
 
@@ -42,7 +42,7 @@ Artifact Reader 的 expected read 或 filesystem failure 返回 `{failureCode: "
 
 #### Malformed Artifact
 
-Malformed artifact 返回 `architecture/05-validation-report.md#invalid-artifact-contract` 定义的 `{failureCode: "invalid-artifact", path, details: {field, reason}}`. Module 使用该合同的 validation order 和 field locator, 只报告第一个 invalid field. Diagnostic 不包含 partial report, 不抛出 arbitrary exception.
+Malformed artifact 返回 `architecture/05-validation-report.md#invalid-artifact-contract` 定义的 `{failureCode: "invalid-artifact", path, details: {field, reason}}`. Artifact 含 input schema 未允许的 extra field 时, `reason` 为 `unexpected-field`, `field` 为该 extra field 的 JSON path. Module 使用该合同的 validation order 和 field locator, 只报告第一个 invalid field. Diagnostic 不包含 partial report, 不抛出 arbitrary exception.
 
 #### Artifact Read Failure
 
@@ -74,7 +74,7 @@ Deterministic Artifact Reader Adapter 通过同一 Interface 返回配置的相�
 
 #### Report Flow
 
-Caller 把 artifact source 交给 Artifact Reader Interface. Adapter 返回 immutable bytes 时, `Validation Report Module` 验证并派生 report, 然后把 complete report 返回 caller. Adapter 返回 `artifact-read-failed` 时, Module 不进入 validation, 而是把完整 diagnostic 原样返回 caller. 两条路径都没有 cycle 或 persistence operation.
+Caller 调用 `renderReport(source)`; 缺少 source 时 Module 返回 invalid-input 且不调用 Reader. 否则 `Validation Report Module` 通过 Artifact Reader Interface 读取: Adapter 返回 immutable bytes 时, Module 验证并派生 report 后返回 caller, malformed artifact 时返回 invalid-artifact diagnostic 且不生成 partial report; Adapter 返回 `artifact-read-failed` 时, Module 不进入 validation, 把完整 diagnostic 原样返回 caller. 所有路径都没有 cycle 或 persistence operation.
 
 #### Input Authority
 
@@ -87,9 +87,9 @@ Artifact Reader 返回的 immutable canonical bytes 是本 flow 的唯一 artifa
 
 ### Module Design Rationale
 
-备选 boundary 是让 `Readiness Module` 同时拥有 report rendering. 选择独立只读 Module 可以保持 promotion responsibility 较小, 并让 reader behavior 通过一个稳定 Interface 测试. 拒绝合并 boundary, 因为它会把 persistence 与 presentation 责任混合. 接受的成本是多一个 Module Interface 和一次 immutable bytes transfer.
+备选 boundary 是让 `Readiness Module` 同时拥有 report rendering. 选择独立只读 Module 可以保持 promotion responsibility 较小, 并让 reader behavior 通过一个稳定 Interface 测试. 拒绝合并 boundary, 因为它会把 persistence 与 presentation 责任混合. 接受的成本是多一个 Module Interface 和一次 immutable bytes transfer. `renderReport` 不复用 `parseArtifact`, 优先保持无大小阈值的 report 合同; 拒绝复用, 因为 Parser 的大小限制会改变该合同, 接受的成本是两个 operation 分别实现同一 Invalid Artifact Contract 校验并由各自 public lifecycle 测试保持一致.
 
-`Validation Report Module` 依赖 `Artifact Reader Interface`; 这个 dependency direction 让 Module 保留 parsing 和 result policy, Adapter 只提供 bytes. 备选方向让 Adapter 调用或复制 Module policy, 但那会把 validation 分散到每个 bytes 来源, 因而被拒绝. 接受的成本是每次 report 都经过一次 reader Interface 调用.
+`Validation Report Module` 依赖 `Artifact Reader Interface`; 这个 dependency direction 让 Module 保留 report validation 和 result policy, Adapter 只提供 bytes. 备选方向让 Adapter 调用或复制 Module policy, 但那会把 validation 分散到每个 bytes 来源, 因而被拒绝. 接受的成本是每次 report 都经过一次 reader Interface 调用.
 
 选择 Artifact Reader 返回的 immutable canonical bytes 作为 sole artifact authority, 而不是让 caller source, Adapter identity 或 temporary representation 成为 authority, 可以使相同 bytes 产生相同结果. 拒绝 source-owned 或 Adapter-owned authority, 因为它会让结果随来源改变. 接受的限制是 caller 提供的 source 必须让 Adapter 返回完整 canonical artifact bytes.
 
@@ -97,7 +97,7 @@ Artifact Reader 返回的 immutable canonical bytes 是本 flow 的唯一 artifa
 
 ### ADR Evaluation
 
-Caller-visible report fields 延续 canonical artifact contract, 不改变 result authority. Malformed artifact 和 Artifact Reader expected failure diagnostics 遵守 `architecture/03-errors.md#errors` 的现有 structured diagnostic contract, 不改变 failure authority 或 recovery behavior, 因而不需要新 ADR. Artifact Reader Adapters 只替换 bytes 来源, 遵守 ADR 0003 的 Reviewer 与 Engine separation. Public lifecycle testing 通过 `renderReport` 完成, 遵守 ADR 0004. 本设计不新增 durable state 或 security boundary.
+Caller-visible report fields 延续 canonical artifact contract, 不改变 result authority. Malformed artifact 和 Artifact Reader expected failure diagnostics 遵守 `architecture/05-validation-report.md#invalid-artifact-contract` 和 `#production-adapter` 的现有 structured diagnostic contract, 不改变 failure authority 或 recovery behavior, 因而不需要新 ADR. Source invalid-input 只为 `renderReport` 的 source 给出 path 和 message, 不持久化, 不改变 failure authority, 因而同样不需要新 ADR. Artifact Reader Adapters 只替换 bytes 来源, 遵守 ADR 0003 的 Reviewer 与 Engine separation. Public lifecycle testing 通过 `renderReport` 完成, 遵守 ADR 0004. 本设计不新增 durable state 或 security boundary.
 
 ## Testing Decisions
 

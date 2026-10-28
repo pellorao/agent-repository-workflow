@@ -1,0 +1,1470 @@
+{
+ "scenario": "spec-readiness-v4.5",
+ "anchors": [
+  {
+   "id": "a01",
+   "family": "strata",
+   "model": "strata-q3",
+   "expected": "not-matched",
+   "confirmed_by": "v1 锚点 a01 在 v2 brief 与 spec-readiness-v4.5 场景文本下复核（F10，2026-10-25），期望 not-matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：blind Opus high, Spec Readiness v4.2 pool post2 b060 (282 items, anchors 12/12); v4.3 keeps the v4.2 answer key (74252e0a) and changes only the AP split of clean cases",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "scenario": "artifact-promotion",
+    "check": "MODULE-DESIGN-INTERFACES",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Access Review and its Policy Evaluation Seam define allowed, denied and input-error results but no caller-visible result or common Adapter contract for Policy Adapter execution failure, although Testing Decisions require testing it. It may be reported under the Interface or the Seam.",
+    "finding": "The verified principal that the requirements make mandatory never reaches the operation through any documented Interface. The Authentication Boundary requires access review to trust only the verified principal passed in by the existing caller boundary, the Dependencies text and the authority table name that boundary as the authority for verified identity, and the security authority Input requires the boundary to hand the verified principal and the requested operation to the review boundary. The only documented input is reviewAccess(request) with non-empty resourceId and operation; no Interface defines how the verified principal is delivered, and no result contract covers an absent or unverified principal. The Testing Decisions still require a public lifecycle test that the verified principal comes from the existing caller boundary, so this authentication boundary requirement has no implementable input channel and no failure contract.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "rules/01-required-inputs.md",
+      "line": 5
+     },
+     {
+      "filePath": "specs/access-review.md",
+      "line": 11
+     },
+     {
+      "filePath": "specs/access-review.md",
+      "line": 37
+     },
+     {
+      "filePath": "specs/access-review.md",
+      "line": 55
+     },
+     {
+      "filePath": "specs/access-review.md",
+      "line": 60
+     },
+     {
+      "filePath": "specs/access-review.md",
+      "line": 93
+     }
+    ]
+   }
+  },
+  {
+   "id": "a02",
+   "family": "strata",
+   "model": "strata-q3",
+   "expected": "not-matched",
+   "confirmed_by": "v1 锚点 a02 在 v2 brief 与 spec-readiness-v4.5 场景文本下复核（F10，2026-10-25），期望 not-matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：blind Opus high, Spec Readiness v4.2 pool post2 b107 (282 items, anchors 12/12); v4.3 keeps the v4.2 answer key (74252e0a) and changes only the AP split of clean cases",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "scenario": "artifact-promotion",
+    "check": "MODULE-DESIGN-DEPENDENCIES-DATA-FLOW",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Promotion Flow does not include the call to the declared Artifact Storage read operation, so the caller and dependency direction of that Seam are undefined and unjustified.",
+    "finding": "The commit-failure propagation path is stated two ways. Promotion Persistence Interface says persist returns the Recovery public result unchanged to Readiness, and Persistence Ownership makes Readiness own promotion ordering and assemble the caller result from the persist outcome, while Promotion Flow and the recovery document Recovery Propagation say the Recovery result is returned to the caller by the Promotion Module. Since the caller-facing operation is promote(inputPath) and the Promotion Persistence Interface is internal, the design does not state which Module returns the caller-visible recovery result, so failure and recovery propagation is inconsistent across sections.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "specs/promotion-recovery.md",
+      "line": 73
+     },
+     {
+      "filePath": "specs/promotion-runtime.md",
+      "line": 31
+     },
+     {
+      "filePath": "specs/promotion-runtime.md",
+      "line": 45
+     },
+     {
+      "filePath": "specs/promotion-runtime.md",
+      "line": 57
+     }
+    ]
+   }
+  },
+  {
+   "id": "a03",
+   "family": "strata",
+   "model": "strata-q3",
+   "expected": "not-matched",
+   "confirmed_by": "v1 锚点 a03 在 v2 brief 与 spec-readiness-v4.5 场景文本下复核（F10，2026-10-25），期望 not-matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：blind Opus high, Spec Readiness v4.2 pool post2 b241 (282 items, anchors 12/12); v4.3 keeps the v4.2 answer key (74252e0a) and changes only the AP split of clean cases",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "scenario": "artifact-promotion",
+    "check": "MODULE-DESIGN-INTERFACES",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Rollback-failure result does not define whether failureCode identifies the commit or rollback failure.",
+    "finding": "The Testing Decisions of specs/promotion-recovery.md list only successful rollback and the invalid-input first error for the recoverPromotion(input) public lifecycle. The rollback failure result defined in Requirements and Interfaces, including the restore-failure branch where baselineStatus is removed or retained according to the actual baseline state, has no public lifecycle test boundary in the document that defines it, so the central new recovery contract of this delivery is left untested.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "specs/promotion-recovery.md",
+      "line": 15
+     },
+     {
+      "filePath": "specs/promotion-recovery.md",
+      "line": 47
+     },
+     {
+      "filePath": "specs/promotion-recovery.md",
+      "line": 59
+     },
+     {
+      "filePath": "specs/promotion-recovery.md",
+      "line": 103
+     }
+    ]
+   }
+  },
+  {
+   "id": "a04",
+   "family": "strata",
+   "model": "strata-q3",
+   "expected": "not-matched",
+   "confirmed_by": "v1 锚点 a04 在 v2 brief 与 spec-readiness-v4.5 场景文本下复核（F10，2026-10-25），期望 not-matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：blind Opus high, Spec Readiness v4.2 pool post2 b044 (282 items, anchors 12/12); v4.3 keeps the v4.2 answer key (74252e0a) and changes only the AP split of clean cases",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "scenario": "runtime-migration",
+    "check": "SPEC-READINESS-INPUTS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "The conditional export-retention section applies only if the new reader-index target is a generated artifact; no supplied Input establishes whether docs/reference/validation-report.md is generated, so whether the section belongs to this issue cannot be determined.",
+    "finding": "The Spec Requirement selects `specs/request-consistency.md#requirements` as a governing requirement, but the request provides no Input snapshot for `specs/request-consistency.md`. The 31 snapshots cover 12 governing specs, 5 architecture evidence files, 4 domain-context files, 4 ADRs and 6 rules files, and none of them is that path. The selected requirement therefore has no content in this review, so its scope, behavior, constraints and results cannot be judged against the delivery.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
+      "line": 7
+     },
+     {
+      "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
+      "line": 9
+     },
+     {
+      "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
+      "line": 10
+     },
+     {
+      "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
+      "line": 11
+     },
+     {
+      "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
+      "line": 12
+     },
+     {
+      "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
+      "line": 13
+     },
+     {
+      "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
+      "line": 14
+     },
+     {
+      "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
+      "line": 15
+     },
+     {
+      "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
+      "line": 16
+     },
+     {
+      "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
+      "line": 17
+     },
+     {
+      "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
+      "line": 18
+     },
+     {
+      "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
+      "line": 19
+     },
+     {
+      "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
+      "line": 20
+     },
+     {
+      "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
+      "line": 21
+     },
+     {
+      "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
+      "line": 8
+     }
+    ]
+   }
+  },
+  {
+   "id": "a05",
+   "family": "strata",
+   "model": "strata-q3",
+   "expected": "not-matched",
+   "confirmed_by": "v1 锚点 a05 在 v2 brief 与 spec-readiness-v4.5 场景文本下复核（F10，2026-10-25），期望 not-matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：blind Opus high, Spec Readiness v4.2 pool post2 b031 (282 items, anchors 12/12); v4.3 keeps the v4.2 answer key (74252e0a) and changes only the AP split of clean cases",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "scenario": "runtime-migration",
+    "check": "SPEC-READINESS-REQUIREMENTS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Runtime Migration successful result omits the summary required by Result Summary.",
+    "finding": "The same two selected governing requirements state incompatible field sets for the expected filesystem failure of promote(inputPath). runtime-migration.md fixes it to exactly recovered, failureCode, priorTrackedState and baselineStatus, while promotion-runtime.md returns recovered, failureCode, operation, priorTrackedState and baselineStatus and uses operation to identify which failure occurred. The caller-visible failure contract and the meaning of failureCode cannot be implemented consistently from the selected design.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "specs/promotion-runtime.md",
+      "line": 41
+     },
+     {
+      "filePath": "specs/runtime-migration.md",
+      "line": 23
+     }
+    ]
+   }
+  },
+  {
+   "id": "a06",
+   "family": "strata",
+   "model": "strata-q3",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a06 在 v2 brief 与 spec-readiness-v4.5 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：blind Opus high, Spec Readiness v4.2 pool post2 b238 (282 items, anchors 12/12); v4.3 keeps the v4.2 answer key (74252e0a) and changes only the AP split of clean cases",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "scenario": "artifact-promotion",
+    "check": "MODULE-DESIGN-INTERFACES",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Rollback-failure result does not define whether failureCode identifies the commit or rollback failure.",
+    "finding": "The rollback failure result carries a single `failureCode`, but the Seam contract says Recovery keeps both the original commit failure and the restore failure when forming that result, and the Recovery Result Interface never states which code the caller sees. Unlike the Successful Result, which states that failureCode keeps the original commit failure code, a caller cannot tell whether the reported code is the commit failure or restore-failed, so the rollback failure contract is not implementable or verifiable as written.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "specs/promotion-recovery.md",
+      "line": 47
+     },
+     {
+      "filePath": "specs/promotion-recovery.md",
+      "line": 51
+     },
+     {
+      "filePath": "specs/promotion-recovery.md",
+      "line": 59
+     }
+    ]
+   }
+  },
+  {
+   "id": "a07",
+   "family": "strata",
+   "model": "strata-q3",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a07 在 v2 brief 与 spec-readiness-v4.5 场景文本下复核（F10，2026-10-25），期望 matched 不变：finding 用 prt:41（RM 未选的 Interfaces 字段定义）核对选定 Requirements 之间的冲突，属 v2 brief 未选节款明写的例外，照常判 matched。v1 依据：blind Opus high, Spec Readiness v4.2 pool post2 b193 (282 items, anchors 12/12); v4.3 keeps the v4.2 answer key (74252e0a) and changes only the AP split of clean cases",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "scenario": "runtime-migration",
+    "check": "SPEC-READINESS-REQUIREMENTS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Runtime Migration expected filesystem failure omits the operation field required by Promotion Runtime.",
+    "finding": "The same Complete Operation Contract fixes the expected filesystem failure as exactly `{recovered: false, failureCode, priorTrackedState, baselineStatus}`, while the selected Promotion Runtime Failure Results return `{recovered: false, failureCode, operation, priorTrackedState, baselineStatus}` and use `operation` to identify which failure occurred (`read`, `precondition`, or `baseline-write`). The two selected requirements state different field sets for one failure contract.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "specs/promotion-runtime.md",
+      "line": 41
+     },
+     {
+      "filePath": "specs/runtime-migration.md",
+      "line": 23
+     }
+    ]
+   }
+  },
+  {
+   "id": "a08",
+   "family": "strata",
+   "model": "strata-q3",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a08 在 v2 brief 与 spec-readiness-v4.5 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：blind Opus high, Spec Readiness v4.2 pool post2 b224 (282 items, anchors 12/12); v4.3 keeps the v4.2 answer key (74252e0a) and changes only the AP split of clean cases",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "scenario": "artifact-promotion",
+    "check": "MODULE-DESIGN-MODULES",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Readiness Module and Promotion Module duplicate validation ownership.",
+    "finding": "Artifact and request validation is assigned to two Modules without a single owner. Validation Ownership has Readiness Module validate the request and the artifact before promotion, and Promotion Module validate the request and artifact again before persistence preconditions, while the Artifact Storage Seam text attributes validation of the returned bytes to Readiness and returns the invalid-artifact diagnostic from that path. No section states which validation produces the caller-visible invalid-artifact diagnostic or why the same validation runs twice at the internal boundary.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "specs/promotion-runtime.md",
+      "line": 27
+     },
+     {
+      "filePath": "specs/promotion-runtime.md",
+      "line": 51
+     }
+    ]
+   }
+  },
+  {
+   "id": "a09",
+   "family": "strata",
+   "model": "strata-q3",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a09 在 v2 brief 与 spec-readiness-v4.5 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：blind Opus high, Spec Readiness v4.2 pool post2 b041 (282 items, anchors 12/12); v4.3 keeps the v4.2 answer key (74252e0a) and changes only the AP split of clean cases",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "scenario": "runtime-migration",
+    "check": "SPEC-READINESS-REQUIREMENTS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "The conditional export-retention section applies only if the new reader-index target is a generated artifact; no supplied Input establishes whether docs/reference/validation-report.md is generated, so whether the section belongs to this issue cannot be determined.",
+    "finding": "`specs/export-retention.md#conditional-export-retention` applies to the Reader Index Update only if the new link target is a generated artifact, and does not apply if that target is a human-maintained document. The supplied Inputs state only that the new target is `docs/reference/validation-report.md` with H1 identity `Validation Report Reference`, and no Input states which of the two it is. Whether external policy governs artifact retention for this delivery is therefore unknown, so the required applicability statement in `rules/02-external-policy.md` cannot be confirmed for the Reader Index Update.",
+    "result": "uncertain",
+    "evidence": [
+     {
+      "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
+      "line": 19
+     },
+     {
+      "filePath": "architecture/05-validation-report.md",
+      "line": 49
+     },
+     {
+      "filePath": "rules/02-external-policy.md",
+      "line": 5
+     },
+     {
+      "filePath": "specs/export-retention.md",
+      "line": 5
+     },
+     {
+      "filePath": "specs/reader-index.md",
+      "line": 9
+     }
+    ]
+   }
+  },
+  {
+   "id": "a10",
+   "family": "strata",
+   "model": "strata-q3",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a10 在 v2 brief 与 spec-readiness-v4.5 场景文本下复核（F10，2026-10-25），期望 matched 不变：证据含 prt:11，但所讲是 Promotion Flow 缺 readArtifact 调用，不涉及 v4.5 改动的\"或失败分支\"，也不属 binding 失配款。v1 依据：blind Opus high, Spec Readiness v4.2 pool post2 b106 (282 items, anchors 12/12); v4.3 keeps the v4.2 answer key (74252e0a) and changes only the AP split of clean cases",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "scenario": "artifact-promotion",
+    "check": "MODULE-DESIGN-DEPENDENCIES-DATA-FLOW",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Promotion Flow does not include the call to the declared Artifact Storage read operation, so the caller and dependency direction of that Seam are undefined and unjustified.",
+    "finding": "Failure Results 把 Artifact Storage 读取失败 `artifact-read-failed` 与 `read` 列为 promote 的 expected filesystem failure, Authority 表把 Artifact Storage-returned immutable bytes 列为 artifact validation input, 但 Promotion Flow 只描述 Readiness 验证 immutable artifact 后让 Promotion 检查 preconditions, 写 temporary baseline 并尝试 tracked commit, 没有任何一步调用 `readArtifact`. Seams 一节把读取失败的转换交给 Promotion 而把成功 bytes 的验证交给 Readiness, 而 `persist(artifact, priorTrackedState, retentionDays)` 只接受已验证的 artifact object. 该设计没有说明哪个 Module 调用 Artifact Storage Seam, 读取发生在 baseline write 之前还是之后, 以及该失败分支的 baselineStatus 由谁按什么状态填写.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "architecture/05-validation-report.md",
+      "line": 69
+     },
+     {
+      "filePath": "specs/promotion-runtime.md",
+      "line": 11
+     },
+     {
+      "filePath": "specs/promotion-runtime.md",
+      "line": 41
+     },
+     {
+      "filePath": "specs/promotion-runtime.md",
+      "line": 51
+     },
+     {
+      "filePath": "specs/promotion-runtime.md",
+      "line": 57
+     },
+     {
+      "filePath": "specs/promotion-runtime.md",
+      "line": 65
+     }
+    ]
+   }
+  },
+  {
+   "id": "a11",
+   "family": "strata",
+   "model": "strata-q3",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a11 在 v2 brief 与 spec-readiness-v4.5 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：blind Opus high, Spec Readiness v4.2 pool post2 b025 (282 items, anchors 12/12); v4.3 keeps the v4.2 answer key (74252e0a) and changes only the AP split of clean cases",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "scenario": "runtime-migration",
+    "check": "SPEC-READINESS-REQUIREMENTS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Runtime Migration successful result omits the summary required by Result Summary.",
+    "finding": "Two selected governing requirements state incompatible successful results for the same operation. `specs/runtime-migration.md#complete-operation-contract` requires the successful result of `promote(inputPath)` to be exactly `{status: \"succeeded\", artifactId, trackedStateId}`, while `specs/result-summary.md#summary-result` and the Promotion Runtime Successful Result interface require the same successful result to carry the additional caller-visible `summary` field, and the architecture contract records the three-field form only as the state before the Result Summary change. The same issue delivers both requirements, so the caller-visible success contract is contradictory and cannot be implemented or verified as written.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "architecture/05-validation-report.md",
+      "line": 33
+     },
+     {
+      "filePath": "specs/promotion-runtime.md",
+      "line": 37
+     },
+     {
+      "filePath": "specs/result-summary.md",
+      "line": 11
+     },
+     {
+      "filePath": "specs/runtime-migration.md",
+      "line": 23
+     }
+    ]
+   }
+  },
+  {
+   "id": "a12",
+   "family": "strata",
+   "model": "strata-q3",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a12 在 v2 brief 与 spec-readiness-v4.5 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：blind Opus high, Spec Readiness v4.2 pool post2 b097 (282 items, anchors 12/12); v4.3 keeps the v4.2 answer key (74252e0a) and changes only the AP split of clean cases",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "scenario": "artifact-promotion",
+    "check": "SPEC-READINESS-RATIONALE",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "The access-review common rationale selects re-evaluating policy on every protected read and states its latency cost, but omits the alternative (such as reusing an earlier decision) and its rejection reason.",
+    "finding": "The Design Rationale chooses to re-run policy evaluation for every protected artifact read and accepts the added per-read latency, but it never names the alternative that the accepted cost implies, such as reusing an earlier authorization decision, and gives no rejection reason or chosen priority. Because the accepted cost is stated without the rejected option, an implementer cannot tell whether decision reuse was considered and why it was excluded, so this shared design choice for the authorization path is not a settled and verifiable decision.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "specs/access-review.md",
+      "line": 15
+     },
+     {
+      "filePath": "specs/access-review.md",
+      "line": 19
+     }
+    ]
+   }
+  },
+  {
+   "id": "a13",
+   "family": "strata",
+   "model": "strata-q3",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a13 在 v2 brief 与 spec-readiness-v4.5 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：blind Opus high, Spec Readiness v4.2 pool post2 b152 (282 items, anchors 12/12); v4.3 keeps the v4.2 answer key (74252e0a) and changes only the AP split of clean cases",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "scenario": "artifact-promotion",
+    "check": "SPEC-READINESS-ADR-EVALUATION",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "The recovery ADR evaluation treats the new public recovery-result contract and failure lifecycle as covered by an existing rollback responsibility without evaluating that new decision.",
+    "finding": "promotion-recovery.md 新增 rollback success 和 rollback failure 的 caller-visible 结果字段与失败生命周期, 其 ADR Evaluation 的 Rollback Recovery Contract 只断言该 result 被视为 ADR 0001 已有 rollback responsibility 的表现形式. `docs/adr/0001-persistence.md` 明确写明本既有决定不定义本次新增的 recovery-result 字段和失败生命周期, `architecture/02-commit.md` 重复同一限定, 而 `specs/promotion-runtime.md` 把该新合同的评估交给 recovery 自己的设计. 该新增失败与恢复合同既没有适用的 ADR 引用, 也没有对该 ADR 明确限定的冲突处理或具体的不需要新 ADR 结论.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "architecture/02-commit.md",
+      "line": 5
+     },
+     {
+      "filePath": "docs/adr/0001-persistence.md",
+      "line": 5
+     },
+     {
+      "filePath": "specs/promotion-recovery.md",
+      "line": 15
+     },
+     {
+      "filePath": "specs/promotion-recovery.md",
+      "line": 19
+     },
+     {
+      "filePath": "specs/promotion-recovery.md",
+      "line": 95
+     },
+     {
+      "filePath": "specs/promotion-runtime.md",
+      "line": 85
+     }
+    ]
+   }
+  },
+  {
+   "id": "a14",
+   "family": "strata",
+   "model": "strata-q3",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a14 在 v2 brief 与 spec-readiness-v4.5 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：blind Opus high, Spec Readiness v4.2 pool post2 b124 (282 items, anchors 12/12); v4.3 keeps the v4.2 answer key (74252e0a) and changes only the AP split of clean cases",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "scenario": "runtime-migration",
+    "check": "SPEC-READINESS-INPUTS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "The subject selects specs/request-consistency.md, but no matching governing Input was supplied.",
+    "finding": "The issue selects `specs/request-consistency.md#requirements` as a governing requirement, but the Reviewer Request provides no Input snapshot for `specs/request-consistency.md`; none of the 31 supplied Inputs has that filePath. The content of this selected requirement is therefore unknown, so its scope, its behavior, and whether it defines a necessary input for the promotion delivery listed in `## What to build` cannot be judged, and implementation cannot start against it.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
+      "line": 7
+     },
+     {
+      "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
+      "line": 21
+     }
+    ]
+   }
+  },
+  {
+   "id": "a15",
+   "family": "anthropic",
+   "model": "opus",
+   "expected": "not-matched",
+   "confirmed_by": "v1 锚点 a15 在 v2 brief 与 spec-readiness-v4.5 场景文本下复核（F10，2026-10-25），期望 not-matched 不变：证据含 prt:11，所讲是 operation 字段冲突（另一正例），与 v4.5 改动无关。v1 依据：blind Opus high, Spec Readiness v4.2 pool post2 b019 (282 items, anchors 12/12); v4.3 keeps the v4.2 answer key (74252e0a) and changes only the AP split of clean cases",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "scenario": "runtime-migration",
+    "check": "SPEC-READINESS-REQUIREMENTS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Runtime Migration successful result omits the summary required by Result Summary.",
+    "finding": "`specs/runtime-migration.md#requirements` states that the expected filesystem failure of `promote(inputPath)` is exactly `{recovered: false, failureCode, priorTrackedState, baselineStatus}` while claiming to adopt Promotion Runtime failure value semantics. The selected Promotion Runtime requirement returns its structured expected filesystem failure, which is `{recovered: false, failureCode, operation, priorTrackedState, baselineStatus}` with `operation` identifying the actual failed step (`read`, `precondition` or `baseline-write`). The governing documents therefore define incompatible exact field sets for the same caller-visible failure.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "specs/promotion-runtime.md",
+      "line": 11
+     },
+     {
+      "filePath": "specs/promotion-runtime.md",
+      "line": 41
+     },
+     {
+      "filePath": "specs/runtime-migration.md",
+      "line": 23
+     }
+    ]
+   }
+  },
+  {
+   "id": "a16",
+   "family": "anthropic",
+   "model": "opus",
+   "expected": "not-matched",
+   "confirmed_by": "v1 锚点 a16 在 v2 brief 与 spec-readiness-v4.5 场景文本下复核（F10，2026-10-25），期望 not-matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：blind Opus high, Spec Readiness v4.2 pool post2 b080 (282 items, anchors 12/12); v4.3 keeps the v4.2 answer key (74252e0a) and changes only the AP split of clean cases",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "scenario": "artifact-promotion",
+    "check": "MODULE-DESIGN-RATIONALE",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "The access-review rationale does not justify the dependency direction from Access Review Module to Policy Evaluation Seam.",
+    "finding": "The Boundary Alternative subsection names only the chosen boundary (a separate Access Review Module) and Accepted Cost gives its cost. No alternative boundary is identified, such as placing the decision in the existing caller boundary or in the Artifact Reader, and no rejection reason is given. The non-obvious Module boundary choice is therefore not justified.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "specs/access-review.md",
+      "line": 67
+     },
+     {
+      "filePath": "specs/access-review.md",
+      "line": 71
+     },
+     {
+      "filePath": "specs/access-review.md",
+      "line": 68
+     },
+     {
+      "filePath": "specs/access-review.md",
+      "line": 70
+     }
+    ]
+   }
+  },
+  {
+   "id": "a17",
+   "family": "anthropic",
+   "model": "opus",
+   "expected": "not-matched",
+   "confirmed_by": "v1 锚点 a17 在 v2 brief 与 spec-readiness-v4.5 场景文本下复核（F10，2026-10-25），期望 not-matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：blind Opus high, Spec Readiness v4.2 pool post2 b052 (282 items, anchors 12/12); v4.3 keeps the v4.2 answer key (74252e0a) and changes only the AP split of clean cases",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "scenario": "artifact-promotion",
+    "check": "MODULE-DESIGN-SEAMS-ADAPTERS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Access Review and its Policy Evaluation Seam define allowed, denied and input-error results but no caller-visible result or common Adapter contract for Policy Adapter execution failure, although Testing Decisions require testing it. It may be reported under the Interface or the Seam.",
+    "finding": "The Policy Evaluation Seam Adapters already evaluate policy and facts and return the denied contract, yet Access Review Module re-checks `facts.operation` against `policy.allowedOperations` after the Seam returns allowed. The operation-allowed policy is duplicated between the runtime Module and the Adapters, so the Seam does not cleanly own the varying behavior.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "architecture/04-seams.md",
+      "line": 5
+     },
+     {
+      "filePath": "specs/access-review.md",
+      "line": 27
+     },
+     {
+      "filePath": "specs/access-review.md",
+      "line": 51
+     }
+    ]
+   }
+  },
+  {
+   "id": "a18",
+   "family": "anthropic",
+   "model": "opus",
+   "expected": "not-matched",
+   "confirmed_by": "v1 锚点 a18 在 v2 brief 与 spec-readiness-v4.5 场景文本下复核（F10，2026-10-25），期望 not-matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：blind Opus high, Spec Readiness v4.2 pool post2 b245 (282 items, anchors 12/12); v4.3 keeps the v4.2 answer key (74252e0a) and changes only the AP split of clean cases",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "scenario": "artifact-promotion",
+    "check": "MODULE-DESIGN-INTERFACES",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Rollback-failure result does not define whether failureCode identifies the commit or rollback failure.",
+    "finding": "Rollback failure is a required public recovery result, but Testing Decisions only test successful rollback and invalid-input first error through `recoverPromotion(input)`. The rollback failure result, including its baselineStatus reporting, has no public lifecycle test boundary.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "specs/promotion-recovery.md",
+      "line": 15
+     },
+     {
+      "filePath": "specs/promotion-recovery.md",
+      "line": 47
+     },
+     {
+      "filePath": "specs/promotion-recovery.md",
+      "line": 103
+     }
+    ]
+   }
+  },
+  {
+   "id": "a19",
+   "family": "anthropic",
+   "model": "opus",
+   "expected": "not-matched",
+   "confirmed_by": "v1 锚点 a19 在 v2 brief 与 spec-readiness-v4.5 场景文本下复核（F10，2026-10-25），期望 not-matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：blind Opus high, Spec Readiness v4.2 pool post2 b190 (282 items, anchors 12/12); v4.3 keeps the v4.2 answer key (74252e0a) and changes only the AP split of clean cases",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "scenario": "runtime-migration",
+    "check": "SPEC-READINESS-REQUIREMENTS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Runtime Migration expected filesystem failure omits the operation field required by Promotion Runtime.",
+    "finding": "The runtime-migration Complete Operation Contract requires the successful `promote(inputPath)` result to be exactly `{status: \"succeeded\", artifactId, trackedStateId}`. The selected Result Summary requirement and the Promotion Runtime Successful Result both require that same result to also contain `summary`. Both are selected deliverables, so they define incompatible exact success representations, and no single implementation can satisfy both.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "specs/promotion-runtime.md",
+      "line": 37
+     },
+     {
+      "filePath": "specs/result-summary.md",
+      "line": 11
+     },
+     {
+      "filePath": "specs/runtime-migration.md",
+      "line": 23
+     }
+    ]
+   }
+  },
+  {
+   "id": "a20",
+   "family": "anthropic",
+   "model": "opus",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a20 在 v2 brief 与 spec-readiness-v4.5 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：blind Opus high, Spec Readiness v4.2 pool post2 b170 (282 items, anchors 12/12); v4.3 keeps the v4.2 answer key (74252e0a) and changes only the AP split of clean cases",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "scenario": "artifact-promotion",
+    "check": "MODULE-DESIGN-APPLICABILITY",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "The result-summary change alters a caller-visible Interface and therefore cannot use the Module Design exemption.",
+    "finding": "Result Summary adds a caller-visible `summary` field to the public `promote(inputPath)` success result. That changes the public Interface's result contract, so the document needs the complete Module Design form. A `Not required:` paragraph is the wrong format.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "specs/result-summary.md",
+      "line": 5
+     },
+     {
+      "filePath": "specs/result-summary.md",
+      "line": 11
+     },
+     {
+      "filePath": "specs/result-summary.md",
+      "line": 19
+     }
+    ]
+   }
+  },
+  {
+   "id": "a21",
+   "family": "anthropic",
+   "model": "opus",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a21 在 v2 brief 与 spec-readiness-v4.5 场景文本下复核（F10，2026-10-25），期望 matched 不变：证据含 prc:65，但所讲是 Promotion 与 Recovery 重复校验（brief 原样段 MODULES 正例 1），不就 caller 指谁立论，v2 caller 款写明此类照常判。v1 依据：blind Opus high, Spec Readiness v4.2 pool post2 b071 (282 items, anchors 12/12); v4.3 keeps the v4.2 answer key (74252e0a) and changes only the AP split of clean cases",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "scenario": "artifact-promotion",
+    "check": "MODULE-DESIGN-MODULES",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Promotion Module and Recovery Module duplicate validation ownership of the recovery input. This includes the consequence that Promotion returns the diagnostic itself and bypasses the Recovery handoff, which no longer matches the unconditional handoff and propagation described in promotion-runtime.md (Promotion Persistence Interface, Failure Results, Promotion Flow), promotion-recovery.md (Commit Failure Input, Recovery Propagation) and architecture/02-commit.md.",
+    "finding": "Promotion Recovery has both Promotion Module and Recovery Module validate the same `{artifact, priorTrackedState, failedCommitId, commitFailureCode}` object in the Invalid Input Diagnostic order. This duplicates recovery input validation across two owners. It also lets Promotion return a recovery `invalid-input` diagnostic that is not among the `promote`/`persist` failure results Promotion Runtime defines.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "specs/promotion-recovery.md",
+      "line": 31
+     },
+     {
+      "filePath": "specs/promotion-recovery.md",
+      "line": 65
+     },
+     {
+      "filePath": "specs/promotion-runtime.md",
+      "line": 41
+     },
+     {
+      "filePath": "specs/promotion-runtime.md",
+      "line": 45
+     }
+    ]
+   }
+  },
+  {
+   "id": "a22",
+   "family": "anthropic",
+   "model": "opus",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a22 在 v2 brief 与 spec-readiness-v4.5 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：blind Opus high, Spec Readiness v4.2 pool post2 b057 (282 items, anchors 12/12); v4.3 keeps the v4.2 answer key (74252e0a) and changes only the AP split of clean cases",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "scenario": "artifact-promotion",
+    "check": "MODULE-DESIGN-INTERFACES",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Access Review and its Policy Evaluation Seam define allowed, denied and input-error results but no caller-visible result or common Adapter contract for Policy Adapter execution failure, although Testing Decisions require testing it. It may be reported under the Interface or the Seam.",
+    "finding": "Testing Decisions require a `reviewAccess` test for Policy Adapter failure, but neither the Interfaces nor the Policy Evaluation Seam define any caller-visible result for a policy evaluation or Live Adapter failure (only allowed, denied, invalid-policy, invalid-request and Artifact Reader failure exist). The failure contract is missing, so the test and implementation have no defined outcome.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "specs/access-review.md",
+      "line": 45
+     },
+     {
+      "filePath": "specs/access-review.md",
+      "line": 51
+     },
+     {
+      "filePath": "specs/access-review.md",
+      "line": 93
+     }
+    ]
+   }
+  },
+  {
+   "id": "a23",
+   "family": "anthropic",
+   "model": "opus",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a23 在 v2 brief 与 spec-readiness-v4.5 场景文本下复核（F10，2026-10-25），期望 matched 不变：证据含 prt:11，所讲是 Readiness 与 Promotion 重复校验（MODULES 正例 0）；v2 binding 款写明prt:27 再次验证的 finding 按正例 0 判；附带的\"再次验证失败返回什么\"按 matched 一条不影响关联。v1 依据：blind Opus high, Spec Readiness v4.2 pool post2 b219 (282 items, anchors 12/12); v4.3 keeps the v4.2 answer key (74252e0a) and changes only the AP split of clean cases",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "scenario": "artifact-promotion",
+    "check": "MODULE-DESIGN-MODULES",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Readiness Module and Promotion Module duplicate validation ownership.",
+    "finding": "Two Modules own request and artifact validation. Readiness validates the request and the artifact before promotion, and the Requirements say Promotion trusts that precondition. Validation Ownership also has Promotion Module validate the request and artifact again before the persistence preconditions. With two owners of the same validation, the spec does not say which validation result governs, what Promotion returns when its own re-validation fails, or whether Promotion trusts Readiness at all.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "specs/promotion-runtime.md",
+      "line": 11
+     },
+     {
+      "filePath": "specs/promotion-runtime.md",
+      "line": 27
+     }
+    ]
+   }
+  },
+  {
+   "id": "a24",
+   "family": "anthropic",
+   "model": "opus",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a24 在 v2 brief 与 spec-readiness-v4.5 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：blind Opus high, Spec Readiness v4.2 pool post2 b043 (282 items, anchors 12/12); v4.3 keeps the v4.2 answer key (74252e0a) and changes only the AP split of clean cases",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "scenario": "runtime-migration",
+    "check": "SPEC-READINESS-REQUIREMENTS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "The conditional export-retention section applies only if the new reader-index target is a generated artifact; no supplied Input establishes whether docs/reference/validation-report.md is generated, so whether the section belongs to this issue cannot be determined.",
+    "finding": "`specs/export-retention.md#conditional-export-retention` applies to the Reader Index Update only if the new link target is a generated artifact, and does not apply if the target is a human-maintained document. The Reader Index requirement and the current reader index evidence identify the new target `docs/reference/validation-report.md` and its H1 identity, but no Input states whether that target is generated or human-maintained. The complete request therefore cannot determine whether this selection (and its 30-day retention obligation) is part of the delivery.",
+    "result": "uncertain",
+    "evidence": [
+     {
+      "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
+      "line": 3
+     },
+     {
+      "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
+      "line": 19
+     },
+     {
+      "filePath": "architecture/05-validation-report.md",
+      "line": 49
+     },
+     {
+      "filePath": "specs/export-retention.md",
+      "line": 5
+     },
+     {
+      "filePath": "specs/reader-index.md",
+      "line": 9
+     }
+    ]
+   }
+  },
+  {
+   "id": "a25",
+   "family": "anthropic",
+   "model": "opus",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a25 在 v2 brief 与 spec-readiness-v4.5 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：blind Opus high, Spec Readiness v4.2 pool post2 b248 (282 items, anchors 12/12); v4.3 keeps the v4.2 answer key (74252e0a) and changes only the AP split of clean cases",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "scenario": "artifact-promotion",
+    "check": "MODULE-DESIGN-INTERFACES",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Rollback-failure result does not define whether failureCode identifies the commit or rollback failure.",
+    "finding": "The rollback failure result `{recovered: false, failureCode, priorTrackedState, baselineStatus}` has a single `failureCode`, while Recovery is required to retain both the original commit failure and the `restore-failed` restore failure. The Interface does not define which code `failureCode` carries or how the other failure is represented, so the caller-visible rollback failure result cannot be implemented or verified unambiguously.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "specs/promotion-recovery.md",
+      "line": 15
+     },
+     {
+      "filePath": "specs/promotion-recovery.md",
+      "line": 47
+     },
+     {
+      "filePath": "specs/promotion-recovery.md",
+      "line": 59
+     }
+    ]
+   }
+  },
+  {
+   "id": "a26",
+   "family": "anthropic",
+   "model": "opus",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a26 在 v2 brief 与 spec-readiness-v4.5 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：blind Opus high, Spec Readiness v4.2 pool post2 b113 (282 items, anchors 12/12); v4.3 keeps the v4.2 answer key (74252e0a) and changes only the AP split of clean cases",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "scenario": "artifact-promotion",
+    "check": "MODULE-DESIGN-INTERFACES",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Recovery Testing Decisions omit the public lifecycle for rollback-failure results; Promotion Runtime tests rollback failure only through promote, not through the recoverPromotion public lifecycle that defines this result.",
+    "finding": "The Recovery Result Interface defines a public rollback failure result with `baselineStatus` `removed` or `retained`. Testing Decisions cover only successful rollback and invalid-input first error through `recoverPromotion(input)`, so the rollback failure lifecycle boundary has no public lifecycle test.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "specs/promotion-recovery.md",
+      "line": 47
+     },
+     {
+      "filePath": "specs/promotion-recovery.md",
+      "line": 103
+     }
+    ]
+   }
+  },
+  {
+   "id": "a27",
+   "family": "anthropic",
+   "model": "opus",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a27 在 v2 brief 与 spec-readiness-v4.5 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：blind Opus high, Spec Readiness v4.2 pool post2 b093 (282 items, anchors 12/12); v4.3 keeps the v4.2 answer key (74252e0a) and changes only the AP split of clean cases",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "scenario": "artifact-promotion",
+    "check": "MODULE-DESIGN-INTERFACES",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "The Malformed Artifact Interface returns unexpected-field for an extra field not allowed by the input schema, but neither it nor the Invalid Artifact Contract validation order it adopts gives unexpected-field a position, so the single first diagnostic is undefined when an extra field coexists with another invalid field or with further extra fields.",
+    "finding": "The Malformed Artifact Interface adds an `unexpected-field` diagnostic for extra fields and requires reporting only the first invalid field in the contract's validation order. The referenced Invalid Artifact Contract places no unexpected-field check anywhere in that order: root object, `requestId`, `checks`, then per entry object, `check`, `result`, `finding`, uniqueness and order. It also gives no tie-break when several extra fields exist. So when an extra field appears together with other errors, the first reported diagnostic cannot be determined, which makes the first-error tests in Testing Decisions unverifiable.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "architecture/05-validation-report.md",
+      "line": 29
+     },
+     {
+      "filePath": "specs/validation-report.md",
+      "line": 45
+     }
+    ]
+   }
+  },
+  {
+   "id": "a28",
+   "family": "anthropic",
+   "model": "opus",
+   "expected": "matched",
+   "confirmed_by": "v1 锚点 a28 在 v2 brief 与 spec-readiness-v4.5 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：blind Opus high, Spec Readiness v4.2 pool post2 b111 (282 items, anchors 12/12); v4.3 keeps the v4.2 answer key (74252e0a) and changes only the AP split of clean cases",
+   "origin": null,
+   "item": {
+    "kind": "association",
+    "scenario": "artifact-promotion",
+    "check": "MODULE-DESIGN-DEPENDENCIES-DATA-FLOW",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Promotion Flow does not include the call to the declared Artifact Storage read operation, so the caller and dependency direction of that Seam are undefined and unjustified.",
+    "finding": "The Promotion Flow never traces the Artifact Storage read. The Seam says Promotion converts read failures into an expected filesystem failure while Readiness validates the successful bytes. But the flow has Readiness validate the artifact first and only then call Promotion through `persist(artifact, ...)` with an already-parsed artifact object. Which Module invokes `readArtifact`, when it does so, and how a read failure reaches the caller are undefined, and the arrangement contradicts the stated Readiness-to-Promotion dependency direction.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "specs/promotion-runtime.md",
+      "line": 45
+     },
+     {
+      "filePath": "specs/promotion-runtime.md",
+      "line": 51
+     },
+     {
+      "filePath": "specs/promotion-runtime.md",
+      "line": 57
+     }
+    ]
+   }
+  }
+ ],
+ "synthetic": [
+  {
+   "id": "s01",
+   "type": "mismatch",
+   "family": "strata",
+   "model": "strata-q3",
+   "expected": "not-matched",
+   "from": "v4.2 pool b191 (matched, REQUIREMENTS problem 2) under problem 3",
+   "item": {
+    "kind": "association",
+    "scenario": "runtime-migration",
+    "check": "SPEC-READINESS-REQUIREMENTS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "The subject adds image-preview cleanup that is not needed to implement this issue.",
+    "finding": "`specs/runtime-migration.md` states that the expected filesystem failure of `promote(inputPath)` is exactly `{recovered: false, failureCode, priorTrackedState, baselineStatus}`, while `specs/promotion-runtime.md` states that the same failure is `{recovered: false, failureCode, operation, priorTrackedState, baselineStatus}` and uses `operation` to identify which failure occurred. The two selected governing requirements give incompatible field sets for the same caller-visible failure, so the delivered failure contract is undetermined.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "specs/promotion-runtime.md",
+      "line": 41
+     },
+     {
+      "filePath": "specs/runtime-migration.md",
+      "line": 23
+     }
+    ]
+   },
+   "confirmed_by": "v1 合成题 s01 在 v2 brief 与 spec-readiness-v4.5 场景文本下复核（F10，2026-10-25），期望 not-matched 不变"
+  },
+  {
+   "id": "s02",
+   "type": "mismatch",
+   "family": "anthropic",
+   "model": "opus",
+   "expected": "not-matched",
+   "from": "v4.2 pool b247 (matched, INTERFACES problem 3) under problem 1",
+   "item": {
+    "kind": "association",
+    "scenario": "artifact-promotion",
+    "check": "MODULE-DESIGN-INTERFACES",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "Access Review Interface does not provide the verified-principal input required by its authentication boundary.",
+    "finding": "The rollback failure result `{recovered: false, failureCode, priorTrackedState, baselineStatus}` has a single `failureCode` field. The Recovery Storage Seam says Recovery keeps both the original commit failure and the restore failure (`restore-failed`) when forming that shape. Neither promotion-recovery nor promotion-runtime says which code `failureCode` carries on rollback failure, or whether the other code is exposed at all. The caller-visible value is therefore undefined.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "specs/promotion-recovery.md",
+      "line": 47
+     },
+     {
+      "filePath": "specs/promotion-recovery.md",
+      "line": 59
+     },
+     {
+      "filePath": "specs/promotion-runtime.md",
+      "line": 41
+     }
+    ]
+   },
+   "confirmed_by": "v1 合成题 s02 在 v2 brief 与 spec-readiness-v4.5 场景文本下复核（F10，2026-10-25），期望 not-matched 不变"
+  },
+  {
+   "id": "s03",
+   "type": "mismatch",
+   "family": "openai",
+   "model": null,
+   "expected": "not-matched",
+   "from": "written 2026-10-20 (OpenAI style; INPUTS problem 1) under REQUIREMENTS problem 4",
+   "item": {
+    "kind": "association",
+    "scenario": "runtime-migration",
+    "check": "SPEC-READINESS-REQUIREMENTS",
+    "allowedDecisions": [
+     "matched",
+     "not-matched"
+    ],
+    "expectation": "The conditional export-retention section applies only if the new reader-index target is a generated artifact; no supplied Input establishes whether docs/reference/validation-report.md is generated, so whether the section belongs to this issue cannot be determined.",
+    "finding": "The issue selects specs/request-consistency.md as a governing requirement, but the request supplies no Input snapshot for it. Its requirements therefore cannot be compared with the subject.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
+      "line": 21
+     }
+    ]
+   },
+   "confirmed_by": "v1 合成题 s03 在 v2 brief 与 spec-readiness-v4.5 场景文本下复核（F10，2026-10-25），期望 not-matched 不变"
+  },
+  {
+   "id": "s04",
+   "type": "finding-problem",
+   "family": "strata",
+   "model": "strata-q3",
+   "expected": "problem-6",
+   "from": "v4.2 pool b184 (matched, INTERFACES problem 6)",
+   "item": {
+    "kind": "finding",
+    "scenario": "artifact-promotion",
+    "check": "MODULE-DESIGN-INTERFACES",
+    "allowedDecisions": [
+     "unsupported",
+     "supported",
+     "problem-1",
+     "problem-2",
+     "problem-3",
+     "problem-4",
+     "problem-5",
+     "problem-6"
+    ],
+    "expectation": null,
+    "finding": "renderReport(source) declares source a required caller input but defines a result only for a missing source. For a non-string or empty source the caller-visible result is undefined, while the governing architecture invalid-input contract for the comparable caller path input covers missing, non-string and empty cases, and the Testing Decisions cover only the missing case. Implementers cannot decide whether those inputs are rejected, and the invalid-input contract of this Interface is not verifiable.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "architecture/05-validation-report.md",
+      "line": 37
+     },
+     {
+      "filePath": "specs/validation-report.md",
+      "line": 11
+     },
+     {
+      "filePath": "specs/validation-report.md",
+      "line": 104
+     }
+    ],
+    "problemOptions": [
+     {
+      "decision": "problem-1",
+      "expectation": "Access Review Interface does not provide the verified-principal input required by its authentication boundary."
+     },
+     {
+      "decision": "problem-2",
+      "expectation": "Access Review and its Policy Evaluation Seam define allowed, denied and input-error results but no caller-visible result or common Adapter contract for Policy Adapter execution failure, although Testing Decisions require testing it. It may be reported under the Interface or the Seam."
+     },
+     {
+      "decision": "problem-3",
+      "expectation": "Rollback-failure result does not define whether failureCode identifies the commit or rollback failure."
+     },
+     {
+      "decision": "problem-4",
+      "expectation": "Recovery Testing Decisions omit the public lifecycle for rollback-failure results; Promotion Runtime tests rollback failure only through promote, not through the recoverPromotion public lifecycle that defines this result."
+     },
+     {
+      "decision": "problem-5",
+      "expectation": "The Malformed Artifact Interface returns unexpected-field for an extra field not allowed by the input schema, but neither it nor the Invalid Artifact Contract validation order it adopts gives unexpected-field a position, so the single first diagnostic is undefined when an extra field coexists with another invalid field or with further extra fields."
+     },
+     {
+      "decision": "problem-6",
+      "expectation": "renderReport requires source but defines neither its input type (the result for a non-string or empty source) nor how the artifact-read-failed diagnostic path is obtained from it."
+     }
+    ],
+    "cleanTargets": []
+   },
+   "confirmed_by": "v1 合成题 s04 在 v2 brief 与 spec-readiness-v4.5 场景文本下复核（F10，2026-10-25），期望 problem-6 不变"
+  },
+  {
+   "id": "s05",
+   "type": "finding-problem",
+   "family": "anthropic",
+   "model": "opus",
+   "expected": "problem-5",
+   "from": "v4.2 pool b092 (matched, INTERFACES problem 5)",
+   "item": {
+    "kind": "finding",
+    "scenario": "artifact-promotion",
+    "check": "MODULE-DESIGN-INTERFACES",
+    "allowedDecisions": [
+     "unsupported",
+     "supported",
+     "problem-1",
+     "problem-2",
+     "problem-3",
+     "problem-4",
+     "problem-5",
+     "problem-6"
+    ],
+    "expectation": null,
+    "finding": "The Malformed Artifact Interface adds `unexpected-field` for any extra field and requires only the first invalid field in contract order. The referenced Invalid Artifact Contract order (UTF-8, JSON, root object, `requestId`, `checks`, then entry object, `check`, `result`, `finding`, uniqueness, order) never places an extra-field check, either at root level or for entry fields other than `finding`. When an extra field occurs together with another error, the reported diagnostic is undefined, and the multi-error first-error test cannot be specified.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "architecture/05-validation-report.md",
+      "line": 29
+     },
+     {
+      "filePath": "specs/validation-report.md",
+      "line": 45
+     },
+     {
+      "filePath": "specs/validation-report.md",
+      "line": 104
+     }
+    ],
+    "problemOptions": [
+     {
+      "decision": "problem-1",
+      "expectation": "Access Review Interface does not provide the verified-principal input required by its authentication boundary."
+     },
+     {
+      "decision": "problem-2",
+      "expectation": "Access Review and its Policy Evaluation Seam define allowed, denied and input-error results but no caller-visible result or common Adapter contract for Policy Adapter execution failure, although Testing Decisions require testing it. It may be reported under the Interface or the Seam."
+     },
+     {
+      "decision": "problem-3",
+      "expectation": "Rollback-failure result does not define whether failureCode identifies the commit or rollback failure."
+     },
+     {
+      "decision": "problem-4",
+      "expectation": "Recovery Testing Decisions omit the public lifecycle for rollback-failure results; Promotion Runtime tests rollback failure only through promote, not through the recoverPromotion public lifecycle that defines this result."
+     },
+     {
+      "decision": "problem-5",
+      "expectation": "The Malformed Artifact Interface returns unexpected-field for an extra field not allowed by the input schema, but neither it nor the Invalid Artifact Contract validation order it adopts gives unexpected-field a position, so the single first diagnostic is undefined when an extra field coexists with another invalid field or with further extra fields."
+     },
+     {
+      "decision": "problem-6",
+      "expectation": "renderReport requires source but defines neither its input type (the result for a non-string or empty source) nor how the artifact-read-failed diagnostic path is obtained from it."
+     }
+    ],
+    "cleanTargets": []
+   },
+   "confirmed_by": "v1 合成题 s05 在 v2 brief 与 spec-readiness-v4.5 场景文本下复核（F10，2026-10-25），期望 problem-5 不变"
+  },
+  {
+   "id": "s06",
+   "type": "finding-problem",
+   "family": "openai",
+   "model": null,
+   "expected": "problem-3",
+   "from": "written 2026-10-20 (OpenAI style; content of b247, INTERFACES problem 3)",
+   "item": {
+    "kind": "finding",
+    "scenario": "artifact-promotion",
+    "check": "MODULE-DESIGN-INTERFACES",
+    "allowedDecisions": [
+     "unsupported",
+     "supported",
+     "problem-1",
+     "problem-2",
+     "problem-3",
+     "problem-4",
+     "problem-5",
+     "problem-6"
+    ],
+    "expectation": null,
+    "finding": "The rollback-failure result has one failureCode, while Recovery keeps both the original commit failure and the restore failure. No Interface says which of the two codes failureCode carries, so callers cannot interpret a rollback failure.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "specs/promotion-recovery.md",
+      "line": 47
+     },
+     {
+      "filePath": "specs/promotion-recovery.md",
+      "line": 59
+     },
+     {
+      "filePath": "specs/promotion-runtime.md",
+      "line": 41
+     }
+    ],
+    "problemOptions": [
+     {
+      "decision": "problem-1",
+      "expectation": "Access Review Interface does not provide the verified-principal input required by its authentication boundary."
+     },
+     {
+      "decision": "problem-2",
+      "expectation": "Access Review and its Policy Evaluation Seam define allowed, denied and input-error results but no caller-visible result or common Adapter contract for Policy Adapter execution failure, although Testing Decisions require testing it. It may be reported under the Interface or the Seam."
+     },
+     {
+      "decision": "problem-3",
+      "expectation": "Rollback-failure result does not define whether failureCode identifies the commit or rollback failure."
+     },
+     {
+      "decision": "problem-4",
+      "expectation": "Recovery Testing Decisions omit the public lifecycle for rollback-failure results; Promotion Runtime tests rollback failure only through promote, not through the recoverPromotion public lifecycle that defines this result."
+     },
+     {
+      "decision": "problem-5",
+      "expectation": "The Malformed Artifact Interface returns unexpected-field for an extra field not allowed by the input schema, but neither it nor the Invalid Artifact Contract validation order it adopts gives unexpected-field a position, so the single first diagnostic is undefined when an extra field coexists with another invalid field or with further extra fields."
+     },
+     {
+      "decision": "problem-6",
+      "expectation": "renderReport requires source but defines neither its input type (the result for a non-string or empty source) nor how the artifact-read-failed diagnostic path is obtained from it."
+     }
+    ],
+    "cleanTargets": []
+   },
+   "confirmed_by": "v1 合成题 s06 在 v2 brief 与 spec-readiness-v4.5 场景文本下复核（F10，2026-10-25），期望 problem-3 不变"
+  },
+  {
+   "id": "s07",
+   "type": "false-fact",
+   "family": "strata",
+   "model": "strata-q3",
+   "expected": "false-positive:clean-3",
+   "from": "written 2026-10-20 (Strata style)",
+   "item": {
+    "kind": "finding",
+    "scenario": "artifact-promotion",
+    "check": "SPEC-READINESS-ADR-EVALUATION",
+    "allowedDecisions": [
+     "unsupported",
+     "supported",
+     "false-positive:clean-3",
+     "problem-1"
+    ],
+    "expectation": null,
+    "finding": "specs/reader-index.md concludes that the reader-index change needs no ADR, but replacing the stable target path that readers resolve changes a published authority decision, which the ADR rules require to be evaluated. The ADR Evaluation therefore skips a decision that needs an ADR.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "specs/reader-index.md",
+      "line": 13
+     }
+    ],
+    "problemOptions": [
+     {
+      "decision": "problem-1",
+      "expectation": "The recovery ADR evaluation treats the new public recovery-result contract and failure lifecycle as covered by an existing rollback responsibility without evaluating that new decision."
+     }
+    ],
+    "cleanTargets": [
+     {
+      "cleanCaseIndex": 3,
+      "decision": "false-positive:clean-3",
+      "expectation": "The clean documentation-only change correctly concludes that no ADR is required."
+     }
+    ]
+   },
+   "confirmed_by": "v1 合成题 s07 在 v2 brief 与 spec-readiness-v4.5 场景文本下复核（F10，2026-10-25），期望 false-positive:clean-3 不变"
+  },
+  {
+   "id": "s08",
+   "type": "false-fact",
+   "family": "anthropic",
+   "model": "opus",
+   "expected": "false-positive:clean-1",
+   "from": "written 2026-10-20 (Anthropic style)",
+   "item": {
+    "kind": "finding",
+    "scenario": "artifact-promotion",
+    "check": "SPEC-READINESS-RATIONALE",
+    "allowedDecisions": [
+     "unsupported",
+     "supported",
+     "false-positive:clean-1",
+     "problem-1"
+    ],
+    "expectation": null,
+    "finding": "The Validation Report Design Rationale states only the chosen design (central structured report generation). It names no rejected alternative and no accepted cost, so the full-form common rationale is incomplete.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "specs/validation-report.md",
+      "line": 23
+     }
+    ],
+    "problemOptions": [
+     {
+      "decision": "problem-1",
+      "expectation": "The access-review common rationale selects re-evaluating policy on every protected read and states its latency cost, but omits the alternative (such as reusing an earlier decision) and its rejection reason."
+     }
+    ],
+    "cleanTargets": [
+     {
+      "cleanCaseIndex": 1,
+      "decision": "false-positive:clean-1",
+      "expectation": "The clean full-form common rationale includes an alternative, rejection reason, and accepted cost."
+     }
+    ]
+   },
+   "confirmed_by": "v1 合成题 s08 在 v2 brief 与 spec-readiness-v4.5 场景文本下复核（F10，2026-10-25），期望 false-positive:clean-1 不变"
+  },
+  {
+   "id": "s09",
+   "type": "false-fact",
+   "family": "openai",
+   "model": null,
+   "expected": "false-positive:clean-3",
+   "from": "written 2026-10-20 (OpenAI style)",
+   "item": {
+    "kind": "finding",
+    "scenario": "artifact-promotion",
+    "check": "MODULE-DESIGN-APPLICABILITY",
+    "allowedDecisions": [
+     "unsupported",
+     "supported",
+     "false-positive:clean-3",
+     "problem-1"
+    ],
+    "expectation": null,
+    "finding": "specs/reader-index.md omits Module Design, although it changes the reader Interface by replacing the target path. A caller-visible Interface change cannot skip Module Design.",
+    "result": "gap",
+    "evidence": [
+     {
+      "filePath": "specs/reader-index.md",
+      "line": 5
+     }
+    ],
+    "problemOptions": [
+     {
+      "decision": "problem-1",
+      "expectation": "The result-summary change alters a caller-visible Interface and therefore cannot use the Module Design exemption."
+     }
+    ],
+    "cleanTargets": [
+     {
+      "cleanCaseIndex": 3,
+      "decision": "false-positive:clean-3",
+      "expectation": "The documentation-only clean spec correctly omits Module Design."
+     }
+    ]
+   },
+   "confirmed_by": "v1 合成题 s09 在 v2 brief 与 spec-readiness-v4.5 场景文本下复核（F10，2026-10-25），期望 false-positive:clean-3 不变"
+  }
+ ]
+}

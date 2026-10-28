@@ -2,7 +2,7 @@
 
 ## Applicability
 
-External retention policy 适用于本次 artifact promotion 与 access review.
+External retention policy 适用于本次 artifact promotion.
 
 ## Authority
 
