@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0001:35",
+  "request": {
+    "digest": "c3dfa15c724ec7d26a9d3cf7a4354f7d23603de310bd7ada5f058efa4b4d659a",
+    "filePath": ".tmp/claude-code/06588b1e-7f07-4832-8933-107aaf5b5978/0001_35/spec-readiness/requests/request-d9196d50-f1d6-4886-8c3b-7318c365211e.json",
+    "id": "d9196d50-f1d6-4886-8c3b-7318c365211e"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "9803a9120632ba201ecccc1996b3e3cc75c13faf7b5cdedb5d4e518dc6d8ebd0"
+  },
+  "inputs": [
+    {
+      "filePath": "docs/specs/agent-repository-workflow/spec.md",
+      "role": "governing-spec",
+      "sha256": "bb17427d61047aac45cbdf31cc40015b31134915d35154c252cdcccf17442f21"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0001-claude-code-migration/issues/35-state-directory-outside-workspace.md",
+    "sha256": "b0eec0793e9b8b783886645688354cd9fe8fbfe987b2a0f2a5469a87613422e1"
+  },
+  "result": "satisfied"
+}

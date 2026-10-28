@@ -1214,3 +1214,21 @@ test('unload_agent refuses a run whose recovery record no longer matches it',asy
   assert.equal((await fake.execute(first.runId,'unload_agent')).status,'failed');
   assert.equal(fake.native.rootStops,0);
 });
+
+test('a non-Reviewer run must keep its recovery directory under its cwd, at spawn and on follow-up',async t=>{
+  const fake=await harness(t);
+  const outside=await mkdtemp(join(tmpdir(),'arw-outside-'));
+  t.after(()=>rm(outside,{recursive:true,force:true}));
+  const spawn=(/** @type {string} */ cwd)=>fake.manager.execute({ownerId:'main-1',controllerId:'main-1',operation:'spawn_agent',input:{
+    role:'generic',settings,cwd,stateDirectory:fake.directory,readPaths:[],writePaths:[],instructions:'instructions',handoff:'work'}});
+  /** @param {import('../../lib/background-agent/machine.mjs').RuntimeResult} outcome */
+  const refused=outcome=>{assert.equal(outcome.status,'failed');assert.match(outcome.error.message,/contain its stateDirectory/u);};
+  refused(await spawn(outside));
+  refused(await spawn('relative'));
+  const first=result(await fake.start());
+  await waitDelivered(fake.stateStore,first.messageId);
+  fake.native.finish(first.runId);
+  await tick();
+  refused(await fake.execute(first.runId,'followup_task',{handoff:'more',cwd:outside}));
+  assert.equal((await fake.execute(first.runId,'followup_task',{handoff:'more',cwd:fake.directory})).status,'succeeded');
+});
