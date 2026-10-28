@@ -115,3 +115,22 @@ test('Application Association inspects every configured Module and normalizes on
     ]);
     assert.match(result.replacements[0].bytes.toString('utf8'), /^- 05 - Wait for the ledger base\.$/mu);
 });
+
+test('Application Association edits only the Status line outside fenced code and keeps CRLF', () => {
+    const record = {association: undefined, blockerRecords: [], id: 'issue:0007:07', kind: 'implementation', number: '07', status: 'ready-for-agent', title: 'Add idempotency'};
+    const applicationRecord = {...record, id: 'issue:0001:02', number: '02'};
+    const text = '# Add idempotency\r\n\r\nStatus: ready-for-agent\r\n\r\n```text\r\nStatus: ready-for-agent\r\n```\r\n\r\n## Blocked by\r\n\r\n- None\r\n';
+    const result = associateApplicationIssue({
+        moduleIssueId: record.id,
+        moduleIssues: {billing: [{path: 'module.md', record, text}]},
+        moduleName: 'billing',
+        applicationIssueId: applicationRecord.id,
+        applicationIssues: [{path: 'application.md', record: applicationRecord, text: '# Update API\n\nStatus: ready-for-agent\n\n## Blocked by\n\n- None\n'}],
+        applicationName: 'payments',
+    });
+    assert.equal(result.status, 'succeeded');
+    assert.equal(
+        result.replacements[0].bytes.toString(),
+        '# Add idempotency\r\n\r\nStatus: ready-for-agent\r\nApplication source issue: `issue:payments:0001:02`\r\n\r\n```text\r\nStatus: ready-for-agent\r\n```\r\n\r\n## Blocked by\r\n\r\n- None - can start immediately\r\n',
+    );
+});

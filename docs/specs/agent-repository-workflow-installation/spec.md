@@ -49,6 +49,8 @@ Installer 和 Uninstaller 把通知与成功摘要逐行写入标准输出, 把�
 - `--reinitialize-config true|false` 决定是否用所选来源的配置初始文件重置现有配置;
 - `--register-path true|false` 决定是否确保 PATH 或配置文件注册, 非交互式模式必须提供.
 
+交互式模式的 PATH 询问接受 `y` 或 `yes` (登记) 以及 `n`, `no` 或空行 (不登记), 忽略大小写和首尾空白; 其他文本重新询问; 输入流结束时零写入并以退出码 1 失败.
+
 `--register-path false` 表示本次不改变 PATH 或配置文件, 不释放已有归属. `--reinitialize-config` 只控制明确的配置重置, 不改变运行时载荷或路径归属选择.
 
 ## Installation payload
@@ -562,7 +564,7 @@ Release Source Adapter 的依赖 Seam 同样不改变 ADR 0018 的固定来源�
 
 测试通过公开 Module Interface 覆盖正常结果, 输入或状态阻断, I/O 与外部依赖失败, `configSeedBytes` 到安装根目录 `config.json` 的固定映射, `config.json` 与 `manifest.json` 保留目标冲突, 准确载荷字节和归属, 登记与移除幂等状态, 平台写入失败的 `none | changed | unknown` 影响, 零写入保证, 最后提交安装清单, 以及未知配置字段的保留与报告. Installation 的路径集成测试还覆盖范围根排除, 解析后重复与大小写冲突, 目标链接, 嵌套祖先的符号链接或目录联接, 缺失前缀和后续操作的祖先链重验, 并只断言公共 Filesystem 与 Installation 结果. 引导安装生成测试从发布验证配置读取远端并核对生成物一致性, 不断言当前远端字符串永远不变.
 
-运行时兼容测试覆盖无法解析, 低于 Node.js 24 和 Node.js 24 或更高版本. 入口测试证明 Bootstrap 与 Installer 在所有取得和安装副作用前拒绝不支持版本, 普通 `arw` 与 Uninstaller 不执行替代检查, 并证明单文件 Bootstrap 从同一规范源码生成判断. 入口测试还用真实进程证明 Installer 的 PATH 询问对管道单行应答 `y` 登记 PATH 并完成安装, 对 `n` 不改变 PATH 并完成安装, 对无效的单行应答和输入流结束 (`EOF`, 没有任何应答行) 都零写入失败.
+运行时兼容测试覆盖无法解析, 低于 Node.js 24 和 Node.js 24 或更高版本. 入口测试证明 Bootstrap 与 Installer 在所有取得和安装副作用前拒绝不支持版本, 普通 `arw` 与 Uninstaller 不执行替代检查, 并证明单文件 Bootstrap 从同一规范源码生成判断. 入口测试还用真实进程证明 Installer 的 PATH 询问对管道单行应答 `n` 不改变 PATH 并完成安装, 对输入流结束 (`EOF`, 没有任何应答行) 零写入失败; 应答 `y` 和无效应答的语义由 `askYesNo` 的注入式测试和进程内 Installer 测试证明.
 
 全局配置测试分别覆盖缺失配置从 v3 初始文件创建, 明确重新初始化, v1 直接转换到 v3, v2 不受支持, 当前 v3 空操作, `reviewEditor`, `jira.listLimit: 50` 和 `backgroundAgent.maxInstances: 16` 默认值, `agents` 与 `editor` 保留, 已有有效上限不被默认值覆盖, 验证器阻断, 未知根保留和冲突, 净路径与未知路径提示的准确模板和顺序, 转换零 I/O, 事务中的单次替换内容, 以及任一配置阻断时零安装写入. 规则对象测试使用开发长期规格的公共断言辅助程序; 初始文件测试只验证它与当前 v3 完整有效值一致, 不把初始文件传入升级 Interface.
 

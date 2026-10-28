@@ -293,7 +293,7 @@ Application issue 与 Module issue 可以使用不同 Canonical ID. 同一个 Ap
 
 Module issue 的 `## Spec Requirement` 只使用其最近 Module Repository 内的治理输入. 如果确实没有治理设计, 它可以在用户按普通 issue 规则明确确认后使用准确的 `Not required`. Application Repository 的 spec 不成为 Module issue 的跨仓库治理输入.
 
-允许的状态来自普通跟踪器非终态状态, 包括 `needs-triage`, `needs-info`, `ready-for-agent` 与 `ready-for-human`. `completed` 和 `wontfix` 不能关联. 关联操作不擅自推进或覆盖状态.
+允许的状态来自普通跟踪器非终态状态, 包括 `needs-triage`, `needs-info`, `ready-for-agent` 与 `ready-for-human`. `completed` 和 `wontfix` 不能关联. 关联操作不擅自推进或覆盖状态. 状态行只在围栏代码外识别.
 
 ### Association output
 
@@ -457,7 +457,7 @@ Downstream Changes Document Interface 新增的稳定诊断信息代码是 `down
 
 全部 Module 收敛后, 同步读取每个关联 Module issue 的当前 `Status:` 和完整 Downstream changes, 验证双向规范关联, 再更新 Application Source Issue.
 
-状态原样镜像, 不使用映射. 非终态推进, 非终态回退, `completed` 与 `wontfix` 都可以从 Module 同步到 Application. Application Leader 不通过本地编辑改变 Application Source Issue 状态.
+状态原样镜像, 不使用映射. 状态行只在围栏代码外识别. 非终态推进, 非终态回退, `completed` 与 `wontfix` 都可以从 Module 同步到 Application. Application Leader 不通过本地编辑改变 Application Source Issue 状态.
 
 原样镜像优先让 Module 实施 issue 保持唯一状态权威. 代价是 Application Source Issue 可以随 Module 状态回退, 也不能保存 Application Leader 的独立覆盖值. 维护 Application 到 Module 的状态映射或第二套 Application 状态会复制生命周期事实并产生漂移, 因而不采用.
 
@@ -508,7 +508,7 @@ ARW 不为 effort 持久化独立状态. 每次判断完成资格时, 都从本�
 一个关联 JIRA 的 effort 只有在满足以下全部条件时才能完成:
 
 - effort 至少存在一个 issue.
-- 除 Application 验证 issue 外, 全部 issue 都进入 `completed` 或 `wontfix`.
+- 除 Application 验证 issue 外, 全部 issue 都进入终态: 实施 issue 为 `completed` 或 `wontfix`, Wayfinder issue 为 `resolved`.
 - Application 验证 issue 的状态准确为 `completed`.
 
 Application 验证 issue 为 `wontfix` 时, effort 不能完成. Application Source Issue 本身不执行实施 Spec Readiness, Validation 或 Commit Audit, 不保存 Module 证据. Application 验证 issue 作为普通本地实施 issue 执行适用治理.

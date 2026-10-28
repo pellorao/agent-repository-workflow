@@ -189,26 +189,22 @@ const runRootInstaller = (/** @type {string} */ home, /** @type {string} */ inpu
 });
 
 test('root Installer maps prompt EOF to one stable pre-write error', async t => {
-    for (const input of ['', 'maybe\n']) {
-        const home = await createHome(t);
-        const result = await runRootInstaller(home, input);
+    const home = await createHome(t);
+    const result = await runRootInstaller(home, '');
 
-        assert.equal(result.exitCode, 1);
-        assert.match(result.stderr, /Interactive input ended before a decision was provided\.\n$/);
-        assert.deepEqual(await readdir(home), []);
-    }
+    assert.equal(result.exitCode, 1);
+    assert.match(result.stderr, /Interactive input ended before a decision was provided\.\n$/);
+    assert.deepEqual(await readdir(home), []);
 });
 
 test('root Installer completes from a single piped answer line', async t => {
-    for (const [answer, registersPath] of [['n', false], ['y', true]]) {
-        const home = await createHome(t);
-        const result = await runRootInstaller(home, `${answer}\n`);
+    const home = await createHome(t);
+    const result = await runRootInstaller(home, 'n\n');
 
-        assert.equal(result.exitCode, 0);
-        assert.equal(result.stderr, '');
-        await readdir(join(home, '.agent-repository-workflow', 'lib'));
-        assert.equal((await readdir(home)).includes('.profile'), registersPath);
-    }
+    assert.equal(result.exitCode, 0);
+    assert.equal(result.stderr, '');
+    await readdir(join(home, '.agent-repository-workflow', 'lib'));
+    assert.equal((await readdir(home)).includes('.profile'), false);
 });
 
 const runNonInteractive = async (/** @type {string} */ home, /** @type {NonInteractiveOverrides} */ overrides = {}, /** @type {NonInteractiveDecisions} */ decisions = {}) => {

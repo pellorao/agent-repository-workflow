@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
+    hasLegacyIssueShape,
     isIssueBlocked,
     isIssueExecutable,
     migrateIssueDocuments,
@@ -620,4 +621,12 @@ test('strict read reports the deterministic malformed document matrix', () => {
         assert.deepEqual(result.records, [], sourceKey);
         assert.deepEqual(result.diagnostics, [{message, sourceKey}], sourceKey);
     }
+});
+
+test('legacy issue shape ignores Type and bold field lines inside fenced code', () => {
+    const legacy = '# Legacy\n\nBlocked by: None\n\n## What to build\n\nBody.\n';
+    const fenced = '# Legacy\n\nBlocked by: None\n\n```text\nType: task\n**Status:** open\n```\n\n## What to build\n\nBody.\n';
+    assert.equal(hasLegacyIssueShape(legacy), true);
+    assert.equal(hasLegacyIssueShape(fenced), true);
+    assert.equal(hasLegacyIssueShape('# Modern\n\nStatus: completed\n\n```text\nType: task\n**Status:** open\n```\n'), false);
 });

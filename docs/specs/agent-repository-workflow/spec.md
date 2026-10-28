@@ -159,6 +159,8 @@ Blocked by: <none-or-ticket-numbers>
 
 ### Document content boundaries
 
+issue 的元数据字段 (`Status:`, `Type:`, 关联行) 只在 Markdown 围栏代码外识别, 围栏内的同名行是正文; 关联, 同步和迁移预检都遵循此规则, 所以围栏内的 `Type:` 不使 issue 成为 Wayfinder issue.
+
 迁移只规范跟踪记录元数据, H1 前置内容, 阻断问题结构和旧 `PRD.md` 路径. 它保留 issue 正文, 检查清单, Validation, Comments, Answer 和其他未被模板固定的章节. `.scratch` 下的 `map`, `spec` 和 `issue` 使用中文普通自然语言, 并直接遵循仓库默认标题合同: H1 使用中文描述性标题, H2 和更深标题使用英文. 字段名, 状态值, 路径, 命令和标识符保持准确拼写.
 
 治理 spec 或 PRD 不修改非测试正式运行时代码时省略 `## Module Design`. 修改正式运行时代码但不改变 Module 责任, Interface (包括已有字段所表示含义的改变), Seam, 依赖方向, 权威来源或数据流时, 保留章节并只写具体 `Not required:` 段落. 发生任一 Module 相关变化时使用完整 Module Design. Spec Readiness 在所有形式下都执行, 章节形式是唯一适用性来源.
@@ -242,7 +244,7 @@ Run `arw migrate artifacts` to upgrade the entire repository before retrying.
 
 准确匹配 `0001` 到 `9999` 后接 `-<effort-slug>` 的目录保留现有编号. 已编号和未编号 effort 可以混合存在. 每个当前未编号 effort 绑定到当前 `HEAD` 可达历史中首次加入其当前路径的提交. 排序先使用提交者时间戳升序; 时间相同时使用提交在 `git rev-list --reverse --topo-order HEAD` 中的出现顺序; 同一提交首次加入多个 effort 时使用 effort slug 的 UTF-8 字节序. 迁移按此顺序分配最低的未占用有效编号, 不读取其他分支或 `--all`.
 
-迁移重命名整个 effort 目录. 它只更新解析器拥有且具有唯一映射的结构化 issue 内容, 包括 `## Spec Requirement` 中的仓库相对 `.scratch` 路径和已识别的本地阻断问题引用. 普通正文, `## Comments`, `## Answer`, spec, map, research, prototype 和其他无关文本不变. Spec Readiness 和 Commit Audit JSON 随目录移动但字节不变, 不重新绑定, 验证, 删除或授权. `Status:` 永远不变, 迁移不生成持久映射或生命周期记录. 成功时只写实际变化并执行必要重命名, 不创建备份. 执行中途发生 I/O 失败时报告已完成与剩余路径; 重试接受由此产生的合法混合状态并保留已经应用的编号. 无变化时输出 `No updates needed.`.
+迁移重命名整个 effort 目录. 它只更新解析器拥有且具有唯一映射的结构化 issue 内容, 包括 `## Spec Requirement` 中的仓库相对 `.scratch` 路径和已识别的本地阻断问题引用. 普通正文, `## Comments`, `## Answer`, spec, map, research, prototype 和其他无关文本不变. Spec Readiness 和 Commit Audit JSON 随目录移动但字节不变, 不重新绑定, 验证, 删除或授权. `Status:` 永远不变, 迁移不生成持久映射或生命周期记录. 成功时只写实际变化并执行必要重命名, 不创建备份. 诊断路径使用仓库相对写法 (不带 `./`) 并按码元序排序, 不受区域设置影响; 缺失的 Spec Readiness 记录按 `<NN>.spec-readiness.json` 报告. 执行中途发生 I/O 失败时报告已完成与剩余路径; 重试接受由此产生的合法混合状态并保留已经应用的编号. 无变化时输出 `No updates needed.`.
 
 ## Agent CLI launcher
 

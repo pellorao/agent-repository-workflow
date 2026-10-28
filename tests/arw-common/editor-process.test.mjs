@@ -23,3 +23,18 @@ test('waiting editor executes a real Windows cmd command through the shared proc
 
     assert.equal(await readFile(reviewPath, 'utf8'), 'reviewed\r\n');
 });
+
+test('editor launch passes a file path containing replacement patterns unchanged', async () => {
+    /** @type {readonly string[]} */
+    let received = [];
+    await launchConfiguredEditor({
+        editor: {args: ['--open', '{file}'], command: 'editor'},
+        filePath: '/x/a$&b$$c.md',
+        platform: 'linux',
+        spawn: (_command, args) => {
+            received = args;
+            return {once: (event, listener) => { if (event === 'spawn') /** @type {() => void} */ (listener)(); }};
+        },
+    });
+    assert.deepEqual(received, ['--open', '/x/a$&b$$c.md']);
+});

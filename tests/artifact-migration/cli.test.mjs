@@ -100,7 +100,7 @@ test('artifact migration preserves a numeric-leading legacy effort slug', async 
 
 test('artifact migration reports active spec readiness gaps without writing', async t => {
     const repository = await createRepository(t);
-    const issue = '# Active legacy issue\n\n**Status:** ready-for-agent\n\n## What to build\n\nImplement behavior.\n\n## Acceptance criteria\n\n- [ ] Complete.\n\nBlocked by: None\n';
+    const issue = '# Active legacy issue\n\n**Status:** ready-for-agent\n\n```text\nType: task\n```\n\n## What to build\n\nImplement behavior.\n\n## Acceptance criteria\n\n- [ ] Complete.\n\nBlocked by: None\n';
     const prd = '# Active legacy spec\n\n## Implementation Decisions\n\nDecision.\n\n## Testing Decisions\n\nTest.\n';
     await writeIssue(repository.root, 'active-legacy', '01-implement.md', issue);
     await writeArtifact(repository.root, 'active-legacy', 'PRD.md', prd);
@@ -110,8 +110,9 @@ test('artifact migration reports active spec readiness gaps without writing', as
 
     assert.equal(result.result, 1);
     assert.match(result.events.map(event => event.message).join('\n'), /Spec Requirement/);
+    assert.doesNotMatch(result.events.map(event => event.message).join('\n'), /\.\/\.scratch/);
     assert.match(result.events.map(event => event.message).join('\n'), /Module Design/);
-    assert.match(result.events.map(event => event.message).join('\n'), /issues[\\/]01-implement\.spec-readiness\.json/);
+    assert.match(result.events.map(event => event.message).join('\n'), /issues[\\/]01\.spec-readiness\.json/);
     assert.equal(await readFile(join(repository.root, '.scratch', 'active-legacy', 'issues', '01-implement.md'), 'utf8'), issue);
     assert.equal(await readFile(join(repository.root, '.scratch', 'active-legacy', 'PRD.md'), 'utf8'), prd);
     await assert.rejects(access(join(repository.root, '.scratch', 'active-legacy', 'spec.md')));

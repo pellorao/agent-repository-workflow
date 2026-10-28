@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0001:44",
+  "request": {
+    "digest": "d007abfc363428def845e7c641748c2ce1eb996c1eecbcbc9a11e7b96c43e8a5",
+    "filePath": ".tmp/claude-code/06588b1e-7f07-4832-8933-107aaf5b5978/0001_44/spec-readiness/requests/request-75dddb0e-76c7-426a-9be2-bc99b8447dc9.json",
+    "id": "75dddb0e-76c7-426a-9be2-bc99b8447dc9"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "9803a9120632ba201ecccc1996b3e3cc75c13faf7b5cdedb5d4e518dc6d8ebd0"
+  },
+  "inputs": [
+    {
+      "filePath": "docs/specs/agent-repository-workflow-application-jira/spec.md",
+      "role": "governing-spec",
+      "sha256": "1b2412cb77b38e26fc48af888c2fea853ec027b53ad57771b6fda4c908af114c"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow-installation/spec.md",
+      "role": "governing-spec",
+      "sha256": "e99d8955ef809c568469512e775aa0bc4863e2444d4a8c571c65eb9573b146a8"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow/spec.md",
+      "role": "governing-spec",
+      "sha256": "300135305e569c48a4e6361424eccb7ffe95d3d0363a94d2db5c5949b7da0193"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0001-claude-code-migration/issues/44-misc-strata-fixes.md",
+    "sha256": "06b1e4d063976bbc1f3428bb40ac97a1f8d1b46f5e78775c21cf839d59c6f8de"
+  },
+  "result": "satisfied"
+}

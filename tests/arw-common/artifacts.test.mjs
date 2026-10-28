@@ -263,3 +263,13 @@ test('unreadable issue directory does not abort map or spec projections', async 
     assert.deepEqual(inventory.diagnostics.map, []);
     assert.deepEqual(inventory.diagnostics.spec, []);
 });
+
+test('duplicate effort numbers are reported once as duplicates, not as invalid names', async t => {
+    const repository = await createRepository(t);
+    await writeArtifact(repository, '.scratch/0001-a/spec.md', '# A\n');
+    await writeArtifact(repository, '.scratch/0001-b/issues/01-x.md', '# X\n\nStatus: completed\n');
+    const inventory = await readArtifactInventory(repository, await createInventoryFilesystem(repository));
+    const messages = ['spec', 'issue'].flatMap(kind => listArtifacts(inventory, /** @type {'spec' | 'issue'} */ (kind)).diagnostics.map(entry => entry.message));
+    assert.ok(messages.includes('Duplicate effort number 0001.'));
+    assert.ok(messages.every(message => message !== 'Effort directory is not numbered.' && !message.includes('not a valid canonical ID')));
+});

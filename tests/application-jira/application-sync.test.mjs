@@ -195,3 +195,26 @@ test('Application Sync aggregates unsafe Downstream changes and returns zero rep
         ['module.md', 'downstream-changes-content-invalid'],
     ]);
 });
+
+test('Application Sync replaces only the Status line outside fenced code', () => {
+    const result = synchronizeApplicationIssues({
+        moduleIssues: {
+            billing: [{
+                path: 'module.md',
+                record: {association: {coordinate: 'issue:payments:0001:02', kind: 'application-source'}, id: 'issue:0007:07', kind: 'implementation', status: 'completed'},
+                text: '# Work\n\nStatus: completed\nApplication source issue: `issue:payments:0001:02`\n',
+            }],
+        },
+        applicationIssues: [{
+            path: 'application.md',
+            record: {association: {coordinate: 'issue:billing:0007:07', kind: 'module-implementation'}, id: 'issue:0001:02', kind: 'application-source', status: 'ready-for-agent'},
+            text: '# Update API\n\nStatus: ready-for-agent\nModule implementation issue: `issue:billing:0007:07`\n\n```text\nStatus: ready-for-agent\n```\n',
+        }],
+        applicationName: 'payments',
+    });
+    assert.equal(result.status, 'succeeded');
+    assert.equal(
+        result.replacements[0].bytes.toString(),
+        '# Update API\n\nStatus: completed\nModule implementation issue: `issue:billing:0007:07`\n\n```text\nStatus: ready-for-agent\n```\n\n## Comments\n\n### Downstream changes\n\n- None.\n',
+    );
+});
