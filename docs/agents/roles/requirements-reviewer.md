@@ -8,14 +8,16 @@
 
 ## Inputs
 
-- 提交审核: Main Agent 交接 `arw commit-audit prepare` 生成的 `request.json` 绝对路径; `reportPath` 是其中 `reviewPath` 指向的空 txt 报告. 受审版本是其中 `base` 提交到 `tree` 已暂存树的比较 (用 `git diff <base> <tree>`, `git show <tree>:<path>` 读取, 不读实时索引或工作树), `authorizingIssueIds` 是完整授权范围, `gate2.documents` 是需要整份核对的治理文档.
+- 提交审核: Main Agent 交接 `arw commit-audit prepare` 生成的 `request.json` 绝对路径; `reportPath` 是其中 `reviewPath` 指向的空 txt 报告. 受审版本是其中 `base` 提交到 `tree` 已暂存树的比较 (用 `git diff <base> <tree>`, `git show <tree>:<path>` 读取, 不读实时索引或工作树), `authorizingIssueIds` 是完整授权范围, `gate2` 非空时, `gate2.documents` 是本次需要核对的治理文档, `gate2.since` 是 effort 起点.
 - 其他比较 (分支, 拉取请求, 提交区间): Main Agent 交接固定比较和治理要求副本, `reportPath` 是空 txt 文件.
 
 只审查这些输入, 不发现额外的 issue, spec, PRD 或 ADR. 已有的 `*.spec-readiness.json` 不是证据或先前结论; 生成或验证它们的代码, 测试和文档仍可审查.
 
 ## Instructions
 
-逐条核对每个授权 issue 的 `## What to build` 和每条验收标准, 以及 Gate 2 治理文档的每项要求: 在受审版本中定位实现它的语义对象并核对行为. 集合要求审核每个成员. 不用词元匹配, 脚本批量判断或通用说明代替逐项核对. 同时确认 `authorizingIssueIds` 覆盖已暂存实施范围.
+逐条核对每个授权 issue 的 `## What to build` 和每条验收标准, 以及 Gate 2 适用时 `git diff <since> <tree>` 中每个 `gate2.documents` 文档的每处改动 (只审改动, 不重审未改部分): 在受审版本中定位实现它的语义对象并核对行为. 集合要求审核每个成员. 不用词元匹配, 脚本批量判断或通用说明代替逐项核对. 同时确认 `authorizingIssueIds` 覆盖已暂存实施范围.
+
+差异回归检查 (每次提交都做, 无论 Gate 2 是否适用): 对 `git diff <base> <tree>` 中 `tests/` 和 Markdown 以外的每个改动文件, 列出改动涉及的导出名, 命令与参数, 诊断码, 配置键, 文件路径和用户可见文本, 在 `tree` 内的 `docs/specs`, `docs/adr` 和本 effort 的 spec 中 (用 `git ls-tree` 和 `git show <tree>:<path>` 读取) 查找命中处, 读取命中所在章节, 核对其要求在受审版本中仍成立. 每个文件都完成检索, 无命中也不跳过. 结果只以问题的形式出现在报告中: 仍不成立的要求写成问题, 引用要求章节和改动证据.
 
 把缺失或部分实现的要求, 与要求矛盾的行为, 已提供范围之外的行为, 以及表面已实现但实际不正确的行为写成问题, 每条引用实现证据和准确的要求来源. 无法判断的要求 (必要依赖或合同不可得) 也写成问题并说明缺少什么. 验收要求命令或测试的运行结果 (如全量测试通过) 时, 不判断运行结果, 也不因无法亲自运行而写成无法判断的问题; 只核对 issue 的 `## Validation` 是否记录了覆盖该验收的结果, 以及记录是否与代码或改动矛盾, 缺失或矛盾时写成问题. 尚未完成的授权 issue 中尚未实现的要求照实写出, 是否阻断由 Main Agent 判断.
 

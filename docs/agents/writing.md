@@ -103,7 +103,7 @@ Repository-owned 规则可以增加, 收紧或专门化 Baseline. 任何放宽 B
 
 # Source Checkout 分发副本
 
-`distribution/` 下的文件会安装到目标仓库, 必须自包含: 不含 `distribution/`, `node scripts/`, `README.zh-CN.md`, `readIssueRequirement` 以及 Source Checkout 和 Workflow Distribution 这两个名称; Markdown 链接和 `docs/agents/`, `.agents/skills/` 路径须在分发载荷内解析, 目标仓库自有约定 (清单见开发规范的 `Workflow Distribution` 一节) 除外. `node scripts/check-workflow-distribution.mjs` 的生产检查强制这条规则. 作为 Baseline 例外, 分发副本的语言只由发布流程中 `release` Skill 调用 `arw language inspect` 检查, 改写这些副本时不运行该命令.
+`distribution/` 下的文件会安装到目标仓库, 必须自包含: 不含 `distribution/`, `node scripts/`, `README.zh-CN.md`, `readIssueSubject` 以及 Source Checkout 和 Workflow Distribution 这两个名称; Markdown 链接和 `docs/agents/`, `.agents/skills/` 路径须在分发载荷内解析, 目标仓库自有约定 (清单见开发规范的 `Workflow Distribution` 一节) 除外. `node scripts/check-workflow-distribution.mjs` 的生产检查强制这条规则. 作为 Baseline 例外, 分发副本的语言只由发布流程中 `release` Skill 调用 `arw language inspect` 检查, 改写这些副本时不运行该命令.
 
 # Source Checkout JavaScript 样式
 

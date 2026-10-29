@@ -61,7 +61,7 @@
 #### `issue-tracking` (自动使用)
 
 - 何时: Agent 读取, 创建或更新 effort, issue, map, spec, 以及报告 issue 完成之前.
-- 做什么: 规定 `.scratch` 的目录与编号, 实施 issue 的必备章节, 状态与分流值, `## Spec Requirement` 怎样指向治理文档, 以及证据写在哪里 (`## Validation`, `## Comments`). 它还限定 Agent 只读当前 effort, 读取其他 effort 需要你授权.
+- 做什么: 规定 `.scratch` 的目录与编号, 实施 issue 的必备章节, 状态与分流值, 以及证据写在哪里 (`## Validation`, `## Comments`). 它还限定 Agent 只读当前 effort, 读取其他 effort 需要你授权.
 - 留下什么: `.scratch/<NNNN>-<effort-slug>/` 下的 issue, map 和 spec 文件.
 - 相关: `arw list issues`, `arw print`, `arw open`; `implement`, `spec-readiness`.
 

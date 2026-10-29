@@ -9,22 +9,22 @@ import {reviewerRecoveryPath} from '../../lib/reviewer-runtime/reviewer-session-
 import {createRepository, run, writeArtifact, writeIssue} from '../helpers/arw-cli.mjs';
 import {commitAll, runGit} from '../helpers/git.mjs';
 
-const issueText = (/** @type {string} */ status, /** @type {string} */ requirement = 'Governing requirements:\n\n- `.scratch/0001-workflow/spec.md#spec`') => `# Implement workflow\n\nStatus: ${status}\n\n## What to build\n\nImplement.\n\n## Spec Requirement\n\n${requirement}\n\n## Acceptance criteria\n\n- [ ] Complete.\n\n## Blocked by\n\n- None\n`;
+const issueText = (/** @type {string} */ status) => `# Implement workflow\n\nStatus: ${status}\n\n## What to build\n\nImplement.\n\n## Acceptance criteria\n\n- [ ] Complete.\n\n## Blocked by\n\n- None\n`;
 const specification = '# Spec\n\nFirst requirement.\n\n```text\nFenced example.\n```\n\nSecond requirement.\n';
 const implementation = Array.from({length: 8}, (_, index) => `export const value${index + 1} = ${index + 1};`).join('\n') + '\n';
 
 /** A repository whose staged candidate completes `statuses.length` issues of effort 0001. */
-const stagedRepository = async (/** @type {import('node:test').TestContext} */ t, /** @type {{requirement?: string, statuses: string[]}} */ {requirement, statuses}) => {
+const stagedRepository = async (/** @type {import('node:test').TestContext} */ t, /** @type {{spec?: boolean, statuses: string[]}} */ {spec = true, statuses}) => {
     const repository = await createRepository(t);
-    await writeArtifact(repository.root, '0001-workflow', 'spec.md', specification);
+    if (spec) await writeArtifact(repository.root, '0001-workflow', 'spec.md', specification);
     for (const path of ['docs/agents/reviewer.md', 'docs/agents/roles/requirements-reviewer.md', 'docs/agents/roles/code-standards-reviewer.md']) {
         await mkdir(join(repository.root, path, '..'), {recursive: true});
         await writeFile(join(repository.root, path), `# ${path}\n`, 'utf8');
     }
     await writeFile(join(repository.root, '.arwignore'), 'generated.txt\n', 'utf8');
-    for (const [index] of statuses.entries()) await writeIssue(repository.root, '0001-workflow', `0${index + 1}-issue.md`, issueText('ready-for-agent', requirement));
+    for (const [index] of statuses.entries()) await writeIssue(repository.root, '0001-workflow', `0${index + 1}-issue.md`, issueText('ready-for-agent'));
     await commitAll(repository.root, 'initial candidate');
-    for (const [index, status] of statuses.entries()) await writeIssue(repository.root, '0001-workflow', `0${index + 1}-issue.md`, issueText(status, requirement));
+    for (const [index, status] of statuses.entries()) await writeIssue(repository.root, '0001-workflow', `0${index + 1}-issue.md`, issueText(status));
     await writeFile(join(repository.root, 'implementation.mjs'), implementation, 'utf8');
     await writeFile(join(repository.root, 'generated.txt'), 'generated\n', 'utf8');
     await runGit(repository.root, ['add', '.']);
@@ -94,32 +94,32 @@ test('prepare writes a fixed-version round for both Reviewers and follows up the
     assert.equal((await line(second.round, 'code-standards-reviewer')).operation, 'spawn_agent');
 });
 
-test('prepare adds Gate 1 for terminal transitions and Gate 2 documents when the effort is terminal', async t => {
+test('prepare adds Gate 1 for terminal transitions and Gate 2 documents changed since the effort start', async t => {
     const repository = await stagedRepository(t, {statuses: ['completed', 'completed']});
+    const emptyTree = '4b825dc642cb6eb9a060e54bf8d69288fbee4904';
     const {request} = await prepare(repository.root, {authorizingIssueIds: ['issue:0001:01', 'issue:0001:02']});
     assert.deepEqual(request.gate1, ['issue:0001:01', 'issue:0001:02']);
-    assert.deepEqual(request.gate2, {documents: ['.scratch/0001-workflow/spec.md']});
+    assert.deepEqual(request.gate2, {documents: ['.scratch/0001-workflow/spec.md'], since: emptyTree});
 
     await assert.rejects(prepare(repository.root, {authorizingIssueIds: ['issue:0001:01']}), /terminal issue transition is not authorized/);
     await assert.rejects(prepare(repository.root, {authorizingIssueIds: ['issue:0001:01', 'issue:0002:01']}), /all belong to one effort/);
     await assert.rejects(prepare(repository.root, {authorizingIssueIds: ['issue:0001:02', 'issue:0001:01']}), /unique and sorted/);
-    const exception = {confirmedAt: '2026-09-10T00:00:00Z', reason: 'No governing requirements apply.'};
-    const skipped = await prepare(repository.root, {authorizingIssueIds: ['issue:0001:01', 'issue:0001:02'], gate2Exception: exception});
-    assert.deepEqual(skipped.request.gate2, {documents: [], exception});
-    await writeArtifact(repository.root, '0001-workflow', 'spec.md', `${specification}\nChanged.\n`);
-    await runGit(repository.root, ['add', '.']);
-    await assert.rejects(prepare(repository.root, {authorizingIssueIds: ['issue:0001:01', 'issue:0001:02'], gate2Exception: exception}), /changed governing document/);
+    await assert.rejects(prepare(repository.root, {authorizingIssueIds: ['issue:0001:01', 'issue:0001:02'], gate2Exception: {}}), /only authorizingIssueIds/);
 });
 
-test('Gate 2 without governing requirements requires a confirmed exception', async t => {
-    const repository = await stagedRepository(t, {requirement: 'Not required', statuses: ['completed']});
-    await assert.rejects(prepare(repository.root, {authorizingIssueIds: ['issue:0001:01']}), /requires gate2Exception/);
-    for (const gate2Exception of [{confirmedAt: '2026-09-10'}, {confirmedAt: '2026-09-10', reason: 'x'}, {confirmedAt: '2026-09-10T00:00:00Z', reason: ' '}]) {
-        await assert.rejects(prepare(repository.root, {authorizingIssueIds: ['issue:0001:01'], gate2Exception}), /gate2Exception/);
-    }
-    const exception = {confirmedAt: '2026-09-10T00:00:00Z', reason: 'No governing requirements apply.'};
-    const {request} = await prepare(repository.root, {authorizingIssueIds: ['issue:0001:01'], gate2Exception: exception});
-    assert.deepEqual(request.gate2, {documents: [], exception});
+test('Gate 2 documents are only the changed governing documents of this effort, so an unchanged effort needs no exception', async t => {
+    const repository = await stagedRepository(t, {spec: false, statuses: ['completed']});
+    await writeArtifact(repository.root, '0002-other', 'spec.md', specification);
+    await mkdir(join(repository.root, 'docs', 'specs', 'area'), {recursive: true});
+    await writeFile(join(repository.root, 'docs', 'specs', 'area', 'spec.md'), '# Area\n', 'utf8');
+    await runGit(repository.root, ['add', '.']);
+    const other = await prepare(repository.root, {authorizingIssueIds: ['issue:0001:01']}).catch(error => error);
+    assert.match(String(other), /another effort/u);
+    await runGit(repository.root, ['rm', '-qf', '--cached', '.scratch/0002-other/spec.md']);
+    const {request} = await prepare(repository.root, {authorizingIssueIds: ['issue:0001:01']});
+    assert.deepEqual(request.gate2.documents, ['docs/specs/area/spec.md']);
+    await runGit(repository.root, ['rm', '-qf', '--cached', 'docs/specs/area/spec.md']);
+    assert.deepEqual((await prepare(repository.root, {authorizingIssueIds: ['issue:0001:01']})).request.gate2.documents, []);
 });
 
 test('prepare rejects changed paths under another effort', async t => {
@@ -160,7 +160,7 @@ test('verify ignores Wayfinder tickets, preserves registered identities, and all
 
 test('verify --non-implementation accepts planning records and rejects other or malformed staged content', async t => {
     const repository = await createRepository(t);
-    await writeIssue(repository.root, '0001-plan', '01-task.md', issueText('ready-for-agent', 'Not required'));
+    await writeIssue(repository.root, '0001-plan', '01-task.md', issueText('ready-for-agent'));
     await writeArtifact(repository.root, '0001-plan', 'spec.md', '# Spec\n');
     await commitAll(repository.root, 'planning records');
     const verify = async () => (await run(['commit-audit', 'verify', '--non-implementation'], repository));
@@ -176,7 +176,7 @@ test('verify --non-implementation accepts planning records and rejects other or 
     assert.equal(unstaged.result, 1);
     assert.match(unstaged.events[0].message, /unstaged replacement/u);
     await writeFile(join(repository.root, 'code.mjs'), 'export {};\n', 'utf8');
-    await writeIssue(repository.root, '0001-plan', '01-task.md', issueText('completed', 'Not required'));
+    await writeIssue(repository.root, '0001-plan', '01-task.md', issueText('completed'));
     await runGit(repository.root, ['add', '.']);
     const failures = (await verify()).events[0].message;
     for (const pattern of [/code\.mjs[^]*not eligible/u, /LF line endings/u, /terminal status/u]) assert.match(failures, pattern);
@@ -272,18 +272,11 @@ test('verify --non-implementation rejects non-canonical effort directories and N
     await runGit(repository.root, ['reset', '-q']);
     await rm(join(repository.root, '.scratch', 'audit-notes'), {recursive: true});
     await rm(join(repository.root, 'docs'), {recursive: true});
-    await writeIssue(repository.root, '0001-a', '01-x.md', issueText('ready-for-agent', 'Not required'));
-    await writeIssue(repository.root, '0001-b', '01-x.md', issueText('ready-for-agent', 'Not required'));
+    await writeIssue(repository.root, '0001-a', '01-x.md', issueText('ready-for-agent'));
+    await writeIssue(repository.root, '0001-b', '01-x.md', issueText('ready-for-agent'));
     await writeFile(join(repository.root, 'crlf.md'), 'a\r\n', 'utf8');
     await runGit(repository.root, ['add', '.']);
     const failures = await verify();
     assert.match(failures, /duplicate canonical issue ID/u);
     assert.match(failures, /LF line endings/u);
-});
-
-test('prepare ignores governing documents under a non-canonical effort directory', async t => {
-    const repository = await stagedRepository(t, {requirement: 'Governing requirements:\n\n- `.scratch/audit/spec.md#spec`', statuses: ['completed']});
-    await writeArtifact(repository.root, '../audit', 'spec.md', specification);
-    await runGit(repository.root, ['add', '.']);
-    await assert.rejects(prepare(repository.root, {authorizingIssueIds: ['issue:0001:01']}), /requires gate2Exception/u);
 });

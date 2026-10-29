@@ -40,7 +40,7 @@ Application Leader 不实施 Application Source Issue. Module 分发提交推送
 
 | 记录与内容 | 编辑边界 |
 | --- | --- |
-| Application Source Issue 的关联, `## What to build`, `## Spec Requirement`, `## Acceptance criteria`, `## Blocked by` | 冻结, Application Leader 不直接编辑. |
+| Application Source Issue 的关联, `## What to build`, `## Acceptance criteria`, `## Blocked by` | 冻结, Application Leader 不直接编辑. |
 | Module 实施 issue 的关联 | 绝对冻结. |
 | Module 实施 issue 的对应 4 个章节, 以及同 effort 中现有且已由 Git 跟踪的本地 `spec.md` | 使用允许获授权纠错的软锁. 只有真实问题阻止既定实施范围继续时, 才可以纠正. |
 | Module issue 的其他内容, 包括 `Status:`, `## Validation` 和普通评论 | 仍可按普通实施治理更新. |
@@ -292,7 +292,7 @@ Application issue 与 Module issue 可以使用不同 Canonical ID. 同一个 Ap
 - 使用完全相同的非终态 `Status:`.
 - 保持各自现有规范要求, 治理输入和正文.
 
-Module issue 的 `## Spec Requirement` 只使用其最近 Module Repository 内的治理输入. 如果确实没有治理设计, 它可以在用户按普通 issue 规则明确确认后使用准确的 `Not required`. Application Repository 的 spec 不成为 Module issue 的跨仓库治理输入.
+Module issue 的治理输入只来自其最近 Module Repository. Application Repository 的 spec 不成为 Module issue 的跨仓库治理输入.
 
 允许的状态来自普通跟踪器非终态状态, 包括 `needs-triage`, `needs-info`, `ready-for-agent` 与 `ready-for-human`. `completed` 和 `wontfix` 不能关联. 关联操作不擅自推进或覆盖状态. 状态行只在围栏代码外识别.
 
@@ -365,7 +365,7 @@ ARW 不持久化分发提交 ID 或文件哈希. 同步从当前 Module Git 状�
 
 ## Module correction check
 
-Module 分发提交已推送后, Module Agent 只有在 `## What to build`, `## Spec Requirement`, `## Acceptance criteria`, `## Blocked by` 或同 effort 本地 spec 的真实问题阻止既定实施范围继续时, 才能请求用户对准确修改的授权. `Application source issue:` 关联是硬锁, 不能修改或建议修改. 获得授权后, Agent 直接修改实际 issue 或 spec 文件, 把本次修改作为当前有效条目记录到 issue 的 `## Comments` 下 `### Downstream changes`, 并删除因本次修改被撤销或取代而失效的旧条目. 该工作不要求用户调用 `application-workflow` Skill; 共享 Agent 规则要求 Agent 读取该 Skill 的 Module 纠错文档以取得完整步骤.
+Module 分发提交已推送后, Module Agent 只有在 `## What to build`, `## Acceptance criteria`, `## Blocked by` 或同 effort 本地 spec 的真实问题阻止既定实施范围继续时, 才能请求用户对准确修改的授权. `Application source issue:` 关联是硬锁, 不能修改或建议修改. 获得授权后, Agent 直接修改实际 issue 或 spec 文件, 把本次修改作为当前有效条目记录到 issue 的 `## Comments` 下 `### Downstream changes`, 并删除因本次修改被撤销或取代而失效的旧条目. 该工作不要求用户调用 `application-workflow` Skill; 共享 Agent 规则要求 Agent 读取该 Skill 的 Module 纠错文档以取得完整步骤.
 
 公开只读命令是:
 
@@ -377,7 +377,7 @@ arw module check-correction <local-module-issue-id>
 
 命令直接比较 `HEAD` blob 与文件系统中的当前文件字节. 它不把暂存区作为比较版本, 不要求暂存区等于 `HEAD`, 也不因目标 issue 或 spec 已有已暂存修改而失败. 工作树文件同时包含已暂存和未暂存修改形成的当前事实. 命令不写文件, 不生成候选, 不运行 File Transaction Module, 不运行 `git add`, 也不承担后续差异审核或暂存.
 
-软锁是 Module issue 的 `## What to build`, `## Spec Requirement`, `## Acceptance criteria`, `## Blocked by` 和适用本地 spec 的完整内容. 计算 `## Acceptance criteria` 变化时, 只在 Markdown 围栏代码外把缩进不超过 3 个空格的无序任务列表项开头的 `[x]` 与 `[X]` 规范为 `[ ]` (嵌套或有序列表中的任务项不规范化, 其复选框变化计为软锁变化); 单纯复选框完成状态变化不构成软锁变化. 硬锁只有准确的 `Application source issue:` 关联字段. 命令不为其余 issue 内容建立允许列表, 因而普通状态, 验证, 评论和其他实施内容可以在同一工作树中变化.
+软锁是 Module issue 的 `## What to build`, `## Acceptance criteria`, `## Blocked by` 和适用本地 spec 的完整内容. 计算 `## Acceptance criteria` 变化时, 只在 Markdown 围栏代码外把缩进不超过 3 个空格的无序任务列表项开头的 `[x]` 与 `[X]` 规范为 `[ ]` (嵌套或有序列表中的任务项不规范化, 其复选框变化计为软锁变化); 单纯复选框完成状态变化不构成软锁变化. 硬锁只有准确的 `Application source issue:` 关联字段. 命令不为其余 issue 内容建立允许列表, 因而普通状态, 验证, 评论和其他实施内容可以在同一工作树中变化.
 
 成功要求同时满足:
 
@@ -466,7 +466,7 @@ Downstream Changes Document Interface 新增的稳定诊断信息代码是 `down
 
 每次同步以 Module 当前完整条目为唯一来源, 删除 Application 侧旧条目并写入新的完整条目. Module 来源缺失, 空白或只有 `- None.` 时, Application 侧准确写 `- None.`. 非空条目使用解析后的 LF 表示原样复制, 不增加来源说明, Canonical issue ID, 提交范围, Downstream changes 基线, 游标或其他元数据. Application Source Issue 已有关联足以表达来源身份. 这里不建立同步基线, 但不改变后续 Application 文件事务使用暂存区字节作为恢复基线的既有合同.
 
-Downstream changes 只通知 Application 当前仍有效的下游修正. 同步不根据这些条目创作或修改 Application spec, `## What to build`, `## Spec Requirement`, `## Acceptance criteria`, `## Blocked by` 或关联, 也不把它们加入 JIRA 接收或完成资格. Application Leader 读取同步结果后另行决定是否建立上层工作.
+Downstream changes 只通知 Application 当前仍有效的下游修正. 同步不根据这些条目创作或修改 Application spec, `## What to build`, `## Acceptance criteria`, `## Blocked by` 或关联, 也不把它们加入 JIRA 接收或完成资格. Application Leader 读取同步结果后另行决定是否建立上层工作.
 
 Application Sync Module 在内存中解析全部关联 Module 和 Application 来源 issue, 聚合全部诊断信息后才返回替换内容. 任一双向关联不匹配, 重复映射, 关联 Module issue 仍有非终态本地阻断项 (`application-module-blocked`), 重复或位置错误的子章节, 不安全列表或 issue 解析阻断问题都返回 `blocked` 和零替换内容. 各仓库 issue 清单本身的解析诊断由 Application CLI 在调用本 Module 前报告: CLI 先检查 Application Repository, 再按配置顺序检查各 Module, 在第一个有解析诊断的仓库处输出其诊断并停止. 诊断信息按 `path ?? ""`, `code`, `message` 的升序稳定排列. 成功替换内容按 Application 路径排序, 同时反映需要变化的状态和 Downstream changes; 两者都未变化的 issue 不产生替换内容.
 
@@ -711,7 +711,7 @@ Module 纠错依赖当前 issue 的有效 Application 反向关联, 不依赖本
 
 Workflow Distribution 在同一 Skill 来源中同时保留 Codex 和 Claude Code 的原生调用配置, 因为两个平台分别从 `agents/openai.yaml` 和 `SKILL.md` 前置元数据读取自己的字段. 现有投影已经为 Codex 保留元数据文件并为 Claude Code 排除该文件, 所以不需要增加前置元数据转换规则或新的平台专用发布责任.
 
-Module issue 只引用最近 Module Repository 内的治理输入, 因为每个子模块都是独立 Git 仓库, 拥有自己的 `.scratch` 与普通 issue 门禁. 允许用户明确确认 `Not required` 保持它与其他普通实施 issue 使用同一例外, 不让 Application spec 绕过 Module 自己的治理边界.
+Module issue 只引用最近 Module Repository 内的治理输入, 因为每个子模块都是独立 Git 仓库, 拥有自己的 `.scratch` 与普通 issue 门禁. Module issue 与其他普通实施 issue 使用同一就绪规则, 不让 Application spec 绕过 Module 自己的治理边界.
 
 Submodule Coordination Module 不读取 issue, 因为分支/远端收敛与跟踪器状态是两类失败和恢复责任. Application Sync 只消费已经等于远端末端的快照, 因而不会把本地超前的未发布状态误当成 Application 事实.
 

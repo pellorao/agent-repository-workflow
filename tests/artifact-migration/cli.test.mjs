@@ -109,7 +109,6 @@ test('artifact migration reports active spec readiness gaps without writing', as
     const result = await run(['migrate', 'artifacts'], repository);
 
     assert.equal(result.result, 1);
-    assert.match(result.events.map(event => event.message).join('\n'), /Spec Requirement/);
     assert.doesNotMatch(result.events.map(event => event.message).join('\n'), /\.\/\.scratch/);
     assert.match(result.events.map(event => event.message).join('\n'), /Module Design/);
     assert.match(result.events.map(event => event.message).join('\n'), /issues[\\/]01\.spec-readiness\.json/);
@@ -124,7 +123,7 @@ test('artifact migration accepts a numeric readiness sidecar for an active numbe
         repository.root,
         '0001-ready-effort',
         '01-implement.md',
-        '# Active issue\n\nStatus: ready-for-agent\n\n## What to build\n\nImplement behavior.\n\n## Spec Requirement\n\nNot required\n\n## Acceptance criteria\n\n- [ ] Complete.\n\n## Blocked by\n\n- None - can start immediately\n',
+        '# Active issue\n\nStatus: ready-for-agent\n\n## What to build\n\nImplement behavior.\n\n## Acceptance criteria\n\n- [ ] Complete.\n\n## Blocked by\n\n- None - can start immediately\n',
     );
     await writeFile(
         join(repository.root, '.scratch', '0001-ready-effort', 'issues', '01.spec-readiness.json'),
@@ -411,7 +410,7 @@ test('artifact migration preserves mixed numbered state and blocks duplicate or 
 
 test('artifact migration rewrites only structured issue references while preserving status and historical JSON bytes', async t => {
     const repository = await createRepository(t);
-    const issue = '# Work\n\nStatus: completed\n\n## What to build\n\nKeep `.scratch/work/spec.md` in ordinary prose.\n\n## Spec Requirement\n\nGoverning requirements:\n\n- `.scratch/work/spec.md#requirement`\n\n## Acceptance criteria\n\n- [x] Complete.\n\n## Blocked by\n\n- External dependency: `issue:ledger:0009:03` - Wait for the ledger contract.\n';
+    const issue = '# Work\n\nStatus: completed\n\n## What to build\n\nKeep `.scratch/work/spec.md` in ordinary prose.\n\n## Acceptance criteria\n\n- [x] Complete.\n\n## Blocked by\n\n- External dependency: `issue:ledger:0009:03` - Wait for the ledger contract.\n';
     const readiness = '{"historical":"readiness","issueId":"work:01-work"}\n';
     const audit = '{"historical":"audit"}\n';
     await writeArtifact(repository.root, 'work', 'spec.md', '# Work spec\n\n## Requirement\n\nKeep.\n');
@@ -427,7 +426,6 @@ test('artifact migration rewrites only structured issue references while preserv
     assert.equal(migrated.result, 0, migrated.events.map(event => event.message).join('\n'));
     assert.match(migratedIssue, /^Status: completed$/m);
     assert.match(migratedIssue, /Keep `\.scratch\/work\/spec\.md` in ordinary prose\./);
-    assert.match(migratedIssue, /- `\.scratch\/0001-work\/spec\.md#requirement`/);
     assert.match(migratedIssue, /- External dependency: `issue:ledger:0009:03` - Wait for the ledger contract\./);
     assert.equal(await readFile(join(directory, 'issues', '01-work.spec-readiness.json'), 'utf8'), readiness);
     assert.equal(await readFile(join(directory, 'issues', '01-work.audit.json'), 'utf8'), audit);

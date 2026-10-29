@@ -37,7 +37,7 @@ const globalConfiguration = {
     reviewEditor: {args: ['--wait', '{file}'], command: 'code'},
 };
 
-/** @typedef {{acceptance?: string, association?: string, blocked?: string, downstream?: string, specRequirement?: string, validation?: string, what?: string}} CorrectionIssueOptions */
+/** @typedef {{acceptance?: string, association?: string, blocked?: string, downstream?: string, validation?: string, what?: string}} CorrectionIssueOptions */
 
 /** @param {CorrectionIssueOptions} options */
 const correctionIssueText = ({
@@ -45,7 +45,6 @@ const correctionIssueText = ({
     association = 'issue:payments:0001:01',
     blocked = '- None',
     downstream = '- Existing.',
-    specRequirement = 'Not required',
     validation = '- Not run.',
     what = 'Build it.',
 } = {}) => [
@@ -57,10 +56,6 @@ const correctionIssueText = ({
     '## What to build',
     '',
     what,
-    '',
-    '## Spec Requirement',
-    '',
-    specRequirement,
     '',
     '## Acceptance criteria',
     '',
@@ -117,10 +112,6 @@ test('Module correction check reads HEAD and current files without Application c
         '',
         what,
         '',
-        '## Spec Requirement',
-        '',
-        'Not required',
-        '',
         '## Acceptance criteria',
         '',
         '- [ ] Pass.',
@@ -156,7 +147,6 @@ test('Module correction check reads HEAD and current files without Application c
 });
 
 for (const [name, changes] of /** @type {Array<[string, CorrectionIssueOptions]>} */ ([
-    ['Spec Requirement', {specRequirement: 'Corrected requirement.'}],
     ['Acceptance criteria', {acceptance: '- [ ] Corrected acceptance.'}],
     ['Blocked by', {blocked: '- External dependency: `issue:ledger:0001:01` - Wait for the corrected contract.'}],
 ])) {

@@ -20,7 +20,7 @@ Windows PATH 覆盖使用公开责任归属操作实际检验安装写入, 等�
 
 ### Issue and readiness integration
 
-Issue 文档要求覆盖包括相对于仓库根目录的 spec 和仓库文档引用, 可选锚点, `Not required`, 错误位置, `../`, `./`, 绝对路径, 反斜杠, NUL, 路径穿越和无效锚点. Spec Readiness 和 Commit Audit 必须使用相同的归一化结果, 且不得相对于 issue 目录进行解析. 路径规则迁移只能更改非终态 issue 当前的 `## Spec Requirement`. 定向检查保留终态 issue 字节和 `## Comments` 字节.
+Issue 文档要求覆盖审核对象范围的定位 (章节顺序, 围栏内标题, 重复或缺失章节). Spec Readiness 和 Commit Audit 必须使用相同的审核对象解析结果. 定向检查保留终态 issue 字节和 `## Comments` 字节.
 
 ### Application and JIRA workflow
 

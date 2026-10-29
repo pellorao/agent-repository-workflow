@@ -14,7 +14,6 @@
 软锁定包括以下内容:
 
 - `## What to build`.
-- `## Spec Requirement`.
 - `## Acceptance criteria`, 但排除任务列表的复选框状态.
 - `## Blocked by`.
 - 同一 effort 中现有且已由 Git 跟踪的 `spec.md`.

@@ -40,13 +40,13 @@ ARW 是本地仓库工作流管理器. 它不自主发起 Agent 编码工作, �
 | Application Source Issue | 只镜像关联 Module 实施 issue 的状态, 不执行本地实施. | 不运行. |
 | Wayfinder issue | 记录研究或设计问题, 不替代实施 issue. | 不运行. |
 
-Spec Readiness 使用 `prepare -> independent review -> generate -> promote -> verify`. Engine 冻结完整治理输入, issue 中连续的交付结果, 要求选择与验收条件, 以及 `prepare` 固定的草稿路径, 并把 Reviewer Role 身份与哈希独立绑定到请求. 独立 Reviewer 在绑定路径写入语义问题, 完整审核没有问题时写入明确的无问题标记. Engine 从最终草稿推导完整的临时规范结果, Main Agent 只提升准确生成字节. issue 特定的 `verify` 核对当前设计的有效就绪结果. 修改实现文件前须取得当前有效就绪结果 (`verify` 退出码为 `0`), 有效结果的完成, 审计与提交检查时点由[设计就绪工作流](../../../.agents/skills/spec-readiness/SKILL.md#authorization-timing)拥有.
+Spec Readiness 使用 `prepare -> independent review -> generate -> promote -> verify`. Engine 冻结完整治理输入, issue 中连续的交付结果, 验收条件, effort 起点 `since`, 以及 `prepare` 固定的草稿路径, 并把 Reviewer Role 身份与哈希独立绑定到请求. 独立 Reviewer 在绑定路径写入语义问题, 完整审核没有问题时写入明确的无问题标记. Engine 从最终草稿推导完整的临时规范结果, Main Agent 只提升准确生成字节. issue 特定的 `verify` 核对当前设计的有效就绪结果. 修改实现文件前须取得当前有效就绪结果 (`verify` 退出码为 `0`), 有效结果的完成, 审计与提交检查时点由[设计就绪工作流](../../../.agents/skills/spec-readiness/SKILL.md#authorization-timing)拥有.
 
-Spec Readiness 的结果生成与验证不判断开放语义, 原生会话控制和线程身份由共享 Reviewer 运行责任管理. 会话延续不等于准备度结果仍然有效: 任一治理输入, 审核对象, Reviewer Role 或结果绑定变化都会使旧记录失效. `architecture-evidence` 是 issue 本身会修改的实现事实, 不属于这种绑定, 实施改动它不使记录失效. 审核对象是连续的 `## What to build`, `## Spec Requirement` 和 `## Acceptance criteria`. `Status:`, `## Blocked by`, `## Validation` 和 `## Comments` 不进入审核对象. 完整 issue 格式与阻断问题图由 ARW Artifact 清单和 Issue Gate 独立验证.
+Spec Readiness 的结果生成与验证不判断开放语义, 原生会话控制和线程身份由共享 Reviewer 运行责任管理. 会话延续不等于准备度结果仍然有效: 任一治理输入, 审核对象, Reviewer Role 或结果绑定变化都会使旧记录失效. `architecture-evidence` 是 issue 本身会修改的实现事实, 不属于这种绑定, 实施改动它不使记录失效. 审核对象是从 `## What to build` 到 `## Acceptance criteria` 的连续范围. `Status:`, `## Blocked by`, `## Validation` 和 `## Comments` 不进入审核对象. 完整 issue 格式与阻断问题图由 ARW Artifact 清单和 Issue Gate 独立验证.
 
-Commit Audit 的准确调用条件只由通用提交工作流拥有. Commit Audit 适用时, Gate 1 和 Gate 2 由独立 `requirements-reviewer` (要求符合审核) 逐项审核冻结的完整已暂存候选内容, `code-standards-reviewer` 同时并行审核实施质量; 一次提交最多这两个并行 Reviewer. 每个提交只包含一个 effort, Main Agent 只暂存该 effort 的内容. `authorizingIssueIds` 可以包含该 effort 的多个 issue, 表示完整实施授权范围; Request 中的 Gate 1 范围只包含实际适用的终态转换子集. Gate 2 使用本次接受 issue 的有效 `## Spec Requirement` 并集. Reviewer 把发现的问题逐条写入 `prepare` 创建的 txt 报告, 没有问题时写 `No problems.`, 并返回状态; ARW 不生成或提升审核记录, 详见 [Commit Audit](#commit-audit).
+Commit Audit 的准确调用条件只由通用提交工作流拥有. Commit Audit 适用时, Gate 1 和 Gate 2 由独立 `requirements-reviewer` (要求符合审核) 逐项审核冻结的完整已暂存候选内容, `code-standards-reviewer` 同时并行审核实施质量; 一次提交最多这两个并行 Reviewer. 每个提交只包含一个 effort, Main Agent 只暂存该 effort 的内容. `authorizingIssueIds` 可以包含该 effort 的多个 issue, 表示完整实施授权范围; Request 中的 Gate 1 范围只包含实际适用的终态转换子集. 每次实施提交另做差异回归检查; Gate 2 只审核 `git diff <since> <tree>` 中治理文档的改动. Reviewer 把发现的问题逐条写入 `prepare` 创建的 txt 报告, 没有问题时写 `No problems.`, 并返回状态; ARW 不生成或提升审核记录, 详见 [Commit Audit](#commit-audit).
 
-Gate 3 由 `code-review` Skill Package 拥有 Standards 与 Requirements 两个独立审核轴; 提交时 Requirements 轴由 Commit Audit 承担. Main Agent 优先使用各轴完整有效的已有结果; 需要新审查时, 只解析一次比较基线与完整变更路径集合, 执行一次过滤, 再把相同的不可变比较对象, 完整代码上下文, 纳入范围的路径和适用验证事实交给 Code Standards 与适用的 `requirements-reviewer`. Requirements 轴还取得明确的完整治理要求. 各轴按自己的实际完整输入判断有效性, 不因为另一轴的输入变化就自动失效, 具体版本与复审边界见 [Review versions and result validity](#review-versions-and-result-validity).
+Gate 3 由 `code-review` Skill Package 拥有 Standards 与 Requirements 两个独立审核轴; 提交时 Requirements 轴由 Commit Audit 承担. Main Agent 优先使用各轴完整有效的已有结果; 需要新审查时, 只解析一次比较基线与完整变更路径集合, 执行一次过滤, 再把相同的不可变比较对象, 完整代码上下文, 纳入范围的路径和适用验证事实交给 Code Standards 与适用的 `requirements-reviewer`. Requirements 轴还取得明确的完整治理要求 (非提交审查由调用方提供; 提交审查中是授权 issue 与 Gate 2 治理文档差异, 见 [Commit Audit](#commit-audit)). 各轴按自己的实际完整输入判断有效性, 不因为另一轴的输入变化就自动失效, 具体版本与复审边界见 [Review versions and result validity](#review-versions-and-result-validity).
 
 当前有效 Spec Readiness, 必要实施验证和真实完整的最终候选齐备后, Code Standards 与适用 Commit Audit 可以对同一候选并行. 任何正式验收条件实际要求取得另一审核的完成事实时, 仍须等待该事实, 运行中结果不能作为通过. Main Agent 按[公共 Reviewer 规则](../../agents/reviewer.md#review-versions-and-concurrency)协调固定版本, 已授权源工作树写入及替代版本, 最终核对实际暂存字节与各轮受审版本, 再取得当前有效的全部适用结果和提交授权.
 
@@ -108,12 +108,6 @@ Status: <status>
 
 ...
 
-## Spec Requirement
-
-Governing requirements:
-
-- `docs/specs/example/spec.md#solution`
-
 ## Acceptance criteria
 
 - [ ] ...
@@ -123,11 +117,9 @@ Governing requirements:
 - None - can start immediately
 ```
 
-模板中的示例路径和锚点替换为实际要求. `Governing requirements:` 后保留空行, 每行一个以连字符和空格开头且由反引号包裹的路径引用; Markdown 超链接无效. `## What to build`, `## Spec Requirement` 和 `## Acceptance criteria` 必须是连续且顺序固定的二级章节. `arw print` 不解析该字段, 读取成功不证明引用语法或目标存在性有效.
+`## What to build` 和 `## Acceptance criteria` 必须各出现一次 (围栏外) 且前者在先; 两者之间的章节 (旧格式的 `## Spec Requirement`) 属于审核对象正文, 因此 `## Validation` 与 `## Comments` 不得放在两者之间. issue 不声明治理要求引用: Spec Readiness Reviewer 根据交付内容自行检索相关既有章节, Commit Audit 的差异回归检查也从代码差异出发检索.
 
-ARW 写出的 `Status:` 位于 H1 后第一个段落; 读取时只要求它唯一且取值有效, 不检查位置. `## Spec Requirement` 路径相对最近 Git 仓库根目录, 与 Spec Readiness 输入 `filePath` 使用同一基准. 它接受仅路径或 `path#ascii-heading-anchor`. 仅路径只适用于没有 ATX 标题, 或只有一个 H1 且没有其他 ATX 标题的文档.
-
-Issue 创建过程在发布 issue 前选择该 issue 实际实施的既有治理要求. 相关背景, 仅提供支持的输入, 交付目标, 未来输出, 解决方案设想和实施指导不能进入该章节. 长期 Spec 只有在当前工作确实为了实现它时才是要求; 作为当前 issue 交付结果修改的长期 Spec 只写入验收条件. 确实没有治理设计时, 只有用户明确确认后才能写 `Not required`.
+ARW 写出的 `Status:` 位于 H1 后第一个段落; 读取时只要求它唯一且取值有效, 不检查位置.
 
 `## What to build` 只描述完整交付结果, 验收条件只描述可验证完成条件. `## Blocked by` 无阻断问题时准确写 `- None - can start immediately`; 带标题阻断问题时写 `- <number> - <title>`. Issue 完成证据满足后可以把 `Status:` 改为终态值; 终态转换的提交门禁由提交流程独立处理.
 
@@ -245,7 +237,7 @@ Run `arw migrate artifacts` to upgrade the entire repository before retrying.
 
 准确匹配 `0001` 到 `9999` 后接 `-<effort-slug>` 的目录保留现有编号. 已编号和未编号 effort 可以混合存在. 每个当前未编号 effort 绑定到当前 `HEAD` 可达历史中首次加入其当前路径的提交. 排序先使用提交者时间戳升序; 时间相同时使用提交在 `git rev-list --reverse --topo-order HEAD` 中的出现顺序; 同一提交首次加入多个 effort 时使用 effort slug 的 UTF-8 字节序. 迁移按此顺序分配最低的未占用有效编号, 不读取其他分支或 `--all`.
 
-迁移重命名整个 effort 目录. 它只更新解析器拥有且具有唯一映射的结构化 issue 内容, 包括 `## Spec Requirement` 中的仓库相对 `.scratch` 路径和已识别的本地阻断问题引用. 普通正文, `## Comments`, `## Answer`, spec, map, research, prototype 和其他无关文本不变. Spec Readiness 和 Commit Audit JSON 随目录移动但字节不变, 不重新绑定, 验证, 删除或授权. `Status:` 永远不变, 迁移不生成持久映射或生命周期记录. 成功时只写实际变化并执行必要重命名, 不创建备份. 诊断路径使用仓库相对写法 (不带 `./`) 并按码元序排序, 不受区域设置影响; 缺失的 Spec Readiness 记录按 `<NN>.spec-readiness.json` 报告. 执行中途发生 I/O 失败时报告已完成与剩余路径; 重试接受由此产生的合法混合状态并保留已经应用的编号. 无变化时输出 `No updates needed.`.
+迁移重命名整个 effort 目录. 它只更新解析器拥有且具有唯一映射的结构化 issue 内容, 包括已识别的本地阻断问题引用. 普通正文, `## Comments`, `## Answer`, spec, map, research, prototype 和其他无关文本不变. Spec Readiness 和 Commit Audit JSON 随目录移动但字节不变, 不重新绑定, 验证, 删除或授权. `Status:` 永远不变, 迁移不生成持久映射或生命周期记录. 成功时只写实际变化并执行必要重命名, 不创建备份. 诊断路径使用仓库相对写法 (不带 `./`) 并按码元序排序, 不受区域设置影响; 缺失的 Spec Readiness 记录按 `<NN>.spec-readiness.json` 报告. 执行中途发生 I/O 失败时报告已完成与剩余路径; 重试接受由此产生的合法混合状态并保留已经应用的编号. 无变化时输出 `No updates needed.`.
 
 ## Agent CLI launcher
 
@@ -431,7 +423,7 @@ Reviewer 专属层只在 Reviewer 根线程的原生配置中强制 `agents.enab
 
 每轮审核读取完整固定的候选, 关联上下文, 请求, 治理 Input 与适用执行规则, 不用后续源工作树字节补证. Main Agent 可以继续其他已授权工作或本候选已经获准的修复, 这些写入不替换运行中的输入. Commit Audit 的受审版本是 Request 中固定的 `base` 提交和 `tree` 已暂存树, Reviewer 不读实时索引, 所以 Main Agent 可以在审核期间继续暂存修复, 再用新一轮 `prepare` 交付新的完整版本. 这种协调使用已有临时材料和 Git 对象, 不建立另一套候选来源或原生审核调度协议.
 
-Code Standards 与要求符合审核各自按比较基线, 纳入范围, 文件模式和实现字节, 关联上下文, 适用指令, 授权及验证事实判断完整通过结果是否仍然有效, 要求符合审核还依赖完整治理要求. 这些实际输入未变且没有新失败或相反证据时, 可以保留该轴结果. 仅治理要求输入变化, 且未进入 Standards 的候选, 规则或关联证据时, 不使 Standards 自动失效; 不得只按文件路径推断无影响. Spec Readiness 和 Commit Audit 继续执行各自机械新鲜度与当前候选检查, 原线程存在或另一轴通过不替代完整有效结果.
+Code Standards 与要求符合审核各自按比较基线, 纳入范围, 文件模式和实现字节, 关联上下文, 适用指令, 授权及验证事实判断完整通过结果是否仍然有效, 要求符合审核还依赖完整治理要求 (提交审查中为授权 issue 与治理文档差异). 这些实际输入未变且没有新失败或相反证据时, 可以保留该轴结果. 仅治理要求输入变化, 且未进入 Standards 的候选, 规则或关联证据时, 不使 Standards 自动失效; 不得只按文件路径推断无影响. Spec Readiness 和 Commit Audit 继续执行各自机械新鲜度与当前候选检查, 原线程存在或另一轴通过不替代完整有效结果.
 
 三种 Reviewer 的后续复审默认检查相邻受审版本的实际差异和全部关联影响. Main Agent 提供完整当前输入, 准确前轮绑定输入, 该 Reviewer 自己已完成的原始报告及变化范围. 前轮材料只证明历史覆盖并定位仍待处理的事项, 当前语义证据仍来自当前固定版本. 初次审核完成全部适用检查; 前轮未完成的检查继续完成, 旧问题逐项处理, 不因为本轮差异未再提及就消失. 前轮已完成且未受本轮变化影响的内容不再审核, 也不为其补报问题, 即使前轮漏报; 代价是漏报可能留到之后才被发现, 换来复审轮数收敛. 其他作者的结论, 作者会话历史及正式历史审计或就绪记录不能成为替代独立判断的语义权威.
 
@@ -493,8 +485,9 @@ Codex 与 Claude Code 都完整支持静态 Skill 与 `AGENTS.md` / `CLAUDE.md` 
 
 Engine 在当前 Main Agent 会话与 issue 的 `spec-readiness` 用途工作区下新建审核轮目录 `rounds/<requestId>/`, 草稿固定为其中的 `report/draft.txt`, 也是 Reviewer 的绑定报告. Engine 创建零字节草稿, 从 Canonical ID 定位准确 issue, 然后把以下内容绑定到 `requests/` 下的不可变 Reviewer Request, 并按 [Review rounds](#review-rounds) 写出本轮其余文件, 只输出轮目录路径:
 
-- 审核对象: 连续的 `## What to build`, `## Spec Requirement` 和 `## Acceptance criteria`.
+- 审核对象: 从 `## What to build` 到 `## Acceptance criteria` 的连续范围.
 - 完整治理输入.
+- effort 起点 `since`: 由引擎从 Git 历史推导 (最早触及该 effort 目录的提交的父提交; 根提交或尚未提交时分别取空树或 `HEAD`), 受请求摘要覆盖. Input 自 `since` 的改动用快照与 `git show <since>:<path>` 比较, 文件在 `since` 处不存在时整份视为新增.
 - 独立绑定的规范 Reviewer Role 身份与 SHA-256.
 
 Reviewer Request 保存行尾规范化为 LF 的准确审核对象内容. 计算审核对象身份时, 只在 `## Acceptance criteria` 内且 Markdown 围栏代码外, 把实际列表项开头任务列表标记的 `[x]` 与 `[X]` 规范化为 `[ ]`. 单纯改变这些完成状态或行尾表示不使身份变化; 其他内容变化仍会. Markdown 围栏代码块中的二级标题属于内容, 不划分这些章节. 请求摘要值继续绑定准确审核对象内容.
@@ -502,12 +495,12 @@ Reviewer Request 保存行尾规范化为 LF 的准确审核对象内容. 计算
 Reviewer 先读取本轮固定的适用 Agent 指令完整副本, 再按顺序审查:
 
 1. 检查治理输入的完整性, 记录每个缺失或未知事实.
-2. 对照交付结果和验收条件检查全部要求选择, 收集全部独立范围问题.
+2. 对照交付结果和验收条件, 自行检索相关既有章节并检查全部要求, 收集全部独立范围问题. 检索读取工作树, 是对 Reviewer 只读固定版本规则的显式例外, 检索结果只作比较证据.
 3. 用治理输入审查一致性, 可实现性, 可验证性, 理由, ADR 和 Module Design 适用性.
 
 前一步存在问题时继续后续步骤; 后续步骤在已报告缺陷下仍可判断的部分照常完成. 具体阶段与检查名由 Spec Readiness Reviewer Role 拥有.
 
-Agent 指令规范 Reviewer 的工作方式, 但不作为治理证据, 也不扩大审核对象. 审核对象只能证明 issue 选择范围, 不能证明设计质量. Reviewer 的 txt 草稿逐条写入发现的问题, 每条以 `- ` 开头并写明检查名, 位置, 缺陷和对就绪的影响, 不要求修正方向; 完整审核没有问题时, 草稿精确为 `No problems.`.
+Agent 指令规范 Reviewer 的工作方式, 但不作为治理证据, 也不扩大审核对象. 审核对象只能证明 issue 的交付范围, 不能证明设计质量. Reviewer 的 txt 草稿逐条写入发现的问题, 每条以 `- ` 开头并写明检查名, 位置, 缺陷和对就绪的影响, 不要求修正方向; 完整审核没有问题时, 草稿精确为 `No problems.`.
 
 Reviewer 在完成全部适用检查和绑定文件写入后单独返回完成状态. 一轮必须完成全部适用的已注册检查后再返回, 不因前一项检查已有问题而提前返回, 使一轮报出全部问题; 只有确实无法在某个已报告缺陷下判断的部分才留到下一轮, 并在报告中写明所依赖的缺陷. Main Agent 从准确绑定文件读取结论, 不从 `ready` 推断没有问题, 也不补写空草稿. 准备阶段创建的空文件只表示尚未交付结果; 如果 Reviewer 写错路径后返回 `ready`, 该空文件不能成为无问题证据.
 
@@ -515,23 +508,23 @@ Reviewer 在完成全部适用检查和绑定文件写入后单独返回完成�
 
 审核后的结果按生成, 提升, 验证的顺序交接. 生成临时结果不等于把它写入工作记录, 写入工作记录也不等于已经取得实施授权.
 
-`generate --issue --input <draft-path>` 要求路径与活动请求完全相同. 普通审核中, 零字节或仅含空白的草稿失败 (错误提示重新 `prepare` 并重发 Reviewer), 不生成规范结果文件; 去除首尾空白后精确为 `No problems.` 时结果为 `satisfied`, 否则为 `gap`. Engine 不解析问题条目, 问题的有效性由 Main Agent 独立核对, Main Agent 每轮自选一两处 Reviewer 应当检查的要求或代码位置抽查. 正式结果使用模式版本 7, 不含检查项. 例外草稿必须包含明确理由和用户确认时间, issue 必须准确使用 `Not required`, 且用户确认不能推断. 普通结果与例外结果都绑定当前审核对象的规范化身份. 有效结果只在 Engine 管理的临时工作区生成规范结果文件并返回路径. `generate` 不写 `.scratch` 或基线.
+`generate --issue --input <draft-path>` 要求路径与活动请求完全相同. 普通审核中, 零字节或仅含空白的草稿失败 (错误提示重新 `prepare` 并重发 Reviewer), 不生成规范结果文件; 去除首尾空白后精确为 `No problems.` 时结果为 `satisfied`, 否则为 `gap`. Engine 不解析问题条目, 问题的有效性由 Main Agent 独立核对, Main Agent 每轮自选一两处 Reviewer 应当检查的要求或代码位置抽查. 正式结果使用模式版本 7, 不含检查项. 例外草稿必须包含明确理由和用户确认时间, 且用户确认不能推断. 普通结果与例外结果都绑定当前审核对象的规范化身份. 有效结果只在 Engine 管理的临时工作区生成规范结果文件并返回路径. `generate` 不写 `.scratch` 或基线.
 
 `promote --input <generated-path>` 在任何写入前重验 issue, 请求, 当前治理输入字节 (`architecture-evidence` 除外, `verify` 同此), 当前审核对象内容身份, 当前 Reviewer Role 字节, 结构, 路径归属和派生结果. 它是写 `.scratch/<NNNN>-<effort-slug>/issues/<NN>.spec-readiness.json` 和更新已完成基线的唯一边界. 有效的 `gap` 可以保存, 但不能满足最终就绪授权. 旧结构不能授权.
 
-`verify --issue` 只读取该 issue 的伴随文件, 并重新检查当前治理输入, 当前 Reviewer Role 和当前 issue 的完整审核对象身份. 它通过与 `prepare`, `generate` 和 `promote` 相同的任务列表标记规范化规则派生当前身份, 并验证治理要求中仅路径引用的标题适用条件, 以及 issue 要求只引用已审核输入. 模式版本低于 7 的记录视为过期.
+`verify --issue` 只读取该 issue 的伴随文件, 并重新检查当前治理输入, 当前 Reviewer Role 和当前 issue 的完整审核对象身份. 它通过与 `prepare`, `generate` 和 `promote` 相同的任务列表标记规范化规则派生当前身份. 模式版本低于 7 的记录视为过期.
 
 非成员路径, 无效的仅路径引用, 未审核要求, 绑定身份漂移或跨 issue 复用都返回非成功, 不修改 Git 跟踪记录. 旧 effort 根记录不迁移, 不删除, 也不作为回退来源. 只改变已有验收任务列表标记的完成状态, `Status:`, `## Blocked by`, `## Validation` 或 `## Comments` 的内容不使记录过期. 退出码 `0` 只证明当前 Spec Readiness 条件, 不检查 issue 状态或阻断问题.
 
 ## Commit Audit
 
-Main Agent 在仓库 `.tmp/` 下写一个 `input.json`, 只包含同一 effort 的排序 `authorizingIssueIds`, 以及适用时的一个空要求确认. 每次运行 `arw commit-audit prepare --input <absolute-input-path>` 都在当前会话工作区下新建审核轮目录 `_commit-audit/<n>/` (`n` 从 1 递增), 从实时 Git 索引物化 `request.json` (授权范围, Gate 1 终态 issue, Gate 2 治理文档或例外, `reviewPath`, `base` 为 `HEAD` 提交, `tree` 为 `git write-tree` 固定的已暂存树), 为 `requirements-reviewer` 和 `code-standards-reviewer` 各建一个只含空 `review.txt` 的报告目录, 并按 [Review rounds](#review-rounds) 写出本轮其余文件, 然后只输出轮目录绝对路径. Code Standards 的 handoff 列出按 `.arwignore` 和 effort `prototype/**`, `research/**` 排除后的纳入路径, 并指向授权 issue 的预估净增行数. 复审的相邻版本变化是 `git diff <前轮 tree> <tree>`.
+Main Agent 在仓库 `.tmp/` 下写一个 `input.json`, 只包含同一 effort 的排序 `authorizingIssueIds`, 不含其他字段. 每次运行 `arw commit-audit prepare --input <absolute-input-path>` 都在当前会话工作区下新建审核轮目录 `_commit-audit/<n>/` (`n` 从 1 递增), 从实时 Git 索引物化 `request.json` (授权范围, Gate 1 终态 issue, Gate 2 的治理文档与 `since`, `reviewPath`, `base` 为 `HEAD` 提交, `tree` 为 `git write-tree` 固定的已暂存树), 为 `requirements-reviewer` 和 `code-standards-reviewer` 各建一个只含空 `review.txt` 的报告目录, 并按 [Review rounds](#review-rounds) 写出本轮其余文件, 然后只输出轮目录绝对路径. Code Standards 的 handoff 列出按 `.arwignore` 和 effort `prototype/**`, `research/**` 排除后的纳入路径, 并指向授权 issue 的预估净增行数. 复审的相邻版本变化是 `git diff <前轮 tree> <tree>`.
 
 要求符合审核的 Reviewer 接收 Request 路径, 只用 `git diff <base> <tree>` 和 `git show <tree>:<path>` 读取受审版本, 把发现的要求问题逐条写入 `review.txt` (每条写明位置, 影响和修正方向), 没有问题时写 `No problems.`, 然后只返回 `ready | incomplete`. `incomplete` 结束本轮并交回 Main Agent.
 
 提交门槛是两个 Reviewer 正常结束且报告中的问题都已处理. Main Agent 独立核对每个问题, 每轮自选一两处 Reviewer 应当检查的要求或代码位置抽查; 发现漏检时该轮结果作废并重审. ARW 不生成或提升审核记录.
 
-`authorizingIssueIds` 使用本地数字 Canonical ID. Gate 1 覆盖本次新进入终态的 issue, 它们必须在授权范围内. Gate 2 文档只取已接受 issue 的有效 `## Spec Requirement` 并集 (只识别 `docs/adr/`, `docs/specs/` 下的 Markdown 和 `.scratch/<NNNN>-<slug>/` 下的 `spec.md` 或 `PRD.md`, 沿用既有识别, 本次只收紧 effort 目录名), 每个文档必须是已暂存普通文件. 空并集需要用户明确确认具体理由和精确到秒的 UTC `confirmedAt`. 整个 effort 没有改动并集内任何文档时, Main Agent 核对后可用同样格式的 `gate2Exception` 跳过 Gate 2 (Request 的文档为空), 无需用户确认; 本次候选改动了并集内文档时 `prepare` 拒绝. 跳过记录与空并集的确认使用同一结构 (非空 `reason` 和 UTC 秒级 `confirmedAt`): 空并集时 `confirmedAt` 是用户确认时间, 跳过时是 Main Agent 的核对时间. 引擎只校验该结构, 不区分两种情形, 空并集须用户确认的规则由 Main Agent 遵守.
+`authorizingIssueIds` 使用本地数字 Canonical ID. Gate 1 覆盖本次新进入终态的 issue, 它们必须在授权范围内. Gate 2 在当前 effort 的每个实施 issue 都处于终态时适用, 文档是 `git diff --name-only <since> <tree>` 中属于 `docs/adr/`, `docs/specs/` 下的 Markdown 或当前 `.scratch/<NNNN>-<slug>/` 下 `spec.md`, `PRD.md` 的路径; `since` 由 `lib/arw-common` 的 effort 起点推导给出, 不存储基线. diff 为空时没有文档, Gate 2 无需审核. 不存在 `gate2Exception`, 输入含未知键时 `prepare` 拒绝. 每次实施提交的 Gate 1 另含差异回归检查, 其流程由 `requirements-reviewer` 角色拥有.
 
 [Implementation records](#implementation-records) 定义的两个记录章节不是审核要求. Request 范围相同不能机械证明任意实现语义和字节未变, Main Agent 必须比较最终实际候选与受审版本.
 
@@ -686,7 +679,7 @@ Main Agent 或用户负责语义决定. 独立 Reviewer 只返回结果. Module 
 
 `Artifact Module` 拥有登记路径, Canonical ID, 实施 issue, Application Source Issue 与 Wayfinder issue 分类, 解析, 排序, 格式错误分类, 读取操作和确定性迁移. 它不解释 Spec Readiness 记录, 仓库锁文件或安装清单.
 
-`Issue Documents Module` 唯一拥有实施 issue 正式章节, 审核对象的连续范围, `## Spec Requirement` 的语法, 相对当前 Git 仓库根目录的路径, 可选锚点和规范化结果. 它同时返回准确审核对象内容和只规范验收任务列表标记完成状态的身份内容. Spec Readiness 使用这两个结果, Spec Readiness 与 Commit Audit 使用同一要求解析结果; Validation 和 Comments 不产生正式要求. 它不计算哈希, 不读取阻断问题图, 不读取引用的 spec, 不检查锚点是否存在, 不写文件.
+`Issue Documents Module` 唯一拥有实施 issue 正式章节, 审核对象的连续范围和规范化结果. 它同时返回准确审核对象内容和只规范验收任务列表标记完成状态的身份内容. Spec Readiness 使用这两个结果, Validation 和 Comments 不产生正式要求. 它不计算哈希, 不读取阻断问题图, 不写文件.
 
 `Temporary Workspace Module` 验证主机 Platform Adapter 提供的平台与会话身份, 从当前 Git 仓库根目录, 可选 issue ID 和用途创建 `.tmp/` 规范目录. 它不猜测身份, 不自动清理, 不创建锁文件, 不选择或启动后台 Agent.
 
@@ -696,7 +689,7 @@ Main Agent 或用户负责语义决定. 独立 Reviewer 只返回结果. Module 
 
 `Spec Readiness Module` 拥有准备, Reviewer Request, 草稿绑定, 生成, 提升和特定 issue 验证. 它机械验证身份, 字节, 摘要, 结构, 路径与证据, 不判断开放语义, 原生会话控制由共享 Reviewer 运行责任承担.
 
-`Commit Audit Module` 复用 Repository State Inspector, 通过 Git Runner 读取实时已暂存候选及 HEAD, 验证单 effort 授权范围并推导 Gate 1 和 Gate 2 范围, 准备 Reviewer Request 和空报告. 它还承担 `arw commit-audit verify` 的机械检查和审核轮核对, 额外复用 ARW Artifact 清单, 文本策略和 Platform Adapter 的会话身份. 它不判断语义, 不选择暂存范围, 不承担原生会话控制, 不写受 Git 跟踪文件. Main Agent 协调版本与准确记录差异, 独立 Reviewer 判断当前语义及历史覆盖.
+`Commit Audit Module` 复用 Repository State Inspector, 通过 Git Runner 读取实时已暂存候选及 HEAD, 验证单 effort 授权范围并推导 Gate 1 和 Gate 2 范围 (含 effort 起点), 准备 Reviewer Request 和空报告. 它还承担 `arw commit-audit verify` 的机械检查和审核轮核对, 额外复用 ARW Artifact 清单, 文本策略和 Platform Adapter 的会话身份. 它不判断语义, 不选择暂存范围, 不承担原生会话控制, 不写受 Git 跟踪文件. Main Agent 协调版本与准确记录差异, 独立 Reviewer 判断当前语义及历史覆盖.
 
 `Agent CLI Launch Module` 接受已经验证的 Agent 配置, 本次参数, 当前目录和子进程 Adapter. 它稳定拼接固定参数与本次参数, 直接启动可执行文件, 等待结束并返回 `exited | failed`. 它不读取全局配置, 不解析公开命令, 不发现当前 Git 仓库, 不创建命令解释器或会话登记表.
 
@@ -836,7 +829,7 @@ Repository Workflow 保持为一个隐藏复杂性且接口精简的 Module, 因
 
 Repository State Inspector 保持独立, 因为正式环境和测试需要同一个完整观察边界. 它只收集事实, 不解释策略. Platform Adapter 保持操作中立, 每次只计算一个平台, 不执行 Git 写入, 也不取得用户授权.
 
-Gate 2 可由 `gate2Exception` 跳过, 因为整个 effort 没有改动 Gate 2 文档并集内的任何文档时, 没有新的 spec 变化可审, 各 issue 的要求已由 Gate 1 逐项审过, 仍运行只是重复付出一次独立审核的时间. 当前选择接受并集文档中未被任何 issue 引用的要求不再被 effort 级审核的风险, 也接受 "effort 历史由 Main Agent 核对" 的成本: 引擎只能从已暂存候选判断本次是否改动了并集内的文档并据此拒绝, 无法读取 effort 此前的提交; 按文档并集而不是全部 spec 判断, 因为 Gate 2 的审核范围正是该并集. 拒绝的替代方案是让引擎读取 effort 的全部提交历史, 它增加对 Git 历史的依赖, 而核对只需要一次 `git log`.
+Gate 2 范围由 `git diff <since> <tree>` 推导而不是 issue 引用的并集: 引用并集既会漏审 effort 修改的长期规范, 又让引用选择成为审核缺口的来源. 归纳前提: 每次实施提交的差异回归检查保证代码改动不悄悄破坏既有要求, effort 内每处治理文档改动在做出时又由 Gate 2 对照代码核对, 所以 Gate 2 只需看治理文档本身的改动. 被拒绝的替代方案是每次整份审核并集文档, 它重复审核未改部分且审核范围随 effort 增大; 剩余风险是回归检查的检索遗漏, 以及 effort 外的治理文档改动 (只由规则与文档提交的 `requirements-reviewer` 例外覆盖) 和从未审核过的旧文档可能留有未被发现的缺口, 这一风险被接受, 由 Reviewer 逐文件完成检索并由 Main Agent 抽查降低. 不存储逐文档基线, 因为提交前无法强制写入, 交错 effort 会互相消耗基线, 且从未审过的文档没有基线; 从 Git 历史推导起点在并行 effort 时会多审而不是漏审. 旧的从未审核的 ADR 按现状接受.
 
 Spec Readiness 分离准备, 外部审核, 生成, 提升和验证, 使开放语义审核保持独立, Engine 检查保持确定性. Issue Documents 单独拥有审核对象边界和要求语法, 防止 Spec Readiness 与 Commit Audit 接受不同的路径契约.
 
@@ -862,7 +855,7 @@ Commit Audit Module 独立于实施 Module 和 Reviewer, 优先从实时 Git 暂
 
 差异复审保留原 Reviewer 自己已经完成且未受影响的覆盖, 可以减少重复判断, 同时每轮完整输入和完整报告保持当前结果的可核对性. 把历史覆盖判断留给 Reviewer, 把候选及记录差异比较留给 Main Agent, 可以避免 Engine 伪装成任意代码语义检查器. 明确记录章节的非要求身份使正常收尾不反复触发审核, 但新的真实失败仍削弱相应结论, 不成为降低证据责任的例外. 这些边界复用已有请求, 临时材料及 Git 对象, 不需要调度器, 覆盖登记或新增持久格式.
 
-规则与文档候选走轻量提交流程, 不运行 Spec Readiness 和 Commit Audit Reviewer, 优先降低这类改动的审核成本: 实际运行中两类 Reviewer 的多轮往返远超其收益, 发现的多为流程材料问题, 真正的跨文档语义缺口少见, 且用户按 ticket 复核整体 diff. 保留单个 Reviewer 仍会给每个小改动增加一轮往返, 因而只用于改动审核系统本身或长期规范合同条款的情形, 此时限一轮且处理后不复审, 避免审核循环. 轻量流程同样允许未进入终态的实施 issue, `spec.md` 和 `map.md` 免就绪记录提交, 因为就绪审核在设计定稿时审核一次, 实施 issue 的终态转换仍由 `verify` 拒绝, 提交时不重复审核. `verify` 的机械检查放在 Commit Audit Module, 因为它们复用该 Module 已读取的暂存候选; 被拒绝的替代方案是拆到 Artifact 或 Text Policy Module, 代价是 Commit Audit 依赖二者. 被拒绝的替代方案是提交时要求有效就绪记录, 它与设计定稿时的就绪审核重复, 而用户按 ticket 复核整体 diff; 接受的成本是这类改动不经就绪审核即提交, 由上述 `requirements-reviewer` 例外兜住审核系统和长期规范合同条款的高风险部分. 当前选择接受规则与文档之间的语义或跨文档错误只由 Main Agent 的投影, 分发, 文本和引用检查及用户复核发现, 以及例外中的修正无人复核的成本.
+规则与文档候选走轻量提交流程, 不运行 Spec Readiness 和 Commit Audit Reviewer, 优先降低这类改动的审核成本: 实际运行中两类 Reviewer 的多轮往返远超其收益, 发现的多为流程材料问题, 真正的跨文档语义缺口少见, 且用户按 ticket 复核整体 diff. 保留单个 Reviewer 仍会给每个小改动增加一轮往返, 因而只用于改动审核系统本身或长期规范合同条款的情形, 此时限一轮且处理后不复审, 避免审核循环. 轻量流程同样允许未进入终态的实施 issue, `spec.md` 和 `map.md` 免就绪记录提交, 因为就绪审核在设计定稿时审核一次, 实施 issue 的终态转换仍由 `verify` 拒绝, 提交时不重复审核. `verify` 的机械检查放在 Commit Audit Module, 因为它们复用该 Module 已读取的暂存候选; 被拒绝的替代方案是拆到 ARW Artifact 或 Text Policy Module, 代价是 Commit Audit 依赖二者. 被拒绝的替代方案是提交时要求有效就绪记录, 它与设计定稿时的就绪审核重复, 而用户按 ticket 复核整体 diff; 接受的成本是这类改动不经就绪审核即提交, 由上述 `requirements-reviewer` 例外兜住审核系统和长期规范合同条款的高风险部分. 当前选择接受规则与文档之间的语义或跨文档错误只由 Main Agent 的投影, 分发, 文本和引用检查及用户复核发现, 以及例外中的修正无人复核的成本.
 
 Code Map Module 保留独立结构, 覆盖与生命周期, 因为这些规则同时被只读验证和 Repository Workflow 使用. 把它嵌入 Repository Workflow 会让独立验证依赖完整写入事务, 把它当作 `Artifact Module` 管理的普通记录又无法表达目录覆盖和归属. 当前选择接受仓库工作流调用另一个 Module, 并分别报告 Code Map 诊断的成本.
 
@@ -968,6 +961,6 @@ Reviewer 的定向测试分别观察中断保留运行环境, 违规时仅使该
 
 每个实施或文档 issue 在完成前必须通过 `arw text check`, 以及把该 issue 所属当前 effort 的实际仓库相对目录传给 `--include` 的 `arw terms check`. Repository Profile 配置 Code Map 时还必须通过 `arw code-map verify`. Repository-owned 测试套件继续补充测试, 构建和其他本地验证.
 
-Commit Audit 的确定性验证通过公开准备与 verify 生命周期观察授权范围, Gate 1 和 Gate 2 推导 (含 `gate2Exception` 在并集文档未改动时被接受且 Request 的 Gate 2 文档为空, 在本次候选改动并集文档时或结构无效时被拒绝) 及 ARW Artifact 身份保留, 隐含模式下的审核轮核对 (无审核轮, HEAD 或暂存树变化, 空报告被拒绝, 仅授权 issue 记录差异和只重跑一个 Reviewer 通过, 两个平台的会话身份各一个用例); 观察审计使用准确索引, 不混入新工作树字节. Agent 工作流的独立核对使用正常交付实际取得的请求, 原始报告及结果, 证明共同候选, 自身前轮覆盖, 差异与关联影响, 未完成检查及最终授权. 确定性解析器不声称判断任意代码语义, 文档规则不使用仅断言包含某句话的测试证明, 普通规则验证不新增全自动真实模型端到端场景.
+Commit Audit 的确定性验证通过公开准备与 verify 生命周期观察授权范围, Gate 1 和 Gate 2 推导 (含 effort 起点推导, 治理文档差异为空时无文档, 根提交取空树, `gate2Exception` 作为未知键被拒绝) 及 ARW Artifact 身份保留, 隐含模式下的审核轮核对 (无审核轮, HEAD 或暂存树变化, 空报告被拒绝, 仅授权 issue 记录差异和只重跑一个 Reviewer 通过, 两个平台的会话身份各一个用例); 观察审计使用准确索引, 不混入新工作树字节. Agent 工作流的独立核对使用正常交付实际取得的请求, 原始报告及结果, 证明共同候选, 自身前轮覆盖, 差异与关联影响, 未完成检查及最终授权. 确定性解析器不声称判断任意代码语义, 文档规则不使用仅断言包含某句话的测试证明, 普通规则验证不新增全自动真实模型端到端场景.
 
 源码仓库的确定性测试矩阵与完整验证命令由[源码仓库验证规则](../../agents/source-checkout-validation.md)拥有, 测试与类型检查继续独立, 实际依赖和输入有效性决定执行顺序及结果复用. 安装与发布受验系统矩阵留在各自的责任规格中.

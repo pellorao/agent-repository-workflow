@@ -39,6 +39,7 @@
     "lib/arw-common/config.mjs",
     "lib/arw-common/document-language-inspection.mjs",
     "lib/arw-common/editor-process.mjs",
+    "lib/arw-common/effort-start.mjs",
     "lib/arw-common/identity.mjs",
     "lib/arw-common/installation-manifest.mjs",
     "lib/arw-common/issue-documents.mjs",

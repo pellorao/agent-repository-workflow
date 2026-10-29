@@ -7,7 +7,7 @@ import {
     isIssueExecutable,
     migrateIssueDocuments,
     readDownstreamChanges,
-    readIssueRequirement,
+    readIssueSubject,
     readIssueDocuments as readIssueDocumentsImplementation,
     replaceDownstreamChanges,
 } from '../../lib/arw-common/issue-documents.mjs';
@@ -139,24 +139,23 @@ test('Application association fields fail closed when misplaced or combined', ()
     }
 });
 
-test('requirement read returns normalized Repository-root-relative references', () => {
-    const text = '# Implement\n\nStatus: ready-for-agent\n\n## What to build\n\nImplement.\n\n## Spec Requirement\n\nGoverning requirements:\n\n- `.scratch/0001-workflow/spec.md#module-design`\n- `docs/agents/validation.md`\n\n## Acceptance criteria\n\n- [ ] Complete.\n\n## Validation\n\n- Not run.\n\n## Blocked by\n\n- None\n\n## Comments\n\n- No comments.\n';
-
-    assert.deepEqual(readIssueRequirement({
+test('subject read returns the same content for new issues and old issues that still carry a Spec Requirement section', () => {
+    const tail = '## Acceptance criteria\n\n- [ ] Complete.\n\n';
+    const rest = '## Validation\n\n- Not run.\n\n## Blocked by\n\n- None\n';
+    const read = (/** @type {string} */ body) => readIssueSubject({
         issuePath: '.scratch/0001-workflow/issues/01-implement.md',
-        text,
-    }), {
-        kind: 'normal',
-        requirements: [
-            {anchor: 'module-design', filePath: '.scratch/0001-workflow/spec.md'},
-            {anchor: null, filePath: 'docs/agents/validation.md'},
-        ],
-        subjectContent: '## What to build\n\nImplement.\n\n## Spec Requirement\n\nGoverning requirements:\n\n- `.scratch/0001-workflow/spec.md#module-design`\n- `docs/agents/validation.md`\n\n## Acceptance criteria\n\n- [ ] Complete.\n\n',
-        subjectIdentityContent: '## What to build\n\nImplement.\n\n## Spec Requirement\n\nGoverning requirements:\n\n- `.scratch/0001-workflow/spec.md#module-design`\n- `docs/agents/validation.md`\n\n## Acceptance criteria\n\n- [ ] Complete.\n\n',
+        text: `# Implement\n\nStatus: ready-for-agent\n\n${body}${rest}`,
     });
+
+    assert.deepEqual(read(`## What to build\n\nImplement.\n\n${tail}`), {
+        subjectContent: `## What to build\n\nImplement.\n\n${tail}`,
+        subjectIdentityContent: `## What to build\n\nImplement.\n\n## Acceptance criteria\n\n- [ ] Complete.\n\n`,
+    });
+    const old = `## What to build\n\nImplement.\n\n## Spec Requirement\n\nGoverning requirements:\n\n- \`docs/spec.md#solution\`\n\n${tail}`;
+    assert.equal(read(old).subjectContent, old);
 });
 
-test('requirement read normalizes only acceptance task-list completion markers for identity', () => {
+test('subject read normalizes only acceptance task-list completion markers for identity', () => {
     const text = [
         '# Implement',
         '',
@@ -192,7 +191,7 @@ test('requirement read normalizes only acceptance task-list completion markers f
         '- Not run.',
         '',
     ].join('\r\n');
-    const result = readIssueRequirement({
+    const result = readIssueSubject({
         issuePath: '.scratch/0001-workflow/issues/01-implement.md',
         text,
     });
@@ -255,7 +254,7 @@ test('requirement read normalizes only acceptance task-list completion markers f
     ].join('\n'));
 });
 
-test('requirement read keeps fenced level-two headings inside the subject content', () => {
+test('subject read keeps fenced level-two headings inside the subject content', () => {
     const subjectContent = [
         '## What to build',
         '',
@@ -281,36 +280,24 @@ test('requirement read keeps fenced level-two headings inside the subject conten
     ].join('\n');
     const text = `# Implement\n\nStatus: ready-for-agent\n\n${subjectContent}## Validation\n\n- Not run.\n`;
 
-    assert.equal(readIssueRequirement({
+    assert.equal(readIssueSubject({
         issuePath: '.scratch/0001-workflow/issues/01-implement.md',
         text,
     }).subjectContent, subjectContent);
 });
 
-test('requirement read rejects issue-directory-relative and unsafe paths', () => {
-    for (const filePath of [
-        '../spec.md',
-        './docs/spec.md',
-        '/docs/spec.md',
-        'C:/docs/spec.md',
-        'docs\\spec.md',
-        'docs//spec.md',
-        'docs/../spec.md',
-        'docs/\0spec.md',
+test('subject read rejects missing, duplicated and misordered sections', () => {
+    const issuePath = '.scratch/0001-workflow/issues/01-implement.md';
+    for (const body of [
+        '## What to build\n\nImplement.\n',
+        '## Acceptance criteria\n\n- [ ] Complete.\n',
+        '## What to build\n\nA.\n\n## What to build\n\nB.\n\n## Acceptance criteria\n\n- [ ] Complete.\n',
+        '## Acceptance criteria\n\n- [ ] Complete.\n\n## What to build\n\nImplement.\n',
+        '## What to build\n\nImplement.\n\n## Validation\n\nRun.\n\n## Acceptance criteria\n\n- [ ] Complete.\n',
     ]) {
-        const text = `# Implement\n\nStatus: ready-for-agent\n\n## What to build\n\nImplement.\n\n## Spec Requirement\n\nGoverning requirements:\n\n- \`${filePath}#module-design\`\n\n## Acceptance criteria\n\n- [ ] Complete.\n`;
-
-        assert.throws(
-            () => readIssueRequirement({issuePath: '.scratch/0001-workflow/issues/01-implement.md', text}),
-            /must be a normalized Repository-relative path/,
-        );
+        assert.throws(() => readIssueSubject({issuePath, text: `# Implement\n\nStatus: ready-for-agent\n\n${body}`}), /malformed What to build or Acceptance criteria placement/);
     }
-
-    const invalidAnchor = '# Implement\n\nStatus: ready-for-agent\n\n## What to build\n\nImplement.\n\n## Spec Requirement\n\nGoverning requirements:\n\n- `docs/spec.md#Invalid_Anchor`\n\n## Acceptance criteria\n\n- [ ] Complete.\n';
-    assert.throws(
-        () => readIssueRequirement({issuePath: '.scratch/0001-workflow/issues/01-implement.md', text: invalidAnchor}),
-        /malformed governing requirement reference/,
-    );
+    assert.throws(() => readIssueSubject({issuePath: '../issue.md', text: ''}), /Issue path/);
 });
 
 test('migration renders canonical documents that round-trip through strict read', () => {

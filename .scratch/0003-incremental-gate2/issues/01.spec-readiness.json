@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0003:01",
+  "request": {
+    "digest": "29117232b2410d7ab86f963251e92caab495d22b5f5bde3d1355f5aa663d149b",
+    "filePath": ".tmp/claude-code/06588b1e-7f07-4832-8933-107aaf5b5978/0003_01/spec-readiness/requests/request-9618b486-c635-4087-b6f7-9b27216859f3.json",
+    "id": "9618b486-c635-4087-b6f7-9b27216859f3"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "f797bb611ba9cf50c0ccfab4d029b2a32fd44b771b7b9338a0a31bb48ddba14a"
+  },
+  "inputs": [
+    {
+      "filePath": ".scratch/0003-incremental-gate2/spec.md",
+      "role": "governing-spec",
+      "sha256": "1106ba3326e9224db772b5ab1fcc758d2f59186f476a536feb826173a9cd43bc"
+    },
+    {
+      "filePath": "docs/adr/0006-enforce-spec-readiness-with-independent-review.md",
+      "role": "adr",
+      "sha256": "dc8fe288e20fb8b35fb0a7241b8a93209dd416b54c0f08989d79a8c083d3017d"
+    },
+    {
+      "filePath": "docs/adr/0023-separate-commit-audit-review-from-implementation.md",
+      "role": "adr",
+      "sha256": "fd006137c4e583cc1a07fcd7b995dd8c6b96d1007c648143f6ffacc2337775ce"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow-application-jira/spec.md",
+      "role": "architecture-evidence",
+      "sha256": "dd082ffa12dd3157cfb4cc4a58d9d922fbcb8411d29fa0e05aa1ace8d697cd4b"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow-development/spec.md",
+      "role": "architecture-evidence",
+      "sha256": "bafc32f627f3b36b0e0b1ac3e3252dc1562a0991baa3a110ed5f450ac90bbe7f"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow/spec.md",
+      "role": "architecture-evidence",
+      "sha256": "4d4f4c5805632badb4b80cbbc56cc5e130c2ff15136efacdeea2a22b541b773d"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0003-incremental-gate2/issues/01-incremental-gate2-remove-spec-requirement.md",
+    "sha256": "9795d8999529f274726cc4963863ea98ff71f25177337aa2b617055e822331ed"
+  },
+  "result": "satisfied"
+}

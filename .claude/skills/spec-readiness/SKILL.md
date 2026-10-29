@@ -15,11 +15,11 @@ Spec Readiness 针对每个实施 issue 运行, 不针对 Application Source Iss
 
 ## Subject
 
-subject 是连续的 `## What to build`, `## Spec Requirement` 和 `## Acceptance criteria` 范围, 行尾归一化为 LF; Markdown 围栏代码块内的二级标题属于正文, 不划分范围. 计算 subject 身份时, 只把 `## Acceptance criteria` 内, 围栏代码之外, 列表项开头的任务标记 `[x]` 或 `[X]` 规范化为 `[ ]`, 所以只勾选验收项不会使就绪失效; 其他 subject 内容变化都会使它失效. `Status:`, `## Blocked by`, `## Validation`, `## Comments` 和 Commit Audit 记录不属于 subject.
+subject 是连续的 `## What to build` 到 `## Acceptance criteria` 范围, 行尾归一化为 LF; Markdown 围栏代码块内的二级标题属于正文, 不划分范围. 计算 subject 身份时, 只把 `## Acceptance criteria` 内, 围栏代码之外, 列表项开头的任务标记 `[x]` 或 `[X]` 规范化为 `[ ]`, 所以只勾选验收项不会使就绪失效; 其他 subject 内容变化都会使它失效. `Status:`, `## Blocked by`, `## Validation`, `## Comments` 和 Commit Audit 记录不属于 subject.
 
 ## Governing design
 
-`## Spec Requirement` 的格式和范围见 [Issue requirements](../issue-tracking/SKILL.md#issue-requirements). Module Design 只影响实施工作流中的条件检查, 按正式运行时行为而不是目录, 扩展名或语言判断, 不添加独立的适用性布尔值:
+issue 不列治理要求引用: Reviewer 根据 `## What to build` 在 `docs/specs`, `docs/adr` 和本 effort 的 spec 中自行检索该 issue 实现的既有章节 (检索结果不是 Input), Main Agent 不提供锚点. Module Design 只影响实施工作流中的条件检查, 按正式运行时行为而不是目录, 扩展名或语言判断, 不添加独立的适用性布尔值:
 
 - 工作不修改非测试运行时代码时, 治理 spec 或 PRD 省略 `## Module Design`.
 - 修改非测试运行时代码, 但不改变 Module 责任, Interface (包括已有字段所表示含义的改变), Seam, 依赖方向, 权威来源或数据流时, 包含一个完整内容只是一个 `Not required:` 段落的 `## Module Design`.
@@ -28,7 +28,7 @@ subject 是连续的 `## What to build`, `## Spec Requirement` 和 `## Acceptanc
 ## Prepare and review
 
 1. 准备 Input 对象: 非空的 `inputs` 数组, 每项是 `role` 和仓库相对的 `filePath`. 至少包含一个 `governing-spec` 或 `governing-prd`, 以及每个适用的 `adr`, `domain-context` (每个适用的上下文文档) 和 `architecture-evidence` (已有的必要实现事实). 每个 Input 准备时必须已经存在, 并且是本轮权威设计或必要证据, 不用尚未创建的内容代替. Agent 指令, Reviewer Role, 平台 Agent 配置和本地跟踪器 issue 永远不是 Input; 不推断省略的 Input, 也不加入无关的术语表或决定.
-2. `prepare` 前自检 (多数重复复审问题都能由此提前发现): 每个要求引用锚点和 `path:line` 都能 grep 到; subject 与 spec 对同一命令, 字段, 规则的表述一致 (改过一处就 grep 另一处旧写法); 每条验收标准写明观察方式 (命令, 输出字段或断言); 声明的每项责任或规则都有 Interface 条目 (输入, 输出, 错误和重复, 缺失分支的结果); 设计依赖的外部事实 (运行时输出形状, 冻结补丁, 他处规格) 已在 Input 中.
+2. `prepare` 前自检 (多数重复复审问题都能由此提前发现): `What to build` 与验收标准中的命令, 字段和行为名称, 以及 `path:line` 引用都能 grep 到; subject 与 spec 对同一命令, 字段, 规则的表述一致 (改过一处就 grep 另一处旧写法); 每条验收标准写明观察方式 (命令, 输出字段或断言); 声明的每项责任或规则都有 Interface 条目 (输入, 输出, 错误和重复, 缺失分支的结果); 设计依赖的外部事实 (运行时输出形状, 冻结补丁, 他处规格) 已在 Input 中.
 3. 运行 `arw spec-readiness prepare --issue issue:<NNNN>:<NN>`, Input 对象从标准输入传入, 或用 `--input <temp-json-path>`. 它冻结 subject, 创建不可变的 Reviewer Request, 在 issue 工作区写出审核轮目录 `rounds/<requestId>/` (空草稿 `report/draft.txt`, subject 与 Input 快照, 规则副本和 `.jsonl` 请求; 复审时另有两轮快照差异 `changes.diff`), 只打印轮目录. 后续 `prepare` 使较早的请求失去生成和提升资格.
 4. 按 `reviewer-launch` 的 [审核轮](../reviewer-launch/SKILL.md#review-rounds) 运行本轮 Reviewer. 运行中的 Request 及其快照保持不变, 修正后的版本重新 `prepare`. 只有 Reviewer 返回最终 `ready` 后才把草稿当作完整结果; 草稿格式由 [角色输出规则](../../../docs/agents/roles/spec-readiness-reviewer.md#output) 定义.
 
@@ -40,13 +40,13 @@ subject 是连续的 `## What to build`, `## Spec Requirement` 和 `## Acceptanc
 
 ## Respond to findings
 
-Main Agent 在修改 issue 前独立验证每个问题. 问题有效时修正设计或 `## Spec Requirement`: 要求修改 spec 或 PRD 的问题按 `rule-and-design-changes` Skill 的 [Reviewer-proposed changes](../rule-and-design-changes/SKILL.md#reviewer-proposed-changes) 由 Main Agent 与独立 subagent 共同决定, 只有分歧交用户. 然后对新内容执行完整工作流. 按 [来源分流](../../../docs/agents/subagent-findings.md#triage-by-origin) 属于既有缺口的问题记入后续 issue, 并按下段质疑, 理由是本次交付不引入, 不改变也不依赖该缺口; Reviewer 指出交付对缺失事实的具体依赖而保留它时, 它不是既有缺口, 按本次影响的问题修正; 提交审核只修改代码时就绪记录仍有效, 不重跑.
+Main Agent 在修改 issue 前独立验证每个问题. 问题有效时修正设计或 issue: 要求修改 spec 或 PRD 的问题按 `rule-and-design-changes` Skill 的 [Reviewer-proposed changes](../rule-and-design-changes/SKILL.md#reviewer-proposed-changes) 由 Main Agent 与独立 subagent 共同决定, 只有分歧交用户. 然后对新内容执行完整工作流. 按 [来源分流](../../../docs/agents/subagent-findings.md#triage-by-origin) 属于既有缺口的问题记入后续 issue, 并按下段质疑, 理由是本次交付不引入, 不改变也不依赖该缺口; Reviewer 指出交付对缺失事实的具体依赖而保留它时, 它不是既有缺口, 按本次影响的问题修正; 提交审核只修改代码时就绪记录仍有效, 不重跑.
 
 结果符合 `docs/agents/subagent-findings.md` 的质疑条件时, 用未变的 subject 和 Input 重新 `prepare`, 通过 `followup_task` 把新请求, 每个受质疑问题的具体证据和推理错误交给原 Reviewer. 质疑消息只是提示, 不是 Input, 证据或授权. 有争议的结果在替代结果完成 `generate -> promote` 前继续阻断提交. subject 或 Input 已改变时改用普通的新请求.
 
 ## Exception workflow
 
-只有应用治理设计和 ADR 触发条件, 并取得用户关于不需要治理设计的明确确认后, 才使用例外; issue 精确使用 `Not required`. Main Agent 写入临时 JSON 例外草稿, 只包含 `exception.reason` 和 UTC 秒级 `exception.confirmedAt`, 然后执行同样的 `generate -> promote -> verify`; 只有 `promote` 写入与 issue 绑定的 `not-applicable` 记录. 例外不使用 Reviewer 报告. 不得推断确认, 也不得把失败的普通审查转为例外.
+只有应用治理设计和 ADR 触发条件, 并取得用户关于不需要治理设计的明确确认后, 才使用例外. Main Agent 写入临时 JSON 例外草稿, 只包含 `exception.reason` 和 UTC 秒级 `exception.confirmedAt`, 然后执行同样的 `generate -> promote -> verify`; 只有 `promote` 写入与 issue 绑定的 `not-applicable` 记录. 例外不使用 Reviewer 报告. 不得推断确认, 也不得把失败的普通审查转为例外.
 
 ## Responsibilities
 

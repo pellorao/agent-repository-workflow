@@ -9,7 +9,7 @@ test('spec readiness prepare accepts JSON stdin and emits a minimal reviewer req
     const repository = await createRepository(t);
     const spec = '# Test spec\n\n## Module Design\n\nNot required: No module boundary changes.\n';
     const role = '# Reviewer\n\n## Responsibility\n\nReview.\n';
-    const issue = '# Implement workflow\n\nStatus: ready-for-agent\n\n## What to build\n\nImplement.\n\n## Spec Requirement\n\nGoverning requirements:\n\n- `.scratch/0001-workflow/spec.md#module-design`\n\n## Acceptance criteria\n\n- [ ] Complete.\n\n## Blocked by\n\n- None\n';
+    const issue = '# Implement workflow\n\nStatus: ready-for-agent\n\n## What to build\n\nImplement.\n\n## Acceptance criteria\n\n- [ ] Complete.\n\n## Blocked by\n\n- None\n';
     await writeArtifact(repository.root, '0001-workflow', 'spec.md', spec);
     await writeIssue(repository.root, '0001-workflow', '01-implement.md', issue);
     await mkdir(join(repository.root, 'docs', 'agents', 'roles'), {recursive: true});
@@ -42,7 +42,7 @@ test('spec readiness prepare accepts the shared JSON schema from an input file',
     const repository = await createRepository(t);
     const spec = '# Test spec\n\n## Module Design\n\nNot required: No module boundary changes.\n';
     const role = '# Reviewer\n\n## Responsibility\n\nReview.\n';
-    const issue = '# Implement workflow\n\nStatus: ready-for-agent\n\n## What to build\n\nImplement.\n\n## Spec Requirement\n\nGoverning requirements:\n\n- `.scratch/0001-workflow/spec.md#module-design`\n\n## Acceptance criteria\n\n- [ ] Complete.\n\n## Blocked by\n\n- None\n';
+    const issue = '# Implement workflow\n\nStatus: ready-for-agent\n\n## What to build\n\nImplement.\n\n## Acceptance criteria\n\n- [ ] Complete.\n\n## Blocked by\n\n- None\n';
     await writeArtifact(repository.root, '0001-workflow', 'spec.md', spec);
     await writeIssue(repository.root, '0001-workflow', '01-implement.md', issue);
     await mkdir(join(repository.root, 'docs', 'agents', 'roles'), {recursive: true});
@@ -72,7 +72,7 @@ test('spec readiness prepare accepts the shared JSON schema from an input file',
 test('spec readiness rejects an issue in duplicate effort identities', async t => {
     const repository = await createRepository(t);
     const spec = '# Test spec\n\n## Module Design\n\nNot required: No module boundary changes.\n';
-    const issue = '# Implement workflow\n\nStatus: ready-for-agent\n\n## What to build\n\nImplement.\n\n## Spec Requirement\n\nGoverning requirements:\n\n- `.scratch/0001-first/spec.md#module-design`\n\n## Acceptance criteria\n\n- [ ] Complete.\n\n## Blocked by\n\n- None\n';
+    const issue = '# Implement workflow\n\nStatus: ready-for-agent\n\n## What to build\n\nImplement.\n\n## Acceptance criteria\n\n- [ ] Complete.\n\n## Blocked by\n\n- None\n';
     await writeArtifact(repository.root, '0001-first', 'spec.md', spec);
     await writeIssue(repository.root, '0001-first', '01-implement.md', issue);
     await writeArtifact(repository.root, '0001-second', 'spec.md', spec);
@@ -93,7 +93,7 @@ test('spec readiness rejects an issue in duplicate effort identities', async t =
 test('spec readiness CLI covers immutable request, generate, promote, verify, and exception lifecycle', async t => {
     const repository = await createRepository(t);
     const spec = '# Test spec\n\n## Module Design\n\n### Modules\n\nOwn behavior.\n\n### Interfaces\n\nInput and output.\n\n### Seams and Adapters\n\nVariation.\n\n### Dependencies and Data Flow\n\nFlow.\n\n### Design Rationale\n\nTradeoff.\n\n### ADR Evaluation\n\nNone.\n';
-    const normalIssue = '# Implement workflow\n\nStatus: ready-for-agent\n\n## What to build\n\nImplement.\n\n## Spec Requirement\n\nGoverning requirements:\n\n- `.scratch/0001-workflow/spec.md#module-design`\n\n## Acceptance criteria\n\n- [ ] Complete.\n\n## Blocked by\n\n- None\n';
+    const normalIssue = '# Implement workflow\n\nStatus: ready-for-agent\n\n## What to build\n\nImplement.\n\n## Acceptance criteria\n\n- [ ] Complete.\n\n## Blocked by\n\n- None\n';
     const dependencies = {platformAdapter: {getCurrentAgentIdentity: () => ({platform: 'codex', sessionId: 'lifecycle-test'})}};
     const recordPath = join(repository.root, '.scratch', '0001-workflow', 'issues', '01.spec-readiness.json');
     const workspace = join(repository.root, '.tmp', 'codex', 'lifecycle-test', '0001_01', 'spec-readiness');

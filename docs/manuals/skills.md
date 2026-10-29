@@ -61,7 +61,7 @@ These 11 Skills are written for ARW and implement its workflow: records under `.
 #### `issue-tracking` (automatic)
 
 - When: the Agent reads, creates or updates an effort, issue, map or spec, and before it reports an issue as complete.
-- What it does: defines the `.scratch` layout and numbering, the required sections of an implementation issue, the status and triage values, how `## Spec Requirement` points at governing documents, and where evidence goes (`## Validation`, `## Comments`). It also limits the Agent to its current effort unless you authorize another.
+- What it does: defines the `.scratch` layout and numbering, the required sections of an implementation issue, the status and triage values, and where evidence goes (`## Validation`, `## Comments`). It also limits the Agent to its current effort unless you authorize another.
 - Leaves behind: issue, map and spec files under `.scratch/<NNNN>-<effort-slug>/`.
 - Related: `arw list issues`, `arw print`, `arw open`; `implement`, `spec-readiness`.
 

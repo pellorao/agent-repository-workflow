@@ -1,5 +1,5 @@
 ---
-description: 读取, 创建或更新本地跟踪器中的 effort, issue, map, spec 及其工作流字段 (Status, 分流标签, 要求引用, 完成记录) 时使用, 报告 issue 完成前也使用.
+description: 读取, 创建或更新本地跟踪器中的 effort, issue, map, spec 及其工作流字段 (Status, 分流标签, 完成记录) 时使用, 报告 issue 完成前也使用.
 name: issue-tracking
 ---
 
@@ -21,7 +21,7 @@ name: issue-tracking
 
 渲染后的第一项内容是 H1.
 
-- 实施 issue: H1 后第一段是 `Status:`, 不添加 `Type:`. 正文依次是连续的二级章节 `## What to build`, `## Spec Requirement` 和 `## Acceptance criteria`, 不降为更深的标题, 然后是 `## Blocked by`. 每个实施 issue 都指明预期验证和相关边界情况.
+- 实施 issue: H1 后第一段是 `Status:`, 不添加 `Type:`. 正文依次包含二级章节 `## What to build` 和 `## Acceptance criteria`, 不降为更深的标题, 然后是 `## Blocked by`. `## What to build` 可以引用 spec 锚点, 引用不做机械校验. 每个实施 issue 都指明预期验证和相关边界情况.
 - Application Source Issue: 沿用实施 issue 结构, 由精确的 `Module implementation issue:` 关联字段标识. 它镜像 Module 状态, 状态只来自 Application 同步, 不执行本地实施, Spec Readiness, 验证或 Commit Audit, 也不添加本地完成证据.
 - Wayfinder issue: H1 后使用 `Type:`, 可选的 `Status:` 和 `Blocked by:` 元数据, 正文使用 `##### Question`. 这里的 `Type:` 是 Wayfinder 字段.
 
@@ -37,22 +37,6 @@ name: issue-tracking
 - `ready-for-human`: 工作需要用户执行或判断.
 - `wontfix`: 不会处理该请求.
 
-## Issue requirements
-
-每个实施 issue 都有 `## Spec Requirement`. 不需要治理设计时精确写 `Not required`, 写入前取得用户明确确认, 不根据缺失或不确定的引用推断. 否则写 `Governing requirements:`, 空一行, 再列要求引用:
-
-```markdown
-## Spec Requirement
-
-Governing requirements:
-
-- `docs/specs/example/spec.md#solution`
-```
-
-- 每行是连字符, 空格和反引号包裹的精确路径, 可以附带 `#ascii-heading-anchor`. 路径相对于最近 Git 仓库根目录, 与 Spec Readiness Input 的 `filePath` 相同, 永远不相对于 issue 目录. Markdown 超链接不是有效列表项. 只有没有 ATX 标题, 或恰好一个 H1 且没有其他 ATX 标题的文档可以只写路径. 不引用本地跟踪器 issue.
-- 只列 issue 实际实现的现有治理要求. 只有 effort 的存在目的就是实现长期规范时, 该规范才是要求; effort 把修改长期规范作为输出时, 把所需变更写进验收标准. 相关文档, 背景, 交付目标, 方案构想或实施指引都不是治理要求. `## What to build` 负责交付结果, `## Acceptance criteria` 负责可验证的完成条件.
-- 发布 issue 前确定该章节. 普通 `arw print` 成功不证明引用有效: 编写后确认要求解析入口接受章节和列表项, 且目标文件和锚点存在. Spec Readiness 和 Commit Audit 独立审查该格式. 不另建 effort 级要求清单.
-
 ## Issue lifecycle
 
 - issue 终态与 Commit Audit 相互独立: 实施 issue 可以进入 `completed`, Application Source Issue 可以镜像 `completed | wontfix`, Wayfinder issue 可以进入 `resolved`, 都不需要审计伴随文件.
@@ -64,7 +48,7 @@ Governing requirements:
 
 `## Validation` 保存当前验收项对应的实际命令, 测试, 文件位置和结果; `## Comments` 在 issue 底部保存讨论, 审核事件和已取得的结论. 这两章整章是记录:
 
-- 它们不承载实施要求, 验收条件或授权例外, 不成为独立通过的权威. 有效要求和替代决定写入 `## What to build`, `## Spec Requirement` 或 `## Acceptance criteria`. 正式验收以某审核通过为条件时, 必须先取得该事实.
+- 它们不承载实施要求, 验收条件或授权例外, 不成为独立通过的权威. 有效要求和替代决定写入 `## What to build` 或 `## Acceptance criteria`. 正式验收以某审核通过为条件时, 必须先取得该事实.
 - 它们的变化不改变审核对象身份, 不触发 Spec Readiness, Code Standards 或要求符合审核的语义复审. 修改后机械核对准确章节范围, 文本和证据定位, 确认没有其他实现, 要求, 输入或授权变化. 提交审核运行中先改工作树, 暂存时点见 `commit` Skill. `Status` 和验收勾选不属于此例外.
 - 链接不扩大 Reviewer 读取权限, 成功声明不替代独立判断. 新失败和反证仍须处理, 删除记录不消除已知失败.
 - 其他工作流对记录中结构化信息的解析, 同步, 关联和纠错合同不变.

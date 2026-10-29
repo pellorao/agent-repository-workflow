@@ -212,7 +212,7 @@ Once the Module distribution commits have been pushed, both sides of the associa
 
 ## Record necessary corrections during Module implementation
 
-A published Module work record proceeds under its original requirements. Use the correction route only when there is a real problem in `## What to build`, `## Spec Requirement`, `## Acceptance criteria`, `## Blocked by`, or the same effort's Git-tracked `spec.md`, and that problem prevents the agreed scope from continuing. This is not a general route for expanding scope.
+A published Module work record proceeds under its original requirements. Use the correction route only when there is a real problem in `## What to build`, `## Acceptance criteria`, `## Blocked by`, or the same effort's Git-tracked `spec.md`, and that problem prevents the agreed scope from continuing. This is not a general route for expanding scope.
 
 The Module Agent first explains the problem and the exact proposed change, then obtains your explicit authorization. You do not need to explicitly invoke `application-workflow` for this route, but the Agent must read that Skill's Module correction guide. `Application source issue:` is a hard lock: it cannot be modified, and the Agent cannot propose a new association target.
 

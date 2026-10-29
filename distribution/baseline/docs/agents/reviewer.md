@@ -19,7 +19,7 @@ Agent 指令约束 Reviewer 的工作方式. 它们单独作为执行规则交�
 
 Code Standards 和要求符合审核可以与已授权实施及其他 Reviewer 并行. 本轮读取的是启动前固定的版本 (审核轮目录或 Main Agent 按 `reviewer-launch` Skill 固定的版本); 单份 diff 文件不能替代完整上下文. 适用 Agent 指令的原始路径用于解释适用范围和链接, 实际读取本轮绑定副本.
 
-Reviewer 只读取该版本, 不从正在变化的工作树补取证据或更新执行规则; 必要内容未完整固定时返回 `incomplete`. 本轮结论只对应固定的完整版本. 代码轴结果的复用由 `code-review` Skill 的 `result-reuse.md` 判断, Spec Readiness 的有效性与最终检查时点由 `spec-readiness` Skill 判断.
+Reviewer 只读取该版本, 不从正在变化的工作树补取证据或更新执行规则 (唯一例外: Spec Readiness Reviewer 为定位相关既有章节只读检索工作树, 见其角色规则); 必要内容未完整固定时返回 `incomplete`. 本轮结论只对应固定的完整版本. 代码轴结果的复用由 `code-review` Skill 的 `result-reuse.md` 判断, Spec Readiness 的有效性与最终检查时点由 `spec-readiness` Skill 判断.
 
 ## Re-review
 

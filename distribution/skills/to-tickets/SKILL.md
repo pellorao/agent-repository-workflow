@@ -8,8 +8,6 @@ disable-model-invocation: true
 
 将计划, 规范或当前对话拆分为一组纵向切片 issue, 每项声明阻断它的其他 issue. 编写和发布前遵循 [Subagent 分配](../../../docs/agents/subagent-allocation.md) 与 [Agent 文件写入](../../../docs/agents/agent-writes.md).
 
-创建本地实施 issue 时, 按 [Issue requirements](../issue-tracking/SKILL.md#issue-requirements) 使用唯一的要求引用格式.
-
 如果尚未提供 issue 跟踪器和分流标签词汇, 运行只读 `arw workflow verify`. 如果验证报告仓库尚未初始化, 告知用户另行运行 `arw workflow init`.
 
 ## Process
@@ -34,22 +32,11 @@ disable-model-invocation: true
 - 已完成切片可以独立演示或验证.
 - 每个切片适合在一个新的上下文窗口内完成.
 - 任何预先重构先完成.
+- 粒度宁粗勿细. 每个 issue 都要经过 Spec Readiness 与提交审核, 太小的 issue 让审核开销超过改动本身. 同一模块, 同一 spec 章节或同一验收路径的切片合并为一个 issue; 只在超出一个上下文窗口, 或确需独立验证与独立回退时才拆开.
 
 </vertical-slice-rules>
 
 为每个 issue 给出其阻断关系, 即必须先完成的其他 issue. 没有阻断项的 issue 可以立即开始.
-
-对每个实施 issue, 在起草正文前识别它实际实现的既有治理要求. 要求选择与交付结果和实现方式分开.
-
-以下内容不是治理要求:
-
-- 相关文档.
-- 仅作为输出修改的文档.
-- 交付目标.
-- 解决方案构想.
-- 实施指引.
-
-没有治理设计时, 在使用 `Not required` 前获得用户明确确认, 不得根据缺失引用推断例外.
 
 大范围重构是纵向切片的例外. 一次机械改动, 如重命名列或改变共享标识符的类型, 可能同时破坏遍布代码库的大量调用点, 使任何单个纵向切片都无法通过测试. 此时不要强行纵向拆分, 而应按以下顺序安排工作:
 
@@ -66,7 +53,6 @@ disable-model-invocation: true
 - **Title**: 简短描述标题.
 - **Blocked by**: 必须先完成的 issue.
 - **What it delivers**: 从用户视角交付的端到端行为.
-- **Governing requirements**: 实际实现的既有治理要求, 或尚待用户确认 `Not required` 是否准确.
 
 询问用户:
 
@@ -97,10 +83,6 @@ disable-model-invocation: true
 
 从用户视角说明此 issue 实现的端到端行为, 不按实现层次罗列.
 
-## Spec Requirement
-
-本节的精确格式由 [Issue requirements](../issue-tracking/SKILL.md#issue-requirements) 定义.
-
 ## Acceptance criteria
 
 - [ ] 标准 1
@@ -112,6 +94,6 @@ disable-model-invocation: true
 
 </issue-template>
 
-本地 Markdown 使用章节式形式, 以 `# <Ticket title>` 开始并紧接普通 `Status: ready-for-agent`. YAML frontmatter 可以位于 H1 前. 除非需要, 省略 `## Parent`. `## Spec Requirement` 属于目标实施 issue, 不属于本 Skill.
+本地 Markdown 使用章节式形式, 以 `# <Ticket title>` 开始并紧接普通 `Status: ready-for-agent`. YAML frontmatter 可以位于 H1 前. 除非需要, 省略 `## Parent`.
 
 交付散文中避免具体文件路径或代码片段, 它们容易过期. 原型产生的片段如果比散文更精确地表达决定, 可以内嵌并简短注明来自原型.

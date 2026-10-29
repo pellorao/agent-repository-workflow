@@ -212,7 +212,7 @@ Module 分发提交已推送后, 两侧关联永久冻结, 不能修改或建议
 
 ## 在 Module 实施中记录必要修正
 
-发布后的 Module 工作记录应按原有要求实施. 只有 `## What to build`, `## Spec Requirement`, `## Acceptance criteria`, `## Blocked by` 或同工作组已由 Git 跟踪的 `spec.md` 存在真实问题, 并且这个问题阻止既定范围继续时, 才进入修正路线. 这不是一般范围扩张入口.
+发布后的 Module 工作记录应按原有要求实施. 只有 `## What to build`, `## Acceptance criteria`, `## Blocked by` 或同工作组已由 Git 跟踪的 `spec.md` 存在真实问题, 并且这个问题阻止既定范围继续时, 才进入修正路线. 这不是一般范围扩张入口.
 
 Module Agent 先解释问题和准确拟议修改, 再取得你的明确授权. 这条路线不要求你显式调用 `application-workflow`, 但 Agent 必须读取该 Skill 的 Module 修正指引. `Application source issue:` 是硬锁, 不能修改, 也不能建议新的关联目标.
 

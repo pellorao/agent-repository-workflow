@@ -16,7 +16,7 @@ Commit Audit 适用时, Main Agent 按[当前仓库的审计版本规则](../../
 
 `authorizingIssueIds` 表示已暂存实现的完整 issue 授权范围. `gate1` 只表示本次提交实际适用 Gate 1 的子集. 未完成 issue 可以授权中间提交而不进入 Gate 1. Engine 从实时已暂存索引推导机械可见终态转换并拒绝授权或 Gate 1 遗漏, Reviewer 复核 Git 无法证明的仅代码候选, 重新打开后再次完成的历史, 以及任意代码与 issue 的语义关系.
 
-Main Agent 在仓库 `.tmp/` 下为每次审核建立独立目录, 写入只含 `authorizingIssueIds` 和适用空要求确认的 `input.json`, 再调用 `arw commit-audit prepare --input <absolute-input-path>`. Engine 在同一目录物化完整 `request.json`, 在独立 `reports/` 子目录中创建绑定的空 `review.jsonl`, 并只返回准确 Request 绝对路径. 每个 Request 目录独立, 不需要全局当前指针, 锁或摘要. 内部参与者按工作流约束互相信任, 因而临时 Request 和一次性正式记录不增加模式版本或密码学身份.
+Main Agent 在仓库 `.tmp/` 下为每次审核建立独立目录, 写入只含 `authorizingIssueIds` 的 `input.json`, 再调用 `arw commit-audit prepare --input <absolute-input-path>`. Engine 在同一目录物化完整 `request.json`, 在独立 `reports/` 子目录中创建绑定的空 `review.jsonl`, 并只返回准确 Request 绝对路径. 每个 Request 目录独立, 不需要全局当前指针, 锁或摘要. 内部参与者按工作流约束互相信任, 因而临时 Request 和一次性正式记录不增加模式版本或密码学身份.
 
 Reviewer 只接收 Request 路径, 读取 Git 索引中的冻结候选, 并在绑定的 JSONL 中逐项形成和修订判断. Main Agent 可读取中间状态以核对和讨论, 但不把它当作完整审计结果. 全部适用检查完成后, Reviewer 只返回 `ready`; 未完成或写入失败时返回带原因的 `incomplete`. Main Agent 随后调用 `arw commit-audit generate --request <absolute-request-path>`. Engine 严格验证 Request, 当前候选前置条件, JSONL 语法, 要求覆盖, 证据和输出计划, 并只在完整成功时返回可提升的输出映射. 失败不返回映射, 尽力恢复已完成写入; 恢复失败的残留临时文件没有提升资格, 由后续完整重试覆盖.
 
@@ -32,7 +32,7 @@ Reviewer 按[共同交接规则](../agents/reviewer.md#review-handoff)逐项写�
 
 Commit Audit Reviewer 审查线程身份是 `spawn_agent` 首次调用或 `followup_task` 后续调用的 `input.role: "commit-audit-reviewer"` 与完整排序 `authorizingIssueIds` 的组合; 运行设置由统一 Reviewer 配置提供, 不依赖平台角色种子. 首次审核使用无 Main Agent 对话上下文的全新审查线程. 同一身份的后续调用必须复用可靠审查线程, 读取完整当前 Request 和暂存候选并返回完整状态. 候选内容或治理语义变化本身不创建新审查线程. 只有 issue ID 集合改变, 原审查线程不可用或不可恢复, 或用户明确要求时才能创建全新替代审查线程. Gate 3 对每个审核轴使用相同规则, 但 `input.role` 不同使两个审核轴仍保持独立审查线程.
 
-Gate 2 是 effort 级 Spec Audit. 它的文档和要求只来自本批次接受 issue 的有效 `## Spec Requirement` 并集, 不从相关性或作为输出修改的长期 Spec 扩大. 空并集仍需要显式用户确认的具体理由和 UTC 秒级时间, 才能生成 `not-applicable`.
+Gate 2 是 effort 级 Spec Audit. 它只审核 `git diff <since> <tree>` 中治理文档 (`docs/specs`, `docs/adr`, 当前 effort 的 `spec.md` 与 `PRD.md`) 的改动, `since` 由引擎从 Git 历史推导为 effort 起点, 不存储基线; 没有改动时无需审核, 不再有 `gate2Exception`. 原先限定"不从作为输出修改的长期 Spec 扩大"的做法被撤销: effort 修改的长期规范和 ADR 正是需要对照代码审核的内容. 每次实施提交另做由差异驱动的回归检查, Reviewer 检索改动代码所服务的既有要求并核对仍成立. 此前从未审核过的旧 ADR 按现状接受.
 
 用户请求 Git 提交后, Main Agent 从准确的已暂存路径集合选择纯规划或实现路线. 每个提交只包含一个 effort. 纯规划路线只接受该 effort 中跟踪器内部的 `spec.md`, `map.md`, 可以被 ARW 解析的 Wayfinder issue, 未在当前变更中进入 `completed` 或 `wontfix` 的实施 issue, 以及 `research/**` 和 `prototype/**` 下任意扩展名的安全普通文件. 它允许新增, 更新和删除. 辅助文件不要求由 map, issue, spec 或其他文件引用.
 

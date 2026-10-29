@@ -23,25 +23,20 @@ const readinessPath = (/** @type {string} */ repositoryRoot, issueNumber = '01')
 );
 const fullSpec = '# Test spec\n\n## Module Design\n\n### Modules\n\nOwn behavior.\n\n### Interfaces\n\nInput and output.\n\n### Seams and Adapters\n\nVariation.\n\n### Dependencies and Data Flow\n\nFlow.\n\n### Module Design Rationale\n\nTradeoff.\n\n### ADR Evaluation\n\nNone.\n';
 const normalInputs = [{filePath: '.scratch/0001-workflow/spec.md', role: 'governing-spec'}];
-const selectedRequirements = 'Governing requirements:\n\n- `.scratch/0001-workflow/spec.md#module-design`';
-const readinessSubject = (/** @type {string} */ requirements) => `## What to build
+const readinessSubject = () => `## What to build
 
 Implement.
-
-## Spec Requirement
-
-${requirements}
 
 ## Acceptance criteria
 
 - [ ] Complete.
 
 `;
-const issue = (/** @type {string} */ requirements) => `# Implement workflow
+const issue = () => `# Implement workflow
 
 Status: ready-for-agent
 
-${readinessSubject(requirements)}## Validation
+${readinessSubject()}## Validation
 
 - Not run.
 
@@ -61,7 +56,7 @@ const createRepository = async (/** @type {test.TestContext} */ t) => {
     await writeFile(join(root, '.scratch', '0001-workflow', 'spec.md'), fullSpec, 'utf8');
     await writeFile(join(root, 'docs', 'agents', 'roles', 'spec-readiness-reviewer.md'), '# Reviewer\n', 'utf8');
     await writeFile(join(root, 'docs', 'agents', 'reviewer.md'), '# Reviewer rules\n', 'utf8');
-    await writeFile(join(root, '.scratch', '0001-workflow', 'issues', '01-implement.md'), issue(selectedRequirements), 'utf8');
+    await writeFile(join(root, '.scratch', '0001-workflow', 'issues', '01-implement.md'), issue(), 'utf8');
     return root;
 };
 
@@ -113,13 +108,13 @@ const complete = async (/** @type {string} */ repositoryRoot) => {
 test('complete lifecycle preserves Reviewer checkbox content while checkbox state does not change subject identity', async t => {
     const repositoryRoot = await createRepository(t);
     const issuePath = join(repositoryRoot, '.scratch', '0001-workflow', 'issues', '01-implement.md');
-    const checked = issue(selectedRequirements).replace('- [ ] Complete.', '- [X] Complete.');
+    const checked = issue().replace('- [ ] Complete.', '- [X] Complete.');
     await writeFile(issuePath, checked, 'utf8');
     const prepared = await prepare(repositoryRoot);
     const request = JSON.parse(await readFile(prepared.path, 'utf8'));
 
-    assert.equal(request.subject.content, readinessSubject(selectedRequirements).replace('- [ ] Complete.', '- [X] Complete.'));
-    assert.equal(request.subject.sha256, digest(readinessSubject(selectedRequirements)));
+    assert.equal(request.subject.content, readinessSubject().replace('- [ ] Complete.', '- [X] Complete.'));
+    assert.equal(request.subject.sha256, digest(readinessSubject()));
     assert.notEqual(request.subject.sha256, digest(request.subject.content));
 
     const generated = await generate(repositoryRoot, prepared.draftPath);
@@ -143,7 +138,7 @@ test('each implementation issue owns an independent Spec Readiness sidecar', asy
     const first = await complete(repositoryRoot);
     await writeFile(
         join(repositoryRoot, '.scratch', '0001-workflow', 'issues', '02-another.md'),
-        issue('Governing requirements:\n\n- `.scratch/0001-workflow/spec.md#module-design`'),
+        issue(),
         'utf8',
     );
     const {roundDirectory} = await prepareSpecReadiness({input: {inputs: normalInputs}, issueId: 'issue:0001:02', platformAdapter: adapter, repositoryRoot});
@@ -201,9 +196,9 @@ test('prepare creates a new immutable complete Reviewer Request path', async t =
         sha256: digest('# Reviewer\n'),
     });
     assert.deepEqual(request.subject, {
-        content: readinessSubject(selectedRequirements),
+        content: readinessSubject(),
         filePath: '.scratch/0001-workflow/issues/01-implement.md',
-        sha256: digest(readinessSubject(selectedRequirements)),
+        sha256: digest(readinessSubject()),
     });
     assert.equal(request.inputs[0].content, fullSpec);
     assert.ok(request.inputs.every((/** @type {{ sha256: string; }} */ entry) => /^[0-9a-f]{64}$/.test(entry.sha256)));
@@ -276,7 +271,7 @@ test('generate writes a request-bound canonical artifact only to the Reviewer wo
     assert.match(artifact.request.digest, /^[0-9a-f]{64}$/);
     assert.deepEqual(artifact.subject, {
         filePath: '.scratch/0001-workflow/issues/01-implement.md',
-        sha256: digest(readinessSubject(selectedRequirements)),
+        sha256: digest(readinessSubject()),
     });
     assert.deepEqual(artifact.reviewerRole, {
         filePath: 'docs/agents/roles/spec-readiness-reviewer.md',
@@ -321,13 +316,14 @@ test('generate rejects malformed subject content and a subject digest mismatch',
                 reviewerRole: request.reviewerRole,
                 inputs: request.inputs,
                 subject: request.subject,
+                since: request.since,
             }));
             const activePath = join(dirname(dirname(prepared.path)), 'active-request.json');
             const active = JSON.parse(await readFile(activePath, 'utf8'));
             active.requestDigest = request.requestDigest;
             await writeFile(activePath, `${JSON.stringify(active, null, 2)}\n`, 'utf8');
         } else {
-            request.subject.content = request.subject.content.replace('#module-design', '#interfaces');
+            request.subject.content = request.subject.content.replace('Implement.', 'Changed.');
             request.subject.sha256 = digest(request.subject.content);
         }
         await writeFile(prepared.path, `${JSON.stringify(request, null, 2)}\n`, 'utf8');
@@ -350,7 +346,7 @@ test('promote writes exact artifact bytes and verify authorizes only satisfied',
     assert.equal(record.schemaVersion, 7);
     assert.deepEqual(record.subject, {
         filePath: '.scratch/0001-workflow/issues/01-implement.md',
-        sha256: digest(readinessSubject(selectedRequirements)),
+        sha256: digest(readinessSubject()),
     });
     assert.equal(baseline.requestId, JSON.parse(await readFile(prepared.path, 'utf8')).requestId);
     assert.deepEqual(await verifySpecReadiness({issueId: 'issue:0001:01', repositoryRoot}), {authorized: true, findings: []});
@@ -403,7 +399,7 @@ test('promotion rejects subject drift without replacing the prior record', async
     const generated = await generate(repositoryRoot, prepared.draftPath);
     const issuePath = join(repositoryRoot, '.scratch', '0001-workflow', 'issues', '01-implement.md');
     const issueBytes = await readFile(issuePath, 'utf8');
-    await writeFile(issuePath, issueBytes.replace('.scratch/0001-workflow/spec.md#module-design', '.scratch/0001-workflow/spec.md#interfaces'), 'utf8');
+    await writeFile(issuePath, issueBytes.replace('Implement.', 'Changed.'), 'utf8');
 
     await assert.rejects(
         promoteSpecReadiness({inputPath: generated.path, platformAdapter: adapter, repositoryRoot}),
@@ -412,7 +408,7 @@ test('promotion rejects subject drift without replacing the prior record', async
     assert.equal(await readFile(initial.promoted.path, 'utf8'), before);
 });
 
-test('verify binds What to build, Spec Requirement, and Acceptance criteria but ignores other issue bytes', async t => {
+test('verify binds What to build and Acceptance criteria but ignores other issue bytes', async t => {
     const repositoryRoot = await createRepository(t);
     await complete(repositoryRoot);
     const issuePath = join(repositoryRoot, '.scratch', '0001-workflow', 'issues', '01-implement.md');
@@ -440,12 +436,6 @@ test('verify binds What to build, Spec Requirement, and Acceptance criteria but 
     assert.deepEqual(await verifySpecReadiness({issueId: 'issue:0001:01', repositoryRoot}), {authorized: true, findings: []});
 
     await writeFile(issuePath, initial.replace('Complete.', 'Changed criterion.'), 'utf8');
-    assert.deepEqual(await verifySpecReadiness({issueId: 'issue:0001:01', repositoryRoot}), {
-        authorized: false,
-        findings: ['Stale Spec Readiness subject: .scratch/0001-workflow/issues/01-implement.md.'],
-    });
-
-    await writeFile(issuePath, initial.replace('.scratch/0001-workflow/spec.md#module-design', '.scratch/0001-workflow/spec.md#interfaces'), 'utf8');
     assert.deepEqual(await verifySpecReadiness({issueId: 'issue:0001:01', repositoryRoot}), {
         authorized: false,
         findings: ['Stale Spec Readiness subject: .scratch/0001-workflow/issues/01-implement.md.'],
@@ -538,7 +528,7 @@ test('promotion failure leaves the prior tracked record unchanged', async t => {
 
 test('exception uses the same generate promote verify boundary', async t => {
     const repositoryRoot = await createRepository(t);
-    await writeFile(join(repositoryRoot, '.scratch', '0001-workflow', 'issues', '01-implement.md'), issue('Not required'), 'utf8');
+    await writeFile(join(repositoryRoot, '.scratch', '0001-workflow', 'issues', '01-implement.md'), issue(), 'utf8');
     const draft = {exception: {confirmedAt: '2026-08-04T12:34:56Z', reason: 'No governing design is required.'}};
     const generated = await generateException(repositoryRoot, draft);
     await assert.rejects(readFile(readinessPath(repositoryRoot), 'utf8'), {code: 'ENOENT'});
@@ -551,7 +541,7 @@ test('exception uses the same generate promote verify boundary', async t => {
         exception: draft.exception,
         subject: {
             filePath: '.scratch/0001-workflow/issues/01-implement.md',
-            sha256: digest(readinessSubject('Not required')),
+            sha256: digest(readinessSubject()),
         },
         result: 'not-applicable',
     });
@@ -561,18 +551,18 @@ test('exception uses the same generate promote verify boundary', async t => {
 test('exception applicability counts only canonical issue file names', async t => {
     const repositoryRoot = await createRepository(t);
     const issues = join(repositoryRoot, '.scratch', '0001-workflow', 'issues');
-    await writeFile(join(issues, '01-implement.md'), issue('Not required'), 'utf8');
+    await writeFile(join(issues, '01-implement.md'), issue(), 'utf8');
     const draft = {exception: {confirmedAt: '2026-08-04T12:34:56Z', reason: 'No governing design is required.'}};
     await writeFile(join(issues, '00-x.md'), '# Not an issue\n', 'utf8');
     await generateException(repositoryRoot, draft);
-    await writeFile(join(issues, '02-a-.md'), issue('Not required'), 'utf8');
+    await writeFile(join(issues, '02-a-.md'), issue(), 'utf8');
     await assert.rejects(generateException(repositoryRoot, draft), /exactly one implementation issue/);
 });
 
 test('exception promotion and verification bind the current issue subject', async t => {
     const repositoryRoot = await createRepository(t);
     const issuePath = join(repositoryRoot, '.scratch', '0001-workflow', 'issues', '01-implement.md');
-    const initial = issue('Not required');
+    const initial = issue();
     await writeFile(issuePath, initial, 'utf8');
     const draft = {exception: {confirmedAt: '2026-08-04T12:34:56Z', reason: 'No governing design is required.'}};
     const generated = await generateException(repositoryRoot, draft);
@@ -599,27 +589,27 @@ test('exception is invalidated when the effort gains a second implementation iss
     const draft = {exception: {confirmedAt: '2026-08-04T12:34:56Z', reason: 'No governing design is required.'}};
 
     const generationRoot = await createRepository(t);
-    await writeFile(join(generationRoot, '.scratch', '0001-workflow', 'issues', '01-implement.md'), issue('Not required'), 'utf8');
-    await writeFile(join(generationRoot, '.scratch', '0001-workflow', 'issues', '02-another.md'), issue('Not required'), 'utf8');
+    await writeFile(join(generationRoot, '.scratch', '0001-workflow', 'issues', '01-implement.md'), issue(), 'utf8');
+    await writeFile(join(generationRoot, '.scratch', '0001-workflow', 'issues', '02-another.md'), issue(), 'utf8');
     await assert.rejects(
         generateException(generationRoot, draft),
         /exactly one implementation issue/i,
     );
 
     const promotionRoot = await createRepository(t);
-    await writeFile(join(promotionRoot, '.scratch', '0001-workflow', 'issues', '01-implement.md'), issue('Not required'), 'utf8');
+    await writeFile(join(promotionRoot, '.scratch', '0001-workflow', 'issues', '01-implement.md'), issue(), 'utf8');
     const generated = await generateException(promotionRoot, draft);
-    await writeFile(join(promotionRoot, '.scratch', '0001-workflow', 'issues', '02-another.md'), issue('Not required'), 'utf8');
+    await writeFile(join(promotionRoot, '.scratch', '0001-workflow', 'issues', '02-another.md'), issue(), 'utf8');
     await assert.rejects(
         promoteSpecReadiness({inputPath: generated.path, platformAdapter: adapter, repositoryRoot: promotionRoot}),
         /exactly one implementation issue/i,
     );
 
     const verificationRoot = await createRepository(t);
-    await writeFile(join(verificationRoot, '.scratch', '0001-workflow', 'issues', '01-implement.md'), issue('Not required'), 'utf8');
+    await writeFile(join(verificationRoot, '.scratch', '0001-workflow', 'issues', '01-implement.md'), issue(), 'utf8');
     const verificationArtifact = await generateException(verificationRoot, draft);
     await promoteSpecReadiness({inputPath: verificationArtifact.path, platformAdapter: adapter, repositoryRoot: verificationRoot});
-    await writeFile(join(verificationRoot, '.scratch', '0001-workflow', 'issues', '02-another.md'), issue('Not required'), 'utf8');
+    await writeFile(join(verificationRoot, '.scratch', '0001-workflow', 'issues', '02-another.md'), issue(), 'utf8');
     assert.deepEqual(await verifySpecReadiness({issueId: 'issue:0001:01', repositoryRoot: verificationRoot}), {
         authorized: false,
         findings: ['Spec Readiness exception requires exactly one implementation issue in the effort.'],
@@ -628,7 +618,7 @@ test('exception is invalidated when the effort gains a second implementation iss
 
 test('exception generation requires exact Human confirmation data', async t => {
     const repositoryRoot = await createRepository(t);
-    await writeFile(join(repositoryRoot, '.scratch', '0001-workflow', 'issues', '01-implement.md'), issue('Not required'), 'utf8');
+    await writeFile(join(repositoryRoot, '.scratch', '0001-workflow', 'issues', '01-implement.md'), issue(), 'utf8');
     for (const input of [
         {exception: {confirmedAt: '2026-02-31T12:34:56Z', reason: 'No governing design is required.'}},
         {exception: {confirmedAt: '2026-08-04T12:34:56Z', reason: ''}},
@@ -655,53 +645,11 @@ test('verify recognizes every earlier schema as stale at the issue sidecar', asy
 test('verify rejects another issue within the reviewed Input subset', async t => {
     const repositoryRoot = await createRepository(t);
     const {promoted} = await complete(repositoryRoot);
-    await writeFile(join(repositoryRoot, '.scratch', '0001-workflow', 'issues', '02-another.md'), issue('Governing requirements:\n\n- `.scratch/0001-workflow/spec.md#interfaces`'), 'utf8');
+    await writeFile(join(repositoryRoot, '.scratch', '0001-workflow', 'issues', '02-another.md'), issue(), 'utf8');
     await writeFile(readinessPath(repositoryRoot, '02'), await readFile(promoted.path, 'utf8'), 'utf8');
     assert.deepEqual(await verifySpecReadiness({issueId: 'issue:0001:02', repositoryRoot}), {
         authorized: false,
         findings: ['Spec Readiness record does not match the issue.'],
-    });
-});
-
-test('verify enforces requirement Markdown and path-only heading rules', async t => {
-    const repositoryRoot = await createRepository(t);
-    await complete(repositoryRoot);
-    const issuePath = join(repositoryRoot, '.scratch', '0001-workflow', 'issues', '01-implement.md');
-
-    await writeFile(issuePath, issue('Governing requirements:\n\n- `.scratch/0001-workflow/spec.md`'), 'utf8');
-    assert.deepEqual(await verifySpecReadiness({issueId: 'issue:0001:01', repositoryRoot}), {
-        authorized: false,
-        findings: [
-            'Issue path-only governing requirement has ineligible heading structure: .scratch/0001-workflow/spec.md.',
-            'Stale Spec Readiness subject: .scratch/0001-workflow/issues/01-implement.md.',
-        ],
-    });
-
-    await mkdir(join(repositoryRoot, 'docs'), {recursive: true});
-    await writeFile(join(repositoryRoot, 'docs', 'rules.txt'), '# Rules\n', 'utf8');
-    await writeFile(issuePath, issue('Governing requirements:\n\n- `docs/rules.txt#rules`'), 'utf8');
-    assert.deepEqual(await verifySpecReadiness({issueId: 'issue:0001:01', repositoryRoot}), {
-        authorized: false,
-        findings: [
-            'Issue governing requirement is not a reviewed governing Input: docs/rules.txt#rules.',
-            'Issue governing requirement must reference a Markdown file: docs/rules.txt.',
-            'Stale Spec Readiness subject: .scratch/0001-workflow/issues/01-implement.md.',
-        ],
-    });
-});
-
-test('verify rejects a governing requirement anchor that does not exist', async t => {
-    const repositoryRoot = await createRepository(t);
-    await writeFile(
-        join(repositoryRoot, '.scratch', '0001-workflow', 'issues', '01-implement.md'),
-        issue('Governing requirements:\n\n- `.scratch/0001-workflow/spec.md#missing-section`'),
-        'utf8',
-    );
-    await complete(repositoryRoot);
-
-    assert.deepEqual(await verifySpecReadiness({issueId: 'issue:0001:01', repositoryRoot}), {
-        authorized: false,
-        findings: ['Issue governing requirement anchor does not exist: .scratch/0001-workflow/spec.md#missing-section.'],
     });
 });
 
@@ -728,19 +676,11 @@ test('verify aggregates stale Inputs with other independently determinable findi
     const repositoryRoot = await createRepository(t);
     await complete(repositoryRoot);
     await writeFile(join(repositoryRoot, '.scratch', '0001-workflow', 'spec.md'), `${fullSpec}\nChanged after review.\n`, 'utf8');
-    await mkdir(join(repositoryRoot, 'docs'), {recursive: true});
-    await writeFile(join(repositoryRoot, 'docs', 'rules.txt'), '# Rules\n', 'utf8');
-    await writeFile(
-        join(repositoryRoot, '.scratch', '0001-workflow', 'issues', '01-implement.md'),
-        issue('Governing requirements:\n\n- `docs/rules.txt#rules`'),
-        'utf8',
-    );
+    await writeFile(join(repositoryRoot, '.scratch', '0001-workflow', 'issues', '01-implement.md'), issue().replace('Implement.', 'Changed.'), 'utf8');
 
     assert.deepEqual(await verifySpecReadiness({issueId: 'issue:0001:01', repositoryRoot}), {
         authorized: false,
         findings: [
-            'Issue governing requirement is not a reviewed governing Input: docs/rules.txt#rules.',
-            'Issue governing requirement must reference a Markdown file: docs/rules.txt.',
             'Stale Spec Readiness Input: .scratch/0001-workflow/spec.md.',
             'Stale Spec Readiness subject: .scratch/0001-workflow/issues/01-implement.md.',
         ],

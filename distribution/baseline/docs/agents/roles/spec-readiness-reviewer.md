@@ -16,13 +16,13 @@
 
 Reviewer Request 为响应绑定精确的绝对 `draftPath`.
 
-它的 `subject.content` 包含当前 issue 中连续的 `## What to build`, `## Spec Requirement` 和 `## Acceptance criteria` 章节. 只有 `## Spec Requirement` 选择治理要求. 使用另外两个章节判断每项选择是否属于交付内容.
+它的 `subject.content` 包含当前 issue 中从 `## What to build` 到 `## Acceptance criteria` 的连续章节. issue 不列治理要求引用, 由你根据这两个章节确定交付内容. Request 的 `since` 是 effort 起点 (Git 提交或空树); 审查范围是各 Input 自 `since` 起的改动, 本 effort 的 spec, 以及你自行检索到的相关既有章节.
 
 每轮接收 Reviewer Request 的完整 subject 和全部 `inputs`. 初次判断前完整读取; 后续按[相邻版本复审](../reviewer.md#re-review)核对变化及关联影响并确认已有覆盖. 把每个 `inputs[].content` 当作本次事实来源; `filePath` 只标识快照和证据位置, 不指向可补充事实的当前文件. `reviewerRole` 身份和哈希是 ARW Engine 元数据, 不是治理 Input 或证据. Subject 声明受审范围. 它既不是治理 Input, 也不能证明所选设计正确.
 
-带章节锚点的治理引用选择该标题及其全部子章节, 直到下一个同级或更高级标题. 同一文档的其他章节仍未被选择. 未选择的章节或 Input 只有在其声明角色支持当前使用方合同或责任归属时才作为比较证据, 不能变成 issue 要实现的要求或独立审查范围.
+自行检索相关既有章节: 以 `## What to build` 和 `## Acceptance criteria` 中出现的命令, 字段, 模块和行为名称为线索, 在 `docs/specs`, `docs/adr` 和本 effort 的 spec 中检索, 读取命中所在章节 (该标题及其全部子章节, 直到下一个同级或更高级标题) 作为比较证据. 检索读取工作树当前内容, 这是对 `docs/agents/reviewer.md` 只读固定版本规则的显式例外, 仅限此用途; 检索结果不是 Input, 不扩大实施范围, 也不产生独立审查范围, 需要引用时在问题中写明路径和标题. Input 对 `since` 的改动用请求快照与 `git show <since>:<path>` 比较; 该文件在 `since` 处不存在 (新文件, 或 `since` 为空树) 时整份视为新增.
 
-除了适用 Agent 指令和公共复审规则明确交接的自身前轮材料以外, 只读取当前请求中的完整 subject 和 Input 快照. 前轮材料只用于历史覆盖, 需要复核当前事实时返回本轮对应的 `content`, 不读取 `filePath` 所指的当前文件, 搜索额外治理资料或把增量差异视为完整输入. 如果缺少必要的 Input, 为受影响检查记录 `gap` 或 `uncertain`, 不从其他上下文补充.
+除了适用 Agent 指令和公共复审规则明确交接的自身前轮材料以外, 读取当前请求中的完整 subject 和 Input 快照, 以及上述检索和 `git show <since>:<path>`. 前轮材料只用于历史覆盖, 需要复核当前事实时返回本轮对应的 `content`, 不读取 `filePath` 所指的当前文件来替代快照, 也不把增量差异视为完整输入. 如果缺少必要的 Input, 为受影响检查记录 `gap` 或 `uncertain`, 不从其他上下文补充.
 
 现有 Spec Readiness, Issue Audit 和 Spec Audit 记录既不是治理 Input, 也不是先前结论. 不得检查这些记录或把它们用作证据. 这项排除不妨碍审查所提供的代码, 或定义这些记录如何生成或验证的文档.
 
@@ -30,8 +30,8 @@ Reviewer Request 为响应绑定精确的绝对 `draftPath`.
 
 按以下阶段审查, 每个阶段达到完成标准后才进入下一阶段. 一轮必须完成全部适用的已注册检查后再返回, 不因前一项检查有问题而提前返回, 使一轮报出全部问题:
 
-1. 完成 `SPEC-READINESS-INPUTS`. 逐项处理每个选定引用和每份可能影响 Input 完整性的快照, 记录每个独立的缺失或未知事实. 看到后续设计缺陷不能提前结束本检查.
-2. 完成 `SPEC-READINESS-REQUIREMENTS`. 逐项判断每个选定引用及其子章节, 并收集本检查负责的全部独立问题. 只有当前选定范围内的具体缺陷确实由后续已注册检查负责时, 才把它留给该检查; 未选择章节中的 Module Design 格式或作为证据的 ADR 不能改变归责. 本检查存在 `gap` 或 `uncertain` 时继续后续检查: 后续检查在当前 Requirements 缺陷下仍可判断的部分照常完成; 只有确实无法在该缺陷下判断的部分才留到下一轮, 并在报告中写明所依赖的缺陷.
+1. 完成 `SPEC-READINESS-INPUTS`. 逐项处理每个与交付内容相关的既有章节和每份可能影响 Input 完整性的快照, 记录每个独立的缺失或未知事实. 看到后续设计缺陷不能提前结束本检查.
+2. 完成 `SPEC-READINESS-REQUIREMENTS`. 逐项判断每个相关章节, 并收集本检查负责的全部独立问题. 只有当前审查范围内的具体缺陷确实由后续已注册检查负责时, 才把它留给该检查; 未检索到的章节中的 Module Design 格式或作为证据的 ADR 不能改变归责. 本检查存在 `gap` 或 `uncertain` 时继续后续检查: 后续检查在当前 Requirements 缺陷下仍可判断的部分照常完成; 只有确实无法在该缺陷下判断的部分才留到下一轮, 并在报告中写明所依赖的缺陷.
 3. 依次完成 `SPEC-READINESS-RATIONALE`, `SPEC-READINESS-ADR-EVALUATION` 和 `MODULE-DESIGN-APPLICABILITY`. 每项检查处理完自己负责的全部独立义务才算完成.
 4. 如果任何治理 spec 或 PRD 使用 `Not required:` 或完整的 Module Design 格式, 阅读 [Module Design Checks](spec-readiness-reviewer/module-design.md), 并在共用检查后完成其中适用的检查.
 
@@ -41,15 +41,15 @@ Reviewer Request 为响应绑定精确的绝对 `draftPath`.
 
 ### `SPEC-READINESS-INPUTS`
 
-把 subject 中每个治理引用与请求内提供的 Input 快照进行比较, 并判断完整集合是否支持语义判断. Inputs 中不存在的所选引用是 `gap`. 未选择的 Input 不得扩大实施范围, 但其声明的角色可以允许它支持当前合同或责任归属证据. 对长期规范变更, 要求具有足够的当前合同证据和文档责任规则, 以判断稳定内容是否得到保留. 只为当前选定要求或适用权威确实要求的事实报告缺失或未知; 设计可以自行选择的内容不是缺失的 Input 事实; 设计是否已定义它由对应检查判断. 必要 Input 明确缺失时使用 `gap`; 已建立的义务所需的事实在完整请求中仍未知时使用 `uncertain`.
+把 subject 描述的交付内容与请求内提供的 Input 快照进行比较, 并判断完整集合是否支持语义判断. 交付内容所需而 Inputs 和检索结果中都不存在的治理设计是 `gap`. 与交付无关的 Input 不得扩大实施范围, 但其声明的角色可以允许它支持当前合同或责任归属证据. 对长期规范变更, 要求具有足够的当前合同证据和文档责任规则, 以判断稳定内容是否得到保留. 只为当前交付要求或适用权威确实要求的事实报告缺失或未知; 设计可以自行选择的内容不是缺失的 Input 事实; 设计是否已定义它由对应检查判断. 必要 Input 明确缺失时使用 `gap`; 已建立的义务所需的事实在完整请求中仍未知时使用 `uncertain`.
 
 ### `SPEC-READINESS-REQUIREMENTS`
 
-使用 `## What to build` 和 `## Acceptance criteria` 清点 `## Spec Requirement` 选择的每个引用. 独立判断每个引用是否直接定义由该 issue 实现的输入要求. 无关文档或章节, 只提供辅助信息的 Input, 或仅作为未来输出创建或重写的文档都是 `gap`, 且不能扩大或授权范围. 所选治理 spec 中约束该交付的理由, Module Design, ADR Evaluation 和 Testing Decisions 章节不是辅助信息. 如果完整请求仍无法确定某项选择是否属于交付内容, 使用 `uncertain`.
+使用 `## What to build` 和 `## Acceptance criteria` 清点该 issue 实现的每项既有要求. 独立判断每个 Input 章节是否直接定义由该 issue 实现的输入要求. 只提供辅助信息的 Input, 或仅作为未来输出创建或重写的文档不能扩大或授权范围. 相关治理 spec 中约束该交付的理由, Module Design, ADR Evaluation 和 Testing Decisions 章节不是辅助信息. 如果完整请求仍无法确定某项要求是否属于交付内容, 使用 `uncertain`.
 
 如果治理设计修正在该请求前已经完成, 且其请求快照能够独立表述 issue 将实现的行为, 它可以继续作为 Input. 不得仅因同一个 issue 执行后续实施, 就把它错误分类为未来输出.
 
-检查每项符合条件的要求的范围, 行为, 约束, 结果, 跨文档一致性, 可实现性, 可验证性和未解决的重大决定. 把每个选定的调用方可见输入, 结果或副作用与所提供的每份当前使用方合同进行比较; 不兼容的表示是独立冲突. 这里只报告没有更具体已注册检查负责的缺陷. 当前选定范围内的完整 Module Design 使对应的 Interface, 责任, Seam, 依赖, 数据流和 Module 理由检查负责具体缺陷; 未选择的 Module Design 不产生这种分流. ADR 的适用性和结论质量由 `SPEC-READINESS-ADR-EVALUATION` 负责, 但引用 ADR 证明现有行为冲突不把该冲突变成 ADR 问题. 共用理由由 `SPEC-READINESS-RATIONALE` 负责. 支持性章节可以证明当前使用方合同或责任关系, 但不能被改写为选定要求. Subject 只能证明 issue 选择了什么, 不能证明所选设计完整或正确.
+检查每项符合条件的要求的范围, 行为, 约束, 结果, 跨文档一致性, 可实现性, 可验证性和未解决的重大决定. 把每个相关的调用方可见输入, 结果或副作用与所提供的每份当前使用方合同进行比较; 不兼容的表示是独立冲突. 这里只报告没有更具体已注册检查负责的缺陷. 当前审查范围内的完整 Module Design 使对应的 Interface, 责任, Seam, 依赖, 数据流和 Module 理由检查负责具体缺陷; 范围外的 Module Design 不产生这种分流. ADR 的适用性和结论质量由 `SPEC-READINESS-ADR-EVALUATION` 负责, 但引用 ADR 证明现有行为冲突不把该冲突变成 ADR 问题. 共用理由由 `SPEC-READINESS-RATIONALE` 负责. 支持性章节可以证明当前使用方合同或责任关系, 但不能被改写为交付要求. Subject 只能证明 issue 要交付什么, 不能证明相关设计完整或正确.
 
 ### `SPEC-READINESS-RATIONALE`
 
@@ -67,7 +67,7 @@ Reviewer Request 为响应绑定精确的绝对 `draftPath`.
 
 覆盖完整请求所支持的每个已注册检查和每个影响本 issue 交付的独立语义缺陷. 完成一项检查前, 清点它负责的独立字段, 结果分支, 状态, 权威, 理由和责任边界, 确认每份相关 Input 的当前判断有效. 后续可按公共复审规则保留未受影响的自身覆盖, 并处理变化, 旧问题和未完成检查. 一个问题不能代替该检查的其余覆盖.
 
-交付范围是本 issue 实现, 新增或修改的选定要求, 以及所在 spec 中约束它们的章节, 不论文字是本次新写还是已有. 既有合同只有在实施或验证这些交付必须用到其中缺失或冲突的事实时才进入范围; 其他既有设计即使不完整也不报告. 该限制不改变 `SPEC-READINESS-INPUTS` 和 `SPEC-READINESS-REQUIREMENTS` 对 subject 选择本身的判断.
+交付范围是本 issue 实现, 新增或修改的要求, 以及所在 spec 中约束它们的章节, 不论文字是本次新写还是已有. 既有合同只有在实施或验证这些交付必须用到其中缺失或冲突的事实时才进入范围; 其他既有设计即使不完整也不报告.
 
 对每个疑似问题, 在当前审查过程中依次核实:
 
