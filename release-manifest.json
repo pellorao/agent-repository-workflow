@@ -110,6 +110,7 @@
     "lib/reviewer-runtime/reviewer-round.mjs",
     "lib/reviewer-runtime/reviewer-runtime.mjs",
     "lib/reviewer-runtime/reviewer-session-record.mjs",
+    "lib/spec-readiness/precheck.mjs",
     "lib/spec-readiness/spec-readiness.mjs",
     "lib/workflow-distribution/workflow-distribution.mjs",
     "uninstall.mjs"

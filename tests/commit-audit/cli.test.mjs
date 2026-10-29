@@ -94,6 +94,15 @@ test('prepare writes a fixed-version round for both Reviewers and follows up the
     assert.equal((await line(second.round, 'code-standards-reviewer')).operation, 'spawn_agent');
 });
 
+test('prepare points both Reviewers at the Comments ledger of every authorizing issue', async t => {
+    const repository = await stagedRepository(t, {statuses: ['in-progress', 'in-progress']});
+    const {round} = await prepare(repository.root, {authorizingIssueIds: ['issue:0001:01', 'issue:0001:02']});
+    for (const role of ['requirements-reviewer', 'code-standards-reviewer']) {
+        const {input} = JSON.parse(await readFile(join(round, `${role}.jsonl`), 'utf8'));
+        assert.match(input.handoff, /处置台账: .*01-issue\.md, .*02-issue\.md 的 `## Comments` 章节/u);
+    }
+});
+
 test('prepare adds Gate 1 for terminal transitions and Gate 2 documents changed since the effort start', async t => {
     const repository = await stagedRepository(t, {statuses: ['completed', 'completed']});
     const emptyTree = '4b825dc642cb6eb9a060e54bf8d69288fbee4904';

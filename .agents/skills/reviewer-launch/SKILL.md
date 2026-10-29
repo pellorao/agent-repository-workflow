@@ -46,6 +46,10 @@ Spec Readiness 和提交审核的每一轮由所属工作流的 `prepare` 写出
 - `--wait` 命令在输出 `<id>:done` 前返回 (读到回执后工具超时或进程被终止) 不表示审核结束, 审核仍在运行; 工具会话丢失后重新连接同理: 用回执中的 `runId` 调 `list_agents` 取 `cursor` 观察, 再按需 `wait_agent` 续等, 直到 `completion` 非空. 原线程或原有路径与设置无法恢复时明确失败, 不静默新建线程.
 - 从 `completion` 取得结果后读取绑定报告. 空报告或残留草稿不是有效结果; 收尾失败时按具体原因处理.
 
+## Capacity priority
+
+关卡 Reviewer (Spec Readiness, 提交审核) 优先于基准, 批量和能力验证运行. 同一提供者的并行实例上限由用户配置的 `backgroundAgent.providers.<provider>.maxInstances` 决定, 管理进程在上限用尽时对新的启动请求直接返回 `capacity is exhausted`, 不排队, 所以批量或基准运行同时占用的某提供者实例数不超过上限减 2, 为提交审核的两个并行 Reviewer 留出名额. 关卡 Reviewer 启动因容量用尽失败, 或启动后 2 分钟内没有回合开始时, 仍按 `docs/agents/agent-writes.md` 的基线排队等待: 用 `list_agents` 查看占用名额的运行, 其结束后重发同一请求; 同时第一时间向用户报告是哪些运行占用名额, 不静默等待.
+
 ## Long-running and paused reviews
 
 - 普通审核从开始等待达到 30 分钟且 Reviewer 仍在运行时, 向用户报告当前状态及尚未核实的事实, 询问继续等待还是结束, 然后结束当前回复; 此后每 15 分钟再次询问. 用户决定前保持 Reviewer 运行, 不自行停止或替换.

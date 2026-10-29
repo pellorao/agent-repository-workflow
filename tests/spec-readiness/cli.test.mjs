@@ -38,6 +38,26 @@ test('spec readiness prepare accepts JSON stdin and emits a minimal reviewer req
     assert.match(request.subject.sha256, /^[0-9a-f]{64}$/);
 });
 
+test('spec readiness prepare reports precheck warnings on stderr and keeps stdout to the round directory', async t => {
+    const repository = await createRepository(t);
+    const issue = '# Implement workflow\n\nStatus: ready-for-agent\n\n## What to build\n\nImplement.\n\n## Acceptance criteria\n\n- [ ] Complete.\n\n## Blocked by\n\n- None\n';
+    await writeArtifact(repository.root, '0001-workflow', 'spec.md', '# Test spec\n\n## Module Design\n\nNot required: No module boundary changes.\n');
+    await writeIssue(repository.root, '0001-workflow', '01-implement.md', issue);
+    await mkdir(join(repository.root, 'docs', 'agents', 'roles'), {recursive: true});
+    await writeFile(join(repository.root, 'docs', 'agents', 'roles', 'spec-readiness-reviewer.md'), '# Reviewer\n', 'utf8');
+    await writeFile(join(repository.root, 'docs', 'agents', 'reviewer.md'), '# Reviewer rules\n', 'utf8');
+
+    const prepared = await run(['spec-readiness', 'prepare', '--issue', 'issue:0001:01'], repository, {
+        specReadinessDependencies: {platformAdapter: {getCurrentAgentIdentity: () => ({platform: 'codex', sessionId: 'test-session'})}},
+        stdin: JSON.stringify({inputs: [{filePath: '.scratch/0001-workflow/spec.md', role: 'governing-spec'}]}),
+    });
+
+    assert.equal(prepared.result, 0);
+    assert.deepEqual(prepared.events.map(event => event.channel), ['stdout', 'stderr']);
+    assert.match(prepared.events[1].message, /^warning: \.scratch\/[^:]+: 验收项没有观察方式: - \[ \] Complete\./u);
+    assert.match(prepared.events[0].message, /[\\/]rounds[\\/][0-9a-f-]+$/u);
+});
+
 test('spec readiness prepare accepts the shared JSON schema from an input file', async t => {
     const repository = await createRepository(t);
     const spec = '# Test spec\n\n## Module Design\n\nNot required: No module boundary changes.\n';

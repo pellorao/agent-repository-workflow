@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0007:01",
+  "request": {
+    "digest": "153432352b7faddcd152992d95bfb96cbf67c786c2728c425c425af6b614a98a",
+    "filePath": ".tmp/claude-code/06588b1e-7f07-4832-8933-107aaf5b5978/0007_01/spec-readiness/requests/request-ddcc4491-f7c2-454d-b284-806fd03ab70f.json",
+    "id": "ddcc4491-f7c2-454d-b284-806fd03ab70f"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "f797bb611ba9cf50c0ccfab4d029b2a32fd44b771b7b9338a0a31bb48ddba14a"
+  },
+  "inputs": [
+    {
+      "filePath": ".scratch/0007-reviewer-flow-speedup/spec.md",
+      "role": "governing-spec",
+      "sha256": "e79b2ce4b70cfe1e47a99c59f854173fbde6ef48bd887268cfc8a34b3d1dc2d6"
+    },
+    {
+      "filePath": "docs/adr/0023-separate-commit-audit-review-from-implementation.md",
+      "role": "adr",
+      "sha256": "e7c36bacace0767176a3175a59e7e1211439ba5ebf6ef2770a5c00835605630f"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0007-reviewer-flow-speedup/issues/01-speed-up-reviewer-flow.md",
+    "sha256": "78f2c5362a9d26130ea62f233e5b3215eab0eeb51accdee74a53d3b37fbf179a"
+  },
+  "result": "satisfied"
+}
