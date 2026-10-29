@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0005:01",
+  "request": {
+    "digest": "5f560c45e9788e26b49c455751cd42bf25c3caa9b524f9531608777903656e46",
+    "filePath": ".tmp/claude-code/06588b1e-7f07-4832-8933-107aaf5b5978/0005_01/spec-readiness/requests/request-eaa489c4-117b-4549-bacb-c10958317123.json",
+    "id": "eaa489c4-117b-4549-bacb-c10958317123"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "f797bb611ba9cf50c0ccfab4d029b2a32fd44b771b7b9338a0a31bb48ddba14a"
+  },
+  "inputs": [
+    {
+      "filePath": ".scratch/0005-reviewer-capability-selection-fixtures/spec.md",
+      "role": "governing-spec",
+      "sha256": "531db412263c419d3d35094cc8cc922b3c8913660d086c70dc20ad8d276ee6f6"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0005-reviewer-capability-selection-fixtures/issues/01-remove-selection-from-fixtures.md",
+    "sha256": "fba10770816cf0796391415341de3dd25a6961e0ce49dc12818d62c2642c4f90"
+  },
+  "result": "satisfied"
+}

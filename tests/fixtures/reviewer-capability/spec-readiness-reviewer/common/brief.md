@@ -29,11 +29,11 @@
 
 ## 本场景口径（Spec Readiness v4.5）
 
-依据：`benchmarks/reviewer-suite-v1/spec-readiness-v4.md`（v4.2、v4.3 两节）、冻结 Role `docs/agents/roles/spec-readiness-reviewer.md`、答案键（`expected.json` sha256 `74252e0aa4e50d231efaefdfa24a27e1b4d97936e747425787d30bace996a344`，k 覆盖文件 `judgment/spec-readiness-v4.2.json`）。v4.5 相对 v4.3 只改三行措辞（RM、AP 两份 view 相同），行数与答案键与 v4.3 相同：v4.4 把 `promotion-recovery.md:65`、`:85` 中被拒绝自报的 caller 写明为 promote 的 caller；v4.5 把 `promotion-runtime.md:11` 的"Promotion 信任此前置条件, 不增加 public 参数"改为"不增加 public 参数或失败分支"，与 `:45` 对 retentionDays 的写法一致（修订号：v4.4 为 47，v4.4 brief 标题漏改）。
+依据：`benchmarks/reviewer-suite-v1/spec-readiness-v4.md`（v4.2、v4.3 两节）、冻结 Role `docs/agents/roles/spec-readiness-reviewer.md`、答案键（`expected.json`；v4.5 原键的 sha256 为 `74252e0aa4e50d231efaefdfa24a27e1b4d97936e747425787d30bace996a344`，现已去除要求选择类用例及一个 k 为 1 的 MODULES 干净用例，与该 sha256 不同）。v4.5 相对 v4.3 只改三行措辞（RM、AP 两份 view 相同），行数与 v4.3 相同：v4.4 把 `promotion-recovery.md:65`、`:85` 中被拒绝自报的 caller 写明为 promote 的 caller；v4.5 把 `promotion-runtime.md:11` 的"Promotion 信任此前置条件, 不增加 public 参数"改为"不增加 public 参数或失败分支"，与 `:45` 对 retentionDays 的写法一致（修订号：v4.4 为 47，v4.4 brief 标题漏改）。
 
 - 两个子场景是两道独立的题：RM 只审 `SPEC-READINESS-INPUTS`、`SPEC-READINESS-REQUIREMENTS` 两项需求检查，这两项的问题用例与干净用例都只属于 RM；AP 是全量审查，这两项在 AP 只有 `noOtherSupportedFinding`，其余 9 项检查的用例都属于 AP。候选只按它所属子场景的 view 与答案键判断，不因另一子场景有同一缺陷而改判。
 - 期望句描述一个规格缺陷。finding 与它表达同一个缺陷（同一对象、同一错误含义）才算 `matched`；只讲同一 Input 或同一检查下另一个问题的 finding 不算。finding 另外还写了别的缺陷，不影响已对上的那一个（见上文统一口径的 `matched` 一条）。finding 的结果类别（gap/uncertain）与期望不同，但所说的缺陷相同时仍算匹配，结果分由评分规则处理；裁决者不因结果类别改判。
-- 选定与未选定 Input：Role 原文"未选择的章节或 Input 只有在其声明角色支持当前使用方合同或责任归属时才作为比较证据, 不能变成 issue 要实现的要求或独立审查范围."
+- issue 没有 `## Spec Requirement` 章节，不再选择要求；下文"选定"一词指 Reviewer 按 subject 的 What to build 与验收标准检索到并读取的相关章节，"未选"指其余 Input 章节。Role 原文：与交付无关的 Input 不得扩大实施范围，但其声明的角色可以允许它支持当前合同或责任归属证据。
 - 答案键内的缺陷报在没有其 placement 的检查下（不是该问题用例的候选，`problemOptions` 中也没有它）：按上文统一口径判 `supported`。v4.2 正式计分的先例：一条把 MODULES#0 的重复校验所有权报在 DEPENDENCIES-DATA-FLOW 下的 finding 判 `supported`（经独立审查确认），与下文 m2 的判法相同。
 - 豁免两项检查的分工：`MODULE-DESIGN-APPLICABILITY` 判该不该用 Module Design 豁免（改变了 caller-visible Interface 的规格不得豁免），`MODULE-DESIGN-EXEMPTION` 判可以豁免时豁免理由是否具体。主张 `result-summary.md` 不得豁免的 finding 属于 APPLICABILITY 的问题；主张 `parser-scan.md` 的豁免理由空泛、没说明 Module 边界为什么不变的 finding 属于 EXEMPTION 的问题。报在另一项检查下时按上一条判 `supported`。
 - 读法：下文"正例 N""反例 N""MODULES#0"是答案键在该检查内从 0 起的序号，与 `problem-N`、`false-positive:clean-N`（从 1 起）不同；选 `problem-N` 或 `clean-N` 时一律按 `problemOptions`、`cleanTargets` 中的期望句内容对应，不按序号换算。`prc` 指 `promotion-recovery.md`，`prt` 指 `promotion-runtime.md`；文中文件名省略了 view 内的 `specs/` 目录前缀。
@@ -43,7 +43,7 @@
 
 - MODULES 正例 1：指出 Promotion 提前返回、绕过 Recovery 交接，或与 `promotion-runtime.md:41/:45/:57`、`promotion-recovery.md:65/:73`、`architecture/02-commit.md:5` 的交接或传播表述不一致的 finding，与重复校验是同一缺陷，判 matched。这类 finding 若同时成为 DEPENDENCIES-DATA-FLOW 正例 0（缺权威来源表）或正例 1（Promotion Flow 缺 Artifact Storage 读取调用）的候选，按各自缺陷判 not-matched。
 - SEAMS-ADAPTERS 正例 0：指出 Data Flow（`access-review.md:55`）只写 Seam 的 allowed decision、未提 Module 的检查，或 allowed decision 有两个来源的 finding，与重复授权策略是同一缺陷，判 matched。针对"Seam 允许、Module 拒绝"分支缺少测试的 finding，属于同一缺陷或证据不足，不另算问题（审计 m1）。
-- MODULES 反例 2 与 MODULES 正例 1 的区分：指出 Promotion 在 `prc:31` 按 Invalid Input Diagnostic 顺序检查 recovery input、与 Recovery 重复的 finding 属于正例 1，不算反例 2 的误报；只有把 Promotion 的持久化前置检查（`prt:31`）与 Recovery 的输入校验当成重复的 finding，才算反例 2 被误报。
+- MODULES 反例 1 与 MODULES 正例 1 的区分：指出 Promotion 在 `prc:31` 按 Invalid Input Diagnostic 顺序检查 recovery input、与 Recovery 重复的 finding 属于正例 1，不算反例 1 的误报；只有把 Promotion 的持久化前置检查（`prt:31`）与 Recovery 的输入校验当成重复的 finding，才算反例 1 被误报。
 - SEAMS-ADAPTERS 反例 4 与 SEAMS-ADAPTERS 正例 0 的区分：指出 Access Review 与 Policy Adapters 重复授权策略的 finding 属于正例 0；只有声称 Artifact Reader Adapters 与 Validation Report Module 重复持有校验或结果策略的 finding，才算反例 4 被误报。
 
 - 第 2、3 轮审计补充（m1、m2、m5，冻结前补齐，冻结后改 brief 就不能沿用已有裁决）：
@@ -52,8 +52,7 @@
   - SEAMS-ADAPTERS 正例 0 类 finding（Module 与 Adapter 重复授权策略）因证据含 `access-review.md:51` 而成为 INTERFACES 正例 1 的候选时，判 not-matched（m5，Opus 盲答已实际出现）。
   - 指出 Recovery Storage 成功形状缺失的 finding 判 `unsupported`：`promotion-recovery.md:57` 已给出精确的成功 `recoveryState`（第 3 轮审计修改后）。
 
-- 未选节（上面 m1 末句的推广，multi-model-v2 新增）：主张选定章节因为把内容委托给或引用未选节而不完整的 finding（m1 末句那一类），以及把未选节本身当作审查对象、主张未选节自身有缺陷的 finding，RM 与 AP 一律判 `unsupported`。例外：选定章节经引用采用的未选节合同（例如选定 Requirements 所引用的 Interfaces 字段定义），可以用来核对选定章节之间的冲突或缺失，这类 finding 照常判断（Role 原文见上：未选章节在其声明角色支持当前使用方合同时作为比较证据）。
-- 原样段之外的已定判例：RM 的 REQUIREMENTS export-retention 问题用例（期望结果为 uncertain）：断言"target 是人工维护的文档、该节不适用"的 finding，关联候选判 `not-matched`；成为发现候选时判 `unsupported`，不选对应的 `problem-N`（v4 正式计分已定判例，v4.2 沿用）。判 gap、但理由与期望句相同的 finding 仍算匹配，结果分由评分规则扣除。
+- 未选节（上面 m1 末句的推广，multi-model-v2 新增）：主张选定章节因为把内容委托给或引用未选节而不完整的 finding（m1 末句那一类），以及把未选节本身当作审查对象、主张未选节自身有缺陷的 finding，RM 与 AP 一律判 `unsupported`。例外：选定章节经引用采用的未选节合同（例如选定 Requirements 所引用的 Interfaces 字段定义），可以用来核对选定章节之间的冲突或缺失，这类 finding 照常判断（转述，Role 原文见上：与交付无关的 Input 在其声明角色支持当前合同时可作为证据）。
 - 只说违背（[裁决先例](../../reviewer-suite-v1/rulings.md)「CA 只说违背」按本场景 Role 推广，multi-model-v2 新增；只用于发现候选不对应任何问题用例、在 `supported` 与 `unsupported` 之间判定时）：finding 只说某项检查不满足、规格未就绪或不符合某条规则，没写出具体缺陷、缺失的内容或相互冲突的两侧合同的，判 `unsupported`。缺失类 finding 写明缺了什么即可，不要求写出机制或修复方法。依据：冻结 `docs/agents/roles/spec-readiness-reviewer/findings.md`:15 原文"`finding` 解释具体缺陷, 缺失内容或冲突合同, 以及它对就绪的影响"。
 - 只依据 Input 原文判断，不依据 finding 自称的严重程度或把握。
 

@@ -542,23 +542,6 @@
     {
      "evidence": [
       {
-       "filePath": "specs/validation-report.md",
-       "line": 35
-      }
-     ],
-     "expectation": "Readiness Module retains its existing non-report responsibilities without overlap.",
-     "findingTerms": [
-      "Readiness Module",
-      [
-       "promotion ordering",
-       "artifact generation"
-      ]
-     ],
-     "k": 1
-    },
-    {
-     "evidence": [
-      {
        "filePath": "specs/promotion-runtime.md",
        "line": 31
       },

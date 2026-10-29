@@ -124,88 +124,6 @@
    }
   },
   {
-   "id": "a04",
-   "family": "strata",
-   "model": "strata-q3",
-   "expected": "not-matched",
-   "confirmed_by": "v1 锚点 a04 在 v2 brief 与 spec-readiness-v4.5 场景文本下复核（F10，2026-10-25），期望 not-matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：blind Opus high, Spec Readiness v4.2 pool post2 b044 (282 items, anchors 12/12); v4.3 keeps the v4.2 answer key (74252e0a) and changes only the AP split of clean cases",
-   "origin": null,
-   "item": {
-    "kind": "association",
-    "scenario": "runtime-migration",
-    "check": "SPEC-READINESS-INPUTS",
-    "allowedDecisions": [
-     "matched",
-     "not-matched"
-    ],
-    "expectation": "The conditional export-retention section applies only if the new reader-index target is a generated artifact; no supplied Input establishes whether docs/reference/validation-report.md is generated, so whether the section belongs to this issue cannot be determined.",
-    "finding": "The Spec Requirement selects `specs/request-consistency.md#requirements` as a governing requirement, but the request provides no Input snapshot for `specs/request-consistency.md`. The 31 snapshots cover 12 governing specs, 5 architecture evidence files, 4 domain-context files, 4 ADRs and 6 rules files, and none of them is that path. The selected requirement therefore has no content in this review, so its scope, behavior, constraints and results cannot be judged against the delivery.",
-    "result": "gap",
-    "evidence": [
-     {
-      "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
-      "line": 7
-     },
-     {
-      "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
-      "line": 9
-     },
-     {
-      "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
-      "line": 10
-     },
-     {
-      "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
-      "line": 11
-     },
-     {
-      "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
-      "line": 12
-     },
-     {
-      "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
-      "line": 13
-     },
-     {
-      "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
-      "line": 14
-     },
-     {
-      "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
-      "line": 15
-     },
-     {
-      "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
-      "line": 16
-     },
-     {
-      "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
-      "line": 17
-     },
-     {
-      "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
-      "line": 18
-     },
-     {
-      "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
-      "line": 19
-     },
-     {
-      "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
-      "line": 20
-     },
-     {
-      "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
-      "line": 21
-     },
-     {
-      "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
-      "line": 8
-     }
-    ]
-   }
-  },
-  {
    "id": "a05",
    "family": "strata",
    "model": "strata-q3",
@@ -325,48 +243,6 @@
      {
       "filePath": "specs/promotion-runtime.md",
       "line": 51
-     }
-    ]
-   }
-  },
-  {
-   "id": "a09",
-   "family": "strata",
-   "model": "strata-q3",
-   "expected": "matched",
-   "confirmed_by": "v1 锚点 a09 在 v2 brief 与 spec-readiness-v4.5 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：blind Opus high, Spec Readiness v4.2 pool post2 b041 (282 items, anchors 12/12); v4.3 keeps the v4.2 answer key (74252e0a) and changes only the AP split of clean cases",
-   "origin": null,
-   "item": {
-    "kind": "association",
-    "scenario": "runtime-migration",
-    "check": "SPEC-READINESS-REQUIREMENTS",
-    "allowedDecisions": [
-     "matched",
-     "not-matched"
-    ],
-    "expectation": "The conditional export-retention section applies only if the new reader-index target is a generated artifact; no supplied Input establishes whether docs/reference/validation-report.md is generated, so whether the section belongs to this issue cannot be determined.",
-    "finding": "`specs/export-retention.md#conditional-export-retention` applies to the Reader Index Update only if the new link target is a generated artifact, and does not apply if that target is a human-maintained document. The supplied Inputs state only that the new target is `docs/reference/validation-report.md` with H1 identity `Validation Report Reference`, and no Input states which of the two it is. Whether external policy governs artifact retention for this delivery is therefore unknown, so the required applicability statement in `rules/02-external-policy.md` cannot be confirmed for the Reader Index Update.",
-    "result": "uncertain",
-    "evidence": [
-     {
-      "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
-      "line": 19
-     },
-     {
-      "filePath": "architecture/05-validation-report.md",
-      "line": 49
-     },
-     {
-      "filePath": "rules/02-external-policy.md",
-      "line": 5
-     },
-     {
-      "filePath": "specs/export-retention.md",
-      "line": 5
-     },
-     {
-      "filePath": "specs/reader-index.md",
-      "line": 9
      }
     ]
    }
@@ -527,36 +403,6 @@
      {
       "filePath": "specs/promotion-runtime.md",
       "line": 85
-     }
-    ]
-   }
-  },
-  {
-   "id": "a14",
-   "family": "strata",
-   "model": "strata-q3",
-   "expected": "matched",
-   "confirmed_by": "v1 锚点 a14 在 v2 brief 与 spec-readiness-v4.5 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：blind Opus high, Spec Readiness v4.2 pool post2 b124 (282 items, anchors 12/12); v4.3 keeps the v4.2 answer key (74252e0a) and changes only the AP split of clean cases",
-   "origin": null,
-   "item": {
-    "kind": "association",
-    "scenario": "runtime-migration",
-    "check": "SPEC-READINESS-INPUTS",
-    "allowedDecisions": [
-     "matched",
-     "not-matched"
-    ],
-    "expectation": "The subject selects specs/request-consistency.md, but no matching governing Input was supplied.",
-    "finding": "The issue selects `specs/request-consistency.md#requirements` as a governing requirement, but the Reviewer Request provides no Input snapshot for `specs/request-consistency.md`; none of the 31 supplied Inputs has that filePath. The content of this selected requirement is therefore unknown, so its scope, its behavior, and whether it defines a necessary input for the promotion delivery listed in `## What to build` cannot be judged, and implementation cannot start against it.",
-    "result": "gap",
-    "evidence": [
-     {
-      "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
-      "line": 7
-     },
-     {
-      "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
-      "line": 21
      }
     ]
    }
@@ -872,48 +718,6 @@
    }
   },
   {
-   "id": "a24",
-   "family": "anthropic",
-   "model": "opus",
-   "expected": "matched",
-   "confirmed_by": "v1 锚点 a24 在 v2 brief 与 spec-readiness-v4.5 场景文本下复核（F10，2026-10-25），期望 matched 不变：所涉行与答案键在 v2 未改，v2 统一口径与本场景口径不改变该判法。v1 依据：blind Opus high, Spec Readiness v4.2 pool post2 b043 (282 items, anchors 12/12); v4.3 keeps the v4.2 answer key (74252e0a) and changes only the AP split of clean cases",
-   "origin": null,
-   "item": {
-    "kind": "association",
-    "scenario": "runtime-migration",
-    "check": "SPEC-READINESS-REQUIREMENTS",
-    "allowedDecisions": [
-     "matched",
-     "not-matched"
-    ],
-    "expectation": "The conditional export-retention section applies only if the new reader-index target is a generated artifact; no supplied Input establishes whether docs/reference/validation-report.md is generated, so whether the section belongs to this issue cannot be determined.",
-    "finding": "`specs/export-retention.md#conditional-export-retention` applies to the Reader Index Update only if the new link target is a generated artifact, and does not apply if the target is a human-maintained document. The Reader Index requirement and the current reader index evidence identify the new target `docs/reference/validation-report.md` and its H1 identity, but no Input states whether that target is generated or human-maintained. The complete request therefore cannot determine whether this selection (and its 30-day retention obligation) is part of the delivery.",
-    "result": "uncertain",
-    "evidence": [
-     {
-      "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
-      "line": 3
-     },
-     {
-      "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
-      "line": 19
-     },
-     {
-      "filePath": "architecture/05-validation-report.md",
-      "line": 49
-     },
-     {
-      "filePath": "specs/export-retention.md",
-      "line": 5
-     },
-     {
-      "filePath": "specs/reader-index.md",
-      "line": 9
-     }
-    ]
-   }
-  },
-  {
    "id": "a25",
    "family": "anthropic",
    "model": "opus",
@@ -1044,37 +848,6 @@
  ],
  "synthetic": [
   {
-   "id": "s01",
-   "type": "mismatch",
-   "family": "strata",
-   "model": "strata-q3",
-   "expected": "not-matched",
-   "from": "v4.2 pool b191 (matched, REQUIREMENTS problem 2) under problem 3",
-   "item": {
-    "kind": "association",
-    "scenario": "runtime-migration",
-    "check": "SPEC-READINESS-REQUIREMENTS",
-    "allowedDecisions": [
-     "matched",
-     "not-matched"
-    ],
-    "expectation": "The subject adds image-preview cleanup that is not needed to implement this issue.",
-    "finding": "`specs/runtime-migration.md` states that the expected filesystem failure of `promote(inputPath)` is exactly `{recovered: false, failureCode, priorTrackedState, baselineStatus}`, while `specs/promotion-runtime.md` states that the same failure is `{recovered: false, failureCode, operation, priorTrackedState, baselineStatus}` and uses `operation` to identify which failure occurred. The two selected governing requirements give incompatible field sets for the same caller-visible failure, so the delivered failure contract is undetermined.",
-    "result": "gap",
-    "evidence": [
-     {
-      "filePath": "specs/promotion-runtime.md",
-      "line": 41
-     },
-     {
-      "filePath": "specs/runtime-migration.md",
-      "line": 23
-     }
-    ]
-   },
-   "confirmed_by": "v1 合成题 s01 在 v2 brief 与 spec-readiness-v4.5 场景文本下复核（F10，2026-10-25），期望 not-matched 不变"
-  },
-  {
    "id": "s02",
    "type": "mismatch",
    "family": "anthropic",
@@ -1108,33 +881,6 @@
     ]
    },
    "confirmed_by": "v1 合成题 s02 在 v2 brief 与 spec-readiness-v4.5 场景文本下复核（F10，2026-10-25），期望 not-matched 不变"
-  },
-  {
-   "id": "s03",
-   "type": "mismatch",
-   "family": "openai",
-   "model": null,
-   "expected": "not-matched",
-   "from": "written 2026-10-20 (OpenAI style; INPUTS problem 1) under REQUIREMENTS problem 4",
-   "item": {
-    "kind": "association",
-    "scenario": "runtime-migration",
-    "check": "SPEC-READINESS-REQUIREMENTS",
-    "allowedDecisions": [
-     "matched",
-     "not-matched"
-    ],
-    "expectation": "The conditional export-retention section applies only if the new reader-index target is a generated artifact; no supplied Input establishes whether docs/reference/validation-report.md is generated, so whether the section belongs to this issue cannot be determined.",
-    "finding": "The issue selects specs/request-consistency.md as a governing requirement, but the request supplies no Input snapshot for it. Its requirements therefore cannot be compared with the subject.",
-    "result": "gap",
-    "evidence": [
-     {
-      "filePath": ".scratch/0001-reviewer-capability/issues/01-review-readiness.md",
-      "line": 21
-     }
-    ]
-   },
-   "confirmed_by": "v1 合成题 s03 在 v2 brief 与 spec-readiness-v4.5 场景文本下复核（F10，2026-10-25），期望 not-matched 不变"
   },
   {
    "id": "s04",
