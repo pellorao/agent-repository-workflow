@@ -30,7 +30,7 @@ test('pool view stages the reviewed state, the diff and a binding the prompt che
     await writeFile(join(scenario, 'expected.json'), '{}');
     await writeFile(join(scenario, 'base', 'a.txt'), 'base\n');
     await writeFile(join(scenario, 'candidate', 'a.txt'), 'candidate\n');
-    const result = await poolView({name: 'p', root, scenarios: [scenario]});
+    const result = await poolView({name: 'p', root, scenario});
     assert.deepEqual([result.status, result.views, result.files], ['succeeded', ['view', 'change.diff'], 2]);
     const adj = join(root, 'p', 'adj');
     assert.equal(await readFile(join(adj, 'view', 'a.txt'), 'utf8'), 'candidate\n');
@@ -39,7 +39,7 @@ test('pool view stages the reviewed state, the diff and a binding the prompt che
     assert.deepEqual([binding.role, binding.views, Object.keys(binding.files), binding.files['view/a.txt'], binding.expectedSha256], ['code-standards-reviewer', ['view', 'change.diff'], ['change.diff', 'view/a.txt'],
         sha256('candidate\n'), {demo: sha256('{}')}]);
     assert.equal((await poolPrompt({name: 'p', root})).promptSha256.length, 64);
-    assert.equal((await poolView({name: 'p', root, scenarios: [scenario]})).status, 'blocked');
+    assert.equal((await poolView({name: 'p', root, scenario})).status, 'blocked');
 
     await writeFile(join(adj, 'view', 'a.txt'), 'tampered\n');
     await assert.rejects(poolPrompt({name: 'p', root}), /a\.txt differs from view-binding/u);
@@ -48,23 +48,18 @@ test('pool view stages the reviewed state, the diff and a binding the prompt che
     await assert.rejects(poolPrompt({name: 'p', root}), /differ from view-binding/u);
 });
 
-test('pool view blocks a pool that was not built and scenarios that do not fit it', async t => {
+test('pool view blocks a pool that was not built and a scenario of another role', async t => {
     const root = await emptyPool(t, 'code-standards-reviewer', 'demo');
     const scenario = join(FIXTURES, 'code-standards-reviewer', 'code-standards');
-    assert.equal((await poolView({name: 'missing', root, scenarios: [scenario]})).status, 'blocked');
-    assert.equal((await poolView({name: 'p', root, scenarios: [join(FIXTURES, 'requirements-reviewer', 'code-spec')]})).status, 'blocked');
-    assert.equal((await poolView({name: 'p', root, scenarios: [scenario, scenario]})).status, 'blocked');
+    assert.equal((await poolView({name: 'missing', root, scenario})).status, 'blocked');
+    assert.equal((await poolView({name: 'p', root, scenario: join(FIXTURES, 'requirements-reviewer', 'code-spec')})).status, 'blocked');
     assert.deepEqual(await files(join(root, 'p', 'adj')), ['pool-p.json']);
 });
 
-test('pool view of Spec Readiness needs both views of the role and redacts the Request', async t => {
-    const scenario = (/** @type {string} */ name) => join(FIXTURES, 'spec-readiness-reviewer', name);
-    const both = await emptyPool(t, 'spec-readiness-reviewer', 'runtime-migration');
-    assert.equal((await poolView({name: 'p', root: both, scenarios: [scenario('runtime-migration')]})).status, 'blocked');
-    // One view keeps this test to one scenario repository; the views of a real Spec Readiness pool are the two sub-scenarios.
-    const root = await emptyPool(t, 'spec-readiness-reviewer', 'runtime-migration', ['view-rm']);
-    assert.equal((await poolView({name: 'p', root, scenarios: [scenario('runtime-migration')]})).status, 'succeeded');
+test('pool view of Spec Readiness stages one view and redacts the Request', async t => {
+    const root = await emptyPool(t, 'spec-readiness-reviewer', 'spec-readiness');
+    assert.equal((await poolView({name: 'p', root, scenario: join(FIXTURES, 'spec-readiness-reviewer', 'spec-readiness')})).status, 'succeeded');
     const adj = join(root, 'p', 'adj');
-    assert.equal(JSON.parse(await readFile(join(adj, 'view-rm', 'REVIEWER-REQUEST.json'), 'utf8')).draftPath, '<redacted>');
+    assert.equal(JSON.parse(await readFile(join(adj, 'view', 'REVIEWER-REQUEST.json'), 'utf8')).draftPath, '<redacted>');
     assert.equal((await files(adj)).includes('change.diff'), false);
 });

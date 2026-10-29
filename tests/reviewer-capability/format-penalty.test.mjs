@@ -5,14 +5,13 @@ import test from 'node:test';
 
 import {sha256} from '../../lib/common/json.mjs';
 import {loadScenario} from '../../lib/reviewer-capability/scenario.mjs';
-import {baseline, combine, repair, score} from '../../lib/reviewer-capability/operations.mjs';
+import {baseline, repair, score} from '../../lib/reviewer-capability/operations.mjs';
 import {candidateFingerprint} from '../../lib/reviewer-capability/pool.mjs';
-import {combineScenarios, kScore, withReportPolicy} from '../../lib/reviewer-capability/scoring.mjs';
+import {kScore, withReportPolicy} from '../../lib/reviewer-capability/scoring.mjs';
 import {createTemporaryDirectory} from '../helpers/cleanup.mjs';
 
 const FIXTURES = join(import.meta.dirname, '..', 'fixtures', 'reviewer-capability');
-const RUNTIME_MIGRATION = join(FIXTURES, 'spec-readiness-reviewer', 'runtime-migration');
-const ARTIFACT_PROMOTION = join(FIXTURES, 'spec-readiness-reviewer', 'artifact-promotion');
+const SPEC_READINESS = join(FIXTURES, 'spec-readiness-reviewer', 'spec-readiness');
 const SUBJECT = '.scratch/0001-reviewer-capability/issues/01-review-readiness.md';
 const pause = (/** @type {string} */ messageId) => ({messageId, sequence: 1, source: 'provider-program', text: 'The Reviewer runtime paused this same task after 600 seconds.', type: 'message'});
 
@@ -48,11 +47,7 @@ test('kScore needs problem cases, and clean cases once the score is negative', (
     assert.deepEqual(kScore({kCleanWeight: 2, kEarnedProblemPoints: 1, kFailedCleanWeight: 0, kProblemWeight: 2}), {rawScore: 0.5, score: 0.5});
 });
 
-test('combining scenario results rejects incomplete counts and unbalanced k tiers, and cut diagnostics take the residual cut', () => {
-    const result = (/** @type {any} */ kTiers) => ({caseScores: {clean: [], problem: []}, kCleanWeight: 1, kEarnedProblemPoints: 1, kFailedCleanWeight: 0, kProblemWeight: 1, kTiers, scopes: []});
-    assert.throws(() => combineScenarios([{...result({}), kProblemWeight: undefined}]), /incomplete k counts/u);
-    assert.throws(() => combineScenarios([result({1: {clean: 1, problem: 2}})]), /unbalanced/u);
-    assert.equal(combineScenarios([result({1: {clean: 1, problem: 1}}), result({})]).score, 1);
+test('cut diagnostics take the residual cut', () => {
     assert.deepEqual(['review-row-invalid', 'surprise'].map(code => withReportPolicy({score: 1}, [{code}]).score), [1, 0.9]);
     assert.equal(withReportPolicy({score: 1}, [{code: 'review-json-invalid'}]).unrepairableFormatErrors, 1);
 });
@@ -111,33 +106,13 @@ test('repair fixes a short path and a preamble on a copy, and the format penalty
     assert.equal((await run({noRepair: false, repair: repaired.record, report: original})).status, 'blocked');
 });
 
-test('a report that continues past a requirement-scope problem fails a clean case, and the two Spec Readiness scenarios fuse', async t => {
+test('a Spec Readiness report that continues past a requirement-scope problem is not truncated and scores both rows', async t => {
     const root = await createTemporaryDirectory(t, 'arw-format-');
     const agent = await write(join(root, 'agent.json'), JSON.stringify({status: 'succeeded', result: {notifications: []}}));
     const row = (/** @type {string} */ check) => `${JSON.stringify({check, evidence: [`${SUBJECT}:21`], finding: 'The subject selects an absent Input.', result: 'gap'})}\n`;
-    const stopped = await score({agent, noRepair: true, report: await write(join(root, 's.jsonl'), row('SPEC-READINESS-REQUIREMENTS')), scenario: RUNTIME_MIGRATION});
-    const continued = await score({agent, noRepair: true, report: await write(join(root, 'c.jsonl'), row('SPEC-READINESS-REQUIREMENTS') + row('MODULE-DESIGN-APPLICABILITY')), scenario: RUNTIME_MIGRATION});
-    assert.equal(continued.scores.reportDiagnostics.some((/** @type {any} */ item) => item.code === 'requirement-scope-continuation'), true);
-    assert.equal(continued.scores.score < stopped.scores.score, true);
-    // A row of invalid representation after the stop point is ignored with its check once the review continued, so it adds no format error.
-    const untrimmed = JSON.stringify({check: 'MODULE-DESIGN-APPLICABILITY', evidence: [`${SUBJECT}:21`], finding: ' padded', result: 'gap'});
-    const padded = await score({agent, noRepair: true, report: await write(join(root, 'p.jsonl'), `${row('SPEC-READINESS-REQUIREMENTS')}${untrimmed}\n`), scenario: RUNTIME_MIGRATION});
-    assert.equal(padded.scores.unrepairableFormatErrors, continued.scores.unrepairableFormatErrors);
-    // The same holds for a row of invalid judgment of a check after the stop point, once the review continued.
-    const unjudged = JSON.stringify({check: 'MODULE-DESIGN-APPLICABILITY', evidence: [`${SUBJECT}:21`], finding: 'Fine.', result: 'satisfied'});
-    const unjudgedReport = await score({agent, noRepair: true, report: await write(join(root, 'u.jsonl'), `${row('SPEC-READINESS-REQUIREMENTS')}${row('MODULE-DESIGN-APPLICABILITY')}${unjudged}\n`), scenario: RUNTIME_MIGRATION});
-    assert.equal(unjudgedReport.scores.unrepairableFormatErrors, continued.scores.unrepairableFormatErrors);
-    assert.equal('final' in stopped.scores, false);
-
-    const none = await write(join(root, 'none.jsonl'), '{"status":"no-findings"}\n');
-    const first = await score({agent, instance: 'a', noRepair: true, report: none, scenario: RUNTIME_MIGRATION});
-    const second = await score({agent, instance: 'b', noRepair: true, report: none, scenario: ARTIFACT_PROMOTION});
-    const outputs = await Promise.all([first, second].map((output, index) => write(join(root, `score-${index}.json`), JSON.stringify(output))));
-    const fused = await combine({scores: [outputs[0], outputs[1]]});
-    assert.deepEqual([fused.status, fused.scores.final, fused.scores.paused, fused.scores.T], ['succeeded', fused.scores.score, false, 0]);
-    assert.equal(fused.scores.scopes.length, first.scores.scopes.length + second.scores.scopes.length);
-    assert.equal((await combine({scores: [outputs[0], outputs[0]]})).status, 'blocked');
-    assert.equal((await combine({scores: [outputs[0], join(root, 'missing.json')]})).status, 'blocked');
+    const result = await score({agent, noRepair: true, report: await write(join(root, 'c.jsonl'), row('SPEC-READINESS-REQUIREMENTS') + row('MODULE-DESIGN-APPLICABILITY')), scenario: SPEC_READINESS});
+    assert.equal(result.candidates.length, 2);
+    assert.equal('final' in result.scores, true);
 });
 
 test('the registered baselines match their archives, bootstrap intervals and answer keys', async () => {
@@ -162,7 +137,7 @@ test('repairing the archived baseline reports gives the archived repair records'
 
 // Guards the yardstick: scoring each archived baseline report again reproduces the registered r and T of its run (no model run needed).
 const REGISTRY = JSON.parse(await readFile(join(FIXTURES, 'format-baseline', 'registry.json'), 'utf8'));
-const SCENARIOS = {'code-spec': 'requirements-reviewer/code-spec', 'code-standards': 'code-standards-reviewer/code-standards', 'commit-audit': 'requirements-reviewer/commit-audit'};
+const SCENARIOS = {'code-spec': 'requirements-reviewer/code-spec', 'code-standards': 'code-standards-reviewer/code-standards', 'commit-audit': 'requirements-reviewer/commit-audit', 'spec-readiness': 'spec-readiness-reviewer/spec-readiness'};
 for (const [unit, entry] of Object.entries(REGISTRY)) {
     for (const registered of entry.runs) {
         test(`the archived ${unit} ${registered.run} scores to its registered r and T`, async t => {
@@ -171,7 +146,7 @@ for (const [unit, entry] of Object.entries(REGISTRY)) {
             const totals = {rOverrun: 0, rRepairable: 0, rUnrepairable: 0, T: 0};
             for (const [index, item] of registered.reports.entries()) {
                 const archived = join(FIXTURES, 'format-baseline', 'archive', item.report);
-                const scenario = join(FIXTURES, unit === 'spec-readiness' ? `spec-readiness-reviewer/${item.report.split('/').at(-1).split('.draft')[0]}` : SCENARIOS[/** @type {keyof typeof SCENARIOS} */ (unit)]);
+                const scenario = join(FIXTURES, SCENARIOS[/** @type {keyof typeof SCENARIOS} */ (unit)]);
                 const spills = (await readdir(join(archived, '..'))).filter(name => name.endsWith('.txt')).map(name => join(archived, '..', name));
                 const repaired = await repair({out: join(root, `r${index}${extname(archived)}`), report: archived, scenario, spills});
                 const scored = await score({agent, instance: item.instanceId, noRepair: false, repair: repaired.record, report: repaired.normalized ?? archived, scenario});

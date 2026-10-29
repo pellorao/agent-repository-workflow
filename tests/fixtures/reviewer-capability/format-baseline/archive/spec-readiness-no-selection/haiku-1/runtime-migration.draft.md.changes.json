@@ -1,9 +1,0 @@
-{
- "original": "tests/fixtures/reviewer-capability/format-baseline/archive/spec-readiness-no-selection/haiku-1/runtime-migration.draft.md",
- "original_sha256": "b6da0076e551f096e74b2702df5a6dc80334b4af12ab554bd218b4d8532543c3",
- "changes": {},
- "details": [],
- "diagnostics": {
-  "inRangeSpillReadable": 0
- }
-}

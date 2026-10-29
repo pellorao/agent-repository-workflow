@@ -1,0 +1,9 @@
+{
+ "original": "/home/pello/projects/ARW/.tmp/claude-code/06588b1e-7f07-4832-8933-107aaf5b5978/base6/h2/.tmp/codex/reviewer-capability/0001_01/spec-readiness/rounds/f74f4378-527a-4792-ac1b-f9bd4eb2fa4b/report/draft.txt",
+ "original_sha256": "e925ee782f460f1e86409209d40267af4a5564fd1ec4c368836d4b021492a270",
+ "changes": {},
+ "details": [],
+ "diagnostics": {
+  "inRangeSpillReadable": 0
+ }
+}

@@ -19,15 +19,9 @@ const candidate = (/** @type {string} */ name, /** @type {any} */ extra = {}) =>
 /** Builds pools through `pool build` over a scenario with these anchors (a copy of a real answer key, a brief, no files). */
 const build = async (/** @type {import('node:test').TestContext} */ t, /** @type {any} */ {anchors = [control('a1', 'matched'), control('a2', 'not-matched')], candidates = [], role = 'requirements-reviewer', ...input}) => {
     const root = await createTemporaryDirectory(t, 'arw-pool-');
-    const scenario = join(root, role, role === 'requirements-reviewer' ? 'code-spec' : 'runtime-migration');
+    const scenario = join(root, role, role === 'requirements-reviewer' ? 'code-spec' : 'spec-readiness');
     await mkdir(scenario, {recursive: true});
-    await copyFile(join(FIXTURES, role, role === 'requirements-reviewer' ? 'code-spec' : 'runtime-migration', 'expected.json'), join(scenario, 'expected.json'));
-    if (role === 'spec-readiness-reviewer') {
-        // The answer keys of a Spec Readiness role balance only together.
-        await mkdir(join(root, role, 'artifact-promotion'));
-        await copyFile(join(FIXTURES, role, 'artifact-promotion', 'expected.json'), join(root, role, 'artifact-promotion', 'expected.json'));
-        await copyFile(join(FIXTURES, role, 'repeats.json'), join(root, role, 'repeats.json'));
-    }
+    await copyFile(join(FIXTURES, role, role === 'requirements-reviewer' ? 'code-spec' : 'spec-readiness', 'expected.json'), join(scenario, 'expected.json'));
     await writeFile(join(scenario, 'anchors.json'), JSON.stringify({anchors, synthetic: [{...control('s1', 'matched'), type: 'real'}]}));
     await writeFile(join(scenario, 'brief.md'), 'b');
     await writeFile(join(root, 'candidates.json'), JSON.stringify(candidates));
@@ -64,7 +58,6 @@ test('pool build blocks what cannot be adjudicated fairly and writes nothing', a
     assert.match(await message({anchors: [control('a1', 'matched', {expected: 'unsupported'}), control('a2', 'not-matched')]}), /expected/u);
     assert.match(await message({anchors: [control('a1', 'matched', {origin: {candidateId: 'c-1'}}), control('a2', 'not-matched')], candidates: [candidate('1')]}), /registered anchor/u);
     assert.match(await message({candidates: same, limit: 7}), /more than a pool/u);
-    assert.match(await message({candidates: [candidate('1', {scenario: 'other'})], role: 'spec-readiness-reviewer'}), /sub-scenario/u);
 });
 
 test('pool build splits by expectation group into pools and skips decided candidates', async t => {

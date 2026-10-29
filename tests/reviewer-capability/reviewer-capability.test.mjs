@@ -5,13 +5,13 @@ import test from 'node:test';
 
 import {loadScenario} from '../../lib/reviewer-capability/scenario.mjs';
 import {sha256} from '../../lib/common/json.mjs';
-import {combine, pool, repeatedId, score, summary} from '../../lib/reviewer-capability/operations.mjs';
+import {pool, repeatedId, score, summary} from '../../lib/reviewer-capability/operations.mjs';
 import {candidateFingerprint} from '../../lib/reviewer-capability/pool.mjs';
 import {createRandom} from '../../lib/reviewer-capability/random.mjs';
 import {createTemporaryDirectory} from '../helpers/cleanup.mjs';
 import {item} from '../helpers/reviewer-capability-items.mjs';
 
-const SPEC_READINESS = join(import.meta.dirname, '..', 'fixtures', 'reviewer-capability', 'spec-readiness-reviewer', 'runtime-migration');
+const SPEC_READINESS = join(import.meta.dirname, '..', 'fixtures', 'reviewer-capability', 'spec-readiness-reviewer', 'spec-readiness');
 const LISTING = {status: 'succeeded', result: {notifications: []}};
 const association = (/** @type {string} */ expectation) => ({...item(expectation), candidateId: `c-${expectation}`});
 
@@ -88,7 +88,6 @@ test('scoring: a short locator is completed and a Spec Readiness txt report scor
     const rows = await report(reports, `${JSON.stringify({check: 'SPEC-READINESS-INPUTS', evidence: [`${subject}:21`], finding: `the subject selects an absent Input (${subject}:21).`, result: 'gap'})}\n`, 'r.jsonl');
     const [fromText, fromRows] = await Promise.all([text, rows].map(path => score({agent: join(reports, 'agent.json'), noRepair: true, report: path, scenario: SPEC_READINESS})));
     assert.equal(fromText.status, 'succeeded');
-    assert.equal(fromText.candidates[0].scenario, 'runtime-migration');
     assert.deepEqual(fromText.candidates.map((/** @type {any} */ item) => item.evidence), fromRows.candidates.map((/** @type {any} */ item) => item.evidence));
     assert.equal(fromText.scores.score, fromRows.scores.score);
 });
@@ -121,21 +120,6 @@ test('score: stale decisions stay pending, provisional bounds enclose the score,
 
 test('a repeated candidate id is found', () => {
     assert.deepEqual([repeatedId([{candidateId: 'a'}, {candidateId: 'b'}]), repeatedId([{candidateId: 'a'}, {candidateId: 'b'}, {candidateId: 'a'}])], [undefined, 'a']);
-});
-
-test('combine rejects outputs that are not final or lack the decision statistics', async t => {
-    const directory = await scenario(t);
-    const first = await run(directory, {instance: 'a', provisional: 'lower', report: await report(directory, '- `src/a.mjs:3` default export.\n')});
-    const second = {...first, scenario: 'other', scores: first.scores};
-    const write = async (/** @type {string} */ name, /** @type {any} */ value) => { await writeFile(join(directory, name), JSON.stringify(value)); return join(directory, name); };
-    const paths = [await write('one.json', first), await write('two.json', {...second, candidates: [], provisional: 'upper'})];
-    assert.equal((await combine({scores: [paths[0], paths[1]]})).status, 'blocked');
-    // Outputs that are not final cannot be combined, even with the same bound or without a candidates array.
-    const {candidates, ...noCandidates} = second;
-    assert.equal((await combine({scores: [paths[0], await write('none.json', noCandidates)]})).status, 'blocked');
-    assert.equal((await combine({scores: [paths[0], await write('same.json', {...second, candidates: [], provisional: 'lower'})]})).status, 'blocked');
-    const {provisional, ...incomplete} = second;
-    assert.equal((await combine({scores: [paths[0], await write('three.json', incomplete)]})).status, 'blocked');
 });
 
 test('pools: prompt checks adj, split gives the review lists, override and anchor-add validate', async t => {

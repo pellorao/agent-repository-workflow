@@ -309,14 +309,14 @@
     "archive": "format-baseline/commit-audit-v3.1"
   },
   "spec-readiness": {
-    "version": "Spec Readiness v4.5（multi-model v2，去除要求选择）",
-    "source": "Haiku-high x5（Claude 后端 haiku，2026-10-29，每次重复含 runtime-migration 与 artifact-promotion 两个子场景），夹具去除 Spec Requirement 与选择类用例后重测；r 与 T 的口径同前（修复记录可修复处数加不可修复与越界截断；T 为计分器读到的定位数）；5 个重复的 r 均为 0，pBase 取下限 2 / (sumT / 运行数)",
+    "version": "Spec Readiness v4.5（multi-model v2，合并为单一场景）",
+    "source": "Haiku-high x5（Claude 后端 haiku，2026-10-29，每次重复一份报告），Spec Readiness 两个子场景合并为单一场景 spec-readiness 后重测；r 与 T 的口径同前（修复记录可修复处数加不可修复与越界截断；T 为计分器读到的定位数）；sumR 0，pBase 取 max(sumR / sumT, 2 / (sumT / 运行数))",
     "sumR": 0,
-    "sumT": 526,
-    "pBase": 0.0190114,
+    "sumT": 398,
+    "pBase": 0.0251256,
     "pBaseBootstrap90": [
-      0.0171821,
-      0.0208333
+      0.0243902,
+      0.0259067
     ],
     "runs": [
       {
@@ -325,21 +325,14 @@
         "rRepairable": 0,
         "rUnrepairable": 0,
         "rOverrun": 0,
-        "T": 131,
+        "T": 79,
         "reports": [
           {
-            "instanceId": "h1-runtime-migration",
-            "report": "spec-readiness-no-selection/haiku-1/runtime-migration.draft.md",
-            "reportSha256": "b6da0076e551f096e74b2702df5a6dc80334b4af12ab554bd218b4d8532543c3",
-            "changes": "spec-readiness-no-selection/haiku-1/runtime-migration.draft.md.changes.json",
-            "changesSha256": "6c744595f25f420c999e8a19516f9772375fa696599ef0b83c27357b7f38ad7a"
-          },
-          {
-            "instanceId": "h1-artifact-promotion",
-            "report": "spec-readiness-no-selection/haiku-1/artifact-promotion.draft.md",
-            "reportSha256": "4c6557b640a75168a18cb480e4673f9ef0104d8d29edc43cced86bbd83e3fc5b",
-            "changes": "spec-readiness-no-selection/haiku-1/artifact-promotion.draft.md.changes.json",
-            "changesSha256": "2a72669643a1dfe9c1885431c5b5956fc4e8567f3d73b3a6c6fe43a629b89051"
+            "instanceId": "h1-spec-readiness",
+            "report": "spec-readiness-merged/haiku-1/spec-readiness.draft.md",
+            "reportSha256": "4c10ccca896b14277c74dad5fda358e933d892d912de9dc34f580c3dc60f0c59",
+            "changes": "spec-readiness-merged/haiku-1/spec-readiness.draft.md.changes.json",
+            "changesSha256": "7bdc5e6f7e297d1673d21b41e67a9c4b316f2a13c1a61e21f1534e259fea1b40"
           }
         ]
       },
@@ -349,21 +342,14 @@
         "rRepairable": 0,
         "rUnrepairable": 0,
         "rOverrun": 0,
-        "T": 87,
+        "T": 83,
         "reports": [
           {
-            "instanceId": "h2-runtime-migration",
-            "report": "spec-readiness-no-selection/haiku-2/runtime-migration.draft.md",
-            "reportSha256": "a9c779dc69136d32c77f452a2ea3e9abd0f8f0db50d59a445749205619c35841",
-            "changes": "spec-readiness-no-selection/haiku-2/runtime-migration.draft.md.changes.json",
-            "changesSha256": "5a25c05eefbffbb28116e99c6bf567615ace9af948357bf5f4a7fbc92f0af038"
-          },
-          {
-            "instanceId": "h2-artifact-promotion",
-            "report": "spec-readiness-no-selection/haiku-2/artifact-promotion.draft.md",
-            "reportSha256": "163d2e8c52ba18ab22755382d4562f407d0c9e45f861bb6133005f91687a3cec",
-            "changes": "spec-readiness-no-selection/haiku-2/artifact-promotion.draft.md.changes.json",
-            "changesSha256": "423290c05de2f6ebc34e080ad6ac79c830fe666cfa8c0b48f7437cdb3b38c678"
+            "instanceId": "h2-spec-readiness",
+            "report": "spec-readiness-merged/haiku-2/spec-readiness.draft.md",
+            "reportSha256": "e925ee782f460f1e86409209d40267af4a5564fd1ec4c368836d4b021492a270",
+            "changes": "spec-readiness-merged/haiku-2/spec-readiness.draft.md.changes.json",
+            "changesSha256": "87ed7f12602181ea67bbb9064bff128a0713401f26bcdd1a253d9b23023b4d8d"
           }
         ]
       },
@@ -373,21 +359,14 @@
         "rRepairable": 0,
         "rUnrepairable": 0,
         "rOverrun": 0,
-        "T": 102,
+        "T": 78,
         "reports": [
           {
-            "instanceId": "h3-runtime-migration",
-            "report": "spec-readiness-no-selection/haiku-3/runtime-migration.draft.md",
-            "reportSha256": "da2b97378bb2ec00f82b5a78931b5442507555496f16772eccc1b22b145e7d80",
-            "changes": "spec-readiness-no-selection/haiku-3/runtime-migration.draft.md.changes.json",
-            "changesSha256": "a1b68686eafa86135eee968cf9d011575b2fe2cb6383074972344fc1c2330228"
-          },
-          {
-            "instanceId": "h3-artifact-promotion",
-            "report": "spec-readiness-no-selection/haiku-3/artifact-promotion.draft.md",
-            "reportSha256": "ff14ba0d108cd2ac602a040b16b4070fe57d68093697c8aa39b1c062872526b6",
-            "changes": "spec-readiness-no-selection/haiku-3/artifact-promotion.draft.md.changes.json",
-            "changesSha256": "622f37fa81fc6bfc3742009b5489be0a5a6547afa5dfd36edda937b8ea1dc113"
+            "instanceId": "h3-spec-readiness",
+            "report": "spec-readiness-merged/haiku-3/spec-readiness.draft.md",
+            "reportSha256": "22bd23a0044573a9de9ce87458182ae87ef896e22118ea05b074f76d0edc9ab0",
+            "changes": "spec-readiness-merged/haiku-3/spec-readiness.draft.md.changes.json",
+            "changesSha256": "f4c92effa3038a1a73dfb41be6309472c09be34fa5bf74be53183d977bbe41c1"
           }
         ]
       },
@@ -397,21 +376,14 @@
         "rRepairable": 0,
         "rUnrepairable": 0,
         "rOverrun": 0,
-        "T": 102,
+        "T": 75,
         "reports": [
           {
-            "instanceId": "h4-runtime-migration",
-            "report": "spec-readiness-no-selection/haiku-4/runtime-migration.draft.md",
-            "reportSha256": "6b5c5b2a6102fefa0301f2007bfbeb36189bfd983b98ff16fdb70e7d0953d73f",
-            "changes": "spec-readiness-no-selection/haiku-4/runtime-migration.draft.md.changes.json",
-            "changesSha256": "a4f683320df4c52a82ab45d7aa40b9e7d7e6425eb67a5ec3b403528b2da29bec"
-          },
-          {
-            "instanceId": "h4-artifact-promotion",
-            "report": "spec-readiness-no-selection/haiku-4/artifact-promotion.draft.md",
-            "reportSha256": "dfc9652a0215eb9367894a163bce6dd64ccbd4688aa1095ee9bde21a961d0935",
-            "changes": "spec-readiness-no-selection/haiku-4/artifact-promotion.draft.md.changes.json",
-            "changesSha256": "5bd7e341fd6d5b6e3f45b0b44712d6ae2f55d634069a3a613c8b7026bb308e58"
+            "instanceId": "h4-spec-readiness",
+            "report": "spec-readiness-merged/haiku-4/spec-readiness.draft.md",
+            "reportSha256": "0ba36bb56f5e61002118eef666253d4e98a3f69710529620cdeefbf6c69ef52f",
+            "changes": "spec-readiness-merged/haiku-4/spec-readiness.draft.md.changes.json",
+            "changesSha256": "f0c6a16d1084eb7500e6dd2f4c6b5d85353bb8acd90f0e420bea5becaf2b4754"
           }
         ]
       },
@@ -421,30 +393,22 @@
         "rRepairable": 0,
         "rUnrepairable": 0,
         "rOverrun": 0,
-        "T": 104,
+        "T": 83,
         "reports": [
           {
-            "instanceId": "h5-runtime-migration",
-            "report": "spec-readiness-no-selection/haiku-5/runtime-migration.draft.md",
-            "reportSha256": "e0bd59faf13ca4524ab14e5061dbed96d2fc34ae0a291ced9d6ec3dcc4f547b8",
-            "changes": "spec-readiness-no-selection/haiku-5/runtime-migration.draft.md.changes.json",
-            "changesSha256": "4a93e3a95d6bd079becaea3c89f1c70f1376b4d2ed596387fa836adbdc209375"
-          },
-          {
-            "instanceId": "h5-artifact-promotion",
-            "report": "spec-readiness-no-selection/haiku-5/artifact-promotion.draft.md",
-            "reportSha256": "20dafd44aa56c4cbcdd8d62956bca1bc996a3109ea7cb1427981ce97342d155c",
-            "changes": "spec-readiness-no-selection/haiku-5/artifact-promotion.draft.md.changes.json",
-            "changesSha256": "ca39c8309c8c9b221756b979c95b71c891f60663079667983a0cf16b532782d7"
+            "instanceId": "h5-spec-readiness",
+            "report": "spec-readiness-merged/haiku-5/spec-readiness.draft.md",
+            "reportSha256": "63889b225168c1745fe85c2c8c67c62cb5798ac9440d7c2b9af81aa2e97b06a8",
+            "changes": "spec-readiness-merged/haiku-5/spec-readiness.draft.md.changes.json",
+            "changesSha256": "c6c04a9314a36486fa510abe4956e5845577940ba6c33eab600d801f49ae2343"
           }
         ]
       }
     ],
     "scenarioSha256": {
-      "spec-readiness-reviewer/runtime-migration": "ae2c77741867abe5ecd46d00d24accd3bf06262bdf6cca90d686ff1b25b5e5b3",
-      "spec-readiness-reviewer/artifact-promotion": "fa196328db9bd0dd39f758f8e165e15f7a3c9b70ef427c917d278e08385c2eac"
+      "spec-readiness-reviewer/spec-readiness": "3eb422c76df7c34f512d584e9b999914c502840634835f95ae4c4c0bf27a62c5"
     },
     "scoringPatchSha256": "c40856cc5ce276e664701e09e988f5aa10635e6d76cdacade7c947ca2e2049f0",
-    "archive": "format-baseline/spec-readiness-no-selection"
+    "archive": "format-baseline/spec-readiness-merged"
   }
 }

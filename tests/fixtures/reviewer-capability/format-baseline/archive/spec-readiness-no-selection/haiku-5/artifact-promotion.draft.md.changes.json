@@ -1,9 +1,0 @@
-{
- "original": "tests/fixtures/reviewer-capability/format-baseline/archive/spec-readiness-no-selection/haiku-5/artifact-promotion.draft.md",
- "original_sha256": "20dafd44aa56c4cbcdd8d62956bca1bc996a3109ea7cb1427981ce97342d155c",
- "changes": {},
- "details": [],
- "diagnostics": {
-  "inRangeSpillReadable": 0
- }
-}

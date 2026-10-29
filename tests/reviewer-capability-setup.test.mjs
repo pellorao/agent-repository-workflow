@@ -32,14 +32,14 @@ test('setup stages the candidate over the base commit and returns the reviewer i
 
 test('setup prepares the Spec Readiness Request', async t => {
     const target = join(await createTemporaryDirectory(t, 'arw-capability-setup-'), 'instance');
-    const result = await setupScenario({scenario: join(FIXTURES, 'spec-readiness-reviewer', 'runtime-migration'), target});
+    const result = await setupScenario({scenario: join(FIXTURES, 'spec-readiness-reviewer', 'spec-readiness'), target});
     assert.equal(result.status, 'succeeded');
     assert.match(/** @type {any} */ (result).input.reportPath, /draft\.txt$/u);
 });
 
 test('setup blocks an existing target or a missing fixture', async t => {
     const root = await createTemporaryDirectory(t, 'arw-capability-setup-');
-    const scenario = join(FIXTURES, 'spec-readiness-reviewer', 'runtime-migration');
+    const scenario = join(FIXTURES, 'spec-readiness-reviewer', 'spec-readiness');
     assert.equal((await setupScenario({scenario, target: root})).status, 'blocked');
     assert.equal((await setupScenario({scenario: join(FIXTURES, 'nowhere', 'none'), target: join(root, 'other')})).status, 'blocked');
 });

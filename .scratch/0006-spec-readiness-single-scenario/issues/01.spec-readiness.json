@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0006:01",
+  "request": {
+    "digest": "2ce021546a64013619b3e6323c7d000249f53c1d7361445d445aa264b2695e52",
+    "filePath": ".tmp/claude-code/06588b1e-7f07-4832-8933-107aaf5b5978/0006_01/spec-readiness/requests/request-a9f7f5ef-4a71-4c6e-abc9-3d8f74d68bcc.json",
+    "id": "a9f7f5ef-4a71-4c6e-abc9-3d8f74d68bcc"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "f797bb611ba9cf50c0ccfab4d029b2a32fd44b771b7b9338a0a31bb48ddba14a"
+  },
+  "inputs": [
+    {
+      "filePath": ".scratch/0006-spec-readiness-single-scenario/spec.md",
+      "role": "governing-spec",
+      "sha256": "89dc15a1a5fac7bd9e3c1511bcd0eedbe8ff753c75d2004aa12ba5993af19dfe"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0006-spec-readiness-single-scenario/issues/01-merge-spec-readiness-scenario.md",
+    "sha256": "39d9317200f4144a689be092af46b765d6118066b86c27a6ac30695eeeb407a3"
+  },
+  "result": "satisfied"
+}
