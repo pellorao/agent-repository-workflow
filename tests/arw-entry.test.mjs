@@ -38,7 +38,7 @@ const NO_COMMAND_MESSAGE = [
     '  arw spec-readiness prepare --issue issue:NNNN:NN [--input <temp-json-path>]',
     '  arw spec-readiness generate --issue issue:NNNN:NN --input <draft-path>',
     '  arw spec-readiness promote --input <generated-path>',
-    '  arw spec-readiness verify --issue issue:NNNN:NN',
+    '  arw spec-readiness verify --issue issue:NNNN:NN [--subject-only]',
     '  arw commit-audit prepare --input <absolute-input-path>',
     '  arw commit-audit verify [--non-implementation]',
     '  arw workflow init [--non-interactive (--reuse-profile | --platform <platform>... --domain-layout <layout> --code-map-root [<root>]... --code-map-include [<glob>]... --code-map-exclude [<glob>]...) --transform-existing-agent-docs <true|false> --orphan-code-map-readmes <delete|demote>]',

@@ -361,7 +361,7 @@ Users usually need to specify only the issue and goal. The Main Agent organizes 
 | `arw spec-readiness prepare --issue issue:<NNNN>:<NN> [--input <temp-json-path>]` | Freeze current governance inputs, review subject, and Reviewer Role into a Reviewer Request. |
 | `arw spec-readiness generate --issue issue:<NNNN>:<NN> --input <draft-path>` | Validate the independent Reviewer's final draft and generate a temporary readiness result. |
 | `arw spec-readiness promote --input <generated-path>` | Revalidate unchanged bindings and promote the exact generated issue result. |
-| `arw spec-readiness verify --issue issue:<NNNN>:<NN>` | Read-only check that implementation authorization for the issue is still valid. |
+| `arw spec-readiness verify --issue issue:<NNNN>:<NN> [--subject-only]` | Read-only check that implementation authorization for the issue is still valid. With `--subject-only` (used at commit time) only the issue subject is checked, not the governing Inputs or Reviewer Role. |
 | `arw commit-audit prepare --input <absolute-input-path>` | Prepare an independent Commit Audit Request from the frozen staged candidate. |
 | `arw commit-audit verify` | Read-only check that the final staged candidate keeps every committed ARW Artifact identity. |
 

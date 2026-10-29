@@ -78,7 +78,7 @@
 
 - 何时: 实施 issue 的设计定稿 (或修订) 后, 实施之前需要独立的设计审核.
 - 做什么: 准备输入 (治理规范, ADR, 上下文文档), 经 `reviewer-launch` 启动 Spec Readiness Reviewer, 再依次运行 `generate`, `promote` 和 `verify`. 修正问题后重新审核一轮. "不需要治理设计" 的例外必须由你明确确认.
-- 留下什么: `.scratch/<NNNN>-<effort-slug>/issues/<NN>.spec-readiness.json`. 记录缺失, 过期或结果为 `gap` 时阻断实施和提交, 不阻断无关工作.
+- 留下什么: `.scratch/<NNNN>-<effort-slug>/issues/<NN>.spec-readiness.json`. 记录缺失, 过期或结果为 `gap` 时阻断开始实施, 不阻断无关工作. 开始实施后只有 issue 自身的审核对象变化才阻断提交 (`verify --subject-only`).
 - 相关: `arw spec-readiness prepare|generate|promote|verify`; `implement`, `reviewer-launch`, `rule-and-design-changes`.
 
 #### `reviewer-launch` (自动使用, 仅 Main Agent)
@@ -91,7 +91,7 @@
 #### `commit` (自动使用, 仅在你要求提交后)
 
 - 何时: 你要求 Git 提交. 仅仅完成 issue 不会启动它.
-- 做什么: 对已暂存内容分类. 含实施工作的候选走完整流程: 更新 issue 记录, `arw commit-audit prepare`, 并行两个 Reviewer (要求符合和 Code Standards), 逐条核对问题, `arw commit-audit verify`, `arw spec-readiness verify`, 然后提交. 只含规划记录, Agent 规则和文档 (包括根 README, `CONTEXT.md` 和 `CLAUDE.md`) 的候选走较轻的路线, 由 `arw commit-audit verify --non-implementation` 检查. 提交说明遵循 Conventional Commits. 任何关卡失败都会停止提交.
+- 做什么: 对已暂存内容分类. 含实施工作的候选走完整流程: 更新 issue 记录, `arw commit-audit prepare`, 并行两个 Reviewer (要求符合和 Code Standards), 逐条核对问题, `arw commit-audit verify`, `arw spec-readiness verify --subject-only`, 然后提交. 只含规划记录, Agent 规则和文档 (包括根 README, `CONTEXT.md` 和 `CLAUDE.md`) 的候选走较轻的路线, 由 `arw commit-audit verify --non-implementation` 检查. 提交说明遵循 Conventional Commits. 任何关卡失败都会停止提交.
 - 留下什么: `.tmp` 下的审核轮和提交本身.
 - 相关: `code-review`, `reviewer-launch`, `spec-readiness`, `issue-tracking`.
 

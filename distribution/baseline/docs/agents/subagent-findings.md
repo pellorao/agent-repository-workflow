@@ -32,7 +32,7 @@
 
 ## Authorization results
 
-Main Agent 不得覆盖独立的 Spec Readiness 或 Commit Audit 授权结果. 有争议的就绪结果按 `spec-readiness` Skill 的最终授权时点阻断对应的完成, 审计和提交, 不自动停止不依赖该结果的已授权工作. 有争议的 Commit Audit 结果仍阻断对应提交. 替代结论由负责的 Reviewer 按完整受审版本重新判断, 当前版本的正式授权还须完成所属工作流的生成, 提升和验证.
+Main Agent 不得覆盖独立的 Spec Readiness 或 Commit Audit 授权结果. 有争议的就绪结果按 `spec-readiness` Skill 的授权时点阻断对应的开始实施和提交, 不自动停止不依赖该结果的已授权工作. 有争议的 Commit Audit 结果仍阻断对应提交. 替代结论由负责的 Reviewer 按完整受审版本重新判断, 当前版本的正式授权还须完成所属工作流的生成, 提升和验证.
 
 ## Reviewer challenges
 

@@ -23,7 +23,7 @@ name: commit
 5. 修复后暂存 (审核运行期间也可以暂存) 并用同一 `input.json` 再次 `prepare`; 新一轮自动沿原线程复审, 只交付相邻版本变化和该 Reviewer 的前轮报告 ([复审规则](../../../docs/agents/reviewer.md#re-review)). 某个 Reviewer 的输入没有受影响时只运行另一个的 `.jsonl`, 保留其结果. 复审报告中写明仍成立且本轮变化没有解决它的旧问题, 若已在 issue 的 `## Comments` 记录处置, 不再重新分流.
 6. 按 [记录章节](../issue-tracking/SKILL.md#issue-record-sections) 规则统一暂存收尾记录, 用 `git diff <受审 tree> $(git write-tree)` 核对最终暂存树相对受审版本只有记录差异. 只有记录差异不需要复审. `arw commit-audit verify` 也机械核对这一点 (规则见 spec 的 Commit Audit): 授权 issue 的 `Status` 和 What to build, Acceptance criteria 两段 (含验收勾选) 在 `prepare` 之后不得再改, 所以先勾选验收再 `prepare`; 失败时按提示重新 `prepare` 并复审.
 7. 提交门槛是两个 Reviewer 正常结束且报告中的问题都已处理 (修正, 按质疑规则证明无效, 或按 [来源分流](../../../docs/agents/subagent-findings.md#triage-by-origin) 记入后续 issue). 只修改代码的修复不使 Spec Readiness 记录失效, 不重跑就绪审核. 未完成 issue 的问题只在确属计划中尚未完成的工作时保留. 运行 `arw commit-audit verify` 并取得空错误列表.
-8. 对每个授权 issue 运行 `arw spec-readiness verify --issue issue:<NNNN>:<NN>` 并取得 `0`, 然后提交.
+8. 对每个授权 issue 先确认其 issue 文件没有未暂存修改 (`git diff --quiet -- <issue 文件>`), 再运行 `arw spec-readiness verify --subject-only --issue issue:<NNNN>:<NN>` 并取得 `0` (只核对 subject, 治理 Input 和 Reviewer Role 的变化不阻断), 然后提交.
 
 ## Commit Audit
 

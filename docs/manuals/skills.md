@@ -78,7 +78,7 @@ These 11 Skills are written for ARW and implement its workflow: records under `.
 
 - When: an implementation issue's design is finished (or revised) and needs independent design review before any implementation.
 - What it does: prepares the inputs (governing specification, ADRs, context documents), starts a Spec Readiness Reviewer through `reviewer-launch`, then runs `generate`, `promote` and `verify`. Fixing findings means a new round. A "no governing design needed" exception requires your explicit confirmation.
-- Leaves behind: `.scratch/<NNNN>-<effort-slug>/issues/<NN>.spec-readiness.json`. A missing, stale or `gap` record blocks implementation and commit, not unrelated work.
+- Leaves behind: `.scratch/<NNNN>-<effort-slug>/issues/<NN>.spec-readiness.json`. A missing, stale or `gap` record blocks starting implementation, not unrelated work. Once implementation has started, only a change to the issue's own subject blocks the commit (`verify --subject-only`).
 - Related: `arw spec-readiness prepare|generate|promote|verify`; `implement`, `reviewer-launch`, `rule-and-design-changes`.
 
 #### `reviewer-launch` (automatic, Main Agent only)
@@ -91,7 +91,7 @@ These 11 Skills are written for ARW and implement its workflow: records under `.
 #### `commit` (automatic, only after you ask for a commit)
 
 - When: you ask for a Git commit. Finishing an issue alone never starts it.
-- What it does: classifies the staged files. A candidate with implementation work gets the full workflow: update the issue record, `arw commit-audit prepare`, two parallel Reviewers (requirement conformance and Code Standards), check each finding, `arw commit-audit verify`, `arw spec-readiness verify`, then commit. A candidate of only planning records, Agent rules and documents (including the root README, `CONTEXT.md` and `CLAUDE.md`) uses the lighter path checked by `arw commit-audit verify --non-implementation`. Commit messages follow Conventional Commits. Any failed gate stops the commit.
+- What it does: classifies the staged files. A candidate with implementation work gets the full workflow: update the issue record, `arw commit-audit prepare`, two parallel Reviewers (requirement conformance and Code Standards), check each finding, `arw commit-audit verify`, `arw spec-readiness verify --subject-only`, then commit. A candidate of only planning records, Agent rules and documents (including the root README, `CONTEXT.md` and `CLAUDE.md`) uses the lighter path checked by `arw commit-audit verify --non-implementation`. Commit messages follow Conventional Commits. Any failed gate stops the commit.
 - Leaves behind: review rounds under `.tmp` and the commit itself.
 - Related: `code-review`, `reviewer-launch`, `spec-readiness`, `issue-tracking`.
 

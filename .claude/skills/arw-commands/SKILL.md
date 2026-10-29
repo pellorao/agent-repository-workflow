@@ -30,7 +30,7 @@ arw migrate artifacts
 arw spec-readiness prepare --issue issue:<NNNN>:<NN> [--input <temp-json-path>]
 arw spec-readiness generate --issue issue:<NNNN>:<NN> --input <draft-path>
 arw spec-readiness promote --input <generated-path>
-arw spec-readiness verify --issue issue:<NNNN>:<NN>
+arw spec-readiness verify --issue issue:<NNNN>:<NN> [--subject-only]
 arw commit-audit prepare --input <absolute-input-path>
 arw commit-audit verify [--non-implementation]
 arw --version

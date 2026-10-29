@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0004:01",
+  "request": {
+    "digest": "ffcadabe310599aa5fda1bb00929335079822e5e896b1f9f3e8472f8a99a6c39",
+    "filePath": ".tmp/claude-code/06588b1e-7f07-4832-8933-107aaf5b5978/0004_01/spec-readiness/requests/request-ff248a64-388a-4bab-9278-c828dcf1e0a9.json",
+    "id": "ff248a64-388a-4bab-9278-c828dcf1e0a9"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "f797bb611ba9cf50c0ccfab4d029b2a32fd44b771b7b9338a0a31bb48ddba14a"
+  },
+  "inputs": [
+    {
+      "filePath": ".scratch/0004-readiness-freshness-at-start/spec.md",
+      "role": "governing-spec",
+      "sha256": "e917d7d57623d7e242c40ff3e472929b381e1b7262ed3ded3078bd050ffe114d"
+    },
+    {
+      "filePath": "docs/adr/0006-enforce-spec-readiness-with-independent-review.md",
+      "role": "adr",
+      "sha256": "dc8fe288e20fb8b35fb0a7241b8a93209dd416b54c0f08989d79a8c083d3017d"
+    },
+    {
+      "filePath": "docs/adr/0023-separate-commit-audit-review-from-implementation.md",
+      "role": "adr",
+      "sha256": "fd006137c4e583cc1a07fcd7b995dd8c6b96d1007c648143f6ffacc2337775ce"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow/spec.md",
+      "role": "architecture-evidence",
+      "sha256": "4d4f4c5805632badb4b80cbbc56cc5e130c2ff15136efacdeea2a22b541b773d"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0004-readiness-freshness-at-start/issues/01-readiness-freshness-at-start.md",
+    "sha256": "5221a11562e37c2a820b74ce71f50117d114f1bb478ff87aa03eb6fe82439ee3"
+  },
+  "result": "satisfied"
+}

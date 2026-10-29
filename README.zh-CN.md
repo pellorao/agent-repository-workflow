@@ -359,7 +359,7 @@ arw agent start <name> [agent-arguments...]
 | `arw spec-readiness prepare --issue issue:<NNNN>:<NN> [--input <temp-json-path>]` | 冻结当前治理输入, 审核对象和 Reviewer Role, 形成 Reviewer Request. |
 | `arw spec-readiness generate --issue issue:<NNNN>:<NN> --input <draft-path>` | 验证独立 Reviewer 的最终草稿并生成临时规范结果. |
 | `arw spec-readiness promote --input <generated-path>` | 重验绑定未变化后提升准确生成的 issue 结果. |
-| `arw spec-readiness verify --issue issue:<NNNN>:<NN>` | 只读确认该 issue 的实施前授权仍然有效. |
+| `arw spec-readiness verify --issue issue:<NNNN>:<NN> [--subject-only]` | 只读确认该 issue 的实施前授权仍然有效. 带 `--subject-only` (提交时使用) 时只核对 issue 的审核对象, 不核对治理输入与 Reviewer Role. |
 | `arw commit-audit prepare --input <absolute-input-path>` | 从冻结的已暂存候选准备独立 Commit Audit Request. |
 | `arw commit-audit verify` | 只读确认最终 staged candidate 保留每个已提交 ARW Artifact 身份. |
 

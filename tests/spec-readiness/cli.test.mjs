@@ -155,5 +155,6 @@ test('spec readiness CLI covers immutable request, generate, promote, verify, an
     });
     assert.equal(exception.result, 0);
     assert.equal((await run(['spec-readiness', 'promote', '--input', exception.events[0].message], repository, {specReadinessDependencies: dependencies})).result, 0);
-    assert.equal((await run(['spec-readiness', 'verify', '--issue', 'issue:0001:01'], repository)).result, 0);
+    assert.equal((await run(['spec-readiness', 'verify', '--issue', 'issue:0001:01', '--subject-only'], repository)).result, 0);
+    assert.equal((await run(['spec-readiness', 'verify', '--subject-only'], repository)).result, 2);
 });

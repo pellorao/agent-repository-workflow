@@ -16,7 +16,7 @@ Main Agent 可以按上下文污染, 无谓占用和任务所需的智力与推�
 
 实现者负责分配范围内的代码, 测试和必要配套说明, 并执行定向验证. 与用户沟通的 Main Agent 组织实施前审查, 最终集成验证和提交前审查, 独立核对问题, 按适用规则请求用户决定后再分派修复, 并管理正式完成记录和提交. 独立 Reviewer 保留各自的输入, 语义判断, 线程隔离和临时产物边界, 并亲自把完整报告写入本轮绑定的文件. [ADR 0023](0023-separate-commit-audit-review-from-implementation.md) 继续负责 Commit Audit 的独立判断与准确字节提升, 委派不授予实现者审核自己候选内容的权力.
 
-审核并行不改变单写入者和 Git 责任. Main Agent 按[当前版本合同](../specs/agent-repository-workflow/spec.md#review-versions-and-result-validity)固定各轮完整输入, 可以继续分派独立已授权工作及本候选已获准的修复; 审计旧轮完整结束前保持实时索引和 HEAD 不变, 然后才暂存新实现并交接替代版本. 当前有效就绪, 必要验证和最终候选齐备后, 适用的三个审核可以并行, 实际验收依赖仍保留. Main Agent 为差异复审提供原 Reviewer 自己的前轮原始报告和绑定输入, 准确比较最终候选及[记录章节](../specs/agent-repository-workflow/spec.md#implementation-records)变化, 不代写当前语义结论.
+审核并行不改变单写入者和 Git 责任. Main Agent 按[当前版本合同](../specs/agent-repository-workflow/spec.md#review-versions-and-result-validity)固定各轮完整输入, 可以继续分派独立已授权工作及本候选已获准的修复; 审计旧轮完整结束前保持实时索引和 HEAD 不变, 然后才暂存新实现并交接替代版本. 按设计就绪工作流时点有效的就绪, 必要验证和最终候选齐备后, 适用的三个审核可以并行, 实际验收依赖仍保留. Main Agent 为差异复审提供原 Reviewer 自己的前轮原始报告和绑定输入, 准确比较最终候选及[记录章节](../specs/agent-repository-workflow/spec.md#implementation-records)变化, 不代写当前语义结论.
 
 独立必要验证的并行及等价普通快照复用遵循[验证合同](../specs/agent-repository-workflow/spec.md#validation-strategy). Main Agent 在最终主仓库授权检查的短时段协调相关写入, 以准确当前内容取得适用授权, 不把长时间的审核或验证等待扩大为整个源工作树的写入禁令. 这些职责使用现有交接与临时材料, 不增加运行锁, 调度器或持久候选来源.
 

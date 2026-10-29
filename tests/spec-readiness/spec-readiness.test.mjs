@@ -362,6 +362,7 @@ test('a report that lists problems persists as gap but does not authorize implem
         authorized: false,
         findings: ['Spec Readiness result does not authorize implementation: gap.'],
     });
+    assert.equal((await verifySpecReadiness({issueId: 'issue:0001:01', repositoryRoot, subjectOnly: true})).authorized, false);
 });
 
 test('generation rejects an obsolete request even when Input bytes are unchanged', async t => {
@@ -524,6 +525,24 @@ test('promotion failure leaves the prior tracked record unchanged', async t => {
     }), /Injected promotion failure/);
     assert.equal(await readFile(initial.promoted.path, 'utf8'), before);
     assert.equal(await readFile(baselinePath, 'utf8'), baselineBefore);
+});
+
+test('subjectOnly verify skips stale Inputs but still checks the record and the subject', async t => {
+    const repositoryRoot = await createRepository(t);
+    const issuePath = join(repositoryRoot, '.scratch', '0001-workflow', 'issues', '01-implement.md');
+    assert.equal((await verifySpecReadiness({issueId: 'issue:0001:01', repositoryRoot, subjectOnly: true})).authorized, false);
+    await complete(repositoryRoot);
+    await writeFile(join(repositoryRoot, '.scratch', '0001-workflow', 'spec.md'), 'Changed after implementation started.\n', 'utf8');
+    const full = await verifySpecReadiness({issueId: 'issue:0001:01', repositoryRoot});
+    assert.equal(full.authorized, false);
+    assert.match(full.findings[0], /Stale Spec Readiness Input/);
+    assert.deepEqual(await verifySpecReadiness({issueId: 'issue:0001:01', repositoryRoot, subjectOnly: true}), {authorized: true, findings: []});
+
+    await writeFile(issuePath, issue().replace('Implement.', 'Implement something else.'), 'utf8');
+    assert.deepEqual(await verifySpecReadiness({issueId: 'issue:0001:01', repositoryRoot, subjectOnly: true}), {
+        authorized: false,
+        findings: ['Stale Spec Readiness subject: .scratch/0001-workflow/issues/01-implement.md.'],
+    });
 });
 
 test('exception uses the same generate promote verify boundary', async t => {

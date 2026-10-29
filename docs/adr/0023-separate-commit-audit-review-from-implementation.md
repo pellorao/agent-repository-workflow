@@ -6,7 +6,7 @@ Commit Audit 的 Gate 1 和 Gate 2 判断完整交付是否满足正式要求. �
 
 ## Decision
 
-Gate 1 和 Gate 2 在通用提交工作流判定 Commit Audit 适用后运行; 准确调用条件只由[提交工作流](../../.agents/skills/commit/SKILL.md#implementation-issue-commit-workflow)拥有. Main Agent 准备完整候选, 按 `code-review` Skill Package 的实际输入有效性规则复用已有完整 Gate 3 结果, 或安排必要的 Code Standards 与 Code Spec 双轴审核. 当前有效 Spec Readiness, 必要实施验证及真实完整的最终候选齐备后, 两个代码审核轴和适用 Commit Audit 可以对同一候选并行, 实际验收要求另一审核完成事实时仍保留依赖. 有效就绪结果的检查时点由[设计就绪工作流](../../.agents/skills/spec-readiness/SKILL.md#authorization-timing)拥有, 运行中结果不作为通过. 审查候选不包含本次 Gate 1 或 Gate 2 输出.
+Gate 1 和 Gate 2 在通用提交工作流判定 Commit Audit 适用后运行; 准确调用条件只由[提交工作流](../../.agents/skills/commit/SKILL.md#implementation-issue-commit-workflow)拥有. Main Agent 准备完整候选, 按 `code-review` Skill Package 的实际输入有效性规则复用已有完整 Gate 3 结果, 或安排必要的 Code Standards 与 Code Spec 双轴审核. 有效 Spec Readiness (开始实施前的授权, 提交时 subject 未变), 必要实施验证及真实完整的最终候选齐备后, 两个代码审核轴和适用 Commit Audit 可以对同一候选并行, 实际验收要求另一审核完成事实时仍保留依赖. 有效就绪结果的检查时点由[设计就绪工作流](../../.agents/skills/spec-readiness/SKILL.md#authorization-timing)拥有, 运行中结果不作为通过. 审查候选不包含本次 Gate 1 或 Gate 2 输出.
 
 需要新审核时, Reviewer 一旦核实问题就写入结果文件. Main Agent 可按需读取并独立核对, 并处理已授权修复或请求必要决定; 两个审核轴仍各自返回完整结果. Main Agent 按 [ADR 0013](0013-use-main-agent-single-writer-orchestration.md) 协调实现和修复, 负责暂存, Reviewer 调用, 结论检查和文件提升, 但不负责独立审核结论.
 
@@ -28,7 +28,7 @@ Main Agent 可以读取并质疑 Reviewer 结论, 但不能代替 Reviewer 改�
 
 Reviewer 按[共同交接规则](../agents/reviewer.md#review-handoff)逐项写入和更新同一草稿. Main Agent 可以按需读取以核对和讨论, 并推进已经获准的源工作树修复或记录更新, 同一轮完整固定输入仍保持不变. Reviewer 的最终消息只返回状态, 正式文件路径只来自 Main Agent 调用 Engine 后取得的映射. 这样无需同时维护消息和文件两份报告, 仍可尽早核对问题, 并避免同一次审计的前后判断落在不同候选字节上.
 
-`arw commit-audit verify` 失败时按原因回退. 冻结实施字节未变且问题只在准确提升或暂存时, 只重做该步骤并重新验证. 冻结实施字节未变但 Reviewer JSONL 无效时, 同一个 Commit Audit Reviewer 读取完整诊断并修订完整绑定草稿, 不重跑未受影响的 Gate 3. 两个记录章节变化执行准确差异, 文本及当前证据定位检查, 有真实反证时仍处理影响. 真正实现, 要求或其他完整输入变化时, 保留旧轮报告和绑定输入, 旧轮完整结束后交接完整替代候选, 重新执行受影响验证及差异复审, 按各轴实际输入保留未受影响的完整通过结果. 就绪输入变化时刷新最终版本的正式结果, 不以旧结论满足新的完成或提交授权.
+`arw commit-audit verify` 失败时按原因回退. 冻结实施字节未变且问题只在准确提升或暂存时, 只重做该步骤并重新验证. 冻结实施字节未变但 Reviewer JSONL 无效时, 同一个 Commit Audit Reviewer 读取完整诊断并修订完整绑定草稿, 不重跑未受影响的 Gate 3. 两个记录章节变化执行准确差异, 文本及当前证据定位检查, 有真实反证时仍处理影响. 真正实现, 要求或其他完整输入变化时, 保留旧轮报告和绑定输入, 旧轮完整结束后交接完整替代候选, 重新执行受影响验证及差异复审, 按各轴实际输入保留未受影响的完整通过结果. 开始实施后就绪的治理 Input 或 Reviewer Role 变化不要求刷新就绪记录, 提交时只核对 subject; 原决定是刷新最终版本的结果, 不以旧结论满足新的完成或提交授权, 修改理由是同一字节摘要在就绪与提交审核两处重复要求只增加返工, 这类设计改动由本审核的 Gate 2 与差异回归核对.
 
 Commit Audit Reviewer 审查线程身份是 `spawn_agent` 首次调用或 `followup_task` 后续调用的 `input.role: "commit-audit-reviewer"` 与完整排序 `authorizingIssueIds` 的组合; 运行设置由统一 Reviewer 配置提供, 不依赖平台角色种子. 首次审核使用无 Main Agent 对话上下文的全新审查线程. 同一身份的后续调用必须复用可靠审查线程, 读取完整当前 Request 和暂存候选并返回完整状态. 候选内容或治理语义变化本身不创建新审查线程. 只有 issue ID 集合改变, 原审查线程不可用或不可恢复, 或用户明确要求时才能创建全新替代审查线程. Gate 3 对每个审核轴使用相同规则, 但 `input.role` 不同使两个审核轴仍保持独立审查线程.
 
@@ -46,7 +46,9 @@ Gate 2 是 effort 级 Spec Audit. 它只审核 `git diff <since> <tree>` 中治�
 
 实现 issue 可以没有 Gate 1 辅助文件就进入 `completed`, Wayfinder issue 可以没有 Gate 1 辅助文件就进入 `resolved`. 实现提交工作流在最终当前候选上取得全部适用的完整通过结果. 通用提交工作流判定 Commit Audit 适用时, 执行独立审核, `commit-audit verify` 和依赖审计输出的机械检查. 纯规划提交流程只执行上面定义的已暂存范围和机械验证.
 
-固定完整审核版本使已授权实施与就绪审核可以并行, 当前有效就绪及必要验证完成后又允许三个适用审核对同一候选并行, 每条结论保持准确归属. Commit Audit 读取实时索引和 HEAD, Main Agent 协调其固定及替代版本交接, 不在原生运行层增加互斥机制. 相比强制串行, 当前选择接受并行期间出现真实修复后仍需交付替代版本的可能性, 以减少没有依赖的等待. 前轮准确覆盖减少重复语义判断, 记录章节身份避免正常收尾反复复审; 代价是 Main Agent 必须检查完整候选和记录的准确差异, Reviewer 必须判断全部关联影响及历史覆盖是否成立. 当前 Verifier 不替代任意实现语义判断, 真实变化不能只凭看似局部或要求来源相同就继承旧结论.
+就绪记录只授权开始实施 (ADR 0006), 开始实施后到 effort 终态之间治理 Input 的变化对记录不可见, 最早到提交审核的差异回归或 Gate 2 才被发现; Reviewer Role 文件在开始实施后的变化不被任何提交审核核对, 只影响之后的就绪审核. 这些成本被接受 (理由见 Decision).
+
+固定完整审核版本使已授权实施与就绪审核可以并行, 有效就绪及必要验证完成后又允许三个适用审核对同一候选并行, 每条结论保持准确归属. Commit Audit 读取实时索引和 HEAD, Main Agent 协调其固定及替代版本交接, 不在原生运行层增加互斥机制. 相比强制串行, 当前选择接受并行期间出现真实修复后仍需交付替代版本的可能性, 以减少没有依赖的等待. 前轮准确覆盖减少重复语义判断, 记录章节身份避免正常收尾反复复审; 代价是 Main Agent 必须检查完整候选和记录的准确差异, Reviewer 必须判断全部关联影响及历史覆盖是否成立. 当前 Verifier 不替代任意实现语义判断, 真实变化不能只凭看似局部或要求来源相同就继承旧结论.
 
 Reviewer Role 可以写绑定的临时 JSONL, 但不能调用 Engine, 写仓库中已跟踪的文件或修改索引. 既有 Issue Audit, Spec Audit 和 Spec Readiness 正式记录不能成为当前语义证据或新的判断权威, 自身前轮原始报告及准确输入只用于历史覆盖. Reviewer 角色指令的变更仍须经过既有用户批准关卡; 用户正常修改自己的统一 Reviewer 运行配置不因此增加批准步骤. Engine 不取得 Reviewer 编排责任.
 
