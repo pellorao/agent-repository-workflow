@@ -61,3 +61,23 @@ test('JIRA Print rejects invalid comment bodies and pagination metadata without 
         assert.equal(result.diagnostics[0]?.code, 'jira-response-invalid', entry.label);
     }
 });
+
+test('JIRA Print normalizes single and multi-user additional fields', async () => {
+    const user = {accountId: 'x', displayName: 'Ann', key: 'ann', name: 'ann'};
+    const client = createJiraClient({
+        request: async () => ({
+            diagnostics: [],
+            status: /** @type {'succeeded'} */ ('succeeded'),
+            value: {
+                fields: {customfield_1: user, customfield_2: [user]},
+                key: 'PAY-1',
+                names: {},
+                schema: {customfield_1: {type: 'user'}, customfield_2: {items: 'user', type: 'array'}},
+            },
+        }),
+    });
+    const result = await client.printIssue({baseUrl: 'https://jira.example.test/', issueKey: 'PAY-1'});
+    assert.equal(result.status, 'succeeded');
+    const normalized = {displayName: 'Ann', key: 'ann', name: 'ann'};
+    assert.deepEqual(/** @type {{customFields: Array<{value: unknown}>}} */ (result.value).customFields.map(field => field.value), [normalized, [normalized]]);
+});

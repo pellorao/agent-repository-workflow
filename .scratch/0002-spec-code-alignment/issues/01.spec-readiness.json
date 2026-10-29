@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0002:01",
+  "request": {
+    "digest": "4945e69b921eea0a3a535719511db97f48666d17ba0c1f4616e5b75f489f4f50",
+    "filePath": ".tmp/claude-code/06588b1e-7f07-4832-8933-107aaf5b5978/0002_01/spec-readiness/requests/request-0a821783-d997-49a8-a37e-59669949baaa.json",
+    "id": "0a821783-d997-49a8-a37e-59669949baaa"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "6dcc2d47ebd13fb7d6de3e845765d84572686dfc4a3d8132945d820502bc9ef9"
+  },
+  "inputs": [
+    {
+      "filePath": "docs/specs/agent-repository-workflow-application-jira/spec.md",
+      "role": "governing-spec",
+      "sha256": "2162f74e7bbe07852bd4cfc75f118a08a798e1452e3574cc950d6c081ba01183"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow-development/spec.md",
+      "role": "governing-spec",
+      "sha256": "912a6905a54c9ce0e9f548465c9cc7be69951f689d60299b97ab119be8c9ce34"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow/spec.md",
+      "role": "governing-spec",
+      "sha256": "de262de6e1a675705bc16693fb0fb8e2cf9cdd939c5286e4b72d5c969a95d25c"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0002-spec-code-alignment/issues/01-spec-code-alignment-gate2-gaps.md",
+    "sha256": "c3b7b139911372512d7c034250334a450fb06b8eeb18e758dfaa9943e3974358"
+  },
+  "result": "satisfied"
+}

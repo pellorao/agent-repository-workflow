@@ -169,8 +169,6 @@ test('global configuration rules upgrade v1 directly to the complete ordered v3 
         status: 'succeeded',
         diagnostics: [],
         changed: true,
-        sourceVersion: 1,
-        targetVersion: 3,
         bytes: Buffer.from([
             '{',
             '  "configVersion": 3,',
@@ -205,17 +203,6 @@ test('global configuration rules upgrade v1 directly to the complete ordered v3 
             '}',
             '',
         ].join('\n')),
-        changes: [{
-            sourceVersion: 1,
-            targetVersion: 3,
-            entries: [
-                {kind: 'converted', sourcePath: 'configVersion', targetPath: 'configVersion'},
-                {kind: 'added', path: 'reviewEditor.command'},
-                {kind: 'added', path: 'reviewEditor.args'},
-                {kind: 'added', path: 'jira.listLimit'},
-                {kind: 'added', path: 'reviewers'},
-            ],
-        }],
         unknownPaths: ['extension'],
     });
 });

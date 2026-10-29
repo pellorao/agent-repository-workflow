@@ -415,6 +415,21 @@ test('Submodule switch-branch succeeds explicitly when Application configuration
     });
 });
 
+test('Submodule switch-branch succeeds in an Application Member without Git operations', async t => {
+    const repository = await createRepository(t);
+    const submoduleGit = {
+        inspectSwitch: async () => assert.fail('No Git operation expected.'),
+        restore: async () => assert.fail('No Git operation expected.'),
+        switchBranch: async () => assert.fail('No Git operation expected.'),
+    };
+    for (const args of [['ssb', 'dev'], ['submodule', 'switch-branch', 'dev']]) {
+        assert.deepEqual(await run(args, repository, {applicationJiraDependencies: {submoduleGit}}), {
+            events: [{channel: 'stdout', message: 'No configured Application Modules.'}],
+            result: 0,
+        });
+    }
+});
+
 test('Application sync converges configured Modules and leaves status replacements unstaged', async t => {
     assert.deepEqual(parseCommand(['application', 'sync']), {kind: 'application-sync'});
     const repository = await createRepository(t);

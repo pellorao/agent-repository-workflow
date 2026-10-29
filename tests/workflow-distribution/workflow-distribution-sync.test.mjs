@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {mkdir, readFile, writeFile} from 'node:fs/promises';
+import {createServer} from 'node:net';
 import {dirname, join} from 'node:path';
 import test from 'node:test';
 
@@ -659,4 +660,42 @@ test('sync prepare exposes only a digest and apply directly rebuilds the fixed g
         assert.ok(projected.managedTargets.some(file => file.path.endsWith('/review/SKILL.md')));
         assert.ok(projected.managedTargets.some(file => file.path === 'docs/agents/roles/reviewer.md'));
     }
+});
+
+test('sync blocks symbolic links in source trees', async t => {
+    const root = await createSourceCheckout(t);
+    /** @type {typeof createScopedFilesystem} */
+    const createFilesystem = async options => {
+        const created = await createSuccessfulFilesystem(options);
+        const {scopedFilesystem} = created;
+        return {
+            ...created,
+            scopedFilesystem: {
+                ...scopedFilesystem,
+                createDirectory: async () => assert.fail('No write expected.'),
+                remove: async () => assert.fail('No write expected.'),
+                setMode: async () => assert.fail('No write expected.'),
+                write: async () => assert.fail('No write expected.'),
+                list: async input => {
+                    const listed = await scopedFilesystem.list(input);
+                    return listed.status === 'succeeded' && input?.path === '.agents/skills'
+                        ? {...listed, entries: [...listed.entries, {kind: /** @type {const} */ ('link'), path: '.agents/skills/odd'}]}
+                        : listed;
+                },
+            },
+        };
+    };
+    const result = await prepareWorkflowDistributionReviewImplementation({createFilesystem, repositoryRoot: root, stateAdapter: cleanState([])});
+    assert.equal(result.status, 'blocked');
+    assert.deepEqual(result.diagnostics.map(entry => [entry.code, entry.path]), [['filesystem-link-unsupported', '.agents/skills/odd']]);
+});
+
+test('sync blocks non-regular entries in source trees', {skip: process.platform === 'win32'}, async t => {
+    const root = await createSourceCheckout(t);
+    const server = createServer();
+    await new Promise(resolve => server.listen(join(root, '.agents/skills/odd.sock'), () => resolve(undefined)));
+    t.after(() => server.close());
+    const result = await prepareWorkflowDistributionReviewImplementation({repositoryRoot: root, stateAdapter: cleanState([])});
+    assert.equal(result.status, 'blocked');
+    assert.deepEqual(result.diagnostics.map(entry => [entry.code, entry.path]), [['filesystem-entry-unsupported', '.agents/skills/odd.sock']]);
 });

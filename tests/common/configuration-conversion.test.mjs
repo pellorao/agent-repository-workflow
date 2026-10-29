@@ -60,8 +60,6 @@ test('Configuration Conversion upgrades through ordered fields and preserves unk
         status: 'succeeded',
         diagnostics: [],
         changed: true,
-        sourceVersion: 1,
-        targetVersion: 3,
         bytes: Buffer.from([
             '{',
             '  "configVersion": 3,',
@@ -82,14 +80,6 @@ test('Configuration Conversion upgrades through ordered fields and preserves unk
             '}',
             '',
         ].join('\n')),
-        changes: [{
-            sourceVersion: 1,
-            targetVersion: 3,
-            entries: [
-                {kind: 'converted', sourcePath: 'configVersion', targetPath: 'configVersion'},
-                {kind: 'added', path: 'added.limit'},
-            ],
-        }],
         unknownPaths: ['options.extra', 'unknown'],
     });
 });
@@ -102,10 +92,7 @@ test('Configuration Conversion preserves exact current bytes and reports current
         status: 'succeeded',
         diagnostics: [],
         changed: false,
-        sourceVersion: 3,
-        targetVersion: 3,
         bytes: sourceBytes,
-        changes: [],
         unknownPaths: ['unknown'],
     });
 });

@@ -118,7 +118,7 @@ test('Existing response samples produce paired estimates and retain working tool
     assert.equal(result.modelPhases.output[0].tokens,60);
     assert.equal(result.modelPhases.output[0].durationMs,1400);
     for(const group of [...result.modelPhases.input,...result.modelPhases.output]) {
-        assert.equal(group.measuredRequests,2);assert.equal(group.source,'existing-events');
+        assert.equal(group.measuredRequests,2);assert.equal('source' in group,false);
         assert.equal(group.estimated,true);assert.ok(group.basis);
     }
     assert.match(result.modelPhases.output[0].basis??'',/First chunk token count is unknown/);

@@ -134,3 +134,37 @@ test('Application Association edits only the Status line outside fenced code and
         '# Add idempotency\r\n\r\nStatus: ready-for-agent\r\nApplication source issue: `issue:payments:0001:02`\r\n\r\n```text\r\nStatus: ready-for-agent\r\n```\r\n\r\n## Blocked by\r\n\r\n- None - can start immediately\r\n',
     );
 });
+
+test('Application Association checks the Module effort only within the same Application effort', () => {
+    const record = (/** @type {string} */ id) => ({blockerRecords: [], id, kind: 'implementation', status: 'ready-for-agent', title: 'T'});
+    const associate = (/** @type {string} */ otherApplicationIssueId) => associateApplicationIssue({
+        moduleIssueId: 'issue:0007:07',
+        moduleIssues: {billing: [{path: 'module.md', record: record('issue:0007:07'), text: 'Status: ready-for-agent\n\n## Blocked by\n\n- None\n'}]},
+        moduleName: 'billing',
+        applicationIssueId: 'issue:0001:02',
+        applicationIssues: [
+            {path: 'application.md', record: record('issue:0001:02'), text: 'Status: ready-for-agent\n\n## Blocked by\n\n- None\n'},
+            {path: 'other.md', record: {...record(otherApplicationIssueId), association: {coordinate: 'issue:billing:0009:01', kind: 'module-implementation'}}, text: ''},
+        ],
+        applicationName: 'payments',
+    });
+    assert.equal(associate('issue:0002:01').status, 'succeeded');
+    assert.equal(associate('issue:0001:01').diagnostics[0]?.code, 'association-module-effort-mismatch');
+});
+
+test('Application Association rewrites External dependency lines only inside Blocked by', () => {
+    const dependency = '- External dependency: `issue:payments:0001:01` - Wait.';
+    const result = associateApplicationIssue({
+        moduleIssueId: 'issue:0007:07',
+        moduleIssues: {billing: [
+            {path: 'target.md', record: {blockerRecords: [], id: 'issue:0007:07', kind: 'implementation', status: 'ready-for-agent'}, text: 'Status: ready-for-agent\n\n## Blocked by\n\n- None\n'},
+            {path: 'earlier.md', record: {association: {coordinate: 'issue:payments:0001:03', kind: 'application-source'}, id: 'issue:0007:08', kind: 'implementation', status: 'ready-for-agent'}, text: `# E\n\n## What to build\n\n${dependency}\n\n## Blocked by\n\n${dependency}\n`},
+        ]},
+        moduleName: 'billing',
+        applicationIssueId: 'issue:0001:01',
+        applicationIssues: [{path: 'application.md', record: {blockerRecords: [], id: 'issue:0001:01', kind: 'implementation', status: 'ready-for-agent'}, text: 'Status: ready-for-agent\n\n## Blocked by\n\n- None\n'}],
+        applicationName: 'payments',
+    });
+    assert.equal(result.status, 'succeeded');
+    assert.equal(result.replacements[0].bytes.toString(), `# E\n\n## What to build\n\n${dependency}\n\n## Blocked by\n\n- 07 - Wait.\n`);
+});
