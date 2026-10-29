@@ -1190,7 +1190,7 @@ test('missing command results break repetition without hiding complete zero-exit
   } finally {policy.close();}
 });
 
-test('an idle run whose recovery directory was deleted is not reclaimed, while unload_agent before deletion frees its slot',async t=>{
+test('an idle run whose recovery record is gone is reclaimed for a new run',async t=>{
   const fake=await harness(t,{maxInstances:1});
   const lost=join(fake.directory,'lost');
   await mkdir(lost);
@@ -1200,9 +1200,8 @@ test('an idle run whose recovery directory was deleted is not reclaimed, while u
   await tick();
   assert.equal(result(await fake.manager.execute({ownerId:'main-2',controllerId:'main-2',operation:'list_agents',input:{}})).agents[0].cwd,fake.directory);
   await rm(lost,{recursive:true,force:true});
-  const denied=await fake.start();
-  assert.equal(denied.status,'failed');
-  assert.match(denied.error.message,/capacity is exhausted/u);
+  assert.equal((await fake.start()).status,'succeeded');
+  assert.equal(fake.native.rootStops,1);
 });
 
 test('unload_agent unloads only a safely idle run for its owner and the slot is reusable after the directory is deleted',async t=>{
@@ -1224,6 +1223,20 @@ test('unload_agent unloads only a safely idle run for its owner and the slot is 
   assert.equal((await fake.start()).status,'succeeded');
 });
 
+test('unload_agent unloads a run whose recovery record is gone',async t=>{
+  const fake=await harness(t,{maxInstances:1});
+  const directory=join(fake.directory,'worktree');
+  await mkdir(directory);
+  const first=result(await fake.start('main-1',settings,directory));
+  await waitDelivered(fake.stateStore,first.messageId);
+  fake.native.finish(first.runId);
+  await tick();
+  await rm(directory,{recursive:true,force:true});
+  assert.deepEqual(result(await fake.execute(first.runId,'unload_agent')),{runId:first.runId,unloaded:true});
+  const followup=result(await fake.execute(first.runId,'followup_task',{handoff:'again'}));
+  await waitFailedDelivery(fake.stateStore,followup.messageId,'failed');
+});
+
 test('unload_agent refuses a run whose recovery record no longer matches it',async t=>{
   const fake=await harness(t,{maxInstances:1});
   const directory=join(fake.directory,'worktree');
@@ -1233,6 +1246,8 @@ test('unload_agent refuses a run whose recovery record no longer matches it',asy
   fake.native.finish(first.runId);
   await tick();
   await writeFile(join(directory,`background-agent-${first.runId}.json`),'{}\n');
+  assert.equal((await fake.execute(first.runId,'unload_agent')).status,'failed');
+  await writeFile(join(directory,`background-agent-${first.runId}.json`),'not json\n');
   assert.equal((await fake.execute(first.runId,'unload_agent')).status,'failed');
   assert.equal(fake.native.rootStops,0);
 });

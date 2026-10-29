@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0008:01",
+  "request": {
+    "digest": "71a17f58bb69fc5460c9616ef430f5d7afcc2b4b202fa2c6cd04a5ea2e11accb",
+    "filePath": ".tmp/claude-code/06588b1e-7f07-4832-8933-107aaf5b5978/0008_01/spec-readiness/requests/request-d9dc27b8-d761-4f2a-9bb0-b57b78d5ddae.json",
+    "id": "d9dc27b8-d761-4f2a-9bb0-b57b78d5ddae"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "f797bb611ba9cf50c0ccfab4d029b2a32fd44b771b7b9338a0a31bb48ddba14a"
+  },
+  "inputs": [
+    {
+      "filePath": ".scratch/0008-background-agent-missing-record-reclaim/spec.md",
+      "role": "governing-spec",
+      "sha256": "b5ba847e670b1b90c5ea9879b2a3c3b8e7d92f434c10606d7fdf2c8375fd5caa"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow/spec.md",
+      "role": "governing-spec",
+      "sha256": "7578b77357b15bdc41d2f6e9bcca2d2a04ea5573f5bae9a0f0d48d71144bff00"
+    },
+    {
+      "filePath": "lib/background-agent/manager.mjs",
+      "role": "architecture-evidence",
+      "sha256": "0f45a13113fc32fd5e503480fe97249f929d199547d7034c48a87c914e11e73c"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0008-background-agent-missing-record-reclaim/issues/01-reclaim-idle-runs-without-record.md",
+    "sha256": "893d6b8e07159fa18c4dafd6594df50f2344ef5512bae33d9a8af39b8d4353a8"
+  },
+  "result": "satisfied"
+}
