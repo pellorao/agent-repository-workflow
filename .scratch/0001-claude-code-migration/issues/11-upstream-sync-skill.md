@@ -1,6 +1,6 @@
 # Upstream Sync 与 Platform Standards 改为不自动触发的 Skill
 
-Status: ready-for-human
+Status: wontfix
 
 ## What to build
 
@@ -37,3 +37,5 @@ Governing requirements:
 - "按 Skill 执行能完成一次同步审核": 已试运行三方视图: 以固定提交 `6acc160` 为 Base, 上游当前 `5beb35b` 为 Theirs, 脚本列出 48 个范围内变化 (13 个 `ours=base` 修改, 1 个本地未改的上游删除, 7 个新文件, 1 个改名 `CONTEXT-FORMAT.md` -> `GLOSSARY-FORMAT.md` 并带本地定制合并, 其余为本地有定制, 合并冲突 0 到 10 块); 目标等于固定提交时输出为空并退出 0. 完整审核需要维护者逐批批准, 本次未进行, 因此不勾选; 维护者调用 `$upstream-sync` 完成一次采用后勾选.
 - 遗留: `lib/release/reviewer-capability-conformance.mjs` 的指令分类表仍列出已删除的 `docs/agents/upstream-sync.md` 和 `docs/agents/platform-standards.md` (仅为字符串, 不读取文件, 测试通过), 留给 ticket 10 重写该文件时删除.
 - 独立审查 (opus) 发现并已修复: 无变化时脚本崩溃; 上游改名被拆成删除加新增会丢本地定制 (改用 `-M`); 上游新文件与 ARW 自有 Skill 重名时的处理; 发布前同步命令写法; 手册 `lib/` 表格行; ADR 0017, 0022, 0028 中 "继续有效" 的句子加指针; 删除无调用方的 `skillReferenceReviewHashes`. 未处理: 同一 Skill 在两个映射类别间移动会被视为删除 (上游历史未出现).
+
+- 2026-10-29 effort 0001 收尾: 移出本 effort (用户决定), 0.5.0 发布后在新 effort 中重做 (维护者调用 `$upstream-sync` 完成一次采用).

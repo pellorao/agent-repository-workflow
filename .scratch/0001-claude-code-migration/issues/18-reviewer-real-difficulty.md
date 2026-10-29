@@ -1,6 +1,6 @@
 # 用真实难度场景测三个 Reviewer
 
-Status: ready-for-agent
+Status: wontfix
 
 ## What to build
 
@@ -194,3 +194,5 @@ Spec Readiness 盲分 (benchmark v2 spec-readiness v4.5 场景, Reviewer haiku h
 提交审核 (`requirements-reviewer` haiku high, 一轮): 运行时拒绝空 `issueIds`, 与 commit Skill 规则例外冲突, 改用 `issue:0001:18` 身份. 6 个问题都属本次引入, 处理如下.
 - 已修正: 分流 (b) 改为 "引入或影响"; Reviewer 按角色范围不报告的既有内容 (Code Standards 的历史问题, Spec Readiness 交付范围外的既有设计) 不产生问题; Reviewer 以具体依赖保留的既有问题按本次影响的问题修正, 避免 `gap` 无法解除; spec-readiness Skill 的 Module Design 适用性写明 Interface 含字段含义改变.
 - 未改: 长期 spec 第 164 行同步同一说明会改变其 sha256, 使绑定它的未完成就绪记录失效, 列为后续; 第 525, 856 行 "问题都已处理" 已涵盖记入后续 issue; domain-modeling 第 92 行约束作者不写实现细节, 角色第 11 行只规定 spec 已写的此类要求不算就绪缺口, 两者不冲突.
+
+- 2026-10-29 effort 0001 收尾: 本 issue 已被 issue 29 取代 (2026-10-28 用户决定, 已写入 29 的 `## What to build`), 不再继续.

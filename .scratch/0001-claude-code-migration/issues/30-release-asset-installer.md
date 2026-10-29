@@ -1,6 +1,6 @@
 # 独立安装改为下载 release 压缩包
 
-Status: ready-for-agent
+Status: completed
 
 ## What to build
 
@@ -35,14 +35,18 @@ Governing requirements:
 - [x] 本地用一个临时压缩包和临时 HOME 实测安装成功 (不碰用户已安装的 ARW); release VM 验证在下次 `$release` 时覆盖.
 - [x] 规范, README 与安装手册已更新; 全量测试, 投影与分发检查, `arw text check` 通过.
 
+## Blocked by
+
+- None - can start immediately
+
 ## Validation
 
-- `pnpm test` 723 项通过 (1 项既有 skipped), `pnpm typecheck`, `node scripts/check-workflow-distribution.mjs`, `node scripts/project-claude-skills.mjs --check`, `node scripts/generate-install-arw.mjs --check`, `node arw.mjs text check` 通过.
+- `pnpm test` 723 项通过 (1 项既有跳过), `pnpm typecheck`, `node scripts/check-workflow-distribution.mjs`, `node scripts/project-claude-skills.mjs --check`, `node scripts/generate-install-arw.mjs --check`, `node arw.mjs text check` 通过.
 - 验收 1: `tests/installation/bootstrap.test.mjs` 用真实 `scripts/pack-release.mjs` 压缩包检查含 `lib/`, `distribution/`, `package.json`, 不含 `tests/`, 且 `installation.mjs` 导入闭包可解析.
 - 验收 2: 同文件的确定性测试覆盖 `--version`, 最新版解析, 下载与解压失败, 参数与远端错误; 全程不调用 Git.
 - 验收 3: 本地用 fetch 替身服务该压缩包, 临时 HOME 中运行 `scripts/install-arw.mjs --non-interactive --register-path false` 安装成功, `arw --version` 输出 0.4.0, 随后卸载; 未碰用户已安装的 ARW.
 - 验收 4: 规范, ADR 0018/0020, `$release` Skill, README 与开发手册已更新.
 
-## Blocked by
+## Comments
 
-- None - can start immediately
+收尾说明 (Main, 2026-10-29): 设计要点中 "不再有因 Bootstrap 验证失败而删除 tag 的恢复流程" 一条已被 issue 43 (用户 2026-10-28 批准 tag 推送后, 公告前失败时回滚重试) 取代, 现行流程见 release 规格与 `$release` Skill 的回滚说明.

@@ -1,6 +1,6 @@
 # Reviewer 能力测试套件自成一体并精简
 
-Status: ready-for-agent
+Status: completed
 
 ## What to build
 
@@ -31,14 +31,23 @@ Governing requirements:
 
 ## Acceptance criteria
 
-- [ ] 4 个计划的物化结果与 qwen_strata 物化结果逐文件一致 (差异清单为空), 旧夹具与简化答案键已删除, qwen_strata 未修改.
-- [ ] 评分与盲裁工具为 Node, 不依赖 Python 或冻结 ARW 源码; 等价性验收结果逐字节一致, 记入 `## Comments`.
-- [ ] `$reviewer-capability` Skill 用新套件跑通一次 (Reviewer haiku high, 裁判 sonnet high), 结果记入 `## Comments`.
-- [ ] 套件不在 Workflow Distribution 和 release 安装包中; 全量测试, 投影与分发检查, `arw text check` 通过.
+- [x] 4 个计划的物化结果与 qwen_strata 物化结果逐文件一致 (差异清单为空), 旧夹具与简化答案键已删除, qwen_strata 未修改.
+- [x] 评分与盲裁工具为 Node, 不依赖 Python 或冻结 ARW 源码; 等价性验收结果逐字节一致, 记入 `## Comments`.
+- [x] `$reviewer-capability` Skill 用新套件跑通一次 (Reviewer haiku high, 裁判 sonnet high), 结果记入 `## Comments`.
+- [x] 套件不在 Workflow Distribution 和 release 安装包中; 全量测试, 投影与分发检查, `arw text check` 通过.
 
 ## Blocked by
 
 - None - can start immediately
+
+## Validation
+
+收尾核对 (2026-10-29, 提交 `4e941d3` 之后的当前树):
+
+- 验收 1: `tests/fixtures/reviewer-capability/` 下无旧 `todo-archive` 夹具和 `expected.md` (`find -name expected.md` 为空); 夹具的 `base/` 与 `candidate/` 与旧流程物化结果逐文件一致, 记录在 `## Comments` (`diff -rq` 为空); `~/projects/qwen_strata` 的 `git status --short` 为空.
+- 验收 2: `lib/reviewer-capability/` 与 `scripts/reviewer-capability.mjs` 为 Node, 无 Python 调用或冻结 ARW 源码依赖 (grep 命中的 `python`, `qwen_strata` 仅为说明字节兼容来源的注释); 等价性验收结果见 `## Comments`.
+- 验收 3: 新套件完整跑通一次的结果见 `## Comments` (Reviewer haiku high, 裁判 sonnet high).
+- 验收 4: `release-manifest.json` 的 `runtimeFiles` 与 `distribution/` 不含 `reviewer-capability`, `scripts/pack-release.mjs` 只打包 `install.mjs` 导入闭包与清单登记文件; `pnpm test` 793 项通过 (1 项既有跳过), `pnpm typecheck`, `node scripts/check-workflow-distribution.mjs`, `node scripts/project-claude-skills.mjs --check`, `node scripts/generate-install-arw.mjs --check`, `node arw.mjs text check` 均通过.
 
 ## Comments
 
@@ -89,3 +98,5 @@ Governing requirements:
 4. Spec Readiness 两个子场景的 view 中同名规格文件内容不同 (设计如此), 裁判按候选所属 view 判断, 无异常.
 
 审核后复验 (Worker, 2026-10-28): 提交审核的修复改了 `evidence.mjs`, `pool.mjs`, `operations.mjs` (公共 JSON 工具来源, 删除 `adjAs`, 输入错误映射) 后重跑等价脚本: Spec Readiness 候选 57 字段差异与顺序同前, 第二轮池 5 项一致; Commit Audit 与 Code Standards 基线报告的上下界分数与旧流程相同. `pnpm test` 728 项 727 通过 0 失败 1 跳过, 分发检查通过.
+
+收尾说明 (Main, 2026-10-29): `## What to build` 中的 "范围缩减" 一段已被 issue 39 (用户 2026-10-28 决定完整移植评分体系) 取代, 当前树与开发规格的 `reviewer-capability` 完整移植描述一致.
