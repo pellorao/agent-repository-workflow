@@ -36,7 +36,7 @@
 - x86-64 系统. 基线快照处于关机状态, 并已安装 VMware Tools (`open-vm-tools`).
 - OpenSSH 服务只允许密钥认证. 测试账户是具有管理员或 sudo 能力的普通账户, 不使用 root.
 - 测试账户的登录 shell 中, `PATH` 上有 Git. `nodeExecutables` 中的 Node.js 是 24 或更高版本. Linux 还需要 `bash`, 登录 shell 会读取 `~/.profile`. Alpine 需要使用 musl 构建的 Node.js.
-- 不安装 pnpm, TypeScript 或其他源码仓库开发依赖. 客户机 不需要访问外网, 候选只通过 bundle 传入.
+- 不安装或启动 Agent CLI, 不安装 pnpm, TypeScript 或其他源码仓库开发依赖. 客户机 不需要访问外网, 候选只通过 bundle 传入.
 - 关闭操作系统和软件包的自动升级. Linux 使用 UTC 并开启 客户机 NTP. 使用 VMware 时设置 `tools.syncTime = "FALSE"`.
 - 网络使用隔离的 NAT. 不为了方便添加桥接网络或端口转发.
 

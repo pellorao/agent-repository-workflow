@@ -125,7 +125,7 @@ Governing requirements:
 
 模板中的示例路径和锚点替换为实际要求. `Governing requirements:` 后保留空行, 每行一个以连字符和空格开头且由反引号包裹的路径引用; Markdown 超链接无效. `## What to build`, `## Spec Requirement` 和 `## Acceptance criteria` 必须是连续且顺序固定的二级章节. `arw print` 不解析该字段, 读取成功不证明引用语法或目标存在性有效.
 
-`Status:` 必须位于 H1 后第一个段落. `## Spec Requirement` 路径相对最近 Git 仓库根目录, 与 Spec Readiness 输入 `filePath` 使用同一基准. 它接受仅路径或 `path#ascii-heading-anchor`. 仅路径只适用于没有 ATX 标题, 或只有一个 H1 且没有其他 ATX 标题的文档.
+ARW 写出的 `Status:` 位于 H1 后第一个段落; 读取时只要求它唯一且取值有效, 不检查位置. `## Spec Requirement` 路径相对最近 Git 仓库根目录, 与 Spec Readiness 输入 `filePath` 使用同一基准. 它接受仅路径或 `path#ascii-heading-anchor`. 仅路径只适用于没有 ATX 标题, 或只有一个 H1 且没有其他 ATX 标题的文档.
 
 Issue 创建过程在发布 issue 前选择该 issue 实际实施的既有治理要求. 相关背景, 仅提供支持的输入, 交付目标, 未来输出, 解决方案设想和实施指导不能进入该章节. 长期 Spec 只有在当前工作确实为了实现它时才是要求; 作为当前 issue 交付结果修改的长期 Spec 只写入验收条件. 确实没有治理设计时, 只有用户明确确认后才能写 `Not required`.
 
@@ -187,6 +187,7 @@ arw list issues             arw li
 arw list maps               arw lm
 arw list specs              arw ls
 arw list background-agents  arw lba
+arw background-agent [--wait]
 arw print <canonical-id>
 arw open <canonical-id>
 arw agent start <name> [agent-arguments...]
@@ -205,7 +206,7 @@ arw language inspect <path>...
 arw workflow init [--non-interactive (--reuse-profile | --platform <platform>... --domain-layout <layout> --code-map-root [<root>]... --code-map-include [<glob>]... --code-map-exclude [<glob>]...) --transform-existing-agent-docs <true|false> --orphan-code-map-readmes <delete|demote>]
 arw workflow update [--non-interactive] [--dry-run] [--transform-existing-agent-docs <true|false>]
 arw workflow verify
-arw workflow remove [--non-interactive --arwignore <retain|delete> --code-maps <retain|delete> --mixed-agent-documents <retain|delete>]
+arw workflow remove [--non-interactive --platform-agent-configs <retain|delete> --arwignore <retain|delete> --code-maps <retain|delete> --mixed-agent-documents <retain|delete>]
 arw --version
 ```
 
@@ -268,7 +269,7 @@ ARW 等待进程退出并传播正常退出码. 启动失败或没有正常数�
 
 | `operation` | 输入与可观察结果 |
 | --- | --- |
-| `spawn_agent` | 接收调用方已准备的完整首次工作指示, 原生运行设置, 工作目录, 原生权限范围与可靠身份. 管理进程在内存登记运行及首次工作消息后返回运行标识, 准确恢复记录位置, 消息编号和 `accepted` 状态; 后台异步启动原生环境并交付首次工作, 后续观察才提供已取得的原生线程与回合身份及实际状态. 首次工作只交付一次, 回执不声称线程已经创建或任务已经执行. 非 Reviewer 运行的输入另含调用方已准备的恢复记录目录 `stateDirectory`, 其中的 `background-agent-<runId>.json` 即返回的恢复记录位置; `cwd` 和 `stateDirectory` 都必须是绝对路径, `stateDirectory` 必须位于 `cwd` 之下 (两者先各自按 Node `path.resolve` 规范化, 消除 `.`, `..` 和重复或末尾分隔符, 再按 `path.relative` 判断, 结果非空时不以 `..` 开头且不是绝对路径, 即平台自身的大小写和驱动器规则; 可等于 `cwd`, 不解析符号链接), 否则在登记运行和受理首次工作消息之前以明确错误拒绝; `followup_task` 提供 `cwd` 且改变它时, 新 `cwd` 同样必须仍包含该目录, 否则在受理之前拒绝, 省略 `cwd` 保持原值. Reviewer 调用方另外提供审核身份, 角色和报告绑定, 并由 Reviewer 专属层校验; 同一身份已有恢复记录时, 只有带可选布尔输入 `newThread: true` 才为该身份新建线程并改写恢复记录, 否则以 `reviewer-identity-exists` 拒绝. |
+| `spawn_agent` | 接收调用方已准备的完整首次工作指示, 原生运行设置, 工作目录, 原生权限范围与可靠身份. 管理进程在内存登记运行及首次工作消息后返回运行标识, 准确恢复记录位置, 消息编号和 `accepted` 状态; 后台异步启动原生环境并交付首次工作, 后续观察才提供已取得的原生线程与回合身份及实际状态. 首次工作只交付一次, 回执不声称线程已经创建或任务已经执行. 非 Reviewer 运行的输入另含调用方已准备的恢复记录目录 `stateDirectory`, 其中的 `background-agent-<runId>.json` 即返回的恢复记录位置; `cwd` 和 `stateDirectory` 都必须是绝对路径, `stateDirectory` 必须位于 `cwd` 之下 (两者先各自按 Node `path.resolve` 规范化, 消除 `.`, `..` 和重复或末尾分隔符, 再按 `path.relative` 判断, 结果非空时不等于 `..`, 不以 `..` 加路径分隔符开头, 且不是绝对路径, 即平台自身的大小写和驱动器规则; 可等于 `cwd`, 不解析符号链接), 否则在登记运行和受理首次工作消息之前以明确错误拒绝; `followup_task` 提供 `cwd` 且改变它时, 新 `cwd` 同样必须仍包含该目录, 否则在受理之前拒绝, 省略 `cwd` 保持原值. Reviewer 调用方另外提供审核身份, 角色和报告绑定, 并由 Reviewer 专属层校验; 同一身份已有恢复记录时, 只有带可选布尔输入 `newThread: true` 才为该身份新建线程并改写恢复记录, 否则以 `reviewer-identity-exists` 拒绝. |
 | `followup_task` | 所属 Main 向既有后台 Agent 分派完整后续任务. 管理进程校验归属及活动回合的准确身份, 在内存接受工作消息并返回 `messageId` 和 `accepted` 状态, 然后异步交付. Agent 空闲时启动新回合; 原根线程已卸载时先取得容量并在管理进程内部恢复准确原线程, 再交付该任务. 不自动重放先前未完成的任务, 不静默改用新线程. 普通 Reviewer 同身份新一轮审核同时更新完整当前输入, 报告绑定及本轮设置. |
 | `send_message` | 双方使用准确 `runId` 和非空 `message`, 方向由调用方原生会话身份确定. 所属 Main 向该后台 Agent 排入消息, 活动回合还须核对已观察的 `turnId`; 后台 Agent 根线程向所属 Main 排入角色允许的通知. 管理进程在内存登记后返回创建的 `messageId` 与 `accepted` 状态, 再异步分发; 单独发送消息不唤醒普通空闲 Agent; 所属 Main 向因[Reviewer 提前结束阈值](#reviewer-task-continuation)暂停的原任务发送普通工作消息时, 管理程序沿原线程恢复同一任务并交付消息正文. 回合已变更时拒绝且不改投, 其他 Main 或子线程不能冒用来源. 两个方向都不以模型执行, 目标历史或 SQLite 提交作为发送回执的前提. |
 | `messages` | 接收准确 `runId`, 选择该运行 Main 与后台 Agent 之间的发送方向 `direction` (`main-to-agent` 或 `agent-to-main`), 默认查询调用方自身发送的方向. `limit` 为正安全整数, 默认 `3`; 可用上一页的 `beforeMessageId` 向前查询更早记录. 返回最新在前的消息列表及后续分页位置, 每项只有 `messageId`, 正文前 100 个 Unicode 字符的 `preview`, 分发状态与保存状态, 不返回完整正文. 所属 Main 可查询该运行的双向通信; 后台 Agent 以自己的原生会话身份只能查询自身发给所属 Main 的消息, 不取得 Main 控制权或访问其他运行. 不扩大全用户列表的访问范围. |
@@ -294,7 +295,7 @@ Platform Adapter 在运行环境的 `CLAUDECODE` 为 `1` 时判定调用方平�
 
 多个客户端同时进入时只能有一个管理进程取得该用户的所有权; 无法确认唯一所有者时不启动 App Server. 运行标识持续绑定原任务和原生线程, 使新连接不会把相同标识解释为另一任务.
 
-控制客户端的标准输入结束时, 机器会话先等全部未返回的请求 (含 `wait_agent`) 写出响应再关闭连接, 这样调用方可以用 "写入请求后关闭标准输入" 的一次性调用取得等待结果; `SIGINT` 或 `SIGTERM` 取消未完成的等待. 连接断开或工具进程退出只结束该连接, 已接受的后台任务继续执行. 保留期内的消息, 待处理请求和状态可从新连接查询, 原运行标识和原生线程身份不因客户端断开而失效. 管理进程按后台 Agent 创建时已绑定的角色策略处理 Codex 原生用户输入和审批请求, 通用控制层不解释四个 Reviewer 角色的审核业务规则. 允许人工交互的普通角色由管理进程将准确请求转给所属 Main; Main 取得真实决定后才通过 `respond` 提供原生合法响应, 管理进程不自动批准. Reviewer 专属层提供拒绝人工交互的策略, 管理进程对用户输入, 权限或 MCP 等原生请求给出该请求类型合法的拒绝响应, 让 Reviewer 在原生输入或结果中实际看到具体原因并继续当前回合; 对命令或文件审批使用继续回合的 `decline`, 不使用中断回合的 `cancel`, 不转交 Main 或用户代答, 也不允许通过公开 `respond` 绕过. 拒绝一项请求本身不停止审核或预先决定最终状态; 只有必要检查或报告确实无法完成时才按 Reviewer 合同返回说明具体不足的 `incomplete`. 原生运行环境或管理进程实际故障时, 返回可证实的状态与明确的不完整原因, 不把未完成工具或回合伪装为已恢复. 正常机器客户端退出返回 `0`, 不可恢复的启动或输入输出故障返回 `1`, 命令用法无效返回 `2`; 单条请求失败通过对应 JSON 响应表示, 不自动关闭其他运行.
+控制客户端的标准输入结束时, 机器会话先等全部未返回的请求 (含 `wait_agent`) 写出响应再关闭连接, 这样调用方可以用 "写入请求后关闭标准输入" 的一次性调用取得等待结果; `SIGINT` 或 `SIGTERM` 取消未完成的等待. 连接断开或工具进程退出只结束该连接, 已接受的后台任务继续执行. 保留期内的消息, 待处理请求和状态可从新连接查询, 原运行标识和原生线程身份不因客户端断开而失效. 管理进程按后台 Agent 创建时已绑定的角色策略处理 Codex 原生用户输入和审批请求, 通用控制层不解释三个 Reviewer 角色的审核业务规则. 允许人工交互的普通角色由管理进程将准确请求转给所属 Main; Main 取得真实决定后才通过 `respond` 提供原生合法响应, 管理进程不自动批准. Reviewer 专属层提供拒绝人工交互的策略, 管理进程对用户输入, 权限或 MCP 等原生请求给出该请求类型合法的拒绝响应, 让 Reviewer 在原生输入或结果中实际看到具体原因并继续当前回合; 对命令或文件审批使用继续回合的 `decline`, 不使用中断回合的 `cancel`, 不转交 Main 或用户代答, 也不允许通过公开 `respond` 绕过. 拒绝一项请求本身不停止审核或预先决定最终状态; 只有必要检查或报告确实无法完成时才按 Reviewer 合同返回说明具体不足的 `incomplete`. 原生运行环境或管理进程实际故障时, 返回可证实的状态与明确的不完整原因, 不把未完成工具或回合伪装为已恢复. 正常机器客户端退出返回 `0`, 不可恢复的启动或输入输出故障返回 `1`, 命令用法无效返回 `2`; 单条请求失败通过对应 JSON 响应表示, 不自动关闭其他运行.
 
 ### Background Agent Communication
 
@@ -416,7 +417,7 @@ Reviewer 专属层只在 Reviewer 根线程的原生配置中强制 `agents.enab
 
 跨运行环境的主动通信只使用角色列出的类型: 与用户沟通的 Main Agent 向 Reviewer 发送工作指示, Reviewer 通知已核实的问题, 必要工作进度, 阻塞或具体治理冲突. 普通审核, 能力验证和基准执行均独立完成工作, 不向用户或与用户沟通的 Main Agent 询问信息或征求同意, 缺少必要输入按既有 incomplete 合同处理. 中途消息按 [通用后台 Agent 通信](#background-agent-communication) 的单一中介交付, Main Agent 用 `wait_agent` 取得一次更新后按需再次等待, Reviewer 专属层不维护第二份消息队列.
 
-四种 Reviewer 的最终响应保持各自的 `ready | incomplete` 格式, 完整报告仍由 Reviewer 亲自写入准确绑定文件. Reviewer 运行层按 [报告权威规则](#reports-and-result-authority) 和 [运行收尾规则](#reviewer-runtime)核实准确原线程的结束与交付, 权限, 终端收尾和结果保存, 再通过现有 `list_agents` 或 `wait_agent` 响应中的 `completion` 交付最终结果. Main Agent 根据该结果读取并消费绑定报告, 不把原生回合结束, 模型自述或中途消息单独当作审核任务完成; `ready` 仍不表示没有问题或已经取得正式结果授权. 最终交付不要求 Reviewer 另发同义的 `send_message`, 运行程序也不合成第二条完成消息. 模型在原生回合结束前发出的消息无法证明后续报告核对, 收尾和保存已成功, 因而整体完成事实由拥有这些核对责任的运行层统一交付. 这项合同共用于普通审核, Reviewer Capability 验证及基准执行.
+三种 Reviewer 的最终响应保持各自的 `ready | incomplete` 格式, 完整报告仍由 Reviewer 亲自写入准确绑定文件. Reviewer 运行层按 [报告权威规则](#reports-and-result-authority) 和 [运行收尾规则](#reviewer-runtime)核实准确原线程的结束与交付, 权限, 终端收尾和结果保存, 再通过现有 `list_agents` 或 `wait_agent` 响应中的 `completion` 交付最终结果. Main Agent 根据该结果读取并消费绑定报告, 不把原生回合结束, 模型自述或中途消息单独当作审核任务完成; `ready` 仍不表示没有问题或已经取得正式结果授权. 最终交付不要求 Reviewer 另发同义的 `send_message`, 运行程序也不合成第二条完成消息. 模型在原生回合结束前发出的消息无法证明后续报告核对, 收尾和保存已成功, 因而整体完成事实由拥有这些核对责任的运行层统一交付. 这项合同共用于普通审核, Reviewer Capability 验证及基准执行.
 
 原生 `on-request` 与 `auto_review` 负责安全审批. App Server 若仍发来必须人工决定的用户输入, 权限或 MCP 请求, Reviewer 专属层按 [通用原生请求处理规则](#machine-entry) 提供拒绝策略, 管理进程给出该请求类型合法的拒绝响应, 并让 Reviewer 在原生输入或结果中看到具体原因; 命令和文件审批使用继续回合的 `decline`, 不使用中断回合的 `cancel`. 拒绝只针对该次请求, 不因此取消本轮审核或卸载原线程. Reviewer 继续利用现有输入完成其余检查, 只有必要检查或报告确实无法完成时才说明具体不足并返回 `incomplete`; 不转交用户或 Main 代答, 不伪造批准. 这与允许人工交互的普通后台角色不同, 不把入口拒绝描述为 Codex 自动审批的决定.
 
@@ -432,7 +433,7 @@ Reviewer 专属层只在 Reviewer 根线程的原生配置中强制 `agents.enab
 
 Code Standards 与要求符合审核各自按比较基线, 纳入范围, 文件模式和实现字节, 关联上下文, 适用指令, 授权及验证事实判断完整通过结果是否仍然有效, 要求符合审核还依赖完整治理要求. 这些实际输入未变且没有新失败或相反证据时, 可以保留该轴结果. 仅治理要求输入变化, 且未进入 Standards 的候选, 规则或关联证据时, 不使 Standards 自动失效; 不得只按文件路径推断无影响. Spec Readiness 和 Commit Audit 继续执行各自机械新鲜度与当前候选检查, 原线程存在或另一轴通过不替代完整有效结果.
 
-四种 Reviewer 的后续复审默认检查相邻受审版本的实际差异和全部关联影响. Main Agent 提供完整当前输入, 准确前轮绑定输入, 该 Reviewer 自己已完成的原始报告及变化范围. 前轮材料只证明历史覆盖并定位仍待处理的事项, 当前语义证据仍来自当前固定版本. 初次审核完成全部适用检查; 前轮未完成的检查继续完成, 旧问题逐项处理, 不因为本轮差异未再提及就消失. 前轮已完成且未受本轮变化影响的内容不再审核, 也不为其补报问题, 即使前轮漏报; 代价是漏报可能留到之后才被发现, 换来复审轮数收敛. 其他作者的结论, 作者会话历史及正式历史审计或就绪记录不能成为替代独立判断的语义权威.
+三种 Reviewer 的后续复审默认检查相邻受审版本的实际差异和全部关联影响. Main Agent 提供完整当前输入, 准确前轮绑定输入, 该 Reviewer 自己已完成的原始报告及变化范围. 前轮材料只证明历史覆盖并定位仍待处理的事项, 当前语义证据仍来自当前固定版本. 初次审核完成全部适用检查; 前轮未完成的检查继续完成, 旧问题逐项处理, 不因为本轮差异未再提及就消失. 前轮已完成且未受本轮变化影响的内容不再审核, 也不为其补报问题, 即使前轮漏报; 代价是漏报可能留到之后才被发现, 换来复审轮数收敛. 其他作者的结论, 作者会话历史及正式历史审计或就绪记录不能成为替代独立判断的语义权威.
 
 需要全盘复审时由负责 Reviewer 给出本轮具体理由, 例如准确前轮输入无法恢复, 历史覆盖无法核对或影响确实遍及整个适用范围. 新请求, 哈希变化或一般性的谨慎本身不构成理由. 每轮仍由该 Reviewer 亲自写入完整的新绑定报告, 按当前全部要求和准确定位表达保留及更新的判断. Spec Readiness 与 Commit Audit 仍沿正常准备, 生成, 原样提升与 verify 边界取得当前正式结果, 不以局部读取或只有差异的报告冒充完整交付. 具体交接由[公共 Reviewer 规则](../../agents/reviewer.md#review-versions-and-concurrency)与各角色工作流拥有.
 
@@ -448,7 +449,7 @@ Code Review 的报告路径由与用户沟通的 Main Agent 在受审仓库的�
 
 ### Reviewer task continuation
 
-四个 Reviewer 角色在普通审核, Reviewer Capability 验证及基准执行中共用程序接续. Reviewer 运行层核对准确原根与回合, 合法最终 `ready` 状态及安全读取的非空绑定报告; 原生回合正常结束不单独证明整体任务完成. 缺失或空报告, 缺少合法最终状态以及可恢复的报告读取故障, 在必要输入, 原身份与副作用事实允许继续时由程序反馈具体不足并沿原线程接续同一任务. 已有完整报告时要求核对并交付合法状态, 不为取得状态重写报告. Reviewer 交付 `incomplete` 时不再接续, 本轮结束并交回所属 Main; 不从聊天措辞推断语义完成, 不由 Main 补造报告. 原生不可恢复故障, 用户取消或结束, 适用硬截止及无法可靠恢复的身份阻止接续; 未知工具副作用不自动重放. 提供方专用故障识别及预算许可仍由适用提供方程序交付, 不推广 Strata 专用策略.
+三个 Reviewer 角色在普通审核, Reviewer Capability 验证及基准执行中共用程序接续. Reviewer 运行层核对准确原根与回合, 合法最终 `ready` 状态及安全读取的非空绑定报告; 原生回合正常结束不单独证明整体任务完成. 缺失或空报告, 缺少合法最终状态以及可恢复的报告读取故障, 在必要输入, 原身份与副作用事实允许继续时由程序反馈具体不足并沿原线程接续同一任务. 已有完整报告时要求核对并交付合法状态, 不为取得状态重写报告. Reviewer 交付 `incomplete` 时不再接续, 本轮结束并交回所属 Main; 不从聊天措辞推断语义完成, 不由 Main 补造报告. 原生不可恢复故障, 用户取消或结束, 适用硬截止及无法可靠恢复的身份阻止接续; 未知工具副作用不自动重放. 提供方专用故障识别及预算许可仍由适用提供方程序交付, 不推广 Strata 专用策略.
 
 每个准确原根正常 `completed` 但未完整交付的回合只计一次提前结束; 工具或报告读取故障, 原生 `failed`, 中断及未知结束事实不计正常主动提前结束. 同一任务累计达到全局 `config.json.backgroundAgent.earlyExitNotificationThreshold` 时, 程序向所属 Main 排入一次普通消息通知并暂停原任务; 配置默认值及格式由[安装后台 Agent 配置规则](../agent-repository-workflow-installation/spec.md#background-agent-configuration)拥有, 不接受仓库覆盖. 此后每再累计 `5` 次正常提前结束都通知并暂停, 不设任务自动接续总次数上限. 当前暂停与该通知引用共同保存, 重复观察或重连不重复计数或生成同一次通知; 新审核任务才重置该任务的计数与暂停事实. 程序通知不是 Reviewer 向用户征求信息, Main 负责取得用户继续或结束的决定.
 
@@ -464,15 +465,15 @@ Reviewer 只取得授权输入, 在当前 Git 仓库内只写入准确绑定报�
 
 ### Model work time
 
-Reviewer 耗时只计算同一审核任务的工作时间. 原始墙钟仍为任务结束减任务开始, 工作时间是原始墙钟扣除实际停机, 休眠, 挂起或该任务未工作的区间; 重叠区间只扣一次. 程序依据原生任务状态与模型运行生命周期事实区分主动工作和暂停或睡眠, 不能只从 GPU 没有输出, 控制客户端断开或单次查询超时推断休眠. 本任务的正常工具执行和主动等待属于工作开销, 普通工具错误或正常原生回合结束本身也不构成停机或休眠. 原任务起点保持不变, 续做及恢复保留已累计的工作与不工作事实, 不在每个正常原生回合重新计时. 当前任务尚未结束时按当前观察计算已累计工作时间, 最终结束后以完整原始墙钟和去重后的扣除值确定结果. 提供方时限与任务平均速度共用这一工作计量, 不增加公开休眠命令, 用户开关, 独立时钟数据库或第二份起点.
+Reviewer 耗时只计算同一审核任务的工作时间. 原始墙钟仍为任务结束减任务开始, 工作时间是原始墙钟扣除实际停机, 休眠, 挂起或该任务未工作的区间; 重叠区间只扣一次. 程序依据原生任务状态与模型运行生命周期事实区分主动工作和暂停或睡眠, 不能只从 GPU 没有输出, 控制客户端断开或单次查询超时推断休眠. 本任务的正常工具执行和主动等待属于工作开销, 普通工具错误或正常原生回合结束本身也不构成停机或休眠. 原任务起点保持不变, 续做及恢复保留已累计的工作与不工作事实, 不在每个正常原生回合重新计时. 当前任务尚未结束时按当前观察计算已累计工作时间, 最终结束后以完整原始墙钟和去重后的扣除值确定结果. 提供方时限与读者推导的任务平均速度共用这一工作计量, 不增加公开休眠命令, 用户开关, 独立时钟数据库或第二份起点.
 
 不能准确取得停机, 休眠或暂停边界时, 程序结合最后可核实工作, 首次不可用或暂停, 实际退出及恢复工作等已有观察, 尽量准确估算累计不工作区间和工作时间, 不能只因某次失败调用未取得结束时间就放弃整体计量. 估算结果标为估算, 保留所用状态与生命周期观察, 可核实范围及采用依据, 与直接观测时间区分, 不把连接状态或未经核实的假设冒充暂停或退出. 同一任务恢复只需保存合并后的累计不工作时间, 当前尚未闭合的停机或休眠观察与必要估算依据, 与原任务计量记录一同保存, 不累计完整区间事件历史或复制 token 基线. 重复观察和同时存在的停机, 休眠或挂起原因不重复扣除同一区间, 恢复后按原任务连续累计. 原线程身份或任务连续性完全无法恢复时按实际失败处理, 不以时间估算掩盖身份丢失, 不把替代线程计作原任务.
 
-任务平均输入速度以实际新处理输入 token 为分子, 即原生总输入减去缓存输入; 缓存消耗独立保留展示. 任务平均输出速度以原生输出 token 为分子. 两者的共同分母是上述模型工作秒数, 即 `(任务结束 - 任务开始 - 合并后的累计不工作时间) / 1000`; 它包含正常工具执行和主动等待等工作开销, 不声称为模型推理阶段处理速度. 分母使用估算时, 派生速度同时标明估算及依据; 分子未知或分母不为正时不编造数值. 展示原始墙钟, 实际或估算的扣除值与工作时间, 使读者能够核对耗时和速度口径.
+计量结果不单独输出任务平均速度, 只提供推导所需的分量: `usage` 中的原生总输入 `inputTokens`, 缓存输入 `cachedInputTokens` 与原生输出 `outputTokens`, 以及 `workDuration` 中的工作时间, 是否估算和估算依据. 读者以 `(inputTokens - cachedInputTokens)` (实际新处理输入, 缓存消耗独立展示) 或 `outputTokens` 为分子, 以模型工作秒数 `(任务结束 - 任务开始 - 合并后的累计不工作时间) / 1000` 为分母得到任务平均输入或输出速度; 该分母包含正常工具执行和主动等待等工作开销, 不代表模型推理阶段处理速度. 分母为估算时, 派生速度沿用其估算标记与依据; 分子未知或分母不为正时不得出数值. 速度只是展示用的派生值, 只输出分量使读者能够核对原始墙钟, 实际或估算的扣除值, 工作时间和速度口径, 也不为同一事实保存第二份数值.
 
 ### Model phase measurement
 
-任务平均速度按 [模型工作时间](#model-work-time)计算; 模型输入与输出阶段速度只消费正常审核已经产生的原生事件, 按准确原线程及单个实际模型响应配对计数和已有时间观察, 形成标明依据的估算. 不把整任务或整原生回合当作一次模型请求. 通用原生 Adapter 提供已取得的线程, 响应身份, 事件时间与数字, Reviewer 计量消费这些事实, 不要求 Reviewer 模型生成计量报告. 不为计量增加 App Server 初始化, 网络请求, 模型调用, token 消耗或费用, 不接收或配置模型遥测导出, 不修改用户导出设置或外部模型安装.
+任务平均速度的分母是 [模型工作时间](#model-work-time); 模型输入与输出阶段速度只消费正常审核已经产生的原生事件, 按准确原线程及单个实际模型响应配对计数和已有时间观察, 形成标明依据的估算. 不把整任务或整原生回合当作一次模型请求. 通用原生 Adapter 提供已取得的线程, 响应身份, 事件时间与数字, Reviewer 计量消费这些事实, 不要求 Reviewer 模型生成计量报告. 不为计量增加 App Server 初始化, 网络请求, 模型调用, token 消耗或费用, 不接收或配置模型遥测导出, 不修改用户导出设置或外部模型安装.
 
 计数与时间必须来自同一响应的可核实观察, 重复事件按原生身份去重, 不把共享进程或全用户指标分配为单个 Reviewer. 只保留计量需要的数字, 来源, 估算依据及覆盖范围, 不保存完整事件载荷, 提示或工具输出, 不增加独立任务时钟或另一份用量基线. 事件缺失或无法可靠配对只影响对应计量及覆盖说明, 不终止合法审核; 分子未知, 阶段时间非正或身份不能匹配时保留对应未知和原因, 已知消耗不丢弃.
 
@@ -498,12 +499,15 @@ Engine 在当前 Main Agent 会话与 issue 的 `spec-readiness` 用途工作区
 
 Reviewer Request 保存行尾规范化为 LF 的准确审核对象内容. 计算审核对象身份时, 只在 `## Acceptance criteria` 内且 Markdown 围栏代码外, 把实际列表项开头任务列表标记的 `[x]` 与 `[X]` 规范化为 `[ ]`. 单纯改变这些完成状态或行尾表示不使身份变化; 其他内容变化仍会. Markdown 围栏代码块中的二级标题属于内容, 不划分这些章节. 请求摘要值继续绑定准确审核对象内容.
 
-Reviewer 先读取本轮固定的适用 Agent 指令完整副本, 再分两步审查:
+Reviewer 先读取本轮固定的适用 Agent 指令完整副本, 再按顺序审查:
 
-1. 对照交付结果和验收条件检查全部要求选择. 如果存在范围问题, 收集全部独立范围问题后结束审核.
-2. 要求全部通过后, 才用治理输入审查完整性, 一致性, 可实现性, 可验证性, 理由, ADR 和 Module Design 适用性.
+1. 检查治理输入的完整性, 记录每个缺失或未知事实.
+2. 对照交付结果和验收条件检查全部要求选择, 收集全部独立范围问题.
+3. 用治理输入审查一致性, 可实现性, 可验证性, 理由, ADR 和 Module Design 适用性.
 
-Agent 指令规范 Reviewer 的工作方式, 但不作为治理证据, 也不扩大审核对象. 审核对象只能证明 issue 选择范围, 不能证明设计质量. Reviewer 的 txt 草稿逐条写入发现的问题, 每条以 `- ` 开头并写明检查名, 位置, 影响和修正方向; 完整审核没有问题时, 草稿精确为 `No problems.`.
+前一步存在问题时继续后续步骤; 后续步骤在已报告缺陷下仍可判断的部分照常完成. 具体阶段与检查名由 Spec Readiness Reviewer Role 拥有.
+
+Agent 指令规范 Reviewer 的工作方式, 但不作为治理证据, 也不扩大审核对象. 审核对象只能证明 issue 选择范围, 不能证明设计质量. Reviewer 的 txt 草稿逐条写入发现的问题, 每条以 `- ` 开头并写明检查名, 位置, 缺陷和对就绪的影响, 不要求修正方向; 完整审核没有问题时, 草稿精确为 `No problems.`.
 
 Reviewer 在完成全部适用检查和绑定文件写入后单独返回完成状态. 一轮必须完成全部适用的已注册检查后再返回, 不因前一项检查已有问题而提前返回, 使一轮报出全部问题; 只有确实无法在某个已报告缺陷下判断的部分才留到下一轮, 并在报告中写明所依赖的缺陷. Main Agent 从准确绑定文件读取结论, 不从 `ready` 推断没有问题, 也不补写空草稿. 准备阶段创建的空文件只表示尚未交付结果; 如果 Reviewer 写错路径后返回 `ready`, 该空文件不能成为无问题证据.
 
@@ -564,11 +568,11 @@ Code Map 根目录额外接受准确一个末尾 `/`. `src` 与 `src/` 在任何
 
 `workflow update` 使用现有 Profile 与当前已安装的 Workflow Distribution 重新计算可更新内容. Repository Workflow Module 形成包含完整操作和准确字节的内部规范计划, 供事务, 状态重验和内部验证使用. CLI 不从终端文本恢复该计划, 也不把它的完整 JSON, 文件内容, `bytes`, base64, 锁文件内容或其他内部字段写入默认终端输出.
 
-交互式 `workflow update` 在请求最终确认前把计划显示为人类可读摘要. `workflow update --dry-run` 显示同一摘要后结束, 不写任何仓库字节或锁文件. 每项操作只显示操作类型和仓库相对路径. 存在问题时, 标准错误的每个条目只显示诊断代码和人类可读消息, 不序列化诊断对象. 没有操作且没有问题时, 两种命令向标准输出写入准确的 `No workflow updates needed.`. 交互式命令在摘要后请求确认, 并输出适用的取消结果或完成结果.
+交互式 `workflow update` 在请求最终确认前把计划显示为人类可读摘要. `workflow update --dry-run` 显示同一摘要后结束, 不写任何仓库字节或锁文件. 每项操作只显示操作类型和仓库相对路径. 存在问题时, 标准错误的每个条目显示阶段, 诊断代码, 适用的 `path`, `locator`, `platform` 定位字段和人类可读消息, 不序列化诊断对象. 没有操作且没有问题时, 两种命令向标准输出写入准确的 `No workflow updates needed.`. 交互式命令在摘要后请求确认, 并输出适用的取消结果或完成结果.
 
-显式使用 `workflow update --non-interactive` 且不同时使用 `--dry-run` 时, 命令不显示计划也不请求确认; 没有操作时输出 `No changes.`, 否则成功后输出 `Workflow update completed.`. 更新完成后 (非交互, 或交互式确认后) 若删除了已废弃字段, 另向标准输出写入一行准确的 `Removed deprecated fields from arw.config.json: <names>.`, `<names>` 以 `, ` 分隔. 命令不提供 `--json` 或其他机器可读公开输出模式. 上述更新摘要规则不用于 `workflow init`, `workflow verify` 或 `workflow remove`. `workflow verify` 只读验证锁文件, Profile, Managed Content, 仓库自有种子结构, 平台投影和已配置的 Code Map. `workflow remove` 按明确的 `retain | delete` 选择处理 `.arwignore`, Code Map 和混合 Agent 文档, 最后处理锁文件.
+显式使用 `workflow update --non-interactive` 且不同时使用 `--dry-run` 时, 命令不显示计划也不请求确认; 没有操作时输出 `No changes.`, 否则成功后输出 `Workflow update completed.`. 更新完成后 (非交互, 或交互式确认后) 若删除了已废弃字段, 另向标准输出写入一行准确的 `Removed deprecated fields from arw.config.json: <names>.`, `<names>` 以 `, ` 分隔. 命令不提供 `--json` 或其他机器可读公开输出模式. 上述更新摘要规则不用于 `workflow init`, `workflow verify` 或 `workflow remove`. `workflow verify` 只读验证锁文件, Profile, Managed Content, 仓库自有种子结构, 平台投影和已配置的 Code Map. `workflow remove` 按明确的 `retain | delete` 选择处理锁文件记录的仓库自有平台 Agent 配置, `.arwignore`, Code Map 和混合 Agent 文档, 最后处理锁文件.
 
-仓库根目录的 `arw.config.json` 由用户拥有, 格式使用 `configVersion: 2`. `workflow init` 和 `workflow update` 在同一计划与事务中验证配置并补入缺失的 `reviewers` 或角色对象, 四角色默认为空对象. 文件缺失时创建版本字段和四角色空覆盖对象; 已有用户字段与无关文本保留, 不复制全局模型设置. `workflow verify` 只读验证结构, 不持久补入默认值. Reviewer 字段格式及全局默认值由 [安装配置规格](../agent-repository-workflow-installation/spec.md#reviewer-configuration) 拥有, 仓库按字段覆盖全局, 空对象继承全局. 普通审核读取缺省只在内存中处理, 不写用户配置. 通用仓库配置责任维护一份已废弃字段列表, 当前只有 `languageChecks`: 读取与验证时忽略列表中的字段, `workflow update` 在同一计划与事务中删除它们, 保留其余文本, 并在更新结果中报告已删除的字段名.
+仓库根目录的 `arw.config.json` 由用户拥有, 格式使用 `configVersion: 2`. `workflow init` 和 `workflow update` 在同一计划与事务中验证配置并补入缺失的 `reviewers` 或角色对象, 三角色默认为空对象. 文件缺失时创建版本字段和三角色空覆盖对象; 已有用户字段与无关文本保留, 不复制全局模型设置. `workflow verify` 只读验证结构, 不持久补入默认值. Reviewer 字段格式及全局默认值由 [安装配置规格](../agent-repository-workflow-installation/spec.md#reviewer-configuration) 拥有, 仓库按字段覆盖全局, 空对象继承全局. 普通审核读取缺省只在内存中处理, 不写用户配置. 通用仓库配置责任维护一份已废弃字段列表, 当前只有 `languageChecks`: 读取与验证时忽略列表中的字段, `workflow update` 在同一计划与事务中删除它们, 保留其余文本, 并在更新结果中报告已删除的字段名.
 
 配置有效 Application 的仓库由 Application Leader 通过 Application Source Issue 协调 Module Repository 中的实施状态. 创建缺失的 Reviewer 覆盖配置不为 Application Member 推导或创建 Application 成员字段. 这些仓库配置生命周期操作不读取 `JIRA_ACCESS_TOKEN`, 不调用 JIRA, 也不检查配置远端, 当前分支或真实子模块. 通用仓库配置责任统一读取, 校验并形成运行上下文, 不支持其他版本, 也不做版本迁移; 删除已废弃字段不是版本迁移. Application 字段行为由 [Application 与 JIRA 长期规格](../agent-repository-workflow-application-jira/spec.md#repository-application-configuration) 拥有.
 
@@ -638,13 +642,13 @@ Document Terms 从仓库根目录发现术语表. 根 `CONTEXT-MAP.md` 存在时
 
 前置元数据, 代码, 链接目标, 已识别 HTML 结构和其他受支持的隐藏内容不参加术语匹配. 未写结束围栏的围栏代码块隐藏到所在容器或文档结尾, 不产生发现项. 其他已识别隐藏结构无法确定结束位置时, 在该结构的起始定位位置产生 `malformed-markdown`; 该文档不再解释术语定义或匹配术语, 其他文档继续检查. Markdown 可见文本解析还区分标题与正文文本流, 语言组成只分析正文文本流. 语言分析不重新解析 Markdown, 也不改变 Document Terms 对结构诊断的处理.
 
-每份 `CONTEXT.md` 定义中的准确拼写是该上下文的规范名称. 同一术语表内不区分 ASCII 大小写的重复, 或规范名称与任一避免名称之间的冲突, 都产生 `global-term-entry-invalid`; 条目顺序不影响有效性. 局部定义与适用上下文的任一规范名称或避免名称不区分 ASCII 大小写地相同时产生 `local-term-entry-invalid`. 不同长度的候选名称继续使用最长匹配, 名称继续只受既有定义语法约束, 不增加单独的字符语法或非阻断警告结果.
+每份 `CONTEXT.md` 定义中的准确拼写是该上下文的规范名称. 同一术语表内不区分 ASCII 大小写的重复, 或规范名称与任一避免名称之间的冲突, 都产生 `global-term-entry-invalid`; 条目顺序不影响有效性. 术语表存在任一 `global-terms-section-invalid` 或 `global-term-entry-invalid` 时, 该上下文的结果失败, 只报告术语表和局部术语章节与条目的语法发现项, 以及局部术语自身的拼写与使用次数发现项 (`term-spelling-invalid`, `local-term-use-insufficient`), 不执行上下文规范名称匹配, 局部名称与上下文名称的冲突判断和上下文名称保留检查; 修复术语表后重跑才得到其余发现项. 这样做是因为重复或冲突使规范名称本身不确定, 用部分有效的术语表匹配会产生误导性的拼写或避免名称发现项. 局部定义与适用上下文的任一规范名称或避免名称不区分 ASCII 大小写地相同时产生 `local-term-entry-invalid`. 不同长度的候选名称继续使用最长匹配, 名称继续只受既有定义语法约束, 不增加单独的字符语法或非阻断警告结果.
 
 规范名称与避免名称使用不同的文本匹配规则. 正向规范名称检查在全部可见位置不区分 ASCII 大小写地识别候选; 实际拼写与定义不同时产生 `term-spelling-invalid`. 负向避免名称检查也不区分 ASCII 大小写地识别候选, 但只在候选的实际文本把普通名称大写为术语时产生 `term-disallowed`. 负向候选按 ASCII 空白字符分成单词, 每个单词的第一个 ASCII 字母决定该单词是否大写. 候选不在句首时, 任一单词大写就命中. 候选位于句首时, 第一个单词的大写被豁免, 后续任一单词大写仍然命中; 因此单个单词拥有句首豁免, 多个单词没有整体句首豁免. 对负向检查, 句首是可见文字文本流的开头, 或 ASCII `.`, `?`, `!` 后只经过 ASCII 空白字符, `"`, `'`, `(`, `[`, `{` 的位置. 正向检查不应用句首豁免.
 
 `immediate` 与 `release` 请求都统计实际规范名称使用, 并检查定义语法, 规范拼写, 避免名称和局部名称保留条件. 每个有效局部名称必须在自己的定义条目之外至少使用 2 次. 只有 `release` 请求检查上下文名称保留条件. 名称保留判断从本次完整受检集合排除仓库相对路径准确为 `CONTEXT.md` 或 `CONTEXT-MAP.md`, 以及以 `/CONTEXT.md` 或 `/CONTEXT-MAP.md` 结尾的文件. 每个上下文名称必须在其余至少 2 份受检文档中合计至少有 5 次定义外使用, 且每份计入文档至少有 1 次使用. `immediate` 仍返回实际使用次数, 但不产生 `global-term-use-insufficient`.
 
-Document Repository 对一次检查只观察一次完整 Git 可见的路径清单, `.arwignore`, 发现来源和全部上下文所需 Markdown 字节. 仓库打开, 清单或完整批次失败产生唯一顶层 `repository-read-failed`, 不返回部分上下文; `.arwignore` 无效时也返回顶层失败. 纳入目录验证失败时, 顶层诊断信息收集完整纳入目录集合中的全部发现项. 不存在的目录产生 `include-directory-missing`; 普通文件, 符号链接, 不可读目录或其他不支持条目产生 `include-directory-unsupported`; 不属于任何上下文的目录产生 `include-directory-outside-context`. 每项使用规范仓库相对目录作为 `path`. 任一纳入目录发现项都阻止全部上下文结果并返回失败. 单个上下文来源或作用域内单份 Markdown 的 `missing | symbolic-link | unreadable | unsupported` 封闭条目只产生该上下文的来源发现项, 并继续其他上下文. 重叠作用域中的同一条目分别进入每个适用结果. 修复来源后完整重跑, 不恢复或复用部分结果.
+Document Repository 对一次检查只观察一次完整 Git 可见的路径清单与 `.arwignore`. Markdown 字节按需分批读取: 先读取受检 Markdown 与发现来源, map 指向的其他 `CONTEXT.md` 再补读一次; 工作树在两批读取之间被修改的极少见情形不额外防护, 修改后重跑即可. 仓库打开, 清单或完整批次失败产生唯一顶层 `repository-read-failed`, 不返回部分上下文; `.arwignore` 无效时也返回顶层失败. 纳入目录验证失败时, 顶层诊断信息收集完整纳入目录集合中的全部发现项. 不存在的目录产生 `include-directory-missing`; 普通文件, 符号链接, 不可读目录或其他不支持条目产生 `include-directory-unsupported`; 不属于任何上下文的目录产生 `include-directory-outside-context`. 每项使用规范仓库相对目录作为 `path`. 任一纳入目录发现项都阻止全部上下文结果并返回失败. 单个上下文来源或作用域内单份 Markdown 的 `missing | symbolic-link | unreadable | unsupported` 封闭条目只产生该上下文的来源发现项, 并继续其他上下文. 重叠作用域中的同一条目分别进入每个适用结果. 修复来源后完整重跑, 不恢复或复用部分结果.
 
 单上下文通过时术语摘要准确为 `Document terms check passed. Documents: <N>; global terms: <N>; local terms: <N>; uses: <N>.`; 术语失败时不输出该摘要. 多上下文按 map 声明顺序串行呈现. 通过项摘要准确为 `Document terms check passed. Context: <JSON context path>; Documents: <N>; global terms: <N>; local terms: <N>; uses: <N>.`; 失败项摘要准确为 `Document terms check failed. Context: <JSON context path>; Diagnostics: <N>; Documents: <N>; global terms: <N>; local terms: <N>; uses: <N>.`. 某项失败不阻止后续项. 多上下文不输出最终术语摘要, 上下文总数或跨上下文诊断信息总数.
 
@@ -686,9 +690,9 @@ Main Agent 或用户负责语义决定. 独立 Reviewer 只返回结果. Module 
 
 `Temporary Workspace Module` 验证主机 Platform Adapter 提供的平台与会话身份, 从当前 Git 仓库根目录, 可选 issue ID 和用途创建 `.tmp/` 规范目录. 它不猜测身份, 不自动清理, 不创建锁文件, 不选择或启动后台 Agent.
 
-后台 Agent 管理 Module 是当前用户唯一持续驻留的非模型进程, 拥有单个 ARW 专用共享 App Server 的启动与各根线程的独立运行, 原线程恢复, 指示, 原生入站请求转交与准确答复, 消息转交, SQLite 保存, 最近消息查询与到期清理, 进程生命周期, 提供方和全局容量及 Strata 独占权. 它协调客户端断开后的运行, 名额预留, 空闲回收, 故障核对和同一原生线程的独占运行, 提供绑定准确线程与回合的通用占用保护, 并向 Reviewer 运行层提供后台终端操作与退出事实, 只读取所属 Main 的原生会话记录以取得列表标题; 不解释四个 Reviewer Role, 报告绑定, 审核完成与持久化流程, 禁止协作或 Reviewer 的审批政策. 机器入口只转接现有 JSONL 操作并做本机鉴权, 不因客户端退出而关闭管理进程. 通用原生 Adapter 为 [模型阶段计量](#model-phase-measurement)提供正常审核已有事件的线程, 响应, 时间及数值观察, 不取得审核或评分权威.
+后台 Agent 管理 Module 是当前用户唯一持续驻留的非模型进程, 拥有单个 ARW 专用共享 App Server 的启动与各根线程的独立运行, 原线程恢复, 指示, 原生入站请求转交与准确答复, 消息转交, SQLite 保存, 最近消息查询与到期清理, 进程生命周期, 提供方和全局容量及 Strata 独占权. 它协调客户端断开后的运行, 名额预留, 空闲回收, 故障核对和同一原生线程的独占运行, 提供绑定准确线程与回合的通用占用保护, 并向 Reviewer 运行层提供后台终端操作与退出事实, 只读取所属 Main 的原生会话记录以取得列表标题; 不解释三个 Reviewer Role, 报告绑定, 审核完成与持久化流程, 禁止协作或 Reviewer 的审批政策. 机器入口只转接现有 JSONL 操作并做本机鉴权, 不因客户端退出而关闭管理进程. 通用原生 Adapter 为 [模型阶段计量](#model-phase-measurement)提供正常审核已有事件的线程, 响应, 时间及数值观察, 不取得审核或评分权威.
 
-共享 Reviewer 运行 Module 消费后台 Agent 管理 Module 的通用控制能力, 拥有四角色身份与设置合成, 单 Reviewer 运行事实核对, 整体任务结束后的后台终端收尾请求, 绑定报告完整性验证, 公共任务接续及提前结束计数与暂停协调, 本轮结果持久化与交接, 失败状态和同回合修复重查, 以及该线程的计量. 它在交接与持久化完成后释放通用占用保护. 它服务普通四角色审核及验证调用, 不重复保存进度消息, 不拥有审核语义, 场景构建, 评分, 正式结果提升或 Git 写入. 临时路径由调用方准备, 本 Module 不替代 Temporary Workspace 的身份与范围政策.
+共享 Reviewer 运行 Module 消费后台 Agent 管理 Module 的通用控制能力, 拥有三角色身份与设置合成, 单 Reviewer 运行事实核对, 整体任务结束后的后台终端收尾请求, 绑定报告完整性验证, 公共任务接续及提前结束计数与暂停协调, 本轮结果持久化与交接, 失败状态和同回合修复重查, 以及该线程的计量. 它在交接与持久化完成后释放通用占用保护. 它服务普通三角色审核及验证调用, 不重复保存进度消息, 不拥有审核语义, 场景构建, 评分, 正式结果提升或 Git 写入. 临时路径由调用方准备, 本 Module 不替代 Temporary Workspace 的身份与范围政策.
 
 `Spec Readiness Module` 拥有准备, Reviewer Request, 草稿绑定, 生成, 提升和特定 issue 验证. 它机械验证身份, 字节, 摘要, 结构, 路径与证据, 不判断开放语义, 原生会话控制由共享 Reviewer 运行责任承担.
 
@@ -716,13 +720,13 @@ Repository Workflow 提示 Interface 是 `prompt(question) -> Promise<answer>`. 
 
 Profile 规范化返回完整规范 Profile 或验证诊断. 无效结果不包含部分 Profile, 不使用用户提供的根目录开始观察当前 Git 仓库, 不建立应用计划.
 
-`Repository Workflow Module` 的 `init`, `update`, `verify` 和 `remove` Interface 由 [Repository Workflow](#repository-workflow) 章节完整拥有, 本节不重复各操作的生命周期. 结果区分成功, 阻断和失败, 并返回稳定诊断, 计划或影响. 无效调用同步抛出 `TypeError`. CLI 不重新读取文件系统以推断更有利的结果.
+`Repository Workflow Module` 的 `init`, `update`, `verify` 和 `remove` Interface 由 [Repository Workflow](#repository-workflow) 章节完整拥有, 本节不重复各操作的生命周期. 结果区分成功, 阻断和失败, 并返回稳定诊断, 计划或影响. 调用方是仓库内的 CLI, 只传入已解析的操作和选项; 操作名不在 `init`, `update`, `verify`, `remove` 之内时抛出 `TypeError`, 其余调用形状不另行校验. CLI 不重新读取文件系统以推断更有利的结果.
 
 Document Repository Interface 只包含 `listPaths() -> Promise<string[]>` 和 `readEntries(paths) -> Promise<DocumentEntry[]>`. `listPaths()` 返回稳定排序且无重复的规范仓库相对路径. `readEntries(paths)` 只接受排序且无重复的路径, 返回数量相同且保持请求顺序的封闭条目. 普通文件条目包含准确 `path`, Git 模式和 `bytes`; 其他条目只把该路径分类为 `missing | symbolic-link | unreadable | unsupported`. Adapter 无法形成完整清单或完整请求结果时抛出异常, Document Terms Module 把它转换为现有关闭式结果, 不从部分条目继续分析.
 
-产品公开的 `checkDocumentTerms(...)` 接受绝对 `repositoryRoot` 和封闭请求. 合法请求使用 `{mode: "immediate", source: {kind: "working-tree"}}`, `{mode: "release", source: {kind: "working-tree"}}` 或 `{mode: "release", source: {candidateTree, kind: "candidate-tree"}}`; 每种请求都可以增加可选 `include` 目录数组, 省略与空数组等价. `candidateTree` 是规范完整 Git 树对象 ID. `mode: "immediate"` 与候选树的组合无效. Document Terms Module 对合法请求只打开一个与 `{repositoryRoot, request}` 绑定的完整 Document Repository. 有效结果准确包含 `{contexts, diagnostics, source, status}`, 其中结果 `source` 是已验证请求的独立副本. 顶层 `diagnostics` 只保存仓库, `.arwignore`, 术语表发现, map 或纳入目录级发现项. `contexts` 按 map 声明顺序排列, 每项准确包含 `{context, diagnostics, status, summary}`; `context` 是规范仓库相对 `CONTEXT.md` 路径, `summary` 准确包含 `{diagnostics, documents, globalTerms, localTerms, uses}`. 顶层 `status` 只在顶层或任一上下文有发现项时为 `failed`. 根 `CONTEXT-MAP.md` 和 `CONTEXT.md` 同时缺失时返回空 `contexts`, `status: "passed"` 且没有诊断信息. 模式, 来源与纳入目录选择不成为用户配置或持久状态; CLI 只能选择工作树来源.
+产品公开的 `checkDocumentTerms(...)` 接受绝对 `repositoryRoot` 和请求. 请求使用 `{mode: "immediate", source: {kind: "working-tree"}}`, `{mode: "release", source: {kind: "working-tree"}}` 或 `{mode: "release", source: {candidateTree, kind: "candidate-tree"}}`; 每种请求都可以增加可选 `include` 目录数组, 省略与空数组等价. `candidateTree` 是规范完整 Git 树对象 ID. 调用方只构造上述组合, 模块不另行校验请求形状或树对象 ID. Document Terms Module 对每个请求只打开一个与 `{repositoryRoot, request}` 绑定的完整 Document Repository. 有效结果准确包含 `{contexts, diagnostics, source, status}`, 其中结果 `source` 是请求 `source` 的独立副本. 顶层 `diagnostics` 只保存仓库, `.arwignore`, 术语表发现, map 或纳入目录级发现项. `contexts` 按 map 声明顺序排列, 每项准确包含 `{context, diagnostics, status, summary}`; `context` 是规范仓库相对 `CONTEXT.md` 路径, `summary` 准确包含 `{diagnostics, documents, globalTerms, localTerms, uses}`. 顶层 `status` 只在顶层或任一上下文有发现项时为 `failed`. 根 `CONTEXT-MAP.md` 和 `CONTEXT.md` 同时缺失时返回空 `contexts`, `status: "passed"` 且没有诊断信息. 模式, 来源与纳入目录选择不成为用户配置或持久状态; CLI 只能选择工作树来源.
 
-Agent CLI Launch Module 返回 `{kind: "exited", exitCode}` 或 `{kind: "failed", code, message}`. 公开 CLI 保留子进程退出码或映射稳定失败.
+Agent CLI Launch Module 返回 `{kind: "exited", exitCode}` 或 `{kind: "failed", reason}`, `reason` 是 `spawn-failed` 或 `missing-exit-code`. 公开 CLI 保留子进程退出码, 或按 `reason` 输出稳定失败消息.
 
 后台 Agent 管理 Interface 承担 [Machine entry](#machine-entry) 的六项协作操作及 `unload_agent`, `messages`, `respond` 和 [Capacity and recovery](#capacity-and-recovery) 的提供方与全局容量结果. `spawn_agent` 先返回准确运行标识, 恢复位置和内存接受的首次消息编号; 原生线程与回合身份由后续 `list_agents` 或 `wait_agent` 取得. `followup_task` 分派新工作, 必要时由管理进程内部恢复准确原线程; `send_message` 双向排入消息, 对普通空闲 Agent 不唤醒; 对[阈值暂停的 Reviewer 原任务](#reviewer-task-continuation), 所属 Main 普通工作消息解除暂停并恢复同一任务, 两个方向都在完整回执中返回管理进程接受时创建的消息编号. `respond` 只对允许人工交互的角色把所属 Main 取得的合法决定送回准确待处理请求; 管理进程按角色绑定策略处理请求, Reviewer 专属层提供拒绝策略. 查询不启动 App Server, `wait_agent` 收到更新便返回; `messages` 按通信合同查询短预览, 编号与状态. 满额且没有可安全回收环境时返回容量不足, 客户端断线不改变已接受任务的运行身份. 运行事实不确定时返回明确未知或失败, 不以旧进程 ID 推断存活和释放名额.
 
@@ -818,7 +822,7 @@ flowchart TD
 | Git 暂存区及 HEAD | 当前准确提交候选和比较来源 | Commit Audit, 提交流程 | 用户和 Main Agent 的 Git 流程; 审计旧轮完整结束前保持不变 |
 | 不可变 Git 对象与本轮完整输入副本 | Code Review 启动时固定的完整候选, 代码上下文, 治理来源和执行规则 | Gate 3 的独立双轴审核 | Main Agent 在启动前固定, 源工作树后续修改不替换本轮内容 |
 | 当前完整角色规则, 模型与提供方设置, 授权输入和报告绑定 | 角色与共同责任拥有审核行为, 调用工作流拥有本轮输入和授权范围 | 共享 Reviewer 运行 Module, 独立运行环境中的 Reviewer | 调用方先准备并冻结, Reviewer 亲自写入绑定报告, 运行入口不代写或提升 |
-| 调用方工作区 `.tmp` 下的运行恢复记录 (`background-agent-<runId>.json`) | 管理进程为准确运行保存的绑定副本, 与用户私有状态中的恢复事实一致才允许回收和恢复 | 后台 Agent 管理 Module 的回收与恢复核验 | 管理进程在首次保存线程身份时写入, `newThread: true` 创建替代线程时同样由管理进程改写; 工作区删除方负责先卸载引用它的运行 |
+| 调用方 `stateDirectory` 下的运行恢复记录 (`background-agent-<runId>.json`; 该目录位于 `cwd` 之下, Reviewer 轮次使用工作区 `.tmp` 下的轮次目录) | 管理进程为准确运行保存的绑定副本, 与用户私有状态中的恢复事实一致才允许回收和恢复 | 后台 Agent 管理 Module 的回收与恢复核验 | 管理进程在首次保存线程身份时写入, `newThread: true` 创建替代线程时同样由管理进程改写; 工作区删除方负责先卸载引用它的运行 |
 | 原生线程身份, 实际上下文和累计用量 | Codex App Server 与原生会话事实 | 后台 Agent 管理 Module 控制原线程, 共享 Reviewer 运行 Module 核对本轮没有子 Agent 参与并计量该线程 | 恢复沿原身份继续观测和去重; 无法核对必要事实或违规时拒绝 Reviewer 结果; 未知计量保留未知 |
 | Claude Code 与 Codex 的 Main 原生会话记录 (`CODEX_HOME` 的 `sessions`) | 所属 Main 的原生标题与首条用户消息 | 后台 Agent 管理 Module 在环境打开时的标题读取 (结果保存供列表显示) | 对应平台; ARW 只读, 读不到时标题未知 |
 

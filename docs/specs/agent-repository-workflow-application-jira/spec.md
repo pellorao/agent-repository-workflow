@@ -96,6 +96,7 @@ Application Leader 仍可修改 Application spec, 在 Application Repository 中
 | 路径 | 必需 | 默认值 |
 | --- | --- | --- |
 | `configVersion` | true | `2` |
+| `reviewers` | false | - |
 | `application` | false | - |
 | `application.name` | true | - |
 | `application.submoduleRemote` | true | `"origin"` |
@@ -109,7 +110,7 @@ Application Leader 仍可修改 Application spec, 在 Application Repository 中
 | `application.jira.acceptedStatus` | true | `"需求开发中"` |
 | `application.jira.completedStatus` | true | `"上线成功"` |
 
-`application` 是可以不存在且没有默认值的父路径. 它不存在时, 全部后代都不活动, 仓库是 Application Member. 它存在时, 后代的 `required: true` 要求字段在来源配置中实际存在; 默认值不修复缺失的必需来源字段. `modules` 作为数组叶字段处理, 条目的名称/路径结构由 v2 验证器检查. `application.jira` 是父路径, 没有自己的默认值.
+`reviewers` 的字段格式由 [安装配置规格](../agent-repository-workflow-installation/spec.md#reviewer-configuration) 拥有, 本表只声明它在规则对象中的位置. `application` 是可以不存在且没有默认值的父路径. 它不存在时, 全部后代都不活动, 仓库是 Application Member. 它存在时, 后代的 `required: true` 要求字段在来源配置中实际存在; 默认值不修复缺失的必需来源字段. `modules` 作为数组叶字段处理, 条目的名称/路径结构由 v2 验证器检查. `application.jira` 是父路径, 没有自己的默认值.
 
 只接受 v2, 其他版本明确失败, 不提供版本转换. v2 验证器是 Application 字段类型, Module 条目, 名称/路径, URL 和准确 JIRA 字串约束的唯一权威. 字段路径, 默认值, 顺序和转换静态一致性由通用仓库配置模块负责.
 
@@ -158,7 +159,7 @@ Engine 安装目录的全局 `config.json` 保存 JIRA 列表显示限制:
 
 `arw jira open` 不调用 REST, 不需要令牌. 其他 JIRA 命令在令牌缺失时于网络请求前失败. ARW 不读取操作系统凭据存储, 不提供用户名密码或 Basic 认证模式.
 
-每个 REST 请求的超时是 10 秒. ARW 不自动重试. 重定向不得继续携带令牌, 并作为请求失败处理.
+每个 REST 请求使用 10 秒的连接空闲超时: 10 秒内没有任何数据往来时请求失败, 持续返回数据的慢速响应不设总时限. ARW 不自动重试. 重定向不得继续携带令牌, 并作为请求失败处理.
 
 安全错误提供请求方法, 相对端点, HTTP 状态, JIRA `errorMessages` 与 `errors`. 它不输出令牌, Authorization 请求头, 完整请求头或原始 HTML 响应.
 
@@ -243,7 +244,7 @@ otherFields
 
 核心标量缺失时为 `null`, 核心集合缺失时为空数组. `project` 是 `{key, name}`. `issueType`, `status` 和存在的 `priority` 都是 JIRA 返回的名称字符串, 缺失的 `priority` 为 `null`. `customFields` 与 `otherFields` 只输出非空字段, 其中 `null`, 空字符串, 空数组和空对象都是空值, `0` 与 `false` 不是空值. 两个集合按字段 ID 排序, 条目形状为 `{id, name, value}`.
 
-JIRA 用户统一表示为 `{key, name, displayName}`. 报告人 `reporter`, 经办人 `assignee`, 评论作者, 附件作者, 以及 `otherFields` 中被 JIRA 结构标记为 `user` 的值都使用该结构. `labels`, `components` 与 `fixVersions` 输出排序后的字符串数组. `created` 和 `updated` 保留 JIRA 返回的准确日期字符串. 说明 `description` 与评论正文 `body` 保留 JIRA 返回的原始文本作为 JSON 字符串, 不把 JIRA 的维基标记转成 Markdown.
+JIRA 用户统一表示为 `{key, name, displayName}`. 报告人 `reporter`, 经办人 `assignee`, 评论作者, 附件作者, 以及附加字段 (`customFields` 与 `otherFields`) 中被 JIRA 结构标记为 `user` 的值都使用该结构. `labels`, `components` 与 `fixVersions` 输出排序后的字符串数组. `created` 和 `updated` 保留 JIRA 返回的准确日期字符串. 说明 `description` 与评论正文 `body` 保留 JIRA 返回的原始文本作为 JSON 字符串, 不把 JIRA 的维基标记转成 Markdown.
 
 评论读取全部分页, 按 `created` 和 JIRA 评论 ID 升序排序, 只输出 `author`, `body` 与 `created`. 附件集合 `attachments` 只输出 `id`, `filename`, `mimeType`, `size`, `created`, `author`, `contentUrl` 和 `thumbnailUrl`, 不下载内容; 缺失缩略图时使用 `null`. 链接集合 `links` 输出 `id`, `type`, `direction`, `relationship`, 以及关联 issue 的键, URL, `summary` 和状态, 并按关联 issue 键, 再按链接 ID 排序. `print` 不请求变更历史 `changelog`.
 
@@ -376,7 +377,7 @@ arw module check-correction <local-module-issue-id>
 
 命令直接比较 `HEAD` blob 与文件系统中的当前文件字节. 它不把暂存区作为比较版本, 不要求暂存区等于 `HEAD`, 也不因目标 issue 或 spec 已有已暂存修改而失败. 工作树文件同时包含已暂存和未暂存修改形成的当前事实. 命令不写文件, 不生成候选, 不运行 File Transaction Module, 不运行 `git add`, 也不承担后续差异审核或暂存.
 
-软锁是 Module issue 的 `## What to build`, `## Spec Requirement`, `## Acceptance criteria`, `## Blocked by` 和适用本地 spec 的完整内容. 计算 `## Acceptance criteria` 变化时, 只在 Markdown 围栏代码外把实际任务列表项开头的 `[x]` 与 `[X]` 规范为 `[ ]`; 单纯复选框完成状态变化不构成软锁变化. 硬锁只有准确的 `Application source issue:` 关联字段. 命令不为其余 issue 内容建立允许列表, 因而普通状态, 验证, 评论和其他实施内容可以在同一工作树中变化.
+软锁是 Module issue 的 `## What to build`, `## Spec Requirement`, `## Acceptance criteria`, `## Blocked by` 和适用本地 spec 的完整内容. 计算 `## Acceptance criteria` 变化时, 只在 Markdown 围栏代码外把缩进不超过 3 个空格的无序任务列表项开头的 `[x]` 与 `[X]` 规范为 `[ ]` (嵌套或有序列表中的任务项不规范化, 其复选框变化计为软锁变化); 单纯复选框完成状态变化不构成软锁变化. 硬锁只有准确的 `Application source issue:` 关联字段. 命令不为其余 issue 内容建立允许列表, 因而普通状态, 验证, 评论和其他实施内容可以在同一工作树中变化.
 
 成功要求同时满足:
 
@@ -467,13 +468,13 @@ Downstream Changes Document Interface 新增的稳定诊断信息代码是 `down
 
 Downstream changes 只通知 Application 当前仍有效的下游修正. 同步不根据这些条目创作或修改 Application spec, `## What to build`, `## Spec Requirement`, `## Acceptance criteria`, `## Blocked by` 或关联, 也不把它们加入 JIRA 接收或完成资格. Application Leader 读取同步结果后另行决定是否建立上层工作.
 
-Application Sync Module 在内存中解析全部关联 Module 和 Application 来源 issue, 聚合全部诊断信息后才返回替换内容. 任一双向关联不匹配, 重复映射, 重复或位置错误的子章节, 不安全列表或 issue 解析阻断问题都返回 `blocked` 和零替换内容. 诊断信息按 `path ?? ""`, `code`, `message` 的升序稳定排列. 成功替换内容按 Application 路径排序, 同时反映需要变化的状态和 Downstream changes; 两者都未变化的 issue 不产生替换内容.
+Application Sync Module 在内存中解析全部关联 Module 和 Application 来源 issue, 聚合全部诊断信息后才返回替换内容. 任一双向关联不匹配, 重复映射, 关联 Module issue 仍有非终态本地阻断项 (`application-module-blocked`), 重复或位置错误的子章节, 不安全列表或 issue 解析阻断问题都返回 `blocked` 和零替换内容. 各仓库 issue 清单本身的解析诊断由 Application CLI 在调用本 Module 前报告: CLI 先检查 Application Repository, 再按配置顺序检查各 Module, 在第一个有解析诊断的仓库处输出其诊断并停止. 诊断信息按 `path ?? ""`, `code`, `message` 的升序稳定排列. 成功替换内容按 Application 路径排序, 同时反映需要变化的状态和 Downstream changes; 两者都未变化的 issue 不产生替换内容.
 
 Submodule Coordination 把每个 Module 工作树收敛到该 Module 的远端末端, 因而 Application Repository 观察到对应 Module HEAD 的 gitlink 变化. 这些已经完成的 Module HEAD 变化不属于 Application 文件事务, 后续 Module 失败时与已经完成的拉取一起保留.
 
 Application 文件写入按以下顺序进行:
 
-1. 全部 Module 收敛后, Application CLI 要求每个 Application Source Issue 的工作树字节等于该路径的暂存区字节. 暂存区字节同时作为每个替换操作的预期状态和恢复基线.
+1. Application CLI 在开始 Module 收敛前要求每个 Application Source Issue 的工作树字节等于该路径的暂存区字节, 使 Application 侧未暂存修改在任何 Module 快进之前就失败. 暂存区字节同时作为每个替换操作的预期状态和恢复基线.
 2. 在任何写入前形成全部替换操作, 调用 File Transaction Module 完成全量写入前检查.
 3. 一次应用全部操作. 写入前检查或应用时状态重验存在阻断问题时, 保证零 Application 写入.
 
@@ -600,7 +601,7 @@ JIRA synchronization: issue=P20274-123 phase=accepted comment=created status=tra
 
 - 通用仓库配置模块解析并验证仓库 `arw.config.json`, 产生 Application Member 或完整 Application Leader 上下文. 它也导出该配置格式的版本规则.
 - JIRA Client Module 负责安全 REST 请求, 超时, 错误规范化, 分页, issue 详情规范化, 评论查找和状态转换发现. 它不读取 Git 或跟踪器.
-- JIRA Presentation Module 把 `list` 与 `print` 的规范值转换为准确标准输出字节. 它不发网络请求.
+- JIRA Presentation Module 把 `list` 的规范值转换为准确标准输出字节. 它不发网络请求. `print` 的输出是规范值的 JSON 序列化, 由 CLI 直接写出.
 - Application Association Module 解释 Application Repository 中的 issue, Module issue 和阻断项投射, 并生成全部相关替换字节.
 - Submodule Coordination Module 负责分支写入前检查, 切换回滚, 远端获取, 快进收敛与作为 Application gitlink 的权威值的每个最终 Module HEAD. 它不解释 issue 状态.
 - Module Correction Check Module 接受同一个已关联 Module issue 的 `HEAD` 与工作树快照, 以及同 effort 已跟踪 spec 的可选快照对, 只读判断软锁, 硬锁和 Downstream changes 的机械条件.
@@ -620,17 +621,17 @@ JIRA List Interface 接受完整 Application JIRA 政策与数量限制, 成功�
 
 Association Interface 接受 Application Repository 中的 issue 快照, 目标 Module issue 快照, 以及可能受阻断项规范化影响的全部未提交 issue 快照. 成功返回按仓库和路径分组的完整替换内容. 关联不匹配, 终态, 无效阻断项投射或其他语义阻断问题返回 `blocked`, 完整诊断信息且没有替换内容. 该纯 Interface 不读写文件. `application associate` 只把成功的完整替换内容交给公共 File Transaction Module; 事务失败和逐仓库恢复结果由该事务与命令调用方报告, 不把 I/O 失败伪装成 Association 阻断问题.
 
-Submodule Switch Interface 接受配置 Module 集合与目标分支. 全体写入前检查阻断问题返回 `blocked`, 零切换和当时观察到的完整 `finalStates`. 成功返回全部 `finalStates` 和每个 Module 的 `changed`. 实际切换失败返回 `failed`, `stage: "switch" | "recovery"`, 全部最终分支/HEAD, 以及按反向恢复顺序排列的 `{module, status: "restored" | "failed"}` 恢复结果; 它不把恢复失败声明为原子成功.
+Submodule Switch Interface 接受配置 Module 集合与目标分支. 全体写入前检查阻断问题返回 `blocked`, 零切换和当时观察到的完整 `finalStates`. 成功返回全部 `finalStates` 和每个 Module 的 `changed`. 写入前观察 Module 状态失败返回 `failed`, `stage: "preflight"`, 零切换和当时观察到的最终状态. 实际切换失败返回 `failed`, `stage: "switch" | "recovery"`, 全部最终分支/HEAD, 以及按反向恢复顺序排列的 `{module, status: "restored" | "failed"}` 恢复结果; 它不把恢复失败声明为原子成功.
 
-Remote Convergence Interface 接受配置 Module 集合, 远端与分支. 清洁状态, 分支, 超前或分叉阻断问题返回 `blocked`, 不改变 Module 工作树, 并返回完整最终状态. 只有全部 Module 最终等于远端末端时, 成功才返回可供 Application Sync 消费的快照, 最终状态和按配置顺序排列的 `{module, action: "unchanged" | "fast-forwarded"}` 影响. 获取, 拉取或最终等值验证失败返回 `failed`, `stage: "fetch" | "fast-forward" | "final-verification"`, 全部最终状态和已经完成的影响; 之前已完成的快进保留且不得从结果中隐藏.
+Remote Convergence Interface 接受配置 Module 集合, 远端与分支. 清洁状态, 分支, 超前或分叉阻断问题返回 `blocked`, 不改变 Module 工作树, 并返回完整最终状态. 写入前观察 Module 状态失败返回 `failed`, `stage: "preflight"`, 不改变 Module 工作树. 只有全部 Module 最终等于远端末端时, 成功才返回快照, 最终状态和按配置顺序排列的 `{module, action: "unchanged" | "fast-forwarded"}` 影响. 获取, 拉取或最终等值验证失败返回 `failed`, `stage: "fetch" | "fast-forward" | "final-verification"`; 获取后观察远端分支或判断提交关系失败同样记为 `final-verification`. 失败结果都包含全部最终状态和已经完成的影响; 之前已完成的快进保留且不得从结果中隐藏.
 
 Downstream Changes Document Interface 接受一个完整 issue UTF-8 文本. 读取操作返回缺失, 为空或按来源顺序保存的完整实际条目; 替换内容操作接受规范 LF 条目内容, 在唯一 Comments 末尾替换或插入唯一子章节, 并返回完整 issue 字节. 它使用本文的严格列表语法, 保留受管理子章节外的字节, 对重复 Comments, 重复或位置错误的子章节, 哨兵值混用和不安全条目边界返回 `blocked` 与完整诊断信息, 不返回部分条目或字节. 无效参数形状抛出 `TypeError`; 该纯 Interface 不返回 `failed`.
 
 Module Correction Check Module Interface 接受同一 issue 身份的 `HEAD` 与工作树快照, 以及可选的同 effort 已跟踪 spec 对. `succeeded` 只返回空诊断信息, 不返回替换内容. Association 硬锁变化, 无有效软锁变化, Downstream changes 未变化, 缺失实际条目或文档结构无效时返回 `blocked` 与按本文固定类别排序的完整诊断信息. 该纯 Interface 不读取 Git, 文件系统或暂存区, 不解析自然语言授权, 也不返回 `failed`.
 
-Application Sync Interface 接受 Application 快照和包含最终 Module HEAD 的已收敛 Module 快照. 成功返回按路径排序的完整 Application Source Issue 替换内容, 每个替换内容同时包含需要镜像的状态与 Downstream changes, 不复制或生成 gitlink 值, 也不直接暂存. gitlink 变化已由 Submodule Coordination 对 Module 工作树的收敛形成. 关联不匹配, 解析失败, 不安全的 Downstream changes 或重复映射返回 `blocked`, 按 `path ?? ""`, `code`, `message` 排序的完整诊断信息, 且没有任何替换内容.
+Application Sync Interface 接受 Application issue 快照和 Module issue 快照. Application CLI 在 Remote Convergence 成功后从 Module 工作树读取 Module issue 快照, 此时每个工作树都等于收敛后的最终 HEAD, 因此不另外传入 HEAD. 成功返回按路径排序的完整 Application Source Issue 替换内容, 每个替换内容同时包含需要镜像的状态与 Downstream changes, 不复制或生成 gitlink 值, 也不直接暂存. gitlink 变化已由 Submodule Coordination 对 Module 工作树的收敛形成. 关联不匹配, 解析失败, 不安全的 Downstream changes 或重复映射返回 `blocked`, 按 `path ?? ""`, `code`, `message` 排序的完整诊断信息, 且没有任何替换内容.
 
-Application Completion Interface 接受已提交配置, spec 与 issue. 成功返回接收与完成资格, JIRA 键, Application 名称和 spec Canonical ID. 不完整 effort 是成功的 `eligible: false` 判断, 不是 Interface 失败. 无效已提交输入返回 `blocked`. 该 Interface 不读取状态转换.
+Application Completion Interface 接受已提交配置, spec 与 issue. 成功返回接收与完成资格, JIRA 键, Application 名称和 spec Canonical ID. 不完整 effort 是成功的 `eligible: false` 判断, 不是 Interface 失败. 无效已提交输入返回 `blocked`; 完成阶段的 spec 没有恰好一个 `Application validation issue:` 声明, 或声明的验证 issue 不能唯一解析, 也属于无效已提交输入. 该 Interface 不读取状态转换.
 
 JIRA Convergence Interface 接受 issue 键, 项目与类型政策, 阶段, 准确评论, 来源状态与目标状态. 写入前检查项目, 类型, 状态或状态转换阻断问题返回 `blocked` 且保证评论和状态都未写. 成功返回 `commentAction: "created" | "existing"` 和 `statusAction: "transitioned" | "existing"`. HTTP 或写入后验证失败返回 `failed`, `stage: "issue-read" | "comment-read" | "transition-read" | "comment-create" | "transition" | "final-verification"`, `commentAction: "none" | "created" | "existing" | "unknown"`, `statusAction: "none" | "transitioned" | "existing" | "unknown"` 和安全诊断信息. 调用方从这些影响向前重试, 不推断跨请求回滚.
 

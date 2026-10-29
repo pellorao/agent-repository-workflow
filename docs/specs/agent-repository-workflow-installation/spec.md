@@ -49,6 +49,8 @@ Installer 和 Uninstaller 把通知与成功摘要逐行写入标准输出, 把�
 - `--reinitialize-config true|false` 决定是否用所选来源的配置初始文件重置现有配置;
 - `--register-path true|false` 决定是否确保 PATH 或配置文件注册, 非交互式模式必须提供.
 
+`--reinitialize-config` 与 `--register-path` 只在非交互式模式中接受; 交互式模式给出任一项是参数错误, 此时 PATH 由询问决定, 配置不重置.
+
 交互式模式的 PATH 询问接受 `y` 或 `yes` (登记) 以及 `n`, `no` 或空行 (不登记), 忽略大小写和首尾空白; 其他文本重新询问; 输入流结束时零写入并以退出码 1 失败.
 
 `--register-path false` 表示本次不改变 PATH 或配置文件, 不释放已有归属. `--reinitialize-config` 只控制明确的配置重置, 不改变运行时载荷或路径归属选择.
@@ -59,7 +61,7 @@ Installer 和 Uninstaller 把通知与成功摘要逐行写入标准输出, 把�
 
 `configSeed`, `distributionRoot`, `launchers` 和 `runtimeFiles` 的准确值由源码仓库当前清单决定. `runtimeFiles` 必须包含已安装 `arw terms check` 所需的完整 Document Terms, Markdown 和 Document Repository 运行时依赖. 已安装命令只从安装载荷读取这些依赖, 不读取 Source Checkout 内部脚本, 测试路径或其他未登记来源. 清单不保存 `product`, `releaseManifestVersion`, `workflowDistributionManifest` 或产品版本. 安装载荷不在代码中重复硬编码运行时与启动器清单.
 
-`configSeed` 和 `distributionRoot` 是非空来源相对路径. Filesystem Module 根据来源根解析它们并阻断越界结果, 不应用另一套跨平台文件名语法. `configSeed` 只定位安全普通来源文件; Installation Payload 成功结果只把它的完整内容作为 `configSeedBytes` 返回, Engine Installation Module 固定把这些字节用于安装根目录 `config.json`. `launchers` 是封闭对象, 只包含 `darwin`, `linux` 和 `win32`; 每个值是按字节序排序的非空来源相对路径数组. `runtimeFiles` 是采用相同规则的非空数组. 每个启动器或运行时路径同时是来源路径和安装目录中的目标相对路径, 不增加条目对象或第二份目标映射. 所选平台的启动器, `runtimeFiles` 和 `distributionRoot` 下完整验证载荷合并后, 使用 Filesystem Module 返回的范围相对目标检查精确或大小写等价重复, 并拒绝与安装根 `config.json` 或 `manifest.json` 大小写等价的目标. 这些冲突阻断整个载荷, 不静默排除条目. `configSeedBytes` 不进入普通载荷, 最终 `{path, bytes}` 载荷按路径字节序排序.
+`configSeed` 和 `distributionRoot` 是非空来源相对路径. Filesystem Module 根据来源根解析它们并阻断越界结果, 不应用另一套跨平台文件名语法. `configSeed` 只定位安全普通来源文件; Installation Payload 成功结果只把它的完整内容作为 `configSeedBytes` 返回, Engine Installation Module 固定把这些字节用于安装根目录 `config.json`. `launchers` 是封闭对象, 只包含 `darwin`, `linux` 和 `win32`; 每个值是按字节序排序的非空来源相对路径数组. `runtimeFiles` 是采用相同规则的非空数组. 每个启动器或运行时路径同时是来源路径和安装目录中的目标相对路径, 不增加条目对象或第二份目标映射. 所选平台的启动器, `runtimeFiles` 和 `distributionRoot` 下完整验证载荷合并后, 使用 Filesystem Module 返回的范围相对目标检查精确或大小写等价重复, 并拒绝与安装根 `config.json` 或 `manifest.json` 大小写等价的目标. 这些冲突阻断整个载荷, 不静默排除条目. `configSeedBytes` 不进入普通载荷, 最终 `{path, bytes}` 载荷按路径字节序排序. 本文的字节序排序指 JavaScript 字符串比较顺序 (UTF-16 码元), 对 ASCII 路径与 UTF-8 字节序相同.
 
 Installation Payload Module 验证清单的封闭结构, 平台启动器选择, 相对路径包含关系, 安全普通来源文件, 重复目标和大小写冲突. 它通过 Filesystem Module 的规范相对路径拼接 Interface 组合 `distributionRoot` 与每个 Workflow Distribution 条目, 因而输出不含重复分隔符的规范目标路径, 再通过同一 Module 的相对路径范围操作确认结果位于来源根内. 它从 `distributionRoot` 读取完整且验证通过的 Workflow Distribution. 本地与正式来源使用同一种载荷展开方式.
 
@@ -141,9 +143,9 @@ Reviewer 的全局设置来自调用入口自然所属 Engine 目录中的 `conf
 | `serviceTier` | `"default"` 或 `"fast"` | `"default"` |
 | `env` | 名称到字符串的对象, 只允许出现在全局配置中; Claude 后端每回合读取并注入 `claude -p` 进程, 不进入解析后的设置与持久状态 | 无 |
 
-全局配置读取时按这份单一默认值补全缺少的对象, 角色及字段. 普通读取只在内存中补全. 安装或安装更新在同一配置事务中持久补入缺失的默认值, 包括已有 `configVersion: 3` 配置, 保留用户提供的角色字段与无关内容, 不用新默认值刷新已有设置. 完整新装配置为四个角色提供完整默认字段; 全局初始文件与规则默认值必须语义一致. 除 `env` 外不把模型凭据放入这些字段; 未选择专用驱动的提供方实际连接配置仍由 Codex 原生配置拥有, Strata 连接由[共享模型目录与专用驱动](#shared-model-catalog)取得. 不增加仅因本轮新成员而产生的配置版本. 按[机器入口的平台判定](../agent-repository-workflow/spec.md#machine-entry)由 Claude Code 中的 Main Agent 调用时, 合成结果的 `modelProvider` 不是 `anthropic` 的角色整体改用 Claude 默认设置 (`model` 为 `haiku`, `modelProvider` 为 `anthropic`, `reasoningEffort` 为 `high`, `serviceTier` 为 `default`); 合成结果已是 `anthropic` 时照常使用. 这是因为全局默认值与显式 Codex 设置无法区分, 而 Claude Code 中只有 Claude 后端可以不依赖 Codex 运行环境.
+全局配置读取时按这份单一默认值补全缺少的对象, 角色及字段. 普通读取只在内存中补全. 安装或安装更新在同一配置事务中持久补入缺失的默认值, 包括已有 `configVersion: 3` 配置, 保留用户提供的角色字段与无关内容, 不用新默认值刷新已有设置. 完整新装配置为三个角色提供完整默认字段; 全局初始文件与规则默认值必须语义一致. 除 `env` 外不把模型凭据放入这些字段; 未选择专用驱动的提供方实际连接配置仍由 Codex 原生配置拥有, Strata 连接由[共享模型目录与专用驱动](#shared-model-catalog)取得. 不增加仅因本轮新成员而产生的配置版本. 按[机器入口的平台判定](../agent-repository-workflow/spec.md#machine-entry)由 Claude Code 中的 Main Agent 调用时, 合成结果的 `modelProvider` 不是 `anthropic` 的角色整体改用 Claude 默认设置 (`model` 为 `haiku`, `modelProvider` 为 `anthropic`, `reasoningEffort` 为 `high`, `serviceTier` 为 `default`); 合成结果已是 `anthropic` 时照常使用. 这是因为全局默认值与显式 Codex 设置无法区分, 而 Claude Code 中只有 Claude 后端可以不依赖 Codex 运行环境.
 
-仓库根目录 `arw.config.json` 的同名 `reviewers` 对象使用相同角色键和字段格式, 但不接受 `env` (出现即以配置错误拒绝, 防止凭据进入仓库), 每个角色可以为空或只包含要覆盖的字段. 按字段由仓库值覆盖全局值, 未覆盖字段保留全局设置. 仓库默认写入四角色空对象, 不复制全局设置, 使后续全局调整仍能生效. 仓库文件创建与默认补入由 [Repository Workflow](../agent-repository-workflow/spec.md#repository-workflow) 拥有.
+仓库根目录 `arw.config.json` 的同名 `reviewers` 对象使用相同角色键和字段格式, 但不接受 `env` (出现即以配置错误拒绝, 防止凭据进入仓库), 每个角色可以为空或只包含要覆盖的字段. 按字段由仓库值覆盖全局值, 未覆盖字段保留全局设置. 仓库默认写入三角色空对象, 不复制全局设置, 使后续全局调整仍能生效. 仓库文件创建与默认补入由 [Repository Workflow](../agent-repository-workflow/spec.md#repository-workflow) 拥有.
 
 完整合成结果用于普通 Reviewer 审核, 调用方不能用本轮模型参数覆盖用户配置. 能力验证与基准的隔离实例可以在已明确选择的本轮设置中覆盖这些字段. 默认 Standard 必须明确向原生线程与回合传入 `serviceTier: "default"`, 不使用 `null` 表示 Standard, 不受面向用户的 Main Agent 服务档位影响. `"fast"` 是原生请求偏好, 不证明提供方实际服务权益. 字段格式无效时明确失败, 不静默忽略; 模型, 提供方及推理强度的实际支持由 Codex 判断, ARW 不自动替换组合.
 
@@ -170,7 +172,7 @@ Reviewer 的全局设置来自调用入口自然所属 Engine 目录中的 `conf
 | v3 | `reviewEditor.args` | true | `["--new-window", "--wait", "{file}"]` |
 | v3 | `jira` | true | - |
 | v3 | `jira.listLimit` | true | `50` |
-| v3 | `reviewers` | false | 四角色完整默认对象, 见上方字段表 |
+| v3 | `reviewers` | false | 三角色完整默认对象, 见上方字段表 |
 | v3 | `backgroundAgent` | false | - |
 | v3 | `backgroundAgent.maxInstances` | false | `16` |
 | v3 | `backgroundAgent.messageTimeoutMs` | false | `5000` |
@@ -180,7 +182,7 @@ Reviewer 的全局设置来自调用入口自然所属 Engine 目录中的 `conf
 
 每个版本验证器是 `agents`, `editor`, `reviewEditor`, `jira`, `backgroundAgent` (含 `providers` 为对象且各条目为对象这一结构) 和 Reviewer 配置已知结构与取值的唯一校验权威; `providers` 条目内部字段由[共享模型目录](#shared-model-catalog)在后台运行时核对. `v1` 的 `conversions` 为空. `v3` 的唯一版本转换把 `configVersion` 从同路径的 `1` 转成 `3`. `agents` 和 `editor` 走普通保留流程; `reviewEditor` 和 `jira` 作为新必需父级创建, 并从 v3 叶字段默认值构造. `reviewers` 与 `backgroundAgent` 按上方配置合同补入缺失默认值, 已有的有效配置保留. 规则对象测试必须证明 `configVersion` 的旧默认值转换后与新默认值语义相等.
 
-配置文件不存在时, 安装从当前 `configSeed` 创建完整 v3 配置, 包含上述四角色 Reviewer 默认值与四项后台 Agent 默认值; 初始文件不含 `backgroundAgent.providers`, 其默认值与遗留提供方迁移由同一配置事务按[共享模型目录](#shared-model-catalog)补入. `configSeed` 只负责首次创建和 `--reinitialize-config true`, 不参与现有配置的默认值, 字段顺序, 验证器或升级计算. 对现有配置执行安装或更新时, Installation 把当前完整 UTF-8 配置字节和全局规则对象交给 Configuration Conversion Module, 并只消费完整成功结果. 当前版本转换成功仍逐字节保留原输入; 缺失默认值的补入是明确的安装写入, 保留已有值及无关文本. 升级或默认补入后的完整配置字节统一进入安装事务, 没有缺失值或版本变化时不重写配置.
+配置文件不存在时, 安装从当前 `configSeed` 创建完整 v3 配置, 包含上述三角色 Reviewer 默认值与四项后台 Agent 默认值; 初始文件不含 `backgroundAgent.providers`, 其默认值与遗留提供方迁移由同一配置事务按[共享模型目录](#shared-model-catalog)补入. `configSeed` 只负责首次创建和 `--reinitialize-config true`, 不参与现有配置的默认值, 字段顺序, 验证器或升级计算. 对现有配置执行安装或更新时, Installation 把当前完整 UTF-8 配置字节和全局规则对象交给 Configuration Conversion Module, 并只消费完整成功结果. 当前版本转换成功仍逐字节保留原输入; 缺失默认值的补入是明确的安装写入, 保留已有值及无关文本. 升级或默认补入后的完整配置字节统一进入安装事务, 没有缺失值或版本变化时不重写配置.
 
 升级保留不冲突的未知子树, 并列出 `unknownPaths`. 未知字段占用新已知路径, 或它的标量或数组结构阻止创建新已知后代时, 自动升级在写入前停止. Installation 比较原始与最终 JSON, 在配置事务实际成功后向用户列出净新增, 删除和更新路径; 没有实际变化时不产生无意义变更. 配置事务成功前失败时不报告这些变更, 配置已经成功写入但后续安装步骤失败时仍报告已应用的变更. 已有配置转换的提示先按 `added`, `removed`, `updated` 类别排列, 每类路径按字节序排列, 再按 Configuration 转换结果的既有顺序列出 `unknownPaths`. 准确模板分别是 `Configuration added path: <path>.`, `Configuration removed path: <path>.`, `Configuration updated path: <path>.` 和 `Preserved unknown configuration path: <path>.`. 该连续提示分组位于其他 Installation 提示之前; 未改变配置时仍可报告实际保留的未知路径, 缺失配置创建和明确重新初始化只通过 `configurationResult` 报告, 不展开初始文件的全部路径. 配置升级不静默删除用户数据.
 
@@ -368,7 +370,7 @@ Module 返回 `unchanged | removed | partial | unknown`, 阶段, 诊断信息和
 
 ### Interfaces
 
-`evaluateNodeRuntime(version)` 是 Runtime Compatibility Module 的唯一公开行为 Interface. 非字符串输入抛出 `TypeError`. 可解析版本的第一个以点分隔的部分必须是无前导零的非负十进制主版本号. 无法解析时返回 `{status: "unsupported", error: "ARW cannot determine the active Node.js major version: <version>."}`. 主版本号低于 24 时返回 `{status: "unsupported", error: "ARW requires Node.js 24 or newer. Current runtime: <version>."}`. 主版本号 24 或更高版本返回 `{status: "supported", recommendation: null}`. `<version>` 保留调用方提供的准确字符串. 结果不同时包含 `error` 和 `recommendation`.
+`evaluateNodeRuntime(version)` 是 Runtime Compatibility Module 的唯一公开行为 Interface, 调用方传入字符串版本号, Interface 不另行校验类型. 可解析版本的第一个以点分隔的部分必须是无前导零的非负十进制主版本号. 无法解析时返回 `{status: "unsupported", error: "ARW cannot determine the active Node.js major version: <version>."}`. 主版本号低于 24 时返回 `{status: "unsupported", error: "ARW requires Node.js 24 or newer. Current runtime: <version>."}`. 主版本号 24 或更高版本返回 `{status: "supported", recommendation: null}`. `<version>` 保留调用方提供的准确字符串. 结果不同时包含 `error` 和 `recommendation`.
 
 Bootstrap Module Interface 接受 [Public entry points](#public-entry-points) 定义的 Bootstrap 参数. 参数有效时, 它选择发布, 下载并解压发布压缩包, 再把 `--release-tag` 和其余 Installer 参数交给解压得到的 Installer, 并返回 Installer 退出码. 参数错误在任何临时资源或网络访问前失败. 创建临时目录后的每条路径都尝试清理它; 发布选择, 下载, 解压, Installer 启动, 信号或清理失败使 Bootstrap 失败, 不返回部分成功. 该 Interface 不返回解压文件或安装结果对象.
 
@@ -376,9 +378,9 @@ Bootstrap Module Interface 接受 [Public entry points](#public-entry-points) �
 
 Identity Module Interface 根据当前运行目录的来源布局或完整有效安装清单返回唯一规范产品身份. 成功结果只包含 `status: "succeeded"`, 固定 `product: "agent-repository-workflow"`, 规范 `arwVersion` 和空 `diagnostics`. 源码布局只接受根 `package.json.version`; 安装布局只接受清单 `arwVersion`. 两种来源同时存在, 同时缺失, 身份无效或版本不规范时返回 `blocked` 与完整 `diagnostics`, 不回退到另一来源. 来源读取失败返回 `failed`, `stage` 和 `diagnostics`. 非成功结果不返回身份, 载荷, 安装计划或来源特有的额外记录. Identity 另导出 `parseArwVersion(value)`: 对稳定版或固定 `-pre` 字符串返回数值核心版本与预发布标记, 其他输入抛出 `Error`; 它不提供比较操作, 版本顺序由 Engine 拥有.
 
-Installation Payload Module Interface 接受已经固定的来源根目录和目标平台, 自行读取并验证该来源的 `release-manifest.json` 与完整 Workflow Distribution. 无效调用形状同步抛出 `TypeError`. 成功结果只包含 `status: "succeeded"`, 空 `diagnostics`, 完整 `configSeedBytes`, 按目标路径字节序排序的完整 `{path, bytes}` `payload`, 以及按来源路径字节序排序且无重复的 `verificationPaths`. `verificationPaths` 包含清单, `configSeed` 来源路径和形成完整载荷所依赖的每个来源文件; 它不包含由正式来源 Adapter 单独验证的软件包身份. 输入, 清单, Workflow Distribution, 安全路径或载荷冲突返回 `blocked` 与完整 `diagnostics`; 来源读取失败返回 `failed`, `stage` 和 `diagnostics`. 两种非成功结果都不返回 `configSeedBytes`, 载荷, 验证路径或其他部分候选, 并且不写安装目录. Engine 的内部 Installation Payload Seam 使用相同输入和完整结果形状, 不向产品调用方增加可选择的 Adapter 或部分载荷 Interface.
+Installation Payload Module Interface 接受已经固定的来源根目录和目标平台, 自行读取并验证该来源的 `release-manifest.json` 与完整 Workflow Distribution. 调用方都是仓库内部代码, Interface 不另行校验调用形状. 成功结果只包含 `status: "succeeded"`, 空 `diagnostics`, 完整 `configSeedBytes`, 按目标路径字节序排序的完整 `{path, bytes}` `payload`, 以及按来源路径字节序排序且无重复的 `verificationPaths`. `verificationPaths` 包含清单, `configSeed` 来源路径和形成完整载荷所依赖的每个来源文件; 它不包含由正式来源 Adapter 单独验证的软件包身份. 输入, 清单, Workflow Distribution, 安全路径或载荷冲突返回 `blocked` 与完整 `diagnostics`; 来源读取失败返回 `failed`, `stage` 和 `diagnostics`. 两种非成功结果都不返回 `configSeedBytes`, 载荷, 验证路径或其他部分候选, 并且不写安装目录. Engine 的内部 Installation Payload Seam 使用相同输入和完整结果形状, 不向产品调用方增加可选择的 Adapter 或部分载荷 Interface.
 
-Release Source Interface 接受准确的 `{evidence, platform, sourceDirectory}`. `evidence` 只包含规范稳定 `tag`; `platform` 与 `sourceDirectory` 都是字符串. 输入对象缺失或包含额外字段时抛出 `TypeError`, 证据内容无效时返回 `blocked` 与唯一 `release-evidence-invalid` 诊断信息. 成功结果准确为 `{arwVersion, diagnostics: [], sourceDirectory, status: "succeeded"}`. 其他来源阻断问题返回 `{diagnostics, status: "blocked"}`, 观察失败返回 `{diagnostics, stage, status: "failed"}`; 非成功结果不返回部分来源.
+Release Source Interface 接受准确的 `{evidence, platform, sourceDirectory}`. `evidence` 只包含规范稳定 `tag`; `platform` 与 `sourceDirectory` 都是字符串, 由内部调用方构造, Interface 不另行校验对象形状; 证据缺失字段, 含多余字段或内容无效时返回 `blocked` 与唯一 `release-evidence-invalid` 诊断信息. 成功结果准确为 `{arwVersion, diagnostics: [], sourceDirectory, status: "succeeded"}`. 其他来源阻断问题返回 `{diagnostics, status: "blocked"}`, 观察失败返回 `{diagnostics, stage, status: "failed"}`; 非成功结果不返回部分来源.
 
 
 Release Source Adapter 先验证调用形状与 Release 证据, 再取得完整 Installation Payload 结果. 只有载荷成功时才通过 Scoped Filesystem 依次观察和读取 `package.json`, 解析软件包身份并比较标签与版本. 载荷的 `blocked | failed`, 软件包缺失或不安全, 软件包解析和身份不匹配保持现有结果种类, 诊断信息与阶段优先顺序. 确定性 Adapter 必须返回相同完整结果, 不能提供部分载荷或跳过软件包身份.
@@ -391,7 +393,7 @@ Installation 对用户级后台管理进程的内部交接只接受可核实的�
 
 `installed` 只在安装清单最后提交后与 `stage: "complete"` 一起返回. 没有执行写入时返回 `unchanged`; 已知至少一项写入成功后发生失败时返回 `partial`; PATH 或配置文件 Adapter 无法确认外部写入是否发生时返回 `unknown`, 并优先于 `partial`. `partial` 或 `unknown` 不被 CLI 改写为完整成功.
 
-`uninstallRelease({removeInstallation, removeConfig, stopBackgroundAgents})` 是 Uninstallation Module 的公开操作, 输入准确包含三个布尔值. CLI 把交互确认或非交互执行映射为 `removeInstallation`, 把配置与后台 Agent 数据库的共同选择 `--remove-config` 或对应交互回答映射为 `removeConfig`, 把后台 Agent 关闭确认或 `--stop-background-agents` 映射为 `stopBackgroundAgents`; 输入形状无效时抛出 `TypeError`. `removeInstallation: false` 在读取安装状态或执行写入前返回取消提示和 `unchanged`, `stage: "preflight"`, `summary: null`, CLI 退出码为 `0`. `true` 时 Module 通过 Installation Contract 从自然安装目录取得当前平台, 产品身份和完整有效清单; 调用方不能提供或覆盖这些事实. `removeConfig: true` 同时授权删除 `config.json`, 后台 Agent 与消息共用数据库及其自身关联文件, 不授权删除私密凭据, 调用方在安装目录外绑定的恢复记录或未知文件. `stopBackgroundAgents: true` 只授权关闭已核实属于当前用户 ARW 的后台 Agent, 不代替安装归属, 实际退出和删除目标检查; `false` 且实际存在后台 Agent 时在关闭或删除之前阻断.
+`uninstallRelease({removeInstallation, removeConfig, stopBackgroundAgents})` 是 Uninstallation Module 的公开操作, 输入准确包含三个布尔值. CLI 把交互确认或非交互执行映射为 `removeInstallation`, 把配置与后台 Agent 数据库的共同选择 `--remove-config` 或对应交互回答映射为 `removeConfig`, 把后台 Agent 关闭确认或 `--stop-background-agents` 映射为 `stopBackgroundAgents`; CLI 只传入已解析的布尔值, 操作不另行校验输入形状. `removeInstallation: false` 在读取安装状态或执行写入前返回取消提示和 `unchanged`, `stage: "preflight"`, `summary: null`, CLI 退出码为 `0`. `true` 时 Module 通过 Installation Contract 从自然安装目录取得当前平台, 产品身份和完整有效清单; 调用方不能提供或覆盖这些事实. `removeConfig: true` 同时授权删除 `config.json`, 后台 Agent 与消息共用数据库及其自身关联文件, 不授权删除私密凭据, 调用方在安装目录外绑定的恢复记录或未知文件. `stopBackgroundAgents: true` 只授权关闭已核实属于当前用户 ARW 的后台 Agent, 不代替安装归属, 实际退出和删除目标检查; `false` 且实际存在后台 Agent 时在关闭或删除之前阻断.
 
 Uninstallation Module 使用与 Installation 相同的顶层字段与诊断结构. `operation` 固定为 `uninstall`; `stage` 是 `preflight | remove-path | remove-files | manifest | complete`; `status` 是 `unchanged | removed | partial | unknown`. 在安装目录尚未检查时 `summary` 可以是 `null`, 否则只包含 `arwVersion: string | null`, `configurationResult: "absent" | "preserved" | "removed"`, `installationDirectory`, `managedFiles`, `pathOwnership` 和 `residualPaths: string[] | null`. `removed` 只在清单最后删除并完成残留枚举后返回; `unchanged`, `partial` 和 `unknown` 使用与 Installation 相同的写入与不确定性边界.
 
@@ -399,11 +401,11 @@ Installation Contract Module 的只读安装检查接受规范安装目录和平
 
 `planPathRegistration({installation, registerPath})` 接受 Engine 从固定安装位置和成功检查结果组成的完整 Installation 状态, 以及布尔值 `registerPath`. 该状态准确包含 `directory`, `exists`, `managed`, `manifest` 和 `pathKind`. 安装目录缺失时仍保留固定解析得到的 `directory` 与 `pathKind`, 并使用 `exists: false`, `managed: false` 和 `manifest: null`; 它不是 `inspectInstallation(...)` 的可为空的 `installation` 字段原样值. 安装目录存在时, 其余字段来自成功检查结果. `planPathRemoval({installation})` 只接受包含完整有效清单的已检查安装状态. 两个 Interface 通过平台 Adapter 观察当前 Windows Registry 或 Linux 配置文件状态, 调用方不传入低层平台状态. 成功只返回 `status: "succeeded"`, 不透明 `preparedPathOwnership` 和空 `diagnostics`; 状态阻断问题返回 `blocked` 与完整 `diagnostics`, 观察失败返回 `failed`, `stage` 和 `diagnostics`. 两种非成功结果不返回部分计划且保证零写入.
 
-`applyPathOwnershipPlan(preparedPathOwnership)` 只接受同一 Module 产生的不透明计划, 并在任何写入前重新观察计划依赖的当前状态. 状态变化返回零写入 `blocked`. 成功结果准确包含 `status: "succeeded"`, `changed`, 稳定的空或仅包含警告的 `diagnostics`, `notice: string | null` 和 `pathOwnership: [] | [<本文定义的平台归属记录>]`. `registerPath: false`, 已存在但未由清单拥有的等价登记, 已由清单拥有且无需改写的登记, 以及移除目标已经缺失时都是幂等成功且使用 `changed: false`; `registerPath: false` 保留已有归属, 未拥有的等价登记不取得归属. 实际平台写入失败返回 `status: "failed"`, `stage`, `effect: "none" | "changed" | "unknown"`, `pathOwnership: [] | [<本文定义的平台归属记录>]` 和 `diagnostics`. `effect: "none"` 证明没有平台状态变化, `changed` 证明状态已经变化, `unknown` 表示无法确认; 失败结果的 `pathOwnership` 只包含当时仍能证明的归属, 不把未知写入声明为已拥有. Registry 持久写入失败阻止清单提交; Windows 环境通知失败只追加警告诊断, 不改变已确认的写入, 归属或成功状态. Interface 不公开 Registry 命令, 配置文件偏移或低层写入步骤.
+`applyPathOwnershipPlan(preparedPathOwnership)` 只接受同一 Module 产生的不透明计划, 并在任何写入前重新观察计划依赖的当前状态. 状态变化返回零写入 `blocked`. 成功结果准确包含 `status: "succeeded"`, `changed`, 稳定的空或仅包含警告的 `diagnostics`, `notice: string | null` 和 `pathOwnership: [] | [<本文定义的平台归属记录>]`. `registerPath: false`, 已存在但未由清单拥有的等价登记, 已由清单拥有且无需改写的登记, 以及移除目标已经缺失时都是幂等成功且使用 `changed: false`; `registerPath: false` 保留已有归属, 未拥有的等价登记不取得归属. 实际平台写入失败返回 `status: "failed"`, `stage`, `effect: "none" | "changed" | "unknown"`, `pathOwnership: [] | [<本文定义的平台归属记录>]` 和 `diagnostics`. `effect: "none"` 证明没有平台状态变化, `changed` 证明状态已经变化, `unknown` 表示无法确认; 失败结果的 `pathOwnership` 在 `changed` 时是新归属, `none` 时是写入前已有归属, `unknown` 时为空: 无法确认写入结果时既不把未知写入声明为已拥有, 也不沿用可能已被改写的旧归属. Registry 持久写入失败阻止清单提交; Windows 环境通知失败只追加警告诊断, 不改变已确认的写入, 归属或成功状态. Interface 不公开 Registry 命令, 配置文件偏移或低层写入步骤.
 
 安装清单只有在全部运行时和平台归属步骤成功后才能最后提交; 卸载只有在全部已证明归属内容处理后才能最后删除清单. 任一实际写入阶段失败都不返回完整安装或卸载成功. 旧清单无法证明的新残留准确使用本文的人工清理提示, 不因字节相同取得归属, 也不建立未完成安装记录.
 
-配置升级接受当前完整 UTF-8 字节与全局配置规则对象. Configuration Conversion Module 通过 JSON Module 解析这些字节, 并返回开发长期规格定义的完整成功或阻断结果. Installation 从成功消费 `changed`, `sourceVersion`, `targetVersion`, `bytes`, `changes`, `unknownPaths` 和空 `diagnostics`, 再计算路径净变更与适用的完整替换操作. 当前版本成功保留准确输入字节且不产生替换操作; 阻断结果不包含替换字节或部分候选. 初始文件不进入该 Interface. 写入由安装事务完成, 配置转换不直接打开文件.
+配置升级接受当前完整 UTF-8 字节与全局配置规则对象. Configuration Conversion Module 通过 JSON Module 解析这些字节, 并返回开发长期规格定义的完整成功或阻断结果. Installation 从成功消费 `changed`, `bytes`, `unknownPaths` 和空 `diagnostics`, 再比较原始与最终 JSON 计算路径净变更与适用的完整替换操作. 当前版本成功保留准确输入字节且不产生替换操作; 阻断结果不包含替换字节或部分候选. 初始文件不进入该 Interface. 写入由安装事务完成, 配置转换不直接打开文件.
 
 Shared Model Catalog Module 的安装 Interface 只读: 成功时返回遗留 `models.custom.json` 的 `providers` 对象, 文件, 目录或该字段不存在时返回 `undefined` (无需迁移); 文件存在但无法读取, 解析或结构无效时以具体错误失败, 调用方以返回值区分结果: `undefined` 表示无需迁移, 对象表示待迁移的提供方, 抛出的错误表示失败, 错误消息即具体原因. Installation 把该错误作为写入前失败 (`stage: preflight`, `status: unchanged`, 错误消息进入 `diagnostics`, 不执行任何安装写入). Installation 以此与默认值合并并从有效配置计算提供方限额警告, 不替换配置中已有的显式值; Installation 不以提供方上限超过全局上限作为安装阻断条件. 后台启动 Interface 仍读取所有提供方配置并在创建共享 App Server 前执行上限校验. 两个 Interface 都不从其他程序目录补读全局配置.
 
@@ -566,7 +568,7 @@ Release Source Adapter 的依赖 Seam 同样不改变 ADR 0018 的固定来源�
 
 运行时兼容测试覆盖无法解析, 低于 Node.js 24 和 Node.js 24 或更高版本. 入口测试证明 Bootstrap 与 Installer 在所有取得和安装副作用前拒绝不支持版本, 普通 `arw` 与 Uninstaller 不执行替代检查, 并证明单文件 Bootstrap 从同一规范源码生成判断. 入口测试还用真实进程证明 Installer 的 PATH 询问对管道单行应答 `n` 不改变 PATH 并完成安装, 对输入流结束 (`EOF`, 没有任何应答行) 零写入失败; 应答 `y` 和无效应答的语义由 `askYesNo` 的注入式测试和进程内 Installer 测试证明.
 
-全局配置测试分别覆盖缺失配置从 v3 初始文件创建, 明确重新初始化, v1 直接转换到 v3, v2 不受支持, 当前 v3 空操作, `reviewEditor`, `jira.listLimit: 50` 和 `backgroundAgent.maxInstances: 16` 默认值, `agents` 与 `editor` 保留, 已有有效上限不被默认值覆盖, 验证器阻断, 未知根保留和冲突, 净路径与未知路径提示的准确模板和顺序, 转换零 I/O, 事务中的单次替换内容, 以及任一配置阻断时零安装写入. 规则对象测试使用开发长期规格的公共断言辅助程序; 初始文件测试只验证它与当前 v3 完整有效值一致, 不把初始文件传入升级 Interface.
+全局配置测试分别覆盖缺失配置从 v3 初始文件创建, 明确重新初始化, v1 直接转换到 v3, v2 不受支持, 当前 v3 空操作, `reviewEditor`, `jira.listLimit: 50` 和 `backgroundAgent.maxInstances: 16` 默认值, `agents` 与 `editor` 保留, 已有有效上限不被默认值覆盖, 验证器阻断, 未知根保留和冲突, 净路径与未知路径提示的准确模板和顺序, 转换零 I/O, 事务中的单次替换内容, 以及任一配置阻断时零安装写入. 初始文件测试只验证它与当前 v3 完整有效值一致, 不把初始文件传入升级 Interface.
 
 后台管理交接测试从源码和已安装入口观察同一用户级上限, 两项消息与保存配置默认值及私有状态, 并验证源码尚未安装时只读默认值不产生安装. 安装与更新碰到执行中主任务, 子 Agent, 工具或未决人工交互时, 观察零安装写入且原任务继续; 全部安全空闲时, 观察控制进程先取得固定维护端口, 禁止新任务进入, 所有受管根线程及单个共享 App Server 与管理进程实际退出后才开始写入. 卸载分别观察交互关闭确认, 显式参数代替确认, 非交互缺失或拒绝关闭授权时不关闭也不删除, 以及没有后台 Agent 时可省略参数. 交互模式用一次询问决定配置与 Agent 和消息共用数据库共同保留或删除, 显式 `--remove-config` 代替询问, 非交互省略时共同保留; 获准删除的数据库自身关联文件在删除前全部检查, 失败时零卸载删除, 凭据, 安装目录外的调用方绑定恢复记录和未知内容保留. 授权关闭执行中的实例后, 只有全部受管根线程及相关工具, 单个共享 App Server 与管理进程实际退出且全部删除前检查成功才开始卸载; 部分关闭后准备失败时, 安装内容不变且关闭事实准确报告. 初次概览为空但交接时出现新 Agent, 未授权关闭仍须阻断. 非法或重复参数在关闭或删除前返回用法错误. 正常管理进程启动与维护争用同一端口时只有一方进入, 控制进程持有端口直至实际退出, 不留下持久交接标记; 未取得互斥时零受管理写入, 下一次请求使用当前有效版本. 私有进程身份文件测试验证内容只有操作系统 PID 与创建时间并以 ASCII 逗号分隔, 启动边界创建, 同一进程存活期间不改写, 正常关闭时确认实际退出后删除, 意外退出时保留到下一次启动恢复核对旧进程实际退出并处理未确认归还的 key, 且不等待 SQLite 批存; 文件时间不能替代操作系统创建时间. 状态或退出证据缺失时不得从陈旧 PID 推断成功.
 

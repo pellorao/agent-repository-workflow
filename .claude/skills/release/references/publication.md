@@ -10,7 +10,7 @@
 
 ## Publish the GitHub announcement
 
-先写公告文件. 公告的 title 和正文都使用中文:
+先在 Repository 之外写公告文件 (不放在仓库 `.tmp/` 下). 公告的 title 和正文都使用中文:
 
 - 比较范围是上一个正式 Release tag 到本次 tag. 只写安装者, 使用者或维护者能在本次 tag 上观察到的变化. 中间提交引入后又被撤销或替换的内容不写, 发布验证流程等内部细节也不写.
 - 标题后先用一段简介概括本版本的主题和收益. 然后只列出实际有内容的分类: 新功能, 问题修复, 文档, 日常维护. 每个条目先用普通语言说明结果, 再链接对应的提交.
@@ -26,7 +26,8 @@ gh release view <version> --repo <project> --json tagName,name,body,isDraft,isPr
 ```
 
 - Release 已存在: 如果 tag, title 和正文都与批准的内容一致, 并且不是 draft 或 prerelease, 且 `gh release view <version> --repo <project> --json assets` 含 `arw.tar.gz`, 视为已完成. 任一字段冲突时停止, 不做更新或删除.
-- Release 不存在: 运行 `gh release create <version> --repo <project> --verify-tag --title <title> --notes-file <approved-file>`. 不加 `--target`, 不自动生成公告. 先运行 `node scripts/pack-release.mjs <tmp>/arw.tar.gz`, 创建时把该文件作为资产附在命令末尾. 创建后再运行一次 `view` 核对, 并确认资产名为 `arw.tar.gz`. 创建超时或结果不明确时, 也只运行 `view`, 不盲目重复创建.
+- `view` 因认证, 网络或其他原因读取失败时停止, 不当作不存在.
+- 只有 `view` 明确报告 Release 不存在时: 运行 `gh release create <version> --repo <project> --verify-tag --title <title> --notes-file <approved-file>`, `<approved-file>` 是 Repository 之外的已批准公告文件. 不加 `--target`, 不自动生成公告. 先运行 `node scripts/pack-release.mjs <tmp>/arw.tar.gz`, 创建时把该文件作为资产附在命令末尾. 创建后再运行一次 `view` 核对, 并确认资产名为 `arw.tar.gz`. 创建超时或结果不明确时, 也只运行 `view`, 不盲目重复创建.
 
 tag 指向的 commit 以 `git ls-remote` 的结果为准, 不以 `targetCommitish` 为准.
 

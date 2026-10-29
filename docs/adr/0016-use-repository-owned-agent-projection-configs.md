@@ -16,29 +16,29 @@
 
 每个分发的 `Agent Role` 都在 `docs/agents/roles/<role-name>.md` 安装一份由 ARW 管理的完整 Markdown 文件. `docs/agents/reviewer.md` 拥有所有 Reviewer 的共同责任, 每个规范 Role 拥有相应审核轴的行为. Role 文档使用固定的 `Responsibility`, `Inputs`, `Instructions`, `Output`, `Constraints`, `Failure behavior` 六段, 并要求先读取共同责任文档.
 
-ARW 源码仓库把规范 Role 文档保存在它的已安装目标路径. 角色的稳定身份来自四份 Canonical Role 文档, 平台投射只传播完整文档与适用 Skill, 不另存平台原生 Reviewer 启动种子. 所有模型完整使用同一份公共 Reviewer 规则和对应规范 Role, 不另建非 GPT 专有规则.
+ARW 源码仓库把规范 Role 文档保存在它的已安装目标路径. 角色的稳定身份来自三份 Canonical Role 文档, 平台投射只传播完整文档与适用 Skill, 不另存平台原生 Reviewer 启动种子. 所有模型完整使用同一份公共 Reviewer 规则和对应规范 Role, 不另建非 GPT 专有规则.
 
-Reviewer 用户设置保存在调用入口自然所属 Engine 目录的 `config.json` 与发起仓库的 `arw.config.json` 中, 两者的 `reviewers` 对象按四个 Canonical Role ID 保存运行设置, 配置来源, 字段格式与全局默认值由 [安装配置规格](../specs/agent-repository-workflow-installation/spec.md#reviewer-configuration) 拥有. 仓库配置为四个角色保留空对象, 各字段缺失时继承全局值, 使全局调整仍能影响没有覆盖这些字段的仓库. 安装与仓库工作流初始化或更新只补齐缺失的默认结构, 保留用户已有字段值; 仓库配置文件缺失时创建它. 这组设置独立于外部 Main Agent CLI 启动器的 Agent 条目.
+Reviewer 用户设置保存在调用入口自然所属 Engine 目录的 `config.json` 与发起仓库的 `arw.config.json` 中, 两者的 `reviewers` 对象按三个 Canonical Role ID 保存运行设置, 配置来源, 字段格式与全局默认值由 [安装配置规格](../specs/agent-repository-workflow-installation/spec.md#reviewer-configuration) 拥有. 仓库配置为三个角色保留空对象, 各字段缺失时继承全局值, 使全局调整仍能影响没有覆盖这些字段的仓库. 安装与仓库工作流初始化或更新只补齐缺失的默认结构, 保留用户已有字段值; 仓库配置文件缺失时创建它. 这组设置独立于外部 Main Agent CLI 启动器的 Agent 条目.
 
 普通审核消费合并后的用户设置, 不用角色名称查找旧平台配置或隐式覆盖用户选择. 能力验证和基准的隔离实例可以显式覆盖选定设置. 共享 Reviewer 入口把选定的模型, 提供方, 推理强度和服务档位传给原生线程与回合, 设置交付与运行信任由[产品运行合同](../specs/agent-repository-workflow/spec.md#reviewer-runtime)拥有; 配置默认值或请求参数都不证明实际服务权益和审核能力. Reviewer 只取得授权输入和临时写入范围, 不取得修改受审内容或 Git 暂存区的责任.
 
 公开 `arw agent start <name> [agent-arguments...]` 可以从入口自然所属 Engine 目录的用户配置读取一个外部 Main Agent CLI 条目, 把 `<name>` 后的本次参数按原顺序追加到固定参数, 再在用户当前终端中启动可执行文件. 该命令不要求 `--` 分隔符, 不解释外部 CLI 选项, 也不读取, 选择或投影规范 Agent Role, 不把配置名称映射到 Reviewer 身份, 不创建命令解释器或新终端, 不承担共享 Reviewer 运行控制. 用户配置拥有可执行文件与固定参数; 用户拥有本次参数, 命令发起, 当前目录, 交互过程和外部 Main Agent 会话生命周期.
 
-安装和仓库工作流分别维护所属的全局与仓库 Reviewer 配置. 缺失的文件或角色默认结构需要补齐, 才能让四个审核角色使用同一配置入口; 已有用户值保持不变, 不因默认值变化而刷新. 配置的语法和必需字段由各自的配置生命周期验证.
+安装和仓库工作流分别维护所属的全局与仓库 Reviewer 配置. 缺失的文件或角色默认结构需要补齐, 才能让三个审核角色使用同一配置入口; 已有用户值保持不变, 不因默认值变化而刷新. 配置的语法和必需字段由各自的配置生命周期验证.
 
 `arw workflow remove` 删除对应 Managed Content 时, 规范方案按仓库拥有的残留类别列出精确初始文件, 并要求对整批作出 `retain | delete` 选择. 用户明确授权后, ARW 可以删除这些精确文件; `retain` 时保留, 同一 Workflow Distribution 和相同输入的重新初始化可以复用这些仓库拥有的设置. 仓库自有表示没有未授权修改权, 不是 ARW 在得到显式方案授权后永远不能删除.
 
 首期让一次操作对整批文件作出选择, 在明确授权与简单的方案和输入契约之间取平衡. 逐文件选择会增加交互式和非交互式协议; 需要分别处理时可以先选择 `retain`, 再由用户删除个别文件.
 
-Reviewer 独立性由工作流约束, 不使用密码学. 普通四角色审核, 能力验证与基准执行通过用户级管理进程持有的共享 Codex App Server 中各自独立的根线程运行, 不通过与用户沟通的 Main Agent 的原生子 Agent 槽位启动. 独立 Reviewer 在自己的根线程中独自审核, 不创建子 Agent; 完整角色规则, 模型设置交付, 方向受限通信及根线程计量遵循[产品 Reviewer 工作流](../specs/agent-repository-workflow/spec.md#reviewer-workflow).
+Reviewer 独立性由工作流约束, 不使用密码学. 普通三角色审核, 能力验证与基准执行通过用户级管理进程持有的共享 Codex App Server 中各自独立的根线程运行, 不通过与用户沟通的 Main Agent 的原生子 Agent 槽位启动. 独立 Reviewer 在自己的根线程中独自审核, 不创建子 Agent; 完整角色规则, 模型设置交付, 方向受限通信及根线程计量遵循[产品 Reviewer 工作流](../specs/agent-repository-workflow/spec.md#reviewer-workflow).
 
-通用后台 Agent 运行负责跨仓库和多个 Main Agent 的单个共享 App Server, 独立根线程容量及恢复, 不按 Reviewer 角色限制所有后台任务. Reviewer 专属运行责任负责四个规范角色, 根线程内的单 Agent 审核, 人工审批后备, 报告绑定和该 Reviewer 根线程的墙钟与原生 token 观察. Reviewer 禁协作只作用于自身根会话, 违规时只停止该根线程及关联工作, 不终止其他根线程. 通用控制与 Reviewer 专属规则分别由上述产品规格和 [Reviewer 工作流](../specs/agent-repository-workflow/spec.md#reviewer-workflow) 拥有.
+通用后台 Agent 运行负责跨仓库和多个 Main Agent 的单个共享 App Server, 独立根线程容量及恢复, 不按 Reviewer 角色限制所有后台任务. Reviewer 专属运行责任负责三个规范角色, 根线程内的单 Agent 审核, 人工审批后备, 报告绑定和该 Reviewer 根线程的墙钟与原生 token 观察. Reviewer 禁协作只作用于自身根会话, 违规时只停止该根线程及关联工作, 不终止其他根线程. 通用控制与 Reviewer 专属规则分别由上述产品规格和 [Reviewer 工作流](../specs/agent-repository-workflow/spec.md#reviewer-workflow) 拥有.
 
 Reviewer 自己完成审核, 与用户沟通的 Main Agent 只提供工作指示, 接收角色允许的问题与进度通知及最终状态. Reviewer 不向用户或这位 Main Agent 索取信息或征求同意. 仓库外访问和网络审批由 Codex 原生 `on-request` 与 `auto_review` 处理; 如果 App Server 仍发来必须人工决定的原生请求, Reviewer 专属层提供拒绝策略, 管理进程给出该类型合法的拒绝响应, 让 Reviewer 在原生输入或结果中看到具体原因, 不转交人工或伪造授权. 拒绝只作用于该次请求, Reviewer 继续本轮审核; 只有必要检查或报告确实无法完成时才说明具体不足并返回 `incomplete`. 这项限制不替代 Codex 的安全策略.
 
 普通线程身份由角色与完整排序后的 issue ID 集合组成, 第一次启动的 Reviewer 会话没有父对话, 同一身份的后续审核必须复用可靠原线程并消费完整当前输入. 候选字节, 摘要值, 文件哈希, 治理语义或结论变化不自动创建新线程. 只有 issue 集合改变, 原线程不可用或不可恢复, 或使用者明确要求时才新建线程, 恢复和活动指示不得静默改投. 能力验证和基准实例使用全新隔离会话, 不初始化或替代普通审核线程.
 
-四种 Role 的后续复审按[当前版本与结果有效性合同](../specs/agent-repository-workflow/spec.md#review-versions-and-result-validity)默认检查相邻版本差异及关联影响. 自己已经完成的前轮原始报告和准确绑定输入可以证明历史覆盖, 当前语义证据仍取自完整当前输入. Reviewer 保留旧问题及未完成检查, 必要的全盘复审给出具体理由, 每轮亲自写入完整新报告. 可靠原线程与历史材料帮助减少重复审核, 不替代当前有效结果, 也不赋予通用后台管理程序历史语义覆盖或审核顺序的判断责任.
+三种 Role 的后续复审按[当前版本与结果有效性合同](../specs/agent-repository-workflow/spec.md#review-versions-and-result-validity)默认检查相邻版本差异及关联影响. 自己已经完成的前轮原始报告和准确绑定输入可以证明历史覆盖, 当前语义证据仍取自完整当前输入. Reviewer 保留旧问题及未完成检查, 必要的全盘复审给出具体理由, 每轮亲自写入完整新报告. 可靠原线程与历史材料帮助减少重复审核, 不替代当前有效结果, 也不赋予通用后台管理程序历史语义覆盖或审核顺序的判断责任.
 
 Reviewer 自行读取适用 Agent 指令, 指令不属于治理证据或审核对象. Reviewer 亲自把完整报告写入本轮绑定的文件, 最终平台状态只表示完整交付或不完整及适用理由. 共享 Reviewer 运行 Module 控制原生会话, 在启动模型回合前确认没有仍活动或会参与本轮的子 Agent, 并核对实际运行事实; 已结束且不参与本轮的历史线程不阻断可靠原线程复用. 既有 Engine 从报告机械生成正式结果, 再沿既有边界提升和验证. 两者不代写 Reviewer 的语义结论, 安装或外部 CLI 启动成功不成为运行能力证明.
 
@@ -48,7 +48,7 @@ Reviewer 自行读取适用 Agent 指令, 指令不属于治理证据或审核�
 - 不把用户配置作为 Managed Content. 精确哈希归属会阻止用户适配模型, 成本和组织策略.
 - 不为两个平台的工具和权限建立共享转换结构. 平台的语法和语义不同, 共享结构会变成第二份不完整的平台模型.
 - 不用一个固定权限概况取代角色所需输入和默认值. Spec Readiness 读取请求快照, Code Review 与 Commit Audit 需要各自的 Git 读取和临时报告范围. 共享运行入口统一控制合同, 角色仍只取得职责所需输入和授权.
-- 不把 Reviewer 运行设置保存在平台原生角色文件中. 两级用户配置为四个规范角色提供统一选择, 避免静态默认值与共享入口分别决定实际运行设置.
+- 不把 Reviewer 运行设置保存在平台原生角色文件中. 两级用户配置为三个规范角色提供统一选择, 避免静态默认值与共享入口分别决定实际运行设置.
 - 不为普通审核, 能力验证和基准分别维护执行器或增加管理模型. 共享原生入口避免规则与测量对象分叉, Reviewer 在自己的运行环境中独自审核并承担完整质量责任.
 - 不把外部 Main Agent CLI 启动器当作 Reviewer 控制入口. 参数透传与直接子进程等待没有报告绑定, 单 Reviewer 运行核对或原线程指示责任, 两种入口分别拥有其生命周期.
 - 不只依赖 Role 和 Projection 的静态测试作为 Codex 发布证明. 静态一致性不能发现固定 Codex Reviewer 实际无法完成审核的候选.
