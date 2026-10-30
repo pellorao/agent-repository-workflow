@@ -1,6 +1,6 @@
 # 规则入口与验证要求对齐
 
-Status: ready-for-agent
+Status: completed
 
 ## What to build
 
@@ -10,9 +10,9 @@ Status: ready-for-agent
 
 ## Acceptance criteria
 
-- [x] 398 不再要求 Agent 自行创建 issue, 399 使用仓库阈值权威, 392 不再预设格式化命令.
-- [x] 三个 Skill 的来源, distribution 副本和 Claude Code 投影语义一致.
-- [x] arw text check, 当前 effort 的 terms check 和仓库声明的三个生产脚本通过; 人工核对改动范围和引用.
+- [x] 398 不再要求 Agent 自行创建 issue, 399 使用仓库阈值权威, 392 不再预设格式化命令. 观察: 三个 Skill 的对应规则及副本检查.
+- [x] 三个 Skill 的来源, distribution 副本和 Claude Code 投影语义一致. 观察: 三个 Skill 的对应规则及副本检查.
+- [x] arw text check, 当前 effort 的 terms check 和仓库声明的三个生产脚本通过; 人工核对改动范围和引用. 观察: Validation 中的实际检查结果.
 
 ## Blocked by
 
@@ -22,4 +22,12 @@ Status: ready-for-agent
 
 - node scripts/check-workflow-distribution.mjs, node scripts/project-claude-skills.mjs --check, node scripts/generate-install-arw.mjs --check, node arw.mjs text check, node arw.mjs terms check --include .scratch/0010-triage-rule-manual-alignment/ 和 git diff --check 均通过.
 - 人工核对三处 Skill 修改与 issue 要求一致, 来源与 distribution 副本字节相同, Claude Code 投影检查通过. 只调整规则引用, 未修改测试或运行时代码.
-- 本次只提交符合非实施分类的规则与文档及验证记录. 未运行 Reviewer, 未生成就绪记录, issue 保持原状态; 终态提交的规则冲突尚待用户裁定.
+
+- node arw.mjs spec-readiness verify --issue issue:0010:01 通过, 引擎生成的 01.spec-readiness.json 为 satisfied.
+- Main Agent 抽查: test-performance-optimization 的入口不再创建授权范围; commit 阈值引用仍保留目标仓库声明及默认阈值合同; 合并验证只选择仓库声明的命令.
+
+## Comments
+
+- 用户已裁定纯文档免就绪与终态提交检查的冲突: 本 effort 使用严格路径取得就绪记录并运行两个提交 Reviewer, 不豁免门禁. 先前 1c35e70 按用户要求保留, 本提交为该 issue 完成审核和记录收口.
+- Spec Readiness 第 2 轮原 Reviewer 返回 No problems., 已 generate, promote 并完整 verify 通过.
+- 提交审核第 2 轮的要求符合审核与 Code Standards 均为 No problems. 原 Reviewer 已撤回对观察说明的错误要求; 旧验证记录已清理. arw commit-audit verify 返回空错误列表, subject-only 就绪核对通过. 报告位于当前会话 _commit-audit/2 的两个 Reviewer 目录.
