@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0009:01",
+  "request": {
+    "digest": "7176f94577911556b5c1edf98a829f65e6594a3619a8e6c159a5be39b7d69c6b",
+    "filePath": ".tmp/claude-code/06588b1e-7f07-4832-8933-107aaf5b5978/0009_01/spec-readiness/requests/request-2bf5da81-8257-418b-b52c-1b4edb86a931.json",
+    "id": "2bf5da81-8257-418b-b52c-1b4edb86a931"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "f797bb611ba9cf50c0ccfab4d029b2a32fd44b771b7b9338a0a31bb48ddba14a"
+  },
+  "inputs": [
+    {
+      "filePath": ".scratch/0009-engine-diff-hits/spec.md",
+      "role": "governing-spec",
+      "sha256": "928caa80372453c8071e0aaa3abb24b09dc43591ad80ec695e5a247150a1be48"
+    },
+    {
+      "filePath": "docs/adr/0023-separate-commit-audit-review-from-implementation.md",
+      "role": "adr",
+      "sha256": "4cb0f2a348249c980d3efa25ecb48bb7ca80c4e19b35bf679deba332716e3b55"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0009-engine-diff-hits/issues/01-precompute-diff-hits.md",
+    "sha256": "a6dbe71cf77ec9d5ba403c8e2aa041f0d57bea72b9e6372ef6160d7c0d2250a4"
+  },
+  "result": "satisfied"
+}
