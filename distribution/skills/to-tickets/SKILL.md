@@ -1,50 +1,38 @@
 ---
-description: 将计划, 规范或当前对话拆分为一组纵向切片 issue, 每项声明阻断关系并发布到已配置的跟踪器. 本地以每项一个文件记录, 实际跟踪器使用原生阻断链接.
+description: 将计划, 规范或当前对话拆分为一组纵向切片 issue, 每项声明阻断关系并写入当前 effort 的 issues 目录.
 name: to-tickets
 disable-model-invocation: true
 ---
 
 # 任务拆分
 
-将计划, 规范或当前对话拆分为一组纵向切片 issue, 每项声明阻断它的其他 issue. 编写和发布前遵循 [Subagent 分配](../../../docs/agents/subagent-allocation.md) 与 [Agent 文件写入](../../../docs/agents/agent-writes.md).
-
-如果尚未提供 issue 跟踪器和分流标签词汇, 运行只读 `arw workflow verify`. 如果验证报告仓库尚未初始化, 告知用户另行运行 `arw workflow init`.
+将计划, 规范或当前对话拆分为一组纵向切片 issue, 每项声明阻断它的其他 issue. 编写前遵循 [Subagent 分配](../../../docs/agents/subagent-allocation.md) 与 [Agent 文件写入](../../../docs/agents/agent-writes.md).
 
 ## Process
 
 ### 1. Gather context
 
-使用已在对话中的信息. 用户传入规范路径, issue 编号或 URL 时, 获取并阅读其完整正文和评论.
+使用已在对话中的信息. 用户传入 spec 或 issue 路径时, 读取其完整正文.
 
 ### 2. Explore the codebase
 
-尚未探索代码库时, 调查当前代码状态. issue 标题和描述使用项目术语表词汇, 并遵循所涉区域的 ADR.
-
-寻找使实现更容易的预先重构机会. 先让改变容易, 再完成容易的改变.
+尚未探索代码库时, 调查当前代码状态. issue 标题和正文使用项目术语表词汇, 并遵循所涉区域的 ADR. 先安排使实现更容易的预先重构, 再安排其余切片.
 
 ### 3. Draft vertical slices
 
-将工作拆分为纵向切片 issue.
-
-<vertical-slice-rules>
-
 - 每个切片覆盖数据模式, API, UI 和测试等各层的一条狭窄且完整的路径, 而不是只覆盖单层.
-- 已完成切片可以独立演示或验证.
-- 每个切片适合在一个新的上下文窗口内完成.
-- 任何预先重构先完成.
-- 粒度宁粗勿细. 每个 issue 都要经过 Spec Readiness 与提交审核, 太小的 issue 让审核开销超过改动本身. 同一模块, 同一 spec 章节或同一验收路径的切片合并为一个 issue; 只在超出一个上下文窗口, 或确需独立验证与独立回退时才拆开.
-
-</vertical-slice-rules>
+- 已完成切片可以独立演示或验证, 并适合在一个新的上下文窗口内完成.
+- 粒度宁粗勿细. 每个实施 issue 都有自己的 Spec Readiness 与提交审核开销 (只改规则和文档的 issue 除外, 见 `implement` Skill), 太小的 issue 让审核开销超过改动本身. 合并规则见 [Agent 文件写入](../../../docs/agents/agent-writes.md#issue-concurrency); 只在超出一个上下文窗口, 或确需独立验证与独立回退时才拆开.
 
 为每个 issue 给出其阻断关系, 即必须先完成的其他 issue. 没有阻断项的 issue 可以立即开始.
 
-大范围重构是纵向切片的例外. 一次机械改动, 如重命名列或改变共享标识符的类型, 可能同时破坏遍布代码库的大量调用点, 使任何单个纵向切片都无法通过测试. 此时不要强行纵向拆分, 而应按以下顺序安排工作:
+大范围重构是纵向切片的例外. 一次机械改动, 如重命名列或改变共享标识符的类型, 可能同时破坏遍布代码库的大量调用点, 使任何单个纵向切片都无法通过测试. 此时按以下顺序安排:
 
 1. 扩展: 加入新形式并保留旧形式, 保证现有调用不受影响.
-2. 迁移: 按影响范围分批迁移调用点, 例如按包或目录分批. 每批建立独立 issue 并依赖扩展步骤, 利用仍保留的旧形式使每批都通过持续集成检查.
+2. 迁移: 按影响范围分批迁移调用点, 例如按包或目录分批. 每批一个 issue, 依赖扩展步骤, 利用仍保留的旧形式使每批都能通过 `validation` Skill 要求的验证.
 3. 收缩: 用一个依赖全部迁移批次的 issue, 在没有调用方使用旧形式后删除它.
 
-如果连迁移批次也无法单独通过检查, 仍保留该顺序并使用共同的集成分支. 所有批次成为最终集成验证 issue 的前置依赖, 只要求在最后完成集成时全部通过检查.
+如果某批迁移无法单独通过验证, 把它与相邻批次合并为一个 issue, 而不是推迟到最后一起验证.
 
 ### 4. Confirm with the user
 
@@ -54,30 +42,16 @@ disable-model-invocation: true
 - **Blocked by**: 必须先完成的 issue.
 - **What it delivers**: 从用户视角交付的端到端行为.
 
-询问用户:
+询问用户粒度是否合适, 每条阻断关系是否确实阻断该 issue, 是否应合并或拆分. 迭代直到用户批准拆分.
 
-- 粒度是否合适.
-- 每条阻断关系是否确实阻断该 issue.
-- 是否应合并或拆分 issue.
+### 5. Write the issues
 
-迭代直到用户批准拆分.
+issue 写入对话已建立的 effort; 需要新 effort 时按 `issue-tracking` Skill 创建. 每项一个文件, 路径, 编号和结构遵循 `issue-tracking` Skill, 按依赖顺序编号. 正文使用中文, H1 为中文标题, 下列 H2 保持英文, 内容避免 [to-spec](../to-spec/SKILL.md) 所禁止的文件路径和代码片段.
 
-### 5. Publish to the configured tracker
+```markdown
+# <issue 标题>
 
-按 `issue-tracking` Skill 记录的跟踪器发布已批准 issue. 两种跟踪器中的 issue 相同, 只有阻断关系的表达方式不同:
-
-- **Local files** -> 使用对话已建立的 effort. 需要新 effort 时, 以当前最大编号加一创建 `.scratch/<NNNN>-<effort-slug>/`. 在其 `issues/` 下为每项 issue 写一个 `<NN>-<issue-slug>.md`, 按依赖顺序从 `01` 编号. 数字部分是 issue 身份, slug 只提高路径可读性. 每个文件的 `Blocked by` 列出所依赖的编号和标题. 使用下列章节式 `<issue-template>`, 每个文件只放一项 issue.
-- **实际 issue 跟踪器** -> 按依赖顺序为每个已批准任务分别发布一个 issue, 使阻断关系可以引用真实身份. 平台提供原生阻断或子 issue 关系时使用它, 否则在 `Blocked by` 中列出阻断 issue. 除非另有指示, 应用 `ready-for-agent` 分流标签.
-
-只处理所有阻断项均已完成的 issue. 纯线性链按从上到下顺序工作.
-
-不得关闭或修改父 issue.
-
-<issue-template>
-
-## Parent
-
-已有跟踪器 issue 作为来源时, 引用父 issue; 否则省略本节.
+Status: ready-for-agent
 
 ## What to build
 
@@ -90,10 +64,7 @@ disable-model-invocation: true
 
 ## Blocked by
 
-- 每项阻断项的引用, 或 `None - can start immediately`.
+- <编号> - <标题>
+```
 
-</issue-template>
-
-本地 Markdown 使用章节式形式, 以 `# <Ticket title>` 开始并紧接普通 `Status: ready-for-agent`. YAML frontmatter 可以位于 H1 前. 除非需要, 省略 `## Parent`.
-
-交付散文中避免具体文件路径或代码片段, 它们容易过期. 原型产生的片段如果比散文更精确地表达决定, 可以内嵌并简短注明来自原型.
+没有阻断项时 `## Blocked by` 准确写 `- None - can start immediately`.
