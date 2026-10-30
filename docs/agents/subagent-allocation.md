@@ -54,6 +54,8 @@ subagent 可以向所属运行环境的 Main Agent 申请协作者, 不自行创
 缺少仓库配置时, 所属运行环境的 Main Agent 调查当前可用的主流模型及其支持的推理强度, 拟定智力到模型, 努力到所选模型推理强度的映射. 提交方案前可以询问用户偏好. 该调查由创建非预定义 subagent 前的配置检查触发, 由所属运行环境的 Main Agent 完成.
 
 向用户提交具体模型及其低, 中, 高努力档位的推理强度. 用户批准后, 将这些配置写入本文件的 repository owned 区域, 然后继续创建原定的 subagent. 审批前不使用候选映射. Codex 的创建 Interface 不能逐次设置 Fast, 因此本规则不把 Fast 状态作为可配置映射或创建承诺; Claude Code 通过 Agent 工具的 `model` 和 `effort` 参数传递所选映射.
+
+Agent 默认不开启 Fast 模式. 可以设置服务层级的位置 (Reviewer 配置的 `serviceTier`, Codex 的 `service_tier`, Claude Code 的 `/fast`) 使用标准层级; 只有用户明确要求时才开启, 且只用于用户指定的范围.
 <!-- arw:managed:end -->
 <!-- arw:repository-owned:start -->
 ## Repository model mapping
@@ -63,18 +65,20 @@ subagent 可以向所属运行环境的 Main Agent 申请协作者, 不自行创
 | 智力需求 | 模型 | 低努力 | 中努力 | 高努力 |
 | --- | --- | --- | --- | --- |
 | 低 | `gpt-6-luna` | `low` | `medium` | `xhigh` |
-| 中 | `gpt-6.1-sol` | `low` | `medium` | `high` |
-| 高 | `gpt-6.1-sol` | `medium` | `high` | `xhigh` |
+| 中 | `gpt-6.1-terra` | `low` | `medium` | `xhigh` |
+| 高 | `gpt-6.1-sol` | `low` | `medium` | `xhigh` |
 
 Claude Code 使用以下映射; 用户级规则另有模型选择要求时以用户级规则为准.
 
 | 智力需求 | 模型 | 低努力 | 中努力 | 高努力 |
 | --- | --- | --- | --- | --- |
-| 低 | `haiku` | `low` | `medium` | `high` |
-| 中 | `sonnet` | `low` | `medium` | `high` |
-| 高 | `opus` | `medium` | `high` | `xhigh` |
+| 低 | `haiku` | `low` | `medium` | `xhigh` |
+| 中 | `sonnet` | `low` | `medium` | `xhigh` |
+| 高 | `opus` | `low` | `medium` | `xhigh` |
 
 当前创建非预定义 subagent 的 Interface 不能逐次设置 Fast 参数. 表中的模型和推理强度是当前可传递的配置; Standard 主会话下的实际 Fast 状态由平台决定, 不属于本映射的承诺.
+
+作为 Baseline 例外, 本仓库不开启 Fast 模式: 上述位置一律使用标准层级, 不适用用户要求时开启的例外.
 
 根 `AGENTS.md` 的 `Autonomous Working Mode` 要求分析重要决策的独立 Agent 的智力水平和推理强度不低于 Main Agent, 不按上表降级.
 <!-- arw:repository-owned:end -->

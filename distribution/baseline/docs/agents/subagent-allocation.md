@@ -54,6 +54,8 @@ subagent 可以向所属运行环境的 Main Agent 申请协作者, 不自行创
 缺少仓库配置时, 所属运行环境的 Main Agent 调查当前可用的主流模型及其支持的推理强度, 拟定智力到模型, 努力到所选模型推理强度的映射. 提交方案前可以询问用户偏好. 该调查由创建非预定义 subagent 前的配置检查触发, 由所属运行环境的 Main Agent 完成.
 
 向用户提交具体模型及其低, 中, 高努力档位的推理强度. 用户批准后, 将这些配置写入本文件的 repository owned 区域, 然后继续创建原定的 subagent. 审批前不使用候选映射. Codex 的创建 Interface 不能逐次设置 Fast, 因此本规则不把 Fast 状态作为可配置映射或创建承诺; Claude Code 通过 Agent 工具的 `model` 和 `effort` 参数传递所选映射.
+
+Agent 默认不开启 Fast 模式. 可以设置服务层级的位置 (Reviewer 配置的 `serviceTier`, Codex 的 `service_tier`, Claude Code 的 `/fast`) 使用标准层级; 只有用户明确要求时才开启, 且只用于用户指定的范围.
 <!-- arw:managed:end -->
 <!-- arw:repository-owned:start -->
 None.
