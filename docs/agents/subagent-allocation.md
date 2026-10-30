@@ -72,7 +72,7 @@ Claude Code 使用以下映射; 用户级规则另有模型选择要求时以用
 
 | 智力需求 | 模型 | 低努力 | 中努力 | 高努力 |
 | --- | --- | --- | --- | --- |
-| 低 | `haiku` | `low` | `medium` | `xhigh` |
+| 低 | `haiku` | `low` | `medium` | `high` |
 | 中 | `sonnet` | `low` | `medium` | `xhigh` |
 | 高 | `opus` | `low` | `medium` | `xhigh` |
 
