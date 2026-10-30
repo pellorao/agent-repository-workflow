@@ -1,18 +1,11 @@
 import assert from 'node:assert/strict';
-import {createHash} from 'node:crypto';
 import {mkdir, readFile, writeFile} from 'node:fs/promises';
 import {dirname, join} from 'node:path';
 import test from 'node:test';
 
 import {createTemporaryDirectory} from '../helpers/cleanup.mjs';
-import {
-    applyWorkflowDistributionSync,
-    prepareWorkflowDistributionReview,
-    prepareWorkflowDistributionSync,
-} from '../../lib/workflow-distribution/workflow-distribution-sync.mjs';
+import {syncWorkflowDistribution} from '../../lib/workflow-distribution/workflow-distribution-sync.mjs';
 import {buildWorkflowDistribution, repositoryOwnedSeedPaths} from '../../lib/workflow-distribution/workflow-distribution.mjs';
-
-const sha256 = (/** @type {Buffer<ArrayBuffer> | import("crypto").BinaryLike} */ bytes) => createHash('sha256').update(bytes).digest('hex');
 
 const distributionConfig = {
     repositoryOwnedSeeds: ['.arwignore', '.custom', 'docs/licenses/arw/', 'docs/licenses/arw/LOCAL.txt'],
@@ -20,7 +13,7 @@ const distributionConfig = {
 
 const projectionConfig = {
     source: 'codex',
-    skills: {root: 'skills/', additionalSkillReferences: [], skillReferenceNormalizations: []},
+    skills: {root: 'skills/', additionalSkillReferences: []},
     platforms: {
         codex: {
             supportedVersionRange: '*',
@@ -47,7 +40,7 @@ const createSourceCheckout = async (/** @type {test.TestContext} */ t) => {
     await write(root, 'docs/agents/writing.md', '<!-- arw:managed:start -->\nManaged writing.\n<!-- arw:managed:end -->\n');
     await write(root, 'docs/agents/roles/reviewer.md', '# Reviewer\n');
     await write(root, 'docs/licenses/arw/LICENSE.example-source', 'License.\n');
-    await write(root, '.agents/skills/review/SKILL.md', 'Use $review and $external.\n');
+    await write(root, '.agents/skills/review/SKILL.md', 'Use $review and $external now.\n');
     await write(root, '.agents/skills/review/agents/openai.yaml', 'interface:\n  display_name: Review\n');
     await write(root, 'distribution/config.json', `${JSON.stringify(distributionConfig, null, 2)}\n`);
     await write(root, 'distribution/projections/config.json', `${JSON.stringify(projectionConfig, null, 2)}\n`);
@@ -60,50 +53,17 @@ const createSourceCheckout = async (/** @type {test.TestContext} */ t) => {
     return root;
 };
 
-/** @type {Parameters<typeof prepareWorkflowDistributionReview>[0]['stateAdapter']} */
+/** @type {NonNullable<Parameters<typeof syncWorkflowDistribution>[0]['stateAdapter']>} */
 const cleanState = {
     async inspect(/** @type {string[]} */ paths) {
         return {diagnostics: [], status: 'succeeded'};
     },
 };
 
-const linesBytes = (/** @type {string[]} */ lines) => Buffer.from(lines.length === 0 ? '' : `${lines.join('\n')}\n`, 'utf8');
-
-/** @returns {Parameters<typeof prepareWorkflowDistributionSync>[0]['review']} */
-const completedReview = (/** @type {Extract<Awaited<ReturnType<typeof prepareWorkflowDistributionReview>>, {status: 'succeeded'}>} */ analysis) => {
-    const normalizationLines = analysis.skillReferenceNormalizations.map(record => JSON.stringify({
-        path: record.path,
-        line: record.line,
-        column: record.column,
-        identity: record.identity,
-        context: record.context,
-    }));
-    return {
-        status: 'succeeded',
-        additionalSkillReferences: analysis.additionalSkillReferences,
-        skillReferenceNormalizations: analysis.skillReferenceNormalizations,
-        additionalSkillReferencesHash: sha256(linesBytes(analysis.additionalSkillReferences)),
-        skillReferenceNormalizationsHash: sha256(linesBytes(normalizationLines)),
-    };
-};
-
 test('sync preserves every configured exact file seed and deletes only obsolete generated baseline files', async t => {
     const repositoryRoot = await createSourceCheckout(t);
-    const analysis = await prepareWorkflowDistributionReview({repositoryRoot, stateAdapter: cleanState});
-    assert.equal(analysis.status, 'succeeded', JSON.stringify(analysis.diagnostics));
-    const plan = await prepareWorkflowDistributionSync({
-        repositoryRoot,
-        review: completedReview(analysis),
-        stateAdapter: cleanState,
-    });
-    assert.equal(plan.status, 'succeeded', JSON.stringify(plan.diagnostics));
-    assert.deepEqual(Object.keys(plan), ['diagnostics', 'planDigest', 'status']);
-
-    const result = await applyWorkflowDistributionSync({
-        authorization: {approved: true, planDigest: plan.planDigest},
-        plan,
-    });
-    assert.deepEqual(result, {diagnostics: [], status: 'succeeded'});
+    const result = await syncWorkflowDistribution({repositoryRoot, stateAdapter: cleanState});
+    assert.equal(result.status, 'succeeded', JSON.stringify(result.diagnostics));
     assert.equal(
         await readFile(join(repositoryRoot, 'distribution', 'baseline', '.custom'), 'utf8'),
         'repository seed bytes\n',
@@ -131,15 +91,9 @@ test('sync preserves every configured exact file seed and deletes only obsolete 
 test('a directory seed without a projected baseline file fails before sync deletes anything', async t => {
     const repositoryRoot = await createSourceCheckout(t);
     await write(repositoryRoot, 'distribution/config.json', `${JSON.stringify({repositoryOwnedSeeds: ['.arwignore', 'missing/']})}\n`);
-    const analysis = await prepareWorkflowDistributionReview({repositoryRoot, stateAdapter: cleanState});
-    assert.equal(analysis.status, 'succeeded', JSON.stringify(analysis.diagnostics));
-    const plan = await prepareWorkflowDistributionSync({
-        repositoryRoot,
-        review: completedReview(analysis),
-        stateAdapter: cleanState,
-    });
-    assert.equal(plan.status, 'blocked');
-    assert.deepEqual(plan.diagnostics, [{
+    const result = await syncWorkflowDistribution({repositoryRoot, stateAdapter: cleanState});
+    assert.equal(result.status, 'blocked');
+    assert.deepEqual(result.diagnostics, [{
         code: 'repository-seed-source-missing',
         message: 'A repository-owned seed directory has no baseline files.',
         path: 'missing/',

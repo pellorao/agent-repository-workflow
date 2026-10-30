@@ -34,10 +34,10 @@ Platform Adapter 与操作无关且只读: 解释 Projection 配置, 生成有�
 
 只有 Skill Package 中的 Markdown 文件参与引用分析和转换, 其他文件保留精确字节. 统一来源语法是 Codex `$name`. 有效身份只在 ASCII 空格, 水平制表符, 换行或反引号前结束.
 
-当前 Skill 身份集合以外的潜在引用成为用户审查的 `additionalSkillReferences`; 非标准相邻字符成为用户审查的规范化位置 (`path`, `line`, `column`, `identity`). 用户在开发长期规范定义的两个临时逐行文件中删除拒绝的行. 不维护非 Skill 拒绝清单, 不推断平台名称映射.
+已知身份后接非终止符使发布前同步失败, 当前 Skill 身份集合以外的未知身份成为提示, 由 Main Agent 按开发长期规格的 [Reference check](../../../docs/specs/agent-repository-workflow-development/spec.md#reference-check) 判断并写入 `additionalSkillReferences`. 不维护非 Skill 拒绝清单, 不推断平台名称映射.
 
 ## Validation
 
-测试直接调用生产 Workflow Distribution Module 和 Platform Adapter, 断言准确的 Codex 与 Claude Code 目标路径和字节, 并用变异测试证明来源, 配置或输出错误时检查会失败. 不维护第二份预期输出树或金样文件. 覆盖重点: 扁平布局, 封闭配置, Codex 保留而 Claude Code 排除的 `agents/openai.yaml`, 仅 Markdown 引用转换, 额外引用与规范化位置, 精确的 `CLAUDE.md` 投射, 稳定顺序与不安全路径.
+测试直接调用生产 Workflow Distribution Module 和 Platform Adapter, 断言准确的 Codex 与 Claude Code 目标路径和字节, 并用变异测试证明来源, 配置或输出错误时检查会失败. 不维护第二份预期输出树或金样文件. 覆盖重点: 扁平布局, 封闭配置, Codex 保留而 Claude Code 排除的 `agents/openai.yaml`, 仅 Markdown 引用转换, 额外引用与终止符错误, 精确的 `CLAUDE.md` 投射, 稳定顺序与不安全路径.
 
 然后运行 `pnpm typecheck`, `pnpm test`, `node scripts/check-workflow-distribution.mjs` 和 `node scripts/project-claude-skills.mjs --check`. Claude Code 支持以确定性投射字节验证, 不要求实时 Agent 会话测试.

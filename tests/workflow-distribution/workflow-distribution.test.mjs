@@ -35,12 +35,6 @@ const projectionConfig = ({configured = true} = {}) => ({
     skills: {
         root: 'skills/',
         additionalSkillReferences: configured ? ['external'] : [],
-        skillReferenceNormalizations: configured ? [{
-            path: 'skills/review/SKILL.md',
-            line: 1,
-            column: 17,
-            identity: 'external',
-        }] : [],
     },
     platforms: {
         codex: {
@@ -85,7 +79,8 @@ const createDistribution = async (/** @type {test.TestContext} */ t, {exactFileS
     if (exactFileSeed) await write(root, 'baseline/.custom', 'distribution default\n');
     await write(root, 'baseline/AGENTS.md', '<!-- arw:managed:start -->\nmanaged\n<!-- arw:managed:end -->\n');
     await write(root, 'baseline/docs/agents/roles/reviewer.md', '# Reviewer\n');
-    await write(root, 'skills/review/SKILL.md', 'Use $review and $external.\n');
+    await write(root, 'skills/review/SKILL.md', 'Use $review and $external now.\n');
+    await write(root, 'skills/review/NOTES.md', 'Keep $review, as is.\n');
     await write(root, 'skills/review/agents/openai.yaml', 'interface:\n  display_name: Review\n');
     return root;
 };
@@ -290,16 +285,13 @@ test('Workflow Distribution rejects linked entries without returning a partial p
     assert.equal('payload' in result, false);
 });
 
-test('Platform Adapter blocks malformed normalization and payload entries without throwing', () => {
+test('Platform Adapter blocks removed normalization field and malformed payload entries without throwing', () => {
     const validConfiguration = projectionConfig({configured: false});
-    const malformedConfiguration = {
+    const retiredConfiguration = {
         ...validConfiguration,
-        skills: {...validConfiguration.skills, skillReferenceNormalizations: [null]},
+        skills: {...validConfiguration.skills, skillReferenceNormalizations: []},
     };
-    assert.deepEqual(validateProjectionConfig(malformedConfiguration), [{
-        code: 'projection-normalizations-invalid',
-        message: 'Skill reference normalizations must be valid and sorted by path, line, column, and identity.',
-    }]);
+    assert.deepEqual(validateProjectionConfig(retiredConfiguration).map(entry => entry.code), ['projection-skills-invalid']);
 
     const malformedPayload = [null];
     assert.deepEqual(analyzeSkillReferences({
@@ -329,6 +321,50 @@ test('Platform Adapter blocks malformed normalization and payload entries withou
     });
 });
 
+/** @param {string} text @param {string[]} [skills] */
+const analyze = (text, skills = ['implement']) => analyzeSkillReferences({
+    payload: [
+        ...skills.map(identity => ({bytes: Buffer.from('x\n'), path: `skills/${identity}/SKILL.md`})),
+        {bytes: Buffer.from(text), path: 'skills/implement/doc.md'},
+    ],
+    projectionConfig: {...projectionConfig({configured: false}), skills: {root: 'skills/', additionalSkillReferences: ['external']}},
+});
+
+test('analyzeSkillReferences blocks known identities followed by a non-terminator, including at end of file', () => {
+    const result = analyze('ok $implement\n$implement2 $external, $implement');
+    assert.equal(result.status, 'blocked');
+    assert.deepEqual(result.diagnostics.map(({code, column, identity, line, path}) => ({code, column, identity, line, path})), [
+        {code: 'skill-reference-terminator-invalid', column: 1, identity: 'implement', line: 2, path: 'skills/implement/doc.md'},
+        {code: 'skill-reference-terminator-invalid', column: 13, identity: 'external', line: 2, path: 'skills/implement/doc.md'},
+        {code: 'skill-reference-terminator-invalid', column: 24, identity: 'implement', line: 2, path: 'skills/implement/doc.md'},
+    ]);
+});
+
+test('analyzeSkillReferences accepts the four terminators and reports unknown identities with context', () => {
+    const result = analyze('$implement $implement\t$implement\n`$implement` $other. $implement-x\n$implement- $implement--review\n');
+    assert.equal(result.status, 'succeeded');
+    if (result.status !== 'succeeded') return;
+    assert.deepEqual(result.unknownReferences, [
+        {column: 14, context: '$other. $implement-x', identity: 'other', line: 2, path: 'skills/implement/doc.md'},
+        {column: 22, context: '$implement-x', identity: 'implement-x', line: 2, path: 'skills/implement/doc.md'},
+    ]);
+});
+
+test('analyzeSkillReferences blocks invalid Skill identity and non-UTF-8 Markdown', () => {
+    const invalid = analyzeSkillReferences({
+        payload: [{bytes: Buffer.from([0xc3, 0x28]), path: 'skills/Bad/SKILL.md'}],
+        projectionConfig: projectionConfig({configured: false}),
+    });
+    assert.deepEqual(invalid.diagnostics.map(entry => entry.code), ['skill-identity-invalid']);
+    const utf8 = analyzeSkillReferences({
+        payload: [{bytes: Buffer.from([0xc3, 0x28]), path: 'skills/good/SKILL.md'}],
+        projectionConfig: projectionConfig({configured: false}),
+    });
+    assert.deepEqual(utf8.diagnostics.map(entry => entry.code), ['skill-markdown-invalid-utf8']);
+    const config = analyzeSkillReferences({payload: [], projectionConfig: {}});
+    assert.deepEqual(config.diagnostics.map(entry => entry.code), ['projection-config-invalid']);
+});
+
 test('one configuration-driven Platform Adapter projects exact Codex and Claude Code bytes', async t => {
     const root = await createDistribution(t);
     const distribution = requireBuiltDistribution(await buildWorkflowDistribution({distributionDirectory: root}));
@@ -342,7 +378,7 @@ test('one configuration-driven Platform Adapter projects exact Codex and Claude 
     assert.equal(codex.status, 'succeeded', JSON.stringify(codex.diagnostics));
     const codexSkill = codex.managedTargets.find(entry => entry.path === '.agents/skills/review/SKILL.md');
     if (codexSkill === undefined) throw new Error('Expected projected Codex Skill.');
-    assert.equal(codexSkill.bytes.toString('utf8'), 'Use $review and $external .\n');
+    assert.equal(codexSkill.bytes.toString('utf8'), 'Use $review and $external now.\n');
     assert.ok(codex.managedTargets.some(entry => entry.path === '.agents/skills/review/agents/openai.yaml'));
     assert.deepEqual(codex.repositoryOwnedSeeds, []);
 
@@ -356,7 +392,9 @@ test('one configuration-driven Platform Adapter projects exact Codex and Claude 
     assert.equal(claude.status, 'succeeded', JSON.stringify(claude.diagnostics));
     const claudeSkill = claude.managedTargets.find(entry => entry.path === '.claude/skills/review/SKILL.md');
     if (claudeSkill === undefined) throw new Error('Expected projected Claude Code Skill.');
-    assert.equal(claudeSkill.bytes.toString('utf8'), 'Use /review and /external .\n');
+    assert.equal(claudeSkill.bytes.toString('utf8'), 'Use /review and /external now.\n');
+    const claudeNotes = claude.managedTargets.find(entry => entry.path === '.claude/skills/review/NOTES.md');
+    assert.equal(claudeNotes?.bytes.toString('utf8'), 'Keep $review, as is.\n');
     assert.equal(claude.managedTargets.some(entry => entry.path.endsWith('agents/openai.yaml')), false);
     const claudeDocument = claude.managedTargets.find(entry => entry.path === 'CLAUDE.md');
     if (claudeDocument === undefined) throw new Error('Expected projected CLAUDE.md.');

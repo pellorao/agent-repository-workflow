@@ -14,7 +14,7 @@
 
 其他生命周期由独立长期规格拥有:
 
-- [开发长期规格](../agent-repository-workflow-development/spec.md) 定义源码仓库实际工作流文件, Workflow Distribution, 平台投影, Skill 引用审核, 发布前同步和开发公共 Module;
+- [开发长期规格](../agent-repository-workflow-development/spec.md) 定义源码仓库实际工作流文件, Workflow Distribution, 平台投影, Skill 引用检查, 发布前同步和开发公共 Module;
 - [安装长期规格](../agent-repository-workflow-installation/spec.md) 定义引导安装脚本, 安装载荷, ARW 安装目录, 更新, 卸载, 配置升级和 PATH 或配置文件归属;
 - 源码仓库专用的 [`upstream-sync` Skill](../../../.agents/skills/upstream-sync/SKILL.md) 定义固定上游来源, Base/Ours/Theirs 三方审核, 维护者批准和采用记录;
 - [Application 与 JIRA 长期规格](../agent-repository-workflow-application-jira/spec.md) 定义 Application Repository 与 Module Repository 的角色, JIRA Story 接收, issue 分发, Module 状态同步, Application 验证和 JIRA 完成同步;

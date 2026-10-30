@@ -33,7 +33,6 @@ const projectionConfig = {
     skills: {
         additionalSkillReferences: [],
         root: 'skills/',
-        skillReferenceNormalizations: [],
     },
     platforms: {
         codex: {

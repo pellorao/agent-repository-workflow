@@ -121,14 +121,11 @@ Use this route to change actual shared workflow content, distribution configurat
 Before-release synchronization and production checks use these command names:
 
 ~~~text
-node scripts/sync-workflow-distribution.mjs review
-node scripts/sync-workflow-distribution.mjs review --complete
-node scripts/sync-workflow-distribution.mjs prepare
-node scripts/sync-workflow-distribution.mjs apply --plan-digest <plan-digest>
+node scripts/sync-workflow-distribution.mjs
 node scripts/check-workflow-distribution.mjs
 ~~~
 
-The development specification and platform standards define how these commands relate and what inputs they use.
+The synchronization command takes no arguments. The [Reference check (Chinese)](../specs/agent-repository-workflow-development/spec.md#reference-check) section of the development specification defines how its notices are handled, and the specification and platform standards define what inputs the commands use.
 
 ### Upstream Sync
 
@@ -183,7 +180,7 @@ Direct children of `scripts/` are entry points for Source Checkout maintainers o
 | `scripts/release-guest-check.mjs` | In a disposable test system, check install, PATH registration, `arw workflow init`, and uninstall |
 | `scripts/release-vm.mjs` | Run the guest check in a VMware VM and restore its snapshot |
 | `scripts/reviewer-capability.mjs` | Reviewer capability suite entry: build a scenario repository, score a report, build and use blind pools |
-| `scripts/sync-workflow-distribution.mjs` | Review, prepare, and apply pre-release Workflow Distribution synchronization |
+| `scripts/sync-workflow-distribution.mjs` | Synchronize the pre-release Workflow Distribution in one command |
 | `scripts/upstream-sync.mjs` | Build the upstream three-way view for the `$upstream-sync` Skill |
 
 ### lib

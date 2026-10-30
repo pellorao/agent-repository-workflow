@@ -1,6 +1,6 @@
 # 发布前同步改为单步命令
 
-Status: ready-for-agent
+Status: completed
 
 ## What to build
 
@@ -23,15 +23,30 @@ ADR 按 spec:0016 ADR Evaluation 修改: 新增 `docs/adr/0036-*.md` 取代 ADR-
 
 ## Acceptance criteria
 
-- [ ] `node scripts/sync-workflow-distribution.mjs` 无参数时一次完成状态检查, 读取验证, 引用检查, 重建和双平台验证, 写入的是已检查的字节; 任何参数为用法错误退出 2; 旧子命令, 候选文件, `completed-review.json`, `planDigest`, 授权和删除后重读代码全部删除. 观察: 入口与模块代码差异, CLI 测试.
-- [ ] 已知身份 (分发 Skill 与 `additionalSkillReferences`) 后接非终止符时命令 `blocked`, 零写入, 列出全部 `path:line:column`; 不符合身份语法的 `$` 串不产生结果. 观察: Platform Adapter 与同步测试.
-- [ ] 未知身份作为 `notice skill-reference-unknown ...` 行写到 `stderr`, 退出 0, 分发内容保留原文. 观察: 同步与 CLI 测试.
-- [ ] 失败按 spec:0016 失败边界表返回 `blocked` 或 `failed` 与对应 `stage`, 删除前的失败零写入. 观察: 同步测试.
-- [ ] 同步不写 `distribution/projections/config.json`; `skillReferenceNormalizations` 从配置, 配置校验和投影中删除; `reviewEditor` 不变. 观察: 代码差异, 投影测试, `lib/arw-common/config.mjs` 无差异.
-- [ ] 提示判断与有提示时提交前独立 Agent 复核的程序只在开发长期规格引用检查一节陈述, 手册与 `upstream-sync` Skill 引用它, 不依赖 `arw background-agent`. 观察: 文档差异.
-- [ ] ADR 0036 取代 ADR-0034; ADR-0026 与 ADR-0015 的对应句按 spec:0016 改写并指向 0036; 开发长期规格 ADR Evaluation 指向 0036. 观察: 文档差异.
-- [ ] 完整验证命令通过, 真实同步运行退出 0 且 `distribution/` 除已暂存的配置修改外无变化. 观察: Validation 的实际命令结果.
+- [x] `node scripts/sync-workflow-distribution.mjs` 无参数时一次完成状态检查, 读取验证, 引用检查, 重建和双平台验证, 写入的是已检查的字节; 任何参数为用法错误退出 2; 旧子命令, 候选文件, `completed-review.json`, `planDigest`, 授权和删除后重读代码全部删除. 观察: 入口与模块代码差异, CLI 测试.
+- [x] 已知身份 (分发 Skill 与 `additionalSkillReferences`) 后接非终止符时命令 `blocked`, 零写入, 列出全部 `path:line:column`; 不符合身份语法的 `$` 串不产生结果. 观察: Platform Adapter 与同步测试.
+- [x] 未知身份作为 `notice skill-reference-unknown ...` 行写到 `stderr`, 退出 0, 分发内容保留原文. 观察: 同步与 CLI 测试.
+- [x] 失败按 spec:0016 失败边界表返回 `blocked` 或 `failed` 与对应 `stage`, 删除前的失败零写入. 观察: 同步测试.
+- [x] 同步不写 `distribution/projections/config.json`; `skillReferenceNormalizations` 从配置, 配置校验和投影中删除; `reviewEditor` 不变. 观察: 代码差异, 投影测试, `lib/arw-common/config.mjs` 无差异.
+- [x] 提示判断与有提示时提交前独立 Agent 复核的程序只在开发长期规格引用检查一节陈述, 手册与 `upstream-sync` Skill 引用它, 不依赖 `arw background-agent`. 观察: 文档差异.
+- [x] ADR 0036 取代 ADR-0034; ADR-0026 与 ADR-0015 的对应句按 spec:0016 改写并指向 0036; 开发长期规格 ADR Evaluation 指向 0036. 观察: 文档差异.
+- [x] 完整验证命令通过, 真实同步运行退出 0 且 `distribution/` 除已暂存的配置修改外无变化. 观察: Validation 的实际命令结果.
 
 ## Blocked by
 
 - None - can start immediately
+
+## Validation
+
+- `pnpm test`: 805 通过, 0 失败. `pnpm typecheck`: 通过.
+- `node scripts/check-workflow-distribution.mjs`, `node scripts/project-claude-skills.mjs --check`, `node scripts/generate-install-arw.mjs --check`: 均退出 0.
+- `arw text check`, `arw terms check --include .scratch/0016-single-step-distribution-sync/`, `git diff --cached --check`: 均通过.
+- 真实同步: 暂存后运行 `node scripts/sync-workflow-distribution.mjs`, 输出 `Workflow Distribution synchronization completed.`, 退出 0, 没有 `notice` 行, `distribution/` 除已暂存的配置修改外无变化; 随后 `node scripts/project-claude-skills.mjs` 更新 `.claude/skills/platform-standards` 与 `.claude/skills/upstream-sync` 的投影.
+- 测试位置: `tests/workflow-distribution/workflow-distribution-sync.test.mjs` (stage, 零写入, notices, 终止符与标记边界, `blocked` 输入), `tests/workflow-distribution/sync-workflow-distribution-script.test.mjs` (退出码与输出格式), `tests/workflow-distribution/workflow-distribution.test.mjs` (投影拒绝 `skillReferenceNormalizations`, 非终止符保持原文). 新增或改动的测试回调最慢约 59 毫秒.
+
+## Comments
+
+- 非测试代码净增约 -960 行 (含提交前 `/simplify` 自查再减 22 行), 预估 -750. 自查跳过的建议: 合并 `platform-adapter.mjs` 中两处前言 (合并后代码变多), 去掉 `stage` 与 `notices` (spec 要求), 删除过程的逐项 `remove` 与顺序写入 (既有代码, 收益小).
+- 终止符错误诊断的路径与提示一样转为仓库相对来源路径 (`.agents/skills/...`), 已写入开发长期规格入口一节 (提交审核第 18 轮 code-standards 指出).
+- 真实同步没有提示, 不需要提交前独立 Agent 复核.
+- `tests/repository-workflow/workflow.test.mjs` 中 4 个既有回调在并行负载下为 108 到 129 毫秒; 本 issue 只删除了该文件 fixture 中的一个字段, 未改这些用例.

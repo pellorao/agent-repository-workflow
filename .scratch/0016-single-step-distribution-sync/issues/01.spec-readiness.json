@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0016:01",
+  "request": {
+    "digest": "f5f8326d9d5dd3fb3f898c0754380b727d1f3a9af4670dff36a9ecdc34e5bdf2",
+    "filePath": ".tmp/claude-code/c0e60747-0cc3-447f-9257-7d8bd88847ff/0016_01/spec-readiness/requests/request-72f50bd0-7e10-4fe2-a587-73416b343c78.json",
+    "id": "72f50bd0-7e10-4fe2-a587-73416b343c78"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "f797bb611ba9cf50c0ccfab4d029b2a32fd44b771b7b9338a0a31bb48ddba14a"
+  },
+  "inputs": [
+    {
+      "filePath": ".scratch/0016-single-step-distribution-sync/spec.md",
+      "role": "governing-spec",
+      "sha256": "2187d0b8d2a754331973f2597dffa02cf449b170cef9eea8fb05b31233fb6333"
+    },
+    {
+      "filePath": "docs/adr/0015-use-versioned-skill-package-grammars.md",
+      "role": "adr",
+      "sha256": "3e65cab3de6ae69712ab216b708c8f80fc747d3eb5c7728ce841890182462840"
+    },
+    {
+      "filePath": "docs/adr/0026-use-source-checkout-workflow-files-as-distribution-authority.md",
+      "role": "adr",
+      "sha256": "ce4bf2c6eb7d7ef75226853830f98592ef66a34b31582cfc2091be49ee94fd2c"
+    },
+    {
+      "filePath": "docs/adr/0034-let-the-main-agent-complete-distribution-sync-review.md",
+      "role": "adr",
+      "sha256": "f248b74f845c2c7d182f07a108bbc20f12691460c414d148d68aba729ee91eed"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow-development/spec.md",
+      "role": "governing-spec",
+      "sha256": "58884e23b5a8233395b331fe351f2d7dcebd033f738fb962b0ac77fdc978a6e4"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow/spec.md",
+      "role": "governing-spec",
+      "sha256": "28b50b7b57da69606472d3a200814e8a6ad81f6158ce33f965e7deba64beb6f5"
+    },
+    {
+      "filePath": "lib/arw-common/platform-adapter.mjs",
+      "role": "architecture-evidence",
+      "sha256": "6e4a60abd8165e9645587071997c97d7bd45b2e4638319005d45889797985807"
+    },
+    {
+      "filePath": "lib/workflow-distribution/skill-reference-review.mjs",
+      "role": "architecture-evidence",
+      "sha256": "f88cae985bf831c74dde1f395028de16ef0149a633180caf4d19048d1de11323"
+    },
+    {
+      "filePath": "lib/workflow-distribution/workflow-distribution-sync.mjs",
+      "role": "architecture-evidence",
+      "sha256": "be0b65fe6a55a9cd39907d597f688e4bc7cb3be046b8d85bb10b98a965fd5265"
+    },
+    {
+      "filePath": "scripts/sync-workflow-distribution.mjs",
+      "role": "architecture-evidence",
+      "sha256": "8b8b2e01b08d4c5376e50e93aaa51d26062cdd9648be2acaf56d8a6d7be811f5"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0016-single-step-distribution-sync/issues/01-single-step-distribution-sync.md",
+    "sha256": "ccc4cd5316a032e54664fde5bb5ec653275a49575a4a9586ed6a307208939334"
+  },
+  "result": "satisfied"
+}

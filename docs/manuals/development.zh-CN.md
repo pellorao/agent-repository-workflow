@@ -121,14 +121,11 @@ node scripts/generate-install-arw.mjs --check
 发布前同步和生产检查使用这些命令名称:
 
 ```text
-node scripts/sync-workflow-distribution.mjs review
-node scripts/sync-workflow-distribution.mjs review --complete
-node scripts/sync-workflow-distribution.mjs prepare
-node scripts/sync-workflow-distribution.mjs apply --plan-digest <plan-digest>
+node scripts/sync-workflow-distribution.mjs
 node scripts/check-workflow-distribution.mjs
 ```
 
-这些命令的调用关系和输入以开发长期规格与平台标准为准.
+同步命令不带参数, 其提示的处理程序见开发长期规格的 [Reference check](../specs/agent-repository-workflow-development/spec.md#reference-check), 命令的输入以开发长期规格与平台标准为准.
 
 ### Upstream Sync
 
@@ -183,7 +180,7 @@ node scripts/reviewer-capability.mjs pool build|prompt|split|override ...
 | `scripts/release-guest-check.mjs` | 在可丢弃的受验系统中检查安装, PATH 登记, `arw workflow init` 和卸载 |
 | `scripts/release-vm.mjs` | 在 VMware VM 中运行 guest 检查并还原快照 |
 | `scripts/reviewer-capability.mjs` | Reviewer 能力套件入口: 搭建场景仓库, 给报告计分, 组盲池并记录裁决 |
-| `scripts/sync-workflow-distribution.mjs` | 审核, 准备并应用发布前工作流分发同步 |
+| `scripts/sync-workflow-distribution.mjs` | 一次命令完成发布前工作流分发同步 |
 | `scripts/upstream-sync.mjs` | 为 `$upstream-sync` Skill 生成上游三方视图 |
 
 ### lib

@@ -2,8 +2,7 @@
   "source": "codex",
   "skills": {
     "root": "skills/",
-    "additionalSkillReferences": [],
-    "skillReferenceNormalizations": []
+    "additionalSkillReferences": []
   },
   "platforms": {
     "codex": {

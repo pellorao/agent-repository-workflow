@@ -7,7 +7,7 @@
 
 ## Scope
 
-本文定义 ARW 源码仓库的开发布局, 共享工作流内容的唯一编写来源, Workflow Distribution 与平台投影, Skill 引用审核, 发布前同步, 以及这些行为共同使用的公共 Module. 用户在目标仓库中使用 ARW 的行为由 [Agent Repository Workflow 长期规格](../agent-repository-workflow/spec.md) 拥有. ARW 安装目录由 [安装长期规格](../agent-repository-workflow-installation/spec.md) 拥有. Upstream Sync 是维护者显式调用的源码仓库专用 [`upstream-sync` Skill](../../../.agents/skills/upstream-sync/SKILL.md). 发布候选, 归档, VM, 标签, 外部写入授权和发布恢复由 [源码仓库发布长期规格](../agent-repository-workflow-release/spec.md) 拥有.
+本文定义 ARW 源码仓库的开发布局, 共享工作流内容的唯一编写来源, Workflow Distribution 与平台投影, Skill 引用检查, 发布前同步, 以及这些行为共同使用的公共 Module. 用户在目标仓库中使用 ARW 的行为由 [Agent Repository Workflow 长期规格](../agent-repository-workflow/spec.md) 拥有. ARW 安装目录由 [安装长期规格](../agent-repository-workflow-installation/spec.md) 拥有. Upstream Sync 是维护者显式调用的源码仓库专用 [`upstream-sync` Skill](../../../.agents/skills/upstream-sync/SKILL.md). 发布候选, 归档, VM, 标签, 外部写入授权和发布恢复由 [源码仓库发布长期规格](../agent-repository-workflow-release/spec.md) 拥有.
 
 本文不要求日常开发中的 `distribution/` 与实际工作流文件实时一致. 源码仓库发布只消费已经完成发布前同步并经过审核的候选, 不重新决定共享工作流内容.
 
@@ -84,7 +84,7 @@ Workflow Distribution Module 递归枚举固定安全树. 每个安全普通文�
 
 `distribution/projections/config.json` 只负责把统一格式数据映射到多个平台. 顶层只使用 `source`, `skills` 和 `platforms`.
 
-`source` 固定为 `codex`, 表示统一 Skill 来源使用 Codex 格式规则. `skills` 保存固定来源根目录, `additionalSkillReferences` 和 `skillReferenceNormalizations`. `platforms` 的键是 `codex` 和 `claude-code`. 每个平台只使用 `supportedVersionRange`, `format` 和 `targets`. `format` 保存 Skill 引用写法和投射时排除的 Skill 相对路径 `excludedSkillPaths`, `targets` 保存 Skill 的仓库相对目标根. Codex 的 `targets.configuration` 必须准确为 `.codex/config.toml`, 默认字节来自 `projections/codex/config.toml`; Claude Code 不声明该字段.
+`source` 固定为 `codex`, 表示统一 Skill 来源使用 Codex 格式规则. `skills` 保存固定来源根目录和 `additionalSkillReferences`. `platforms` 的键是 `codex` 和 `claude-code`. 每个平台只使用 `supportedVersionRange`, `format` 和 `targets`. `format` 保存 Skill 引用写法和投射时排除的 Skill 相对路径 `excludedSkillPaths`, `targets` 保存 Skill 的仓库相对目标根. Codex 的 `targets.configuration` 必须准确为 `.codex/config.toml`, 默认字节来自 `projections/codex/config.toml`; Claude Code 不声明该字段.
 
 每个平台的 `supportedVersionRange` 是信息性的非空 SemVer 范围表达式. 当前范围值只保存在 `distribution/projections/config.json`. ARW 不解析这些范围, 不探测本机 Agent CLI 版本, 也不在发布前同步, 源码仓库发布, 安装或仓库工作流时检查它们.
 
@@ -106,78 +106,75 @@ Skill Package 中只有 `.md` 文件参与引用分析和语法投影, 包括 `S
 
 Skill 身份只使用小写 ASCII 字母组成的非空段, 相邻段之间使用单个连字符.
 
-实际 Skill 或配置声明的身份不符合该范围时, 分析返回 `blocked` 与 `diagnostics`, 保证零业务写入, 并且不把该身份交给引用审核.
+实际 Skill 或配置声明的身份不符合该范围时, 分析返回 `blocked` 与 `diagnostics`, 保证零业务写入.
 
-Skill 身份后必须立即出现一个封闭终止符: ASCII 空格, 水平制表符, 换行或反引号. 身份后出现其他字符时, 分析结果包含从引用起点开始的短上下文和准确的 `path`, `line`, `column`, `identity`, 供审核判断. 未被确认成 Skill 引用的位置保持原文, 不写入非 Skill 排除名单.
+标记边界: `$` 之后取最长的连续 `[a-z-]` 串作为候选身份. 候选不符合 Skill 身份范围 (空串, 首尾连字符或连续连字符) 时, 该处不是引用, 不产生诊断也不产生提示. 否则由候选之后的第一个字符判断终止符: 封闭终止符是 ASCII 空格, 水平制表符, 换行或反引号, 文件末尾不是终止符. 例如 `$implement-` 与 `$implement--review` 不是引用, `$implement-x` 是身份 `implement-x`, `$implement2` 与 `$implement,` 是身份 `implement` 后接非终止符. 已知身份 (分发 Skill 身份与 `additionalSkillReferences` 的并集, 也就是安装投影会转换的身份集合) 后接非终止符使分析失败, 诊断码为 `skill-reference-terminator-invalid`, 携带准确的 `path`, `line`, `column`, `identity`. 既不是分发 Skill 也不在 `additionalSkillReferences` 中的身份是未知身份, 不论后接什么字符都作为带上下文 (从标记起点开始的同一行前 80 个字符) 的提示返回, 不使分析失败. 未知身份的标记保持原文, 不写入非 Skill 排除名单.
 
-经引用审核确认的位置写入 `skillReferenceNormalizations`. 投影先在身份后插入一个 ASCII 空格, 再执行平台引用写法转换. 每个位置对象按 `path`, `line`, `column`, `identity` 的顺序写出, 不应用全局字母排序.
+投影只转换后接封闭终止符的已知身份, 其余标记保持原文. 同步已保证分发中不存在已知身份后接非终止符的位置, 因此安装投影不补空格, 也不保存位置记录.
 
-能由当前 Skill 身份集合解析的标记直接形成规范引用. 无法由当前集合解析的潜在标记形成按身份排序且去重的一维候选集合. `additionalSkillReferences` 只保存经引用审核确认确实是 Skill, 但不在当前分析范围内的身份. 投影转换当前 Skill 和 `additionalSkillReferences` 中的身份. 审核中删除的其他候选按非 Skill 处理, 其标记保持原文. 配置不保存非 Skill 身份, 也不提供平台间名称映射.
+`additionalSkillReferences` 只保存经 Main Agent 判断确实是 Skill, 但不在当前分发 Skill 范围内的身份. 判断为非 Skill 的标记保持原文, 配置不保存非 Skill 身份, 也不提供平台间名称映射. 相同身份的所有标记使用同一结果: 加入 `additionalSkillReferences` 后全部转换, 否则全部保持原文.
 
-分析可以递归发现候选, 但 Main Agent 只审核一维身份列表. 选择一个身份不要求同时选择它引用的其他身份. 相同身份的有效标记使用同一决定: 保留身份时全部转换, 删除身份时全部保持原文. 审核不逐位置区分同一身份的不同用途.
+### Reference check
 
-### Reference review
+发布前同步在重建前对全部分发 Skill 的 Markdown 执行上述引用分析. 已知身份的终止符错误使同步 `blocked` 且零写入, 一次列出全部 `path:line:column` 和身份, Main Agent 修正源码文字 (通常补空格或反引号) 后重跑. 未知身份只作为提示输出, 不影响退出值. 同步不产生规范化候选, 源码本身就是规范写法.
 
-发布前同步使用 Skill 引用分析和以下完整审核流程, 候选覆盖全部实际 Skill.
+本节是提示处理程序的唯一权威:
 
-1. 调用方把当前准确输入产生的两个完整且有序的候选集合交给引用审核 `review`. `additional-skill-references.txt` 每行保存一个额外 Skill 身份. `skill-reference-normalizations.jsonl` 每行保存一个需要确认的引用位置, 第二份文件包含当前范围内 Skill 与第一份文件全部候选身份的规范化候选. `review` 在当前 `.tmp` 工作区写入这两份完整候选文件, 按文件顺序把两个文件路径写到 `stdout`.
-2. 运行发布前同步的 Main Agent 对每一行的判断负责, 依据上下文逐行决定; 判断工作可按 ADR-0013 的普通分工分派给子 Agent, 删除结果由 Main Agent 写入候选文件. 在第一份文件中保留一行, 表示该身份是当前范围外提供的真实 Skill, 并转换它的有效源码标记. 删除一行, 表示该身份不是 Skill, 它的标记保持原文. 在第二份文件中保留一行, 表示该位置是真实 Skill 引用. 投影会先补入一个终止空格, 再转换引用写法. 只做删除式编辑; 删除第一份文件中的身份时, 同时删除第二份文件中该身份的全部行.
-3. `review --complete` 读取同一工作区中的两个文件, 验证它们都是对原始候选的删除式编辑 (只接受删除, 不接受新增, 改写或重排), 第二份文件每个保留的 JSONL 对象语法和字段有效, 且其身份只属于当前范围内 Skill 和第一份文件保留的额外 Skill. 第一份文件中保留的身份就是已确认的额外 Skill. 两个文件都未发生变化也是合法结果, 表示全部候选都保留.
-4. 验证通过时, 两个审核列表和两个哈希构成完成的审核结果. 两个列表是对应配置的完整期望值, 不与旧列表合并. `review --complete` 把两个哈希写入同一工作区的 `completed-review.json`, 并按文件顺序写到 `stdout`. 两个哈希只覆盖最终保存的文件, 不合并成第三个哈希, 也不保存持久证据. 验证失败时不改写任何文件.
-5. 只有完成的审核结果可以交给后续同步 `prepare`. 重复调用 `review` 以当前候选覆盖本轮临时文件并删除已有的 `completed-review.json`; `review --complete` 不修改审核文件. 不带哈希参数的同步 `prepare` 从 `completed-review.json` 取得哈希, 并按同一规则重验两个审核文件. 两次调用都不修改最终配置. 同步 `prepare` 使用审核结果生成同时包含配置和载荷变化的统一计划, `apply` 才执行持久写入.
-
-审核开始时, 只要求本次实际读取的 Git 路径不存在未暂存或未跟踪内容. 已暂存内容可以作为输入, 仓库其他路径的修改不阻塞审核. 从审核结束到后续同步 `prepare` 之间保持输入不变是调用工作流程的责任. `.tmp` 中的候选文件, 结果和 `completed-review.json` 由当前短流程直接交接, 不增加快照或递归证据链.
+1. Main Agent 逐条判断提示. 是真实 Skill 引用时, 把身份加入 `distribution/projections/config.json` 的 `additionalSkillReferences` (保持排序, 去重), 暂存后重跑命令, 以确认该身份不再提示且没有新的终止符错误. 判断为不是 Skill 时不做任何持久记录.
+2. 只有命令报告过至少一条提示时, Main Agent 在提交前按 `docs/agents/subagent-allocation.md` 另建一个独立 Agent 复核这些判断. 交给它的是提示原文, 每条的判断和理由, 以及配置差异; 复核意见按 `docs/agents/subagent-findings.md` 处理. 复核使用平台原生的子 Agent 创建方式, 不经过 `arw background-agent`, 因此两个平台行为一致. 只因落实已复核的判断而重跑时不再复核; 重跑出现新的提示时, 新提示同样需要复核.
+3. 没有提示时没有判断, 也没有复核步骤.
 
 ## Pre-release synchronization
 
 ### Entry point and lifecycle
 
-源码仓库维护入口使用以下封闭调用:
+源码仓库维护入口只有一个调用, 没有子命令:
 
 ```text
-node scripts/sync-workflow-distribution.mjs review
-node scripts/sync-workflow-distribution.mjs review --complete
-node scripts/sync-workflow-distribution.mjs prepare
-node scripts/sync-workflow-distribution.mjs apply --plan-digest <plan-digest>
+node scripts/sync-workflow-distribution.mjs
 ```
 
-该入口只供源码仓库维护使用, 不安装到 ARW 安装目录, 也不是公开 `arw` 命令. 审核结果在当前 Platform Host 会话的同一固定 `.tmp` 工作区内交接, 调用方不传临时结果路径或运行身份.
+带任何参数都是用法错误, 在 `stderr` 输出用法并退出 2, 不做任何 I/O. 该入口只供源码仓库维护使用, 不安装到 ARW 安装目录, 也不是公开 `arw` 命令, 不使用临时工作区或平台会话身份.
 
-引用审核, 计划与写入依次交接:
+合法调用在一个进程内依次执行:
 
-1. `review` 写入候选文件, Main Agent 删除非 Skill 候选后调用 `review --complete` 完成引用审核.
-2. `prepare` 读取当前实际来源, 现有仓库自有初始文件, 两个配置和完成的审核结果. 它返回绑定这些输入与固定重建范围的 `planDigest`, 不写持久文件, 也不预先构造完整输出.
-3. Main Agent 检查计划后, 以同一 `planDigest` 调用 `apply --plan-digest <plan-digest>`, 不需要用户批准.
-4. `apply` 以该参数把写入绑定到已检查的计划, 重新验证计划输入未变化, 再直接重建发布前同步拥有的内容.
+1. 状态检查: `.agents/skills`, `AGENTS.md`, `docs/agents`, `docs/licenses/arw` 和 `distribution` 不得有未暂存, 未跟踪或被忽略的内容, 因而 Git 暂存区是写入失败时的完整恢复基线.
+2. 读取与验证: 读取实际来源的全部字节, 两个配置 (`distribution/projections/config.json` 按原样读取, 同步不写它) 和单独维护的仓库自有初始文件, 检查受管理区域, Role, 许可证, 受保护路径冲突和初始文件.
+3. 引用检查: 见 [Reference check](#reference-check). 终止符错误使同步 `blocked`, 未知身份只收集为提示.
+4. 重建: 删除固定重建范围, 再把第 2 阶段读到并转换好的字节写入生成目标. 删除后不重新读取来源, 写入的正是已检查的字节.
+5. 最终验证: 对重建后的 Workflow Distribution 分别执行 Codex 与 Claude Code 投影验证.
 
-入口不读取 `stdin` 或自行向用户提问. 用法错误退出 2, `succeeded` 退出 0, `blocked` 或 `failed` 退出 1. 调用方结果写入 `stdout`, 诊断信息写入 `stderr`.
+入口不读取 `stdin` 或自行向用户提问. 成功时 `stdout` 输出完成消息, 提示逐行写到 `stderr`, 退出 0; `blocked` 或 `failed` 时诊断写到 `stderr`, 退出 1. 提示格式为 `notice skill-reference-unknown path=<path>:<line>:<column> identity=<identity>: <context>`, `path` 是仓库相对来源路径; 终止符错误诊断的 `path` 使用同一形式.
 
 发布前同步只更新自己拥有的 Workflow Distribution 路径. 它从实际位置复制完整 Skill Package, 规范 Role 及其同名子目录中的按需读取文档, 每个 `LICENSE.<source-id>` 固定许可证和受管理区域, 并根据固定布局生成 `baseline` 与 `skills`. 它不枚举 `docs/licenses/arw/` 中的其他直接文件作为载荷, 也不从源码仓库当前 `.arwignore` 复制仓库自有初始文件. 该初始文件在 Workflow Distribution 中单独维护.
 
-受管理区域提取必须精确, 唯一且边界完整. 目标基线文件由固定模板和提取内容构造. 发布前同步不把目标文件中旧的未受管字节反向合并到实际来源. `prepare` 在写入前关闭式处理无法完整枚举的来源, 缺失的必需实际文件, Skill 身份冲突以及无效配置, 审核结果或仓库自有初始文件. 受管理区域提取, 文件转换和复制由 `apply` 直接从当前来源执行, 不要求 `prepare` 预先保存完整目标字节.
+受管理区域提取必须精确, 唯一且边界完整. 目标基线文件由固定模板和提取内容构造. 发布前同步不把目标文件中旧的未受管字节反向合并到实际来源. 同步在删除前关闭式处理无法完整枚举的来源, 缺失的必需实际文件, Skill 身份冲突以及无效配置或仓库自有初始文件. 受管理区域提取和文件转换在读取与验证阶段完成, 写入阶段只写入已检查的字节.
 
-`planDigest` 绑定当前实际来源, 两个配置, 仓库自有初始文件, 完成的审核结果和固定重建范围. 计划不保存完整 Workflow Distribution 字节, `payload` 或逐路径差异. `apply` 在复制前删除发布前同步拥有的生成范围中的全部现有文件与目录, 因而不把该范围中的旧布局或额外内容作为需要逐项验证的输入. 两个配置和独立维护的仓库自有初始文件不属于删除范围; 其中影响本次结果的内容仍由同一 `planDigest` 绑定. Projection 配置变化与完整重建只接受绑定同一 `planDigest` 的一次 `apply`.
+重建在复制前删除发布前同步拥有的生成范围中的全部现有文件与目录, 因而不把该范围中的旧布局或额外内容作为需要逐项验证的输入. 两个配置和独立维护的仓库自有初始文件不属于删除范围. 状态检查与写入之间修改 `distribution/` 属于调用方失误, 可由暂存区恢复, 同步不再核对输入摘要.
 
-固定重建范围是 `distribution/` 根下除以下保留项及其必要祖先目录之外的全部子路径: `distribution/config.json`, `distribution/projections/config.json`, `distribution/projections/codex/config.toml`, 以及每个精确文件 `repositoryOwnedSeeds` 条目对应的 `distribution/baseline/<path>`. `distribution/projections/config.json` 在重建中替换, 但不在预先清理中删除. 未知的旧布局, 证据或投影路径只要不属于上述保留范围, 就随固定重建范围删除.
+固定重建范围是 `distribution/` 根下除以下保留项及其必要祖先目录之外的全部子路径: `distribution/config.json`, `distribution/projections/config.json`, `distribution/projections/codex/config.toml`, 以及每个精确文件 `repositoryOwnedSeeds` 条目对应的 `distribution/baseline/<path>`. `distribution/projections/config.json` 在重建中保持不变, 只由 Main Agent 作为普通源码修改. 未知的旧布局, 证据或投影路径只要不属于上述保留范围, 就随固定重建范围删除.
 
 ### State and recovery
 
 发布前同步开始前, 它可能删除或写入的 Workflow Distribution 路径必须完全可由 Git 暂存区恢复, 不得包含未暂存, 未跟踪或被 Git 忽略的内容. 与 Git 暂存区相同的已暂存内容可以作为可恢复基线, 因而不要求相对 `HEAD` 完全干净. Git 不记录的空目录不保存文件数据, 可以随生成范围删除. 仓库其他路径不属于该前置条件.
 
-`apply` 的写入顺序是删除生成范围, 直接从实际来源复制或转换当前内容, 更新 Projection 配置, 再验证完整 Workflow Distribution. 删除开始前后使用不同的失败边界:
+重建的写入顺序是删除生成范围, 写入第 2 阶段已检查的字节, 再验证完整 Workflow Distribution. 删除开始前后使用不同的失败边界:
 
-| 失败位置 | 返回结果与留下的状态 |
+| 失败位置 | 结果与状态 |
 | --- | --- |
-| `prepare` 发现阻断问题 | `blocked`, 零写入. |
-| 合法调用后读取或 I/O 失败 | `failed`, 附稳定诊断信息. |
-| `apply` 删除前重验授权和全部计划绑定输入, 发现缺失, 不匹配或变化 | `blocked`, 零写入. |
-| 删除开始后, 任一删除, 提取, 转换, 复制, 配置写入或最终验证失败 | `failed`, 附准确 `stage` 和稳定 `diagnostics`, 不执行内部回滚. |
+| 第 1 至 3 阶段的阻断问题 | `blocked`, 零写入; 修正输入后重跑. |
+| 第 1, 2 阶段的读取失败 | `failed`, 零写入; `stage` 取封闭值: `root-observation`, `root-resolution` (仓库根观察与规范解析, 沿用 Filesystem Module 的取值), `git-state` (Git 状态读取), `source-enumeration` (列举来源), `source-read` (读取来源文件或配置), `distribution-enumeration` (列举现有生成范围), 不透传 Filesystem Module 的其他内部阶段; 排除原因后重跑. |
+| 第 4 阶段删除失败 | `failed`, `stage: "cleanup"`. |
+| 第 4 阶段写入失败 | `failed`, `stage: "generated-write"`. |
+| 第 5 阶段验证失败 | `failed`, `stage: "final-validation"`. |
 
-运行时允许通过只读 Git 操作核对同步输入的工作树状态, 暂存状态和可恢复性, 并在写入前重验. 它不执行 Git 写入或恢复, 也不尝试利用混乱的中间状态. 实际分发内容仍从源码仓库当前文件读取, 不以暂存区字节替代编写来源. `apply` 失败后, 外部 Agent 按以下顺序恢复:
+删除开始后的失败不做内部回滚, 也不再有 `source-transform` 或 `projection-config-write` 阶段.
+
+运行时允许通过只读 Git 操作核对同步输入的工作树状态, 暂存状态和可恢复性, 并在写入前重验. 它不执行 Git 写入或恢复, 也不尝试利用混乱的中间状态. 实际分发内容仍从源码仓库当前文件读取, 不以暂存区字节替代编写来源. 删除开始后失败时, 外部 Agent 按以下顺序恢复:
 
 1. 把发布前同步拥有的 Workflow Distribution 路径恢复到 Git 暂存区字节.
 2. 删除本轮准确新增的未跟踪路径.
-3. 从 Skill 引用审核开始完整重跑发布前同步.
+3. 排除原因后完整重跑发布前同步.
 
 恢复和重跑属于 Agent 工作流程, 不进入 `Workflow Distribution Sync Module` 的 Interface.
 
@@ -255,9 +252,9 @@ node scripts/sync-workflow-distribution.mjs apply --plan-digest <plan-digest>
 
 Skill 身份保持小写 ASCII 字母与单个连字符的统一范围, 优先让相同身份在支持平台之间直接转换. 扩大字符范围会引入平台名称映射与冲突处理; 当前选择接受不能表达这些额外字符的成本.
 
-两个审核文件直接表达要删除的两个完整列表, 避免编辑包含无关字段的最终配置. 两个独立哈希对应两个审核结果, 不增加合并摘要或原始候选证据. 引用审核由运行发布前同步的 Main Agent 完成而不由用户编辑, 因为 Agent 有足够上下文判断标记是否为 Skill 引用, 人工编辑器步骤只增加等待, 并会使无人值守运行永久阻塞 ([ADR-0034](../../adr/0034-let-the-main-agent-complete-distribution-sync-review.md)). 由 Git 管理的输入只需要检查相关范围的清洁状态, 当前 `.tmp` 短流程也已经提供足够边界, 不建立无限验证链.
+同步合并为一个命令, 因为两份候选列表自首次提交起一直为空, 多步协议只增加调用, 交接哈希和 `planDigest`. 引用提示由运行发布前同步的 Main Agent 判断而不由用户编辑, 因为 Agent 有足够上下文判断标记是否为 Skill 引用, 人工编辑器步骤只增加等待, 并会使无人值守运行永久阻塞 ([ADR-0036](../../adr/0036-run-distribution-sync-as-a-single-command.md)). 已知身份的终止符错误使同步失败而不保存规范化位置, 因为修正源码只需一次. 未知身份不阻断, 因为阻断就要求保存 "不是 Skill" 的决定, 而规则不维护非 Skill 排除名单; 只有存在提示时才需要独立复核. 由 Git 管理的输入只需要检查相关范围的清洁状态, 不建立无限验证链.
 
-引用审核, 计划和持久应用保持分离, 使审核引用时不写配置, 固定重建范围只接受绑定同一输入状态的 `apply`. 当前选择接受输入变化后必须重新审核和准备的成本, 不为可由 Git 暂存区完整恢复的生成内容保存逐文件计划或第二套回滚状态.
+单进程写入第 2 阶段已检查的字节, 使 `prepare` 与 `apply` 之间的输入漂移和删除后重读来源的变化窗口都不再存在. 当前选择不为可由 Git 暂存区完整恢复的生成内容保存逐文件计划或第二套回滚状态.
 
 ## Module Design
 
@@ -265,7 +262,7 @@ Skill 身份保持小写 ASCII 字母与单个连字符的统一范围, 优先�
 
 `Workflow Distribution Module` 只读构建和验证当前 Workflow Distribution. 它拥有固定布局, 安全枚举, `distribution/config.json` 解释, 稳定载荷和载荷 Markdown 的自包含检查. 它不写源码仓库, 不投影目标仓库, 不执行安装.
 
-`Workflow Distribution Sync Module` 拥有发布前同步的实际来源读取, 受管理区域提取, Skill 引用审核结果消费, 输入与重建范围绑定, 生成范围替换和 Projection 配置更新. 它通过只读状态 Adapter 核对同步所需的 Git 状态, 不执行 Git 写入或恢复, 也不取得源码仓库发布责任.
+`Workflow Distribution Sync Module` 拥有发布前同步的实际来源读取, 受管理区域提取, Skill 引用检查, 生成范围替换和最终双平台验证. 它只读 Projection 配置, 通过只读状态 Adapter 核对同步所需的 Git 状态, 不执行 Git 写入或恢复, 也不取得源码仓库发布责任.
 
 `Platform Adapter` 解释 `distribution/projections/config.json`, Skill 引用语法和来源到目标的转换. 它计算投影并提供独立的配置默认载荷, 不写目标仓库, 不扫描运行环境. `lib/arw-common/` 的 Codex 配置模块只处理字节与 TOML 语义; Repository Workflow 负责文件观察, 写入计划与事务. 同步保留单独维护的默认文件, 构建验证并携带该文件. 这些责任复用平台映射和事务, 避免另建分发入口或字段归属历史.
 
@@ -328,15 +325,13 @@ Windows 命令行解析是 `lib/common/` 中的纯内存能力, 拥有引号与�
 
 Repository Module 的单一只读 Interface 接受起始目录. 成功返回规范仓库身份和与该身份绑定的仓库相对路径解析能力. 未找到最近 Git 工作树, 仓库相对路径越界或无法确认同一规范身份时返回 `blocked` 与 `diagnostics`. Git 或规范路径观察失败返回 `failed`, `stage` 和 `diagnostics`. 该 Interface 不写文件或 Git 暂存区.
 
-#### Reference review and distribution sync
+#### Reference check and distribution sync
 
-源码仓库引用审核 Interface 只实现前述完整审核流程. 发布前同步提供准确输入并消费完成审核结果.
+`analyzeSkillReferences({payload, projectionConfig})` 属于 Platform Adapter. 载荷条目无效 (`projection-payload-invalid`), 配置无效 (配置校验的诊断), Skill 目录身份无效 (`skill-identity-invalid`), Markdown 不是有效 UTF-8 (`skill-markdown-invalid-utf8`), 或存在已知身份的终止符错误 (`skill-reference-terminator-invalid`, 携带 `path`, `line`, `column`, `identity`) 时返回 `blocked` 与稳定排序的完整 `diagnostics`. 否则返回 `status: "succeeded"`, 空 `diagnostics` 和 `unknownReferences`, 每项准确为 `{path, line, column, identity, context}`, `path` 为载荷路径, 同一身份的每次出现各占一项, 按路径, 行, 列排序.
 
-引用审核 `review` 成功时写入两份候选文件并返回它们的路径; 候选写入失败返回 `failed`, `stage` 和 `diagnostics`. `review --complete` 成功结果准确包含 `status`, `additionalSkillReferences`, `skillReferenceNormalizations`, `additionalSkillReferencesHash`, `skillReferenceNormalizationsHash` 和空 `diagnostics`. 格式错误的 JSONL, 非删除式编辑, 重排, 第二份文件含不允许的身份, 原始候选缺失或 (经 `prepare` 重验时) 审核输入已变化返回 `blocked` 与完整 `diagnostics`, 不返回哈希, 不改写文件, 不修改持久配置. 临时审核文件读取或写入失败返回 `failed`, `stage` 和 `diagnostics`; 调用工作流程重新执行完整审核.
+`validateProjectionConfig` 的 `skills` 只含 `root` 与 `additionalSkillReferences`, 含 `skillReferenceNormalizations` 的配置以 `projection-skills-invalid` 阻断. `adapter.evaluate(intent)` 的签名和结果形状不变, 后接非终止符的已知身份保持原文.
 
-发布前同步的公开 Module Interface 提供只读 `prepare(...)` 和经授权的 `apply(...)`. `prepare` 接收已经完成的引用审核结果. 成功结果准确包含 `status`, `planDigest` 和空 `diagnostics`; 它不返回 Projection 配置字节, 完整 Workflow Distribution `payload` 或逐路径 `operations`. 输入阻断问题返回 `blocked` 与完整 `diagnostics`; 读取依赖失败返回 `failed`, `stage` 和 `diagnostics`. 这两种非成功结果都零业务写入且不返回可部分应用的结果.
-
-`apply(...)` 接收绑定当前 `planDigest` 的授权 (由 Main Agent 检查计划后提供), 重新读取并比较计划绑定的输入后执行固定范围重建. 授权缺失, 不匹配或计划绑定输入变化返回 `blocked` 与完整 `diagnostics`, 保证生成范围尚未删除. 成功结果准确包含 `status` 和空 `diagnostics`. 删除开始后的失败返回 `failed`, `stage` 和 `diagnostics`, 不返回逐路径 `completedOperations` 或 `rollback`; 调用工作流程始终恢复完整生成范围并重新执行审核. 引用审核与 `prepare` 之间不增加另一层摘要值或快照绑定.
+发布前同步的公开 Module Interface 是 `syncWorkflowDistribution({repositoryRoot, buildDistribution?, createFilesystem?, stateAdapter?})`. 成功结果准确包含 `status: "succeeded"`, 空 `diagnostics` 和 `notices`, 后者是 `unknownReferences` 把路径改为仓库相对来源路径后的结果. 阻断问题返回 `blocked` 与完整 `diagnostics`; 失败返回 `failed`, `stage` 和 `diagnostics`, `stage` 取值见 State and recovery 的失败表. 删除前的非成功结果零业务写入. 删除开始后的失败不返回逐路径 `completedOperations` 或 `rollback`, 调用工作流程恢复完整生成范围并重新运行.
 
 #### File transactions
 
@@ -404,9 +399,9 @@ Document Language Analysis Module Interface 接受规范仓库相对 `path` 和 
 
 ### Seams and Adapters
 
-只读 Git 状态观察属于运行时的状态 Adapter, 用于检查同步输入满足可恢复基线并在写入前重验. 暂存操作, Git 恢复和完整重跑属于外部 Agent 工作流程, 不由运行时执行. 运行发布前同步的 Main Agent 是外部授权参与者, 不是运行时 Adapter. 运行时消费已经完成的引用审核结果和绑定当前计划的授权, 并在写入前重新验证这些输入.
+只读 Git 状态观察属于运行时的状态 Adapter, 用于检查同步输入满足可恢复基线. 暂存操作, Git 恢复和完整重跑属于外部 Agent 工作流程, 不由运行时执行. 运行发布前同步的 Main Agent 不是运行时 Adapter 或授权参与者, 只是提示的判断者; 运行时不消费任何外部审核结果或授权.
 
-引用审核不依赖进程启动 Seam, 该 Seam 只由 `arw open` 使用. 生产环境的仓库, 文件系统, Markdown 可见文本, 文档语言, JSON 和文本 I/O 由公共 Module 提供; 确定性测试通过相同 Interface 注入隔离实现或失败结果. 业务 Module 不绕过已经适用的公共能力直接建立第二套 I/O 或语言计算策略.
+发布前同步不依赖进程启动 Seam, 该 Seam 只由 `arw open` 使用. 生产环境的仓库, 文件系统, Markdown 可见文本, 文档语言, JSON 和文本 I/O 由公共 Module 提供; 确定性测试通过相同 Interface 注入隔离实现或失败结果. 业务 Module 不绕过已经适用的公共能力直接建立第二套 I/O 或语言计算策略.
 
 Repository Module 的观察 Seam 只提供最近 Git 工作树根目录和规范路径事实. 生产 Adapter 从真实 Git 与操作系统路径取得这些事实; 确定性 Adapter 通过同一 Interface 返回隔离事实或失败. Repository Module 独自解释这些观察并产生规范仓库身份与仓库相对路径能力. Adapter 不决定仓库归属, 业务路径或失败政策, 调用方也不接触底层观察.
 
@@ -418,20 +413,18 @@ Reviewer Capability Module 没有生产 Adapter 以外的 Seam: 夹具读取直�
 
 ```mermaid
 flowchart TD
-  Actual[源码仓库实际工作流文件] --> Review[Skill 引用审核]
-  ProjectionConfig[投影配置] --> Review
-  Review --> SyncPrepare[发布前同步 prepare]
-  Actual --> SyncPrepare
-  Seeds[单独维护的仓库自有初始文件] --> SyncPrepare
-  SyncPrepare --> Authorization[Main Agent 检查计划]
-  Authorization --> SyncApply[发布前同步 apply]
-  SyncApply --> Distribution[Workflow Distribution]
+  Actual[源码仓库实际工作流文件] --> Sync[发布前同步]
+  ProjectionConfig[投影配置] --> Sync
+  Seeds[单独维护的仓库自有初始文件] --> Sync
+  Sync --> Distribution[Workflow Distribution]
+  Sync -->|提示| Judgment[Main Agent 判断]
+  Judgment -->|真实 Skill| ProjectionConfig
   Distribution --> Release[源码仓库发布]
   Distribution --> Installation[安装载荷]
   Installation --> RepositoryWorkflow[仓库工作流]
   RepositoryModule[Repository Module] --> Filesystem[Filesystem Module]
   Filesystem --> Transaction[File Transaction Module]
-  Filesystem --> SyncApply
+  Filesystem --> Sync
   Filesystem --> JSON[JSON Module]
   Filesystem --> Markdown[Markdown Visible Text Module]
   Markdown --> Language[Document Language Analysis Module]
@@ -446,12 +439,10 @@ flowchart TD
 
 | 权威来源或状态 | 责任方 | 转换和使用方 | 失败, 恢复和最终写入点 |
 | --- | --- | --- | --- |
-| 源码仓库实际工作流文件 | 普通源码仓库开发流程 | Skill 引用审核读取引用, Workflow Distribution Sync Module 在 `apply` 时直接复制或转换当前内容 | 来源无法完整枚举或必需文件缺失时在删除前阻断; 写入失败后外部 Agent 恢复已暂存基线并完整重跑; 普通 Git 提交保存实际文件 |
-| `distribution/config.json`, `distribution/projections/config.json` 和单独维护的仓库自有初始文件 | Workflow Distribution Module 验证布局和配置, Platform Adapter 解释平台规则 | 发布前同步在删除前验证并绑定这些输入, 把审核结果写入 Projection 配置, 并在生成范围之外保留初始文件 | 配置或初始文件不完整时零写入; 修复来源后重新准备; 删除开始后的失败恢复整个 Git 暂存区基线 |
-| [入口自然所属 Engine 目录中的 `config.json`](../agent-repository-workflow-installation/spec.md#global-engine-configuration) | 安装长期规格定义结构和安装目录配置生命周期, 用户拥有每个配置文件 | Skill 引用审核不读取该配置 | 审核不修改配置; 用户直接保存源码仓库配置, Installation 事务创建或升级安装目录配置 |
-| 两个审核文件的删除结果 | 运行发布前同步的 Main Agent 删除, 引用审核 Interface 验证删除结果并计算两个独立哈希 | 发布前同步 `prepare` 只消费完整审核结果 | 验证失败时不产生持久配置; 重新执行完整审核; 只有 `apply` 事务把保留列表写入投影配置 |
-| 发布前同步计划和 `apply` 授权 | Workflow Distribution Sync Module 绑定当前输入与固定重建范围, Main Agent 检查计划后提供 `planDigest` | `apply` 重新验证输入后直接重建生成范围 | 计划漂移或 `planDigest` 不匹配时零写入; 删除开始后的失败由外部 Agent 恢复 Git 状态并完整重跑; 计划自身不持久化 |
-| 完整 Workflow Distribution 字节 | Workflow Distribution Sync Module 在授权后直接形成 | 源码仓库发布, Installation Payload Module 和目标仓库工作流只读消费 | 最终验证成功是内容写入完成点, 普通 Git 提交保存源码仓库候选; 失败时不从中间目录摘取状态, 恢复后完整重跑 |
+| 源码仓库实际工作流文件 | 普通源码仓库开发流程 | Workflow Distribution Sync Module 在读取与验证阶段读取字节, 检查引用, 转换后写入生成范围 | 来源无法完整枚举, 必需文件缺失或终止符错误时在删除前阻断; 写入失败后外部 Agent 恢复已暂存基线并完整重跑; 普通 Git 提交保存实际文件 |
+| `distribution/config.json`, `distribution/projections/config.json` 和单独维护的仓库自有初始文件 | Workflow Distribution Module 验证布局和配置, Platform Adapter 解释平台规则; Main Agent 把判断为真实 Skill 的未知身份作为普通源码修改写入 `additionalSkillReferences` | 发布前同步在删除前只读验证这些输入, 并在生成范围之外保留它们 | 配置或初始文件不完整时零写入; 修复来源后重跑; 删除开始后的失败恢复整个 Git 暂存区基线 |
+| [入口自然所属 Engine 目录中的 `config.json`](../agent-repository-workflow-installation/spec.md#global-engine-configuration) | 安装长期规格定义结构和安装目录配置生命周期, 用户拥有每个配置文件 | 发布前同步不读取该配置 | 同步不修改配置; 用户直接保存源码仓库配置, Installation 事务创建或升级安装目录配置 |
+| 完整 Workflow Distribution 字节 | Workflow Distribution Sync Module 在引用检查后直接形成 | 源码仓库发布, Installation Payload Module 和目标仓库工作流只读消费 | 最终验证成功是内容写入完成点, 普通 Git 提交保存源码仓库候选; 失败时不从中间目录摘取状态, 恢复后完整重跑 |
 | Reviewer 能力夹具 (`expected.json` 答案键, brief, 锚点, pBase 登记与基线归档) 与盲裁裁决库 `decisions.json`, `split-<name>.json`, `view-binding.json` | Reviewer Capability Module 拥有合同, 夹具由维护者经普通 Git 提交修改, 其中 `anchors.json` 另可由维护者显式运行的 `pool anchor-add` 写入 (随后经 Git 提交); 裁决库由 `pool split` 与 `pool override` 写入盲池目录, `split-<name>.json` 由 `pool split`, `view-binding.json` 与 `adj/` 视图由 `pool view` 写入盲池目录 | `score`, `baseline`, `summary` 与 `pool` 只读夹具 (`pool anchor-add` 除外); `score` 与 `pool build` 经 `--decisions` 读取裁决库, `pool split` 与 `pool override` 读后写回裁决库, `pool prompt` 读取 `key.json`, `view-binding.json` 与 `adj/`, 并写出 `prompt.md` 和更新 `key.json` | 夹具缺失或报告不可读时 `blocked`, 零写入; 裁决不满足锚点门槛时不写裁决库; 裁决库, 锚点文件与 `split-<name>.json` 各以一次整文件写入更新 (不是原子替换): 写入中途的文件系统错误返回 `failed` (`stage` 为 `pool-write`), 文件可能不完整, 恢复方式是重跑 (`pool split` 或 `pool override` 覆盖裁决库, 锚点文件由 Git 还原后重跑 `pool anchor-add`), `pool split` 先写 `decisions.json` 再写 `split-<name>.json`, 裁决库的写入是裁决生效的最终写入点, 其后失败时裁决已生效而清单缺失, 重跑 `pool split` 重新生成 (`pool override` 的最终写入点是它写裁决库, `pool anchor-add` 的是它写锚点文件), `pool build` 与 `pool view` 中途失败可能留下部分池目录或视图, 重跑 `build` 覆盖 `key.json` 与池文件, `view` 须先删除已写的 `adj/<view>` |
 | Reviewer 报告修复副本与 `<out>.changes.json`, 暂停记录 `agent.json` | `repair` 写出副本与记录 (先写副本再写记录, `out` 必须是新文件); `agent.json` 由 Main 在 Reviewer 完成后 `unload_agent` 前保存, 不由套件写 | `score` 读取, 报告副本的 SHA-256 与记录核对 | `repair` 在写记录前失败可能留下没有记录的副本, `score` 因缺少声明或记录而返回 `blocked`, 不会误用; 缺少或损坏的 `agent.json` 使 `score` 返回 `blocked`; 最终写入点是记录文件的写入 |
 
@@ -475,7 +466,7 @@ Platform Adapter 同时拥有 Skill 引用分析和平台语法转换, 因为它
 
 把静态平台投射和真实 Reviewer 运行分开, 可以保留双平台 Skill 与 Agent 文档安装而准确表达原生执行支持范围. 让投射验证负责实际模型, 会话或能力判断会使确定性安装依赖模型执行, 又复制产品运行权威; 当前选择保留静态格式与准确字节验证, 接受原生运行与能力另行核对的成本.
 
-发布前同步生成范围在写入前已经要求完全可由 Git 暂存区恢复, 因而逐文件差异计划和内部回滚不会增加最终恢复能力. 固定范围删除后从当前来源直接重建, 让额外生成文件和目录自然消失. `apply` 失败后恢复 Git 暂存区并完整重跑比解释中间状态拥有更小的恢复合同. Git 恢复属于外部 Agent, 使业务 Module 不取得暂存权限.
+发布前同步生成范围在写入前已经要求完全可由 Git 暂存区恢复, 因而逐文件差异计划和内部回滚不会增加最终恢复能力. 固定范围删除后直接写入已检查的字节, 让额外生成文件和目录自然消失. 删除开始后失败时恢复 Git 暂存区并完整重跑比解释中间状态拥有更小的恢复合同. Git 恢复属于外部 Agent, 使业务 Module 不取得暂存权限.
 
 Repository Module 独立拥有最近 Git 工作树发现和规范仓库相对路径, 优先让所有业务 Module 使用同一个仓库身份. 让每个调用方直接运行 Git 发现会复制嵌套仓库规则, 让 Filesystem Module 隐式发现仓库又会混合路径安全与仓库语义. 当前选择接受调用方必须先取得规范根, 仓库身份变化后必须重新创建后续范围的成本.
 
@@ -505,9 +496,9 @@ Reviewer Capability Module 是源码专用维护工具, 不改变授权主体, �
 
 [ADR-0026](../../adr/0026-use-source-checkout-workflow-files-as-distribution-authority.md) 记录实际文件权威, 发布前同步派生, 精简配置和 Upstream Sync 的 Ours 变化. [ADR-0002](../../adr/0002-use-repository-local-managed-distribution.md) 继续拥有目标仓库的 Managed Content 与仓库自有内容边界. [ADR-0009](../../adr/0009-use-canonical-distribution-lock-contract.md) 继续拥有锁文件. [ADR-0003](../../adr/0003-use-explicit-platform-adapters.md) 继续拥有单个配置驱动的 Platform Adapter 结构, [ADR-0014](../../adr/0014-use-operation-neutral-platform-adapters.md) 继续拥有它的操作中立与纯计算边界. [ADR-0022](../../adr/0022-place-source-checkout-scripts-under-scripts.md) 继续拥有根入口, 扁平 `scripts/` 维护入口和分层 `lib/` 实现布局.
 
-[ADR-0010](../../adr/0010-use-role-fenced-managed-region-markers.md) 的受管理区域标记继续只标识内容责任, `arw-lock.json` 仍提供归属证明. [ADR-0013](../../adr/0013-use-main-agent-single-writer-orchestration.md) 拥有 Agent 写入分工: 与用户沟通的 Main Agent 负责 Git 恢复基线和 Git 写入, 允许分派的普通任务由所属 Main Agent 协调互不重叠的授权写入范围, 子 Agent 在分配范围内直接交付; 独立 Reviewer 不创建子 Agent, 独自完成审核并亲自写入绑定报告. Engine 写入继续服从适用的授权, 发布前同步的授权主体见 ADR-0034. [ADR-0017](../../adr/0017-use-operation-specific-recovery-baselines.md) 下, 发布前同步继续使用自身的 Git 暂存区恢复边界和完整重跑, 不建立跨生命周期的通用恢复协议.
+[ADR-0010](../../adr/0010-use-role-fenced-managed-region-markers.md) 的受管理区域标记继续只标识内容责任, `arw-lock.json` 仍提供归属证明. [ADR-0013](../../adr/0013-use-main-agent-single-writer-orchestration.md) 拥有 Agent 写入分工: 与用户沟通的 Main Agent 负责 Git 恢复基线和 Git 写入, 允许分派的普通任务由所属 Main Agent 协调互不重叠的授权写入范围, 子 Agent 在分配范围内直接交付; 独立 Reviewer 不创建子 Agent, 独自完成审核并亲自写入绑定报告. Engine 写入继续服从适用的授权, 发布前同步没有写入前授权步骤, 见 ADR-0036. [ADR-0017](../../adr/0017-use-operation-specific-recovery-baselines.md) 下, 发布前同步继续使用自身的 Git 暂存区恢复边界和完整重跑, 不建立跨生命周期的通用恢复协议.
 
-[ADR-0034](../../adr/0034-let-the-main-agent-complete-distribution-sync-review.md) 记录发布前同步的引用审核与写入授权主体由用户改为运行发布前同步的 Main Agent, 取代 ADR-0026 中的用户审核授权一句. 两文件删除式引用审核本身不建立新的权威来源或持久证据.
+[ADR-0036](../../adr/0036-run-distribution-sync-as-a-single-command.md) 记录发布前同步由一次命令在双平台验证通过后直接写入 Workflow Distribution, 没有写入前的审核或授权步骤, 写入结果经普通 Git 提交审核和用户复核 diff. Main Agent 只判断未知身份提示, 且只在有提示时经独立 Agent 复核; 已知身份的终止符错误使同步失败, 不再有规范化位置; 同步不写 Projection 配置, `skillReferenceNormalizations` 删除. 它完全取代 [ADR-0034](../../adr/0034-let-the-main-agent-complete-distribution-sync-review.md), 并取代 ADR-0026 与 ADR-0015 中涉及引用审核和写入授权的句子. 持久格式只减少一个无版本配置字段, 信任根和分发边界不变.
 
 [ADR-0018](../../adr/0018-use-bounded-mechanical-trust-for-initial-arw-security.md) 的 Source Scope 可移植性, 来源符号链接排除和信任根决定保持不变. Filesystem Module 的路径范围与祖先链接拒绝把既有有界机械信任应用到通用文件操作, 但不验证来源身份, 不扩大 Source Scope, 不承诺跨平台文件名可移植性, 也不声称抵抗恶意信任根或并发替换. 这项公共 Interface 深化不建立新的授权主体, 持久格式, 信任根或恢复责任, 因而由本规格拥有准确合同, 不新增 ADR.
 
@@ -521,7 +512,7 @@ Reviewer Capability Module 是源码专用维护工具, 不改变授权主体, �
 - 源码仓库不作为自身 Workflow Distribution 的目标仓库;
 - Workflow Distribution 布局, 枚举, 配置和验证;
 - 平台投影配置与 Skill 引用转换;
-- 发布前同步审核, 输入绑定, 授权, 固定范围重建和外部恢复边界;
+- 发布前同步的引用检查, 固定范围重建和外部恢复边界;
 - 开发侧公共 `Repository Module`, `Filesystem Module`, `Markdown Visible Text Module`, `Document Language Analysis Module`, `JSON Module`, `Configuration Conversion Module`, `File Transaction Module` 和 `Text Policy Module` 合同;
 - `package.json`, `pnpm-lock.yaml` 与根 `tsconfig.json` 共同拥有的 pnpm 11 开发工具链, 完整严格 JavaScript 检查和独立类型检查与测试命令;
 - Workflow Distribution 到发布, 安装和仓库工作流的单向产物流;
@@ -533,7 +524,7 @@ Reviewer Capability Module 是源码专用维护工具, 不改变授权主体, �
 
 ## Validation strategy
 
-固定验证覆盖 Workflow Distribution 构建与配置, 规范 Role 与按需读取文档的布局和准确字节, 只选择固定 `LICENSE.<source-id>` 许可证来源, 仓库自有初始文件的准确目标, 两个平台的准确投影, Skill 引用分析与转换, 引用审核入口 (`review` 写入候选文件并输出路径, 本次读取的 Git 路径有未暂存或未跟踪内容时零写入; `review --complete` 接受删除式编辑与未变化文件并写入 `completed-review.json`, 失败类别见 Interfaces; `review --confirm` 为用法错误), 发布前同步直接重建, 以及公共 Module 的路径, Markdown 可见文字, 文档语言, JSON, 配置转换, 文本和文件事务边界. 自包含检查以内存载荷覆盖可解析的链接, 目标仓库自有路径, 代码围栏内的示例, 悬空链接与路径和内部名称. Workflow Distribution 测试夹具使用许可证文件而不是通用 NOTICE 文件证明实际来源选择和额外直接文件排除. 测试通过生产 Module Interface 观察行为, 并覆盖正常结果, 删除前输入或状态阻断, 删除开始后的稳定失败阶段, 完整生成范围替换, 独立初始文件保留, I/O 失败, 稳定排序和准确字节. Filesystem 测试分别覆盖相对与绝对范围操作的准确公开结果, 范围本身, 范围内外目标, 尚不存在的路径, 输入形式错误和零 I/O; 限定范围的操作另外覆盖目标链接, 嵌套现有祖先的符号链接或目录联接, 缺失前缀, 以及祖先状态变化后的下一次操作重新阻断. 这些测试断言公开路径, 状态与诊断信息, 不把内部祖先遍历步骤作为合同. Platform Adapter 测试直接断言 `managedTargets` 与 `repositoryOwnedSeeds` 的准确条目字段, `action`, `strategy` 和顺序. 平台投影不使用静态预期结果或第二份完整预期清单; 发布前同步不测试内部回滚, 失败后只保留外部 Git 恢复与完整重跑责任.
+固定验证覆盖 Workflow Distribution 构建与配置, 规范 Role 与按需读取文档的布局和准确字节, 只选择固定 `LICENSE.<source-id>` 许可证来源, 仓库自有初始文件的准确目标, 两个平台的准确投影, Skill 引用分析 (已知身份的终止符错误, 未知身份提示, 标记边界) 与转换, 发布前同步入口 (任何参数为用法错误, 提示写到 `stderr`) 与直接重建, 以及公共 Module 的路径, Markdown 可见文字, 文档语言, JSON, 配置转换, 文本和文件事务边界. 自包含检查以内存载荷覆盖可解析的链接, 目标仓库自有路径, 代码围栏内的示例, 悬空链接与路径和内部名称. Workflow Distribution 测试夹具使用许可证文件而不是通用 NOTICE 文件证明实际来源选择和额外直接文件排除. 测试通过生产 Module Interface 观察行为, 并覆盖正常结果, 删除前输入或状态阻断, 删除开始后的稳定失败阶段, 完整生成范围替换, 独立初始文件保留, I/O 失败, 稳定排序和准确字节. Filesystem 测试分别覆盖相对与绝对范围操作的准确公开结果, 范围本身, 范围内外目标, 尚不存在的路径, 输入形式错误和零 I/O; 限定范围的操作另外覆盖目标链接, 嵌套现有祖先的符号链接或目录联接, 缺失前缀, 以及祖先状态变化后的下一次操作重新阻断. 这些测试断言公开路径, 状态与诊断信息, 不把内部祖先遍历步骤作为合同. Platform Adapter 测试直接断言 `managedTargets` 与 `repositoryOwnedSeeds` 的准确条目字段, `action`, `strategy` 和顺序. 平台投影不使用静态预期结果或第二份完整预期清单; 发布前同步不测试内部回滚, 失败后只保留外部 Git 恢复与完整重跑责任.
 
 最终 Skill Package 与平台投射结果用于证明调用元数据保留, 源码限定 Skill 未进入分发, 普通 Reviewer 规则仍可分发及 Claude 静态支持保留. 这些观察不以文档句子断言替代实际载荷, 不证明原生 Reviewer 能力; 运行与能力测试沿产品共享入口和既有能力验证边界进行.
 

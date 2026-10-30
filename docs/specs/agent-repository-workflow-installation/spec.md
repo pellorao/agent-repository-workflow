@@ -109,7 +109,7 @@ Installation Payload Module 验证清单的封闭结构, 平台启动器选择, 
 
 `agents` 是可选对象, 缺失时等同于空对象. 每个属性名是精确 Agent 配置名称. 条目的 `command` 必须是非空 PATH 命令名或可执行文件的绝对路径, `args` 必须是只包含字符串的固定数组. 形似相对路径的命令会被拒绝. 任一格式错误的已知字段使配置关闭式失败.
 
-`editor` 服务不要求现有打开操作等待进程退出. `reviewEditor` 当前没有使用者 (源码仓库引用审核不再打开编辑器), 保留是为了让旧版本 ARW 读取 v3 配置时不关闭式失败, 移除留到下一次配置版本升级; 其默认 VS Code 参数是 `--new-window --wait {file}`. 两者都要求 `command` 是 PATH 命令或绝对路径, `args` 恰好包含一个 `{file}`. ARW 不拼接命令解释器命令字符串, 不读取 `ISSUE_EDITOR`.
+`editor` 服务不要求现有打开操作等待进程退出. `reviewEditor` 当前没有使用者, 保留是为了让旧版本 ARW 读取 v3 配置时不关闭式失败, 移除留到下一次配置版本升级; 其默认 VS Code 参数是 `--new-window --wait {file}`. 两者都要求 `command` 是 PATH 命令或绝对路径, `args` 恰好包含一个 `{file}`. ARW 不拼接命令解释器命令字符串, 不读取 `ISSUE_EDITOR`.
 
 `jira.listLimit` 是十进制正安全整数. 它只提供 JIRA 列表的一页默认显示数量, 当前默认值是 `50`. Application 与 JIRA 长期规格拥有该值的命令使用行为; Installation 只拥有全局字段, 默认值和升级.
 

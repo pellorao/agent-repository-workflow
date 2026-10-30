@@ -55,7 +55,7 @@ disable-model-invocation: true
 
 1. 把 `source.json` 的 `commit` 改为目标提交.
 2. 在 `adoptions.md` 末尾追加一节: 日期, 旧提交 -> 新提交, 采用, 部分采用和拒绝的 Skill 或路径及原因.
-3. 运行 `node scripts/project-claude-skills.mjs` 更新投影, 按 [validation Skill](../validation/SKILL.md) 和 [源码仓库验证](../../../docs/agents/source-checkout-validation.md) 完成全部适用检查. 采用的变化要进入发布时, 另外按 [开发手册](../../../docs/manuals/development.zh-CN.md) 的发布前同步路线运行 `node scripts/sync-workflow-distribution.mjs` 的各子命令.
+3. 运行 `node scripts/project-claude-skills.mjs` 更新投影, 按 [validation Skill](../validation/SKILL.md) 和 [源码仓库验证](../../../docs/agents/source-checkout-validation.md) 完成全部适用检查. 采用的变化要进入发布时, 另外按 [开发手册](../../../docs/manuals/development.zh-CN.md) 的发布前同步路线运行单步命令 `node scripts/sync-workflow-distribution.mjs`, 并按开发长期规格的 [Reference check](../../../docs/specs/agent-repository-workflow-development/spec.md#reference-check) 处理提示.
 4. 维护者确认最终 `git diff` 后, 提交 `.agents/skills/`, `.claude/skills/`, 许可证, `source.json` 和 `adoptions.md`, 提交说明写明来源和新旧提交.
 
 中途放弃时, 按 [agent-writes.md](../../../docs/agents/agent-writes.md) 恢复本次已写入的路径. 维护者可删除本次生成的当前会话来源目录 `.tmp/<agent-platform>/<sessionId>/_upstream-sync/<source>/`; 临时目录的管理边界按 environment.md 和 agent-writes.md 执行.

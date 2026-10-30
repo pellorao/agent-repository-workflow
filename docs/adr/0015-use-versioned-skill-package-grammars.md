@@ -6,9 +6,9 @@
 
 ## Decision
 
-当前统一 Skill 来源使用 Codex 引用形式. [开发长期规格](../specs/agent-repository-workflow-development/spec.md#projection-configuration) 负责平台投影配置与 [Skill 引用分析和转换](../specs/agent-repository-workflow-development/spec.md#analysis-and-conversion): 配置说明支持平台的引用写法和目标位置, 投影只转换经过解析和必要审核的 Markdown Skill 引用. Upstream Sync 中由 Agent 把采用的上游引用改写为统一来源形式 (见 [ADR 0011](0011-use-source-only-human-reviewed-upstream-sync.md) 的状态说明).
+当前统一 Skill 来源使用 Codex 引用形式. [开发长期规格](../specs/agent-repository-workflow-development/spec.md#projection-configuration) 负责平台投影配置与 [Skill 引用分析和转换](../specs/agent-repository-workflow-development/spec.md#analysis-and-conversion): 配置说明支持平台的引用写法和目标位置, 投影只转换经过解析的 Markdown Skill 引用, 范围外的真实引用由 Main Agent 依据同步提示判断并写入 `additionalSkillReferences` (见 [ADR 0036](0036-run-distribution-sync-as-a-single-command.md)). Upstream Sync 中由 Agent 把采用的上游引用改写为统一来源形式 (见 [ADR 0011](0011-use-source-only-human-reviewed-upstream-sync.md) 的状态说明).
 
-实际 Skill 中的 `agents/openai.yaml` 是 Codex 调用数据的唯一内容权威. Codex 投影保留它, Claude Code 投影排除它; 投影不依据 frontmatter 过滤 Skill, 也不从表面语法推断调用政策. 固定输入的转换应产生可复现的目标字节, 无法确定的引用由用户审核, 不能用整个 Markdown 范围的搜索替换代替结构化分析.
+实际 Skill 中的 `agents/openai.yaml` 是 Codex 调用数据的唯一内容权威. Codex 投影保留它, Claude Code 投影排除它; 投影不依据 frontmatter 过滤 Skill, 也不从表面语法推断调用政策. 固定输入的转换应产生可复现的目标字节, 无法确定的引用由 Main Agent 依据同步提示判断 (见 ADR 0036), 不能用整个 Markdown 范围的搜索替换代替结构化分析.
 
 `$reviewer-capability` 的实际 Skill 在自己的 `agents/openai.yaml` 中把 `policy.allow_implicit_invocation` 明确设置为 `false`. 用户准确输入该名称才触发能力测试操作, 其他 Skill 不自动转调. 原生调用元数据与操作规则由同一个实际 Skill 拥有, 使平台能够消费显式调用限制, 避免按任务相似性自动开始能力测试.
 
@@ -16,7 +16,7 @@
 
 ## Rejected alternatives
 
-不把整个 Workflow Distribution 标记为单一上游平台方言, 因为软件包可以同时携带多个平台的文件. 不为每个片段提供任意改写规则, 因为它会形成难以审核的软件包专用转换语言. 不把未知引用直接当成真实 Skill, 也不静默删除原文; 当前引用审核负责确定范围外的真实引用和需要规范化的位置.
+不把整个 Workflow Distribution 标记为单一上游平台方言, 因为软件包可以同时携带多个平台的文件. 不为每个片段提供任意改写规则, 因为它会形成难以审核的软件包专用转换语言. 不把未知引用直接当成真实 Skill, 也不静默删除原文; 范围外的真实引用由 Main Agent 依据同步提示判断并写入配置, 规范化位置不再存在, 引用写法错误由同步拒绝后修正源码 (见 ADR 0036).
 
 ## Consequences
 

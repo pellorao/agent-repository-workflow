@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-import {createHash} from 'node:crypto';
 import {mkdir, readFile, writeFile} from 'node:fs/promises';
 import {createServer} from 'node:net';
 import {dirname, join} from 'node:path';
@@ -10,29 +9,19 @@ import {createScopedFilesystem} from '../../lib/common/filesystem.mjs';
 import {buildWorkflowDistribution} from '../../lib/workflow-distribution/workflow-distribution.mjs';
 import {createClaudeCodePlatformAdapter, createCodexPlatformAdapter} from '../../lib/arw-common/platform-adapter.mjs';
 import {
-    applyWorkflowDistributionSync,
     createSourceCheckoutSyncStateAdapter,
-    prepareWorkflowDistributionReview as prepareWorkflowDistributionReviewImplementation,
-    prepareWorkflowDistributionSync,
+    syncWorkflowDistribution,
 } from '../../lib/workflow-distribution/workflow-distribution-sync.mjs';
 
-/** @typedef {NonNullable<Parameters<typeof prepareWorkflowDistributionReviewImplementation>[0]['stateAdapter']>} SyncStateAdapter */
-/** @typedef {Extract<Awaited<ReturnType<typeof prepareWorkflowDistributionReviewImplementation>>, {status: 'succeeded'}>} SkillAnalysis */
-/** @typedef {Parameters<typeof prepareWorkflowDistributionSync>[0]['review']} SkillReview */
-/** @typedef {Extract<Awaited<ReturnType<typeof prepareWorkflowDistributionSync>>, {status: 'succeeded'}>} SyncPlan */
+/** @typedef {NonNullable<Parameters<typeof syncWorkflowDistribution>[0]['stateAdapter']>} SyncStateAdapter */
 
-/** @returns {Promise<SkillAnalysis>} */
-const prepareWorkflowDistributionReview = async (/** @type {Parameters<typeof prepareWorkflowDistributionReviewImplementation>[0]} */ input) => {
-    const result = await prepareWorkflowDistributionReviewImplementation(input);
-    assert.equal(result.status, 'succeeded', JSON.stringify(result.diagnostics));
-    if (result.status !== 'succeeded') throw new Error('Expected Workflow Distribution review analysis.');
-    return result;
-};
+const BASE_BYTES = 'Use $review and $external now.\n';
 
-/** @returns {SyncPlan} */
-const requireSyncPlan = (/** @type {Awaited<ReturnType<typeof prepareWorkflowDistributionSync>>} */ result) => {
+/** @param {Parameters<typeof syncWorkflowDistribution>[0]} input */
+const requireSync = async input => {
+    const result = await syncWorkflowDistribution(input);
     assert.equal(result.status, 'succeeded', JSON.stringify(result.diagnostics));
-    if (result.status !== 'succeeded') throw new Error('Expected Workflow Distribution sync plan.');
+    if (result.status !== 'succeeded') throw new Error('Expected a successful sync.');
     return result;
 };
 
@@ -43,15 +32,13 @@ const createSuccessfulFilesystem = async (/** @type {Parameters<typeof createSco
     return created;
 };
 
-const sha256 = (/** @type {Buffer<ArrayBuffer> | import("crypto").BinaryLike} */ bytes) => createHash('sha256').update(bytes).digest('hex');
-
 const distributionConfig = {
     repositoryOwnedSeeds: ['.arwignore'],
 };
 
 const projectionConfig = {
     source: 'codex',
-    skills: {root: 'skills/', additionalSkillReferences: [], skillReferenceNormalizations: []},
+    skills: {root: 'skills/', additionalSkillReferences: []},
     platforms: {
         codex: {
             supportedVersionRange: '*',
@@ -80,7 +67,7 @@ const createSourceCheckout = async (/** @type {test.TestContext} */ t) => {
     await write(root, 'docs/agents/reviewer-role-seeds.md', '# Reviewer Role Seeds\n\nSource Checkout only.\n');
     await write(root, 'docs/agents/roles/reviewer.md', '# Reviewer\n');
     await write(root, 'docs/licenses/arw/LICENSE.example-source', 'License.\n');
-    await write(root, '.agents/skills/review/SKILL.md', 'Use $review and $external.\n');
+    await write(root, '.agents/skills/review/SKILL.md', BASE_BYTES);
     await write(root, '.agents/skills/review/agents/openai.yaml', 'interface:\n  display_name: Review\n');
     await write(root, 'distribution/config.json', `${JSON.stringify(distributionConfig, null, 2)}\n`);
     await write(root, 'distribution/projections/config.json', `${JSON.stringify(projectionConfig, null, 2)}\n`);
@@ -104,39 +91,6 @@ const injectedFailure = (/** @type {string} */ stage) => ({
     stage,
     status: 'failed',
 });
-
-/** @returns {SkillReview} */
-const completedReview = (/** @type {SkillAnalysis} */ analysis) => {
-    const additionalBytes = Buffer.from(`${analysis.additionalSkillReferences.join('\n')}\n`);
-    const normalizationLines = analysis.skillReferenceNormalizations.map(record => JSON.stringify({
-        path: record.path,
-        line: record.line,
-        column: record.column,
-        identity: record.identity,
-        context: record.context,
-    }));
-    const normalizationBytes = Buffer.from(`${normalizationLines.join('\n')}\n`);
-    return {
-        status: 'succeeded',
-        additionalSkillReferences: analysis.additionalSkillReferences,
-        skillReferenceNormalizations: analysis.skillReferenceNormalizations,
-        additionalSkillReferencesHash: sha256(additionalBytes),
-        skillReferenceNormalizationsHash: sha256(normalizationBytes),
-    };
-};
-
-const invalidUtf8ProjectionConfig = () => {
-    const source = JSON.stringify(projectionConfig);
-    const marker = '"supportedVersionRange":"*"';
-    const markerOffset = source.indexOf(marker);
-    assert.notEqual(markerOffset, -1);
-    const invalidOffset = markerOffset + marker.indexOf('*');
-    return Buffer.concat([
-        Buffer.from(source.slice(0, invalidOffset), 'utf8'),
-        Buffer.from([0xc3, 0x28]),
-        Buffer.from(source.slice(invalidOffset + 1), 'utf8'),
-    ]);
-};
 
 test('sync state rejects ignored files inside an authoritative input tree', async () => {
     /** @type {Array<{argv: string[]}>} */
@@ -170,52 +124,113 @@ test('sync state rejects ignored files inside an authoritative input tree', asyn
     ]);
 });
 
-test('sync review checks only the Skill and projection-config paths it actually reads', async t => {
+const obsoletePath = (/** @type {string} */ root) => join(root, 'distribution', 'skills', 'obsolete', 'SKILL.md');
+const rootAgentsBytes = '<!-- arw:managed:start -->\nManaged root.\n<!-- arw:managed:end -->\n<!-- arw:repository-owned:start -->\nNone.\n<!-- arw:repository-owned:end -->\n';
+
+test('sync checks the whole input range once and rebuilds it with unknown identities as notices', async t => {
     const root = await createSourceCheckout(t);
+    const projectionBefore = await readFile(join(root, 'distribution', 'projections', 'config.json'));
     /** @type {string[][]} */
     const calls = [];
-    const result = await prepareWorkflowDistributionReview({repositoryRoot: root, stateAdapter: cleanState(calls)});
-    assert.equal(result.status, 'succeeded', JSON.stringify(result.diagnostics));
-    assert.deepEqual(calls, [['.agents/skills', 'distribution/projections/config.json']]);
-    assert.deepEqual(result.additionalSkillReferences, ['external']);
-    assert.deepEqual(result.skillReferenceNormalizations, [{
-        column: 17,
-        context: '$external.',
-        identity: 'external',
-        line: 1,
-        path: 'skills/review/SKILL.md',
-    }]);
+    const result = await requireSync({repositoryRoot: root, stateAdapter: cleanState(calls)});
+    assert.deepEqual(calls, [['.agents/skills', 'AGENTS.md', 'docs/agents', 'docs/licenses/arw', 'distribution']]);
+    assert.deepEqual(result, {
+        diagnostics: [],
+        notices: [{column: 17, context: '$external now.', identity: 'external', line: 1, path: '.agents/skills/review/SKILL.md'}],
+        status: 'succeeded',
+    });
+    await assert.rejects(readFile(obsoletePath(root)), {code: 'ENOENT'});
+    assert.equal(await readFile(join(root, 'distribution', 'skills', 'review', 'SKILL.md'), 'utf8'), BASE_BYTES);
+    assert.deepEqual(await readFile(join(root, 'distribution', 'projections', 'config.json')), projectionBefore);
+    assert.equal(await readFile(join(root, 'distribution', 'baseline', 'AGENTS.md'), 'utf8'), rootAgentsBytes);
+    assert.equal(await readFile(join(root, 'distribution', 'baseline', '.arwignore'), 'utf8'), '.tmp/\n');
+    await assert.rejects(
+        readFile(join(root, 'distribution', 'baseline', 'docs', 'agents', 'reviewer-role-seeds.md')),
+        {code: 'ENOENT'},
+    );
+    const built = await buildWorkflowDistribution({distributionDirectory: join(root, 'distribution')});
+    assert.equal(built.status, 'succeeded', JSON.stringify(built.diagnostics));
 });
 
-test('sync review rejects invalid UTF-8 projection configuration before analysis', async t => {
+test('sync returns blocked without writing when an input path is dirty', async t => {
     const root = await createSourceCheckout(t);
-    await write(root, 'distribution/projections/config.json', invalidUtf8ProjectionConfig());
-    await write(root, 'distribution/projections/codex/config.toml', 'include_collaboration_mode_instructions = false\n');
-
-    const result = await prepareWorkflowDistributionReviewImplementation({repositoryRoot: root, stateAdapter: cleanState([])});
+    const result = await syncWorkflowDistribution({
+        repositoryRoot: root,
+        stateAdapter: {
+            async inspect() {
+                return {diagnostics: [{code: 'sync-input-dirty', message: 'Dirty.', path: 'AGENTS.md'}], status: 'blocked'};
+            },
+        },
+    });
     assert.equal(result.status, 'blocked');
-    assert.deepEqual(result.diagnostics.map(entry => [entry.code, entry.path]), [
-        ['invalid-utf8', 'distribution/projections/config.json'],
-    ]);
+    assert.equal(await readFile(obsoletePath(root), 'utf8'), '# Obsolete\n');
 });
 
-test('sync prepare strictly validates both Distribution configuration files', async t => {
+test('sync blocks on a known identity with a bad terminator and writes nothing', async t => {
+    const root = await createSourceCheckout(t);
+    await write(root, '.agents/skills/review/SKILL.md', 'Use $review, then $review');
+    const result = await syncWorkflowDistribution({repositoryRoot: root, stateAdapter: cleanState([])});
+    assert.equal(result.status, 'blocked');
+    assert.deepEqual(result.diagnostics.map(({code, column, line, path}) => ({code, column, line, path})), [
+        {code: 'skill-reference-terminator-invalid', column: 5, line: 1, path: '.agents/skills/review/SKILL.md'},
+        {code: 'skill-reference-terminator-invalid', column: 19, line: 1, path: '.agents/skills/review/SKILL.md'},
+    ]);
+    assert.equal(await readFile(obsoletePath(root), 'utf8'), '# Obsolete\n');
+});
+
+test('sync reports read failures by closed stage without writing', async t => {
+    for (const [stage, failing] of /** @type {const} */ ([
+        ['root-observation', {root: 'root-observation'}],
+        ['root-resolution', {root: 'root-resolution'}],
+        ['source-enumeration', {list: '.agents/skills'}],
+        ['source-read', {read: 'AGENTS.md'}],
+        ['distribution-enumeration', {list: 'distribution'}],
+    ])) {
+        await t.test(stage, async t => {
+            const root = await createSourceCheckout(t);
+            const createFilesystem = async (/** @type {Parameters<typeof createScopedFilesystem>[0]} */ options) => {
+                const created = await createSuccessfulFilesystem(options);
+                if ('root' in failing) return injectedFailure(failing.root);
+                const {scopedFilesystem} = created;
+                return {
+                    ...created,
+                    scopedFilesystem: {
+                        ...scopedFilesystem,
+                        list: async (/** @type {Parameters<typeof scopedFilesystem.list>[0]} */ input) => 'list' in failing && input?.path === failing.list
+                            ? injectedFailure('enumerate')
+                            : scopedFilesystem.list(input),
+                        read: async (/** @type {Parameters<typeof scopedFilesystem.read>[0]} */ input) => 'read' in failing && input.path === failing.read
+                            ? injectedFailure('read')
+                            : scopedFilesystem.read(input),
+                    },
+                };
+            };
+            const result = await syncWorkflowDistribution({createFilesystem, repositoryRoot: root, stateAdapter: cleanState([])});
+            assert.equal(result.status, 'failed');
+            assert.equal('stage' in result && result.stage, stage);
+            assert.equal(await readFile(obsoletePath(root), 'utf8'), '# Obsolete\n');
+        });
+    }
+});
+
+test('sync reports a Git state read failure with the git-state stage', async t => {
+    const root = await createSourceCheckout(t);
+    const state = createSourceCheckoutSyncStateAdapter(root, {
+        git: {run: async () => ({code: 1, failure: null, stderr: '', stdout: Buffer.alloc(0)})},
+    });
+    const result = await syncWorkflowDistribution({repositoryRoot: root, stateAdapter: state});
+    assert.equal(result.status, 'failed');
+    assert.equal('stage' in result && result.stage, 'git-state');
+    assert.equal(await readFile(obsoletePath(root), 'utf8'), '# Obsolete\n');
+});
+
+test('sync rejects invalid UTF-8 in either Distribution configuration file', async t => {
     for (const path of ['distribution/config.json', 'distribution/projections/config.json']) {
         const root = await createSourceCheckout(t);
-        const stateAdapter = cleanState([]);
-        const analysis = await prepareWorkflowDistributionReview({repositoryRoot: root, stateAdapter});
-        assert.equal(analysis.status, 'succeeded', JSON.stringify(analysis.diagnostics));
         await write(root, path, Buffer.from([0xc3, 0x28]));
-
-        const result = await prepareWorkflowDistributionSync({
-            repositoryRoot: root,
-            review: completedReview(analysis),
-            stateAdapter,
-        });
+        const result = await syncWorkflowDistribution({repositoryRoot: root, stateAdapter: cleanState([])});
         assert.equal(result.status, 'blocked');
-        assert.deepEqual(result.diagnostics.map(entry => [entry.code, entry.path]), [
-            ['invalid-utf8', path],
-        ]);
+        assert.deepEqual(result.diagnostics.map(entry => [entry.code, entry.path]), [['invalid-utf8', path]]);
     }
 });
 
@@ -223,20 +238,7 @@ test('sync copies fixed license sources and excludes other direct license-direct
     const root = await createSourceCheckout(t);
     await write(root, 'docs/licenses/arw/NOTICE.md', 'Obsolete notice.\n');
     await write(root, 'distribution/baseline/docs/licenses/arw/NOTICE.md', 'Old projected notice.\n');
-    const stateAdapter = cleanState([]);
-    const analysis = await prepareWorkflowDistributionReview({repositoryRoot: root, stateAdapter});
-    const plan = requireSyncPlan(await prepareWorkflowDistributionSync({
-        repositoryRoot: root,
-        review: completedReview(analysis),
-        stateAdapter,
-    }));
-
-    const applied = await applyWorkflowDistributionSync({
-        authorization: {approved: true, planDigest: plan.planDigest},
-        plan,
-    });
-
-    assert.deepEqual(applied, {diagnostics: [], status: 'succeeded'});
+    await requireSync({repositoryRoot: root, stateAdapter: cleanState([])});
     assert.equal(
         await readFile(join(root, 'distribution', 'baseline', 'docs', 'licenses', 'arw', 'LICENSE.example-source'), 'utf8'),
         'License.\n',
@@ -250,27 +252,14 @@ test('sync copies fixed license sources and excludes other direct license-direct
 test('sync copies a canonical Role on-demand document without adding a platform seed identity', async t => {
     const root = await createSourceCheckout(t);
     await write(root, 'docs/agents/roles/reviewer/checks.md', '# Reviewer Checks\n');
-    const stateAdapter = cleanState([]);
-    const analysis = await prepareWorkflowDistributionReview({repositoryRoot: root, stateAdapter});
-
-    const plan = requireSyncPlan(await prepareWorkflowDistributionSync({
-        repositoryRoot: root,
-        review: completedReview(analysis),
-        stateAdapter,
-    }));
-    const applied = await applyWorkflowDistributionSync({
-        authorization: {approved: true, planDigest: plan.planDigest},
-        plan,
-    });
-
-    assert.deepEqual(applied, {diagnostics: [], status: 'succeeded'});
+    await requireSync({repositoryRoot: root, stateAdapter: cleanState([])});
     assert.equal(
         await readFile(join(root, 'distribution', 'baseline', 'docs', 'agents', 'roles', 'reviewer', 'checks.md'), 'utf8'),
         '# Reviewer Checks\n',
     );
 });
 
-test('sync prepare rejects invalid on-demand Role source layouts before rebuilding', async t => {
+test('sync rejects invalid on-demand Role source layouts before rebuilding', async t => {
     for (const scenario of [
         {
             label: 'orphan directory',
@@ -287,41 +276,22 @@ test('sync prepare rejects invalid on-demand Role source layouts before rebuildi
     ]) {
         await t.test(scenario.label, async t => {
             const root = await createSourceCheckout(t);
-            const stateAdapter = cleanState([]);
-            const analysis = await prepareWorkflowDistributionReview({repositoryRoot: root, stateAdapter});
             await scenario.mutate(root);
-
-            const result = await prepareWorkflowDistributionSync({
-                repositoryRoot: root,
-                review: completedReview(analysis),
-                stateAdapter,
-            });
-
+            const result = await syncWorkflowDistribution({repositoryRoot: root, stateAdapter: cleanState([])});
             assert.equal(result.status, 'blocked');
             assert.ok(result.diagnostics.some(entry => entry.code === 'role-source-invalid'), JSON.stringify(result.diagnostics));
-            assert.equal('planDigest' in result, false);
-            assert.equal(
-                await readFile(join(root, 'distribution', 'skills', 'obsolete', 'SKILL.md'), 'utf8'),
-                '# Obsolete\n',
-            );
+            assert.equal(await readFile(obsoletePath(root), 'utf8'), '# Obsolete\n');
         });
     }
 });
 
-test('sync prepare rejects a case-folded collision between a protected seed and a generated target', async t => {
+test('sync rejects a case-folded collision between a protected seed and a generated target', async t => {
     const root = await createSourceCheckout(t);
     const configuration = structuredClone(distributionConfig);
     configuration.repositoryOwnedSeeds.push('agents.md');
     await write(root, 'distribution/config.json', `${JSON.stringify(configuration, null, 2)}\n`);
     await write(root, 'distribution/baseline/agents.md', 'Protected seed.\n');
-    const stateAdapter = cleanState([]);
-    const analysis = await prepareWorkflowDistributionReview({repositoryRoot: root, stateAdapter});
-
-    const result = await prepareWorkflowDistributionSync({
-        repositoryRoot: root,
-        review: completedReview(analysis),
-        stateAdapter,
-    });
+    const result = await syncWorkflowDistribution({repositoryRoot: root, stateAdapter: cleanState([])});
     assert.deepEqual(result, {
         diagnostics: [{
             code: 'sync-protected-target-collision',
@@ -331,316 +301,81 @@ test('sync prepare rejects a case-folded collision between a protected seed and 
         }],
         status: 'blocked',
     });
-    assert.equal('planDigest' in result, false);
-    assert.equal(
-        await readFile(join(root, 'distribution', 'baseline', 'agents.md'), 'utf8'),
-        'Protected seed.\n',
-    );
+    assert.equal(await readFile(join(root, 'distribution', 'baseline', 'agents.md'), 'utf8'), 'Protected seed.\n');
 });
 
-test('sync prepare returns one no-write plan and apply requires matching user authorization', async t => {
-    const root = await createSourceCheckout(t);
-    /** @type {string[][]} */
-    const calls = [];
-    const stateAdapter = cleanState(calls);
-    const analysis = await prepareWorkflowDistributionReview({repositoryRoot: root, stateAdapter});
-    const plan = requireSyncPlan(await prepareWorkflowDistributionSync({repositoryRoot: root, review: completedReview(analysis), stateAdapter}));
-    assert.equal(plan.status, 'succeeded', JSON.stringify(plan.diagnostics));
-    assert.match(plan.planDigest, /^[0-9a-f]{64}$/u);
-    assert.deepEqual(Object.keys(plan), ['diagnostics', 'planDigest', 'status']);
-    await assert.rejects(readFile(join(root, 'distribution', 'baseline', 'AGENTS.md')), {code: 'ENOENT'});
-
-    const denied = await applyWorkflowDistributionSync({
-        authorization: {approved: false, planDigest: plan.planDigest},
-        plan,
-    });
-    assert.equal(denied.status, 'blocked');
-    await assert.rejects(readFile(join(root, 'distribution', 'baseline', 'AGENTS.md')), {code: 'ENOENT'});
-
-    const applied = await applyWorkflowDistributionSync({
-        authorization: {approved: true, planDigest: plan.planDigest},
-        plan,
-    });
-    assert.deepEqual(applied, {diagnostics: [], status: 'succeeded'});
-    await assert.rejects(readFile(join(root, 'distribution', 'skills', 'obsolete', 'SKILL.md')), {code: 'ENOENT'});
-    const built = await buildWorkflowDistribution({distributionDirectory: join(root, 'distribution')});
-    assert.equal(built.status, 'succeeded', JSON.stringify(built.diagnostics));
-    assert.match(
-        await readFile(join(root, 'distribution', 'projections', 'config.json'), 'utf8'),
-        /"additionalSkillReferences": \[\s+"external"/u,
-    );
-    assert.equal((await readFile(join(root, 'distribution', 'baseline', '.arwignore'), 'utf8')), '.tmp/\n');
-    assert.equal(
-        await readFile(join(root, 'distribution', 'baseline', 'docs', 'agents', 'reviewer.md'), 'utf8'),
-        '<!-- arw:managed:start -->\n# Reviewer Responsibilities\n\nShared reviewer rules.\n<!-- arw:managed:end -->\n<!-- arw:repository-owned:start -->\nNone.\n<!-- arw:repository-owned:end -->\n',
-    );
-    await assert.rejects(
-        readFile(join(root, 'distribution', 'baseline', 'docs', 'agents', 'reviewer-role-seeds.md')),
-        {code: 'ENOENT'},
-    );
-});
-
-test('sync apply revalidates every plan-bound byte and blocks state drift before deletion', async t => {
-    const root = await createSourceCheckout(t);
-    const stateAdapter = cleanState([]);
-    const analysis = await prepareWorkflowDistributionReview({repositoryRoot: root, stateAdapter});
-    const plan = requireSyncPlan(await prepareWorkflowDistributionSync({repositoryRoot: root, review: completedReview(analysis), stateAdapter}));
-    await write(root, 'AGENTS.md', 'Repository text.\n<!-- arw:managed:start -->\nChanged managed root.\n<!-- arw:managed:end -->\nSource-only text.\n');
-    const result = await applyWorkflowDistributionSync({
-        authorization: {approved: true, planDigest: plan.planDigest},
-        plan,
-    });
-    assert.equal(result.status, 'blocked');
-    assert.deepEqual(result.diagnostics.map(entry => entry.code), ['sync-plan-changed']);
-    await assert.rejects(readFile(join(root, 'distribution', 'baseline', 'AGENTS.md')), {code: 'ENOENT'});
-});
-
-test('sync apply preserves a pre-delete failure without transaction-only result fields', async t => {
-    const root = await createSourceCheckout(t);
-    let stateInspections = 0;
-    /** @type {SyncStateAdapter} */
-    const stateAdapter = {
-        async inspect() {
-            stateInspections += 1;
-            return stateInspections === 3
-                ? injectedFailure('sync-revalidation')
-                : {diagnostics: [], status: 'succeeded'};
+/** @param {'remove' | 'write'} method @param {string} path @param {string} stage */
+const failingFilesystem = (method, path, stage) => async (/** @type {Parameters<typeof createScopedFilesystem>[0]} */ options) => {
+    const created = await createSuccessfulFilesystem(options);
+    return {
+        ...created,
+        scopedFilesystem: {
+            ...created.scopedFilesystem,
+            [method]: async (/** @type {{path: string}} */ request) => request.path === path
+                ? injectedFailure(stage)
+                : /** @type {Function} */ (created.scopedFilesystem[method])(request),
         },
     };
-    const analysis = await prepareWorkflowDistributionReview({repositoryRoot: root, stateAdapter});
-    const plan = requireSyncPlan(await prepareWorkflowDistributionSync({
-        repositoryRoot: root,
-        review: completedReview(analysis),
-        stateAdapter,
-    }));
-    const result = await applyWorkflowDistributionSync({
-        authorization: {approved: true, planDigest: plan.planDigest},
-        plan,
-    });
-    assert.deepEqual(result, {
-        diagnostics: [{code: 'injected-failure', message: 'Injected failure.'}],
-        stage: 'sync-revalidation',
-        status: 'failed',
-    });
-    assert.equal(await readFile(join(root, 'distribution', 'skills', 'obsolete', 'SKILL.md'), 'utf8'), '# Obsolete\n');
-});
+};
 
-test('sync apply reports a cleanup failure without internal rollback', async t => {
+test('sync reports a cleanup failure without internal rollback', async t => {
     const root = await createSourceCheckout(t);
-    const stateAdapter = cleanState([]);
-    const createFilesystem = async (/** @type {Parameters<typeof createScopedFilesystem>[0]} */ options) => {
-        const created = await createSuccessfulFilesystem(options);
-        return {
-            ...created,
-            scopedFilesystem: {
-                ...created.scopedFilesystem,
-                async remove(/** @type {{path: string, recursive?: boolean}} */ request) {
-                    if (request.path === 'distribution/skills/obsolete/SKILL.md') {
-                        return injectedFailure('filesystem-remove');
-                    }
-                    return created.scopedFilesystem.remove(request);
-                },
-            },
-        };
-    };
-    const analysis = await prepareWorkflowDistributionReview({repositoryRoot: root, stateAdapter});
-    const plan = requireSyncPlan(await prepareWorkflowDistributionSync({
-        createFilesystem,
+    const result = await syncWorkflowDistribution({
+        createFilesystem: failingFilesystem('remove', 'distribution/skills/obsolete/SKILL.md', 'filesystem-remove'),
         repositoryRoot: root,
-        review: completedReview(analysis),
-        stateAdapter,
-    }));
-    const result = await applyWorkflowDistributionSync({
-        authorization: {approved: true, planDigest: plan.planDigest},
-        plan,
+        stateAdapter: cleanState([]),
     });
     assert.deepEqual(result, {
         diagnostics: [{code: 'injected-failure', message: 'Injected failure.'}],
         stage: 'cleanup',
         status: 'failed',
     });
-    assert.equal('completedOperations' in result, false);
-    assert.equal('rollback' in result, false);
-    assert.equal(await readFile(join(root, 'distribution', 'skills', 'obsolete', 'SKILL.md'), 'utf8'), '# Obsolete\n');
+    assert.equal(await readFile(obsoletePath(root), 'utf8'), '# Obsolete\n');
 });
 
-test('sync apply reports the failing stage after deletion and performs no internal rollback', async t => {
+test('sync reports a generated write failure after deletion without internal rollback', async t => {
     const root = await createSourceCheckout(t);
-    const stateAdapter = cleanState([]);
-    const createFilesystem = async (/** @type {Parameters<typeof createScopedFilesystem>[0]} */ options) => {
-        const created = await createSuccessfulFilesystem(options);
-        return {
-            ...created,
-            scopedFilesystem: {
-                ...created.scopedFilesystem,
-                async write(/** @type {{bytes: Buffer, mode: 'create' | 'create-atomic' | 'replace', path: string}} */ request) {
-                    if (request.path === 'distribution/baseline/AGENTS.md') {
-                        return injectedFailure('filesystem-file-create');
-                    }
-                    return created.scopedFilesystem.write(request);
-                },
-            },
-        };
-    };
-    const analysis = await prepareWorkflowDistributionReview({repositoryRoot: root, stateAdapter});
-    const plan = requireSyncPlan(await prepareWorkflowDistributionSync({
-        createFilesystem,
+    const result = await syncWorkflowDistribution({
+        createFilesystem: failingFilesystem('write', 'distribution/baseline/AGENTS.md', 'filesystem-file-create'),
         repositoryRoot: root,
-        review: completedReview(analysis),
-        stateAdapter,
-    }));
-    const result = await applyWorkflowDistributionSync({
-        authorization: {approved: true, planDigest: plan.planDigest},
-        plan,
+        stateAdapter: cleanState([]),
     });
     assert.deepEqual(result, {
         diagnostics: [{code: 'injected-failure', message: 'Injected failure.'}],
         stage: 'generated-write',
         status: 'failed',
     });
-    assert.equal('completedOperations' in result, false);
-    assert.equal('rollback' in result, false);
-    await assert.rejects(readFile(join(root, 'distribution', 'skills', 'obsolete', 'SKILL.md')), {code: 'ENOENT'});
+    await assert.rejects(readFile(obsoletePath(root)), {code: 'ENOENT'});
     await assert.rejects(readFile(join(root, 'distribution', 'baseline', 'AGENTS.md')), {code: 'ENOENT'});
 });
 
-test('sync apply reports a Projection config write failure after rebuilding generated content', async t => {
+test('sync reports final rebuilt Distribution validation failure without rollback', async t => {
     const root = await createSourceCheckout(t);
-    const stateAdapter = cleanState([]);
-    const createFilesystem = async (/** @type {Parameters<typeof createScopedFilesystem>[0]} */ options) => {
-        const created = await createSuccessfulFilesystem(options);
-        return {
-            ...created,
-            scopedFilesystem: {
-                ...created.scopedFilesystem,
-                async write(/** @type {{bytes: Buffer, mode: 'create' | 'create-atomic' | 'replace', path: string}} */ request) {
-                    if (request.path === 'distribution/projections/config.json') {
-                        return injectedFailure('filesystem-file-replace');
-                    }
-                    return created.scopedFilesystem.write(request);
-                },
-            },
-        };
-    };
-    const analysis = await prepareWorkflowDistributionReview({repositoryRoot: root, stateAdapter});
-    const plan = requireSyncPlan(await prepareWorkflowDistributionSync({
-        createFilesystem,
-        repositoryRoot: root,
-        review: completedReview(analysis),
-        stateAdapter,
-    }));
-    const result = await applyWorkflowDistributionSync({
-        authorization: {approved: true, planDigest: plan.planDigest},
-        plan,
-    });
-    assert.deepEqual(result, {
-        diagnostics: [{code: 'injected-failure', message: 'Injected failure.'}],
-        stage: 'projection-config-write',
-        status: 'failed',
-    });
-    assert.equal('completedOperations' in result, false);
-    assert.equal('rollback' in result, false);
-    await assert.rejects(readFile(join(root, 'distribution', 'skills', 'obsolete', 'SKILL.md')), {code: 'ENOENT'});
-    assert.equal(
-        await readFile(join(root, 'distribution', 'baseline', 'AGENTS.md'), 'utf8'),
-        '<!-- arw:managed:start -->\nManaged root.\n<!-- arw:managed:end -->\n<!-- arw:repository-owned:start -->\nNone.\n<!-- arw:repository-owned:end -->\n',
-    );
-});
-
-test('sync apply reports final rebuilt Distribution validation failure without rollback fields', async t => {
-    const root = await createSourceCheckout(t);
-    const stateAdapter = cleanState([]);
-    const analysis = await prepareWorkflowDistributionReview({repositoryRoot: root, stateAdapter});
-    const plan = requireSyncPlan(await prepareWorkflowDistributionSync({
+    const result = await syncWorkflowDistribution({
         buildDistribution: async () => injectedFailure('distribution-build'),
         repositoryRoot: root,
-        review: completedReview(analysis),
-        stateAdapter,
-    }));
-    assert.equal(plan.status, 'succeeded', JSON.stringify(plan.diagnostics));
-
-    const result = await applyWorkflowDistributionSync({
-        authorization: {approved: true, planDigest: plan.planDigest},
-        plan,
+        stateAdapter: cleanState([]),
     });
     assert.deepEqual(result, {
         diagnostics: [{code: 'injected-failure', message: 'Injected failure.'}],
         stage: 'final-validation',
         status: 'failed',
     });
-    assert.equal('completedOperations' in result, false);
-    assert.equal('rollback' in result, false);
-    await assert.rejects(readFile(join(root, 'distribution', 'skills', 'obsolete', 'SKILL.md')), {code: 'ENOENT'});
-    assert.equal(
-        await readFile(join(root, 'distribution', 'baseline', 'AGENTS.md'), 'utf8'),
-        '<!-- arw:managed:start -->\nManaged root.\n<!-- arw:managed:end -->\n<!-- arw:repository-owned:start -->\nNone.\n<!-- arw:repository-owned:end -->\n',
-    );
+    await assert.rejects(readFile(obsoletePath(root)), {code: 'ENOENT'});
+    assert.equal(await readFile(join(root, 'distribution', 'baseline', 'AGENTS.md'), 'utf8'), rootAgentsBytes);
 });
 
-test('sync prepare preserves exact text when review deletes a normalization candidate', async t => {
-    const root = await createSourceCheckout(t);
-    const stateAdapter = cleanState([]);
-    const analysis = await prepareWorkflowDistributionReview({repositoryRoot: root, stateAdapter});
-    const review = completedReview(analysis);
-    review.skillReferenceNormalizations = [];
-    review.skillReferenceNormalizationsHash = sha256(Buffer.alloc(0));
-
-    const plan = requireSyncPlan(await prepareWorkflowDistributionSync({repositoryRoot: root, review, stateAdapter}));
-    assert.equal(plan.status, 'succeeded', JSON.stringify(plan.diagnostics));
-
-    const applied = await applyWorkflowDistributionSync({
-        authorization: {approved: true, planDigest: plan.planDigest},
-        plan,
-    });
-    assert.equal(applied.status, 'succeeded', JSON.stringify(applied.diagnostics));
-    assert.equal(
-        await readFile(join(root, 'distribution', 'skills', 'review', 'SKILL.md'), 'utf8'),
-        'Use $review and $external.\n',
-    );
-});
-
-test('sync prepare blocks when review deletes a Skill identity still required by the projected bytes', async t => {
-    const root = await createSourceCheckout(t);
-    const stateAdapter = cleanState([]);
-    const analysis = await prepareWorkflowDistributionReview({repositoryRoot: root, stateAdapter});
-    const review = completedReview(analysis);
-    review.additionalSkillReferences = [];
-    review.additionalSkillReferencesHash = sha256(Buffer.alloc(0));
-    const result = await prepareWorkflowDistributionSync({repositoryRoot: root, review, stateAdapter});
-    assert.equal(result.status, 'blocked');
-    assert.deepEqual(result.diagnostics.map(entry => entry.code), ['skill-reference-unresolved']);
-    assert.equal('planDigest' in result, false);
-});
-
-test('sync prepare exposes only a digest and apply directly rebuilds the fixed generated range', async t => {
+test('sync directly rebuilds the fixed generated range and leaves source-only Skills out', async t => {
     const root = await createSourceCheckout(t);
     await write(root, '.agents/skills/reviewer-capability/SKILL.md', 'Use $reviewer-capability and $source-only-external.\n');
     await write(root, '.agents/skills/reviewer-capability/agents/openai.yaml', 'policy:\n  allow_implicit_invocation: false\n');
     await write(root, '.agents/skills/reviewer-capability/references/strata.md', 'Source-only model operations.\n');
     await write(root, '.agents/skills/release/SKILL.md', 'Source-only release operations.\n');
     await write(root, '.agents/skills/unattended-run/SKILL.md', 'Source-only unattended operations.\n');
-    const stateAdapter = cleanState([]);
-    const analysis = await prepareWorkflowDistributionReview({repositoryRoot: root, stateAdapter});
     await write(root, 'distribution/rogue/nested.txt', 'obsolete\n');
     const configurationBefore = await readFile(join(root, 'distribution', 'config.json'));
-
-    const plan = requireSyncPlan(await prepareWorkflowDistributionSync({
-        repositoryRoot: root,
-        review: completedReview(analysis),
-        stateAdapter,
-    }));
-    assert.deepEqual(Object.keys(plan), ['diagnostics', 'planDigest', 'status']);
-    assert.deepEqual(plan.diagnostics, []);
-    assert.match(plan.planDigest, /^[0-9a-f]{64}$/u);
-    assert.equal(await readFile(join(root, 'distribution', 'rogue', 'nested.txt'), 'utf8'), 'obsolete\n');
-
-    const result = await applyWorkflowDistributionSync({
-        authorization: {approved: true, planDigest: plan.planDigest},
-        plan,
-    });
-    assert.deepEqual(result, {diagnostics: [], status: 'succeeded'});
+    await requireSync({repositoryRoot: root, stateAdapter: cleanState([])});
     await assert.rejects(readFile(join(root, 'distribution', 'rogue', 'nested.txt')), {code: 'ENOENT'});
-    await assert.rejects(readFile(join(root, 'distribution', 'skills', 'obsolete', 'SKILL.md')), {code: 'ENOENT'});
     assert.deepEqual(await readFile(join(root, 'distribution', 'config.json')), configurationBefore);
     const built = await buildWorkflowDistribution({distributionDirectory: join(root, 'distribution')});
     assert.equal(built.status, 'succeeded', JSON.stringify(built.diagnostics));
@@ -686,7 +421,7 @@ test('sync blocks symbolic links in source trees', async t => {
             },
         };
     };
-    const result = await prepareWorkflowDistributionReviewImplementation({createFilesystem, repositoryRoot: root, stateAdapter: cleanState([])});
+    const result = await syncWorkflowDistribution({createFilesystem, repositoryRoot: root, stateAdapter: cleanState([])});
     assert.equal(result.status, 'blocked');
     assert.deepEqual(result.diagnostics.map(entry => [entry.code, entry.path]), [['filesystem-link-unsupported', '.agents/skills/odd']]);
 });
@@ -696,7 +431,7 @@ test('sync blocks non-regular entries in source trees', {skip: process.platform 
     const server = createServer();
     await new Promise(resolve => server.listen(join(root, '.agents/skills/odd.sock'), () => resolve(undefined)));
     t.after(() => server.close());
-    const result = await prepareWorkflowDistributionReviewImplementation({repositoryRoot: root, stateAdapter: cleanState([])});
+    const result = await syncWorkflowDistribution({repositoryRoot: root, stateAdapter: cleanState([])});
     assert.equal(result.status, 'blocked');
     assert.deepEqual(result.diagnostics.map(entry => [entry.code, entry.path]), [['filesystem-entry-unsupported', '.agents/skills/odd.sock']]);
 });
