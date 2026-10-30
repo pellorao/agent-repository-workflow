@@ -1,7 +1,7 @@
 ---
 name: wait-what
-description: Stop. That last message did not land — re-pitch it.
+description: 停. 上一条消息没有讲明白, 请重新讲一遍.
 disable-model-invocation: true
 ---
 
-Re-explain the preceding response for a reader unfamiliar with the project: rebuild the missing background, premises and cause and effect in the current conversation language, and keep the facts, unconfirmed items and decision boundaries unchanged. This task only restates the existing explanation; it does not start a teaching session or another workflow.
+向不熟悉该项目的读者重新解释上一条回复: 用当前对话的语言补全缺失的背景, 前提和因果, 并保持事实, 未确认事项和决定边界不变. 这项任务只重述已有的解释, 不开启教学会话或其他工作流.
