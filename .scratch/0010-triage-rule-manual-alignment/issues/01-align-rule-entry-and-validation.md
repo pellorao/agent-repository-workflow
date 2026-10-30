@@ -10,10 +10,16 @@ Status: ready-for-agent
 
 ## Acceptance criteria
 
-- [ ] 398 不再要求 Agent 自行创建 issue, 399 使用仓库阈值权威, 392 不再预设格式化命令.
-- [ ] 三个 Skill 的来源, distribution 副本和 Claude Code 投影语义一致.
-- [ ] arw text check, 当前 effort 的 terms check 和仓库声明的三个生产脚本通过; 人工核对改动范围和引用.
+- [x] 398 不再要求 Agent 自行创建 issue, 399 使用仓库阈值权威, 392 不再预设格式化命令.
+- [x] 三个 Skill 的来源, distribution 副本和 Claude Code 投影语义一致.
+- [x] arw text check, 当前 effort 的 terms check 和仓库声明的三个生产脚本通过; 人工核对改动范围和引用.
 
 ## Blocked by
 
 - None - can start immediately
+
+## Validation
+
+- node scripts/check-workflow-distribution.mjs, node scripts/project-claude-skills.mjs --check, node scripts/generate-install-arw.mjs --check, node arw.mjs text check, node arw.mjs terms check --include .scratch/0010-triage-rule-manual-alignment/ 和 git diff --check 均通过.
+- 人工核对三处 Skill 修改与 issue 要求一致, 来源与 distribution 副本字节相同, Claude Code 投影检查通过. 只调整规则引用, 未修改测试或运行时代码.
+- 本次只提交符合非实施分类的规则与文档及验证记录. 未运行 Reviewer, 未生成就绪记录, issue 保持原状态; 终态提交的规则冲突尚待用户裁定.

@@ -17,7 +17,7 @@ name: commit
 ## Implementation issue commit workflow
 
 1. 确定完整排序的 `authorizingIssueIds`, 按 `code-review` 的 [完成记录](../code-review/result-reuse.md#completion-records) 规则更新真实的 Status 和验收勾选, 暂存完整实施候选. 必要实施验证按 `validation` Skill, 可以与审核并行; 未完成的检查不提供通过事实.
-2. 启动 Reviewer 前自查 (这些是复审的常见问题): 没有重新实现已有公共辅助函数; 无死代码, 文件内部导出已去掉; 测试名与断言相符, 测试回调低于 100 毫秒; 审核对象是已暂存的真实树, 不审私有索引 (`git write-tree` 取树).
+2. 启动 Reviewer 前自查 (这些是复审的常见问题): 没有重新实现已有公共辅助函数; 无死代码, 文件内部导出已去掉; 测试名与断言相符, 测试回调耗时满足 `test-performance-optimization` Skill 的 Threshold 要求; 审核对象是已暂存的真实树, 不审私有索引 (`git write-tree` 取树).
 3. 按 [Run](#run) 准备审核轮, 并行运行 `requirements-reviewer` (要求符合审核) 和 `code-standards-reviewer`. 一次提交最多这两个并行 Reviewer.
 4. 两个 Reviewer 正常结束 (`ready`) 后, 按 `docs/agents/subagent-findings.md` 独立核对报告中的每个问题. 每轮自选一两处 Reviewer 应当检查的要求或代码位置抽查, 其中至少一处是回归抽查 (改动代码所服务的既有要求是否仍成立); 发现漏检时该轮结果作废并重审. Reviewer 返回 `incomplete` 时本轮结束, Main Agent 处理其原因后重新 `prepare`.
 5. 修复后暂存 (审核运行期间也可以暂存) 并用同一 `input.json` 再次 `prepare`; 新一轮自动沿原线程复审, 只交付相邻版本变化和该 Reviewer 的前轮报告 ([复审规则](../../../docs/agents/reviewer.md#re-review)). 某个 Reviewer 的输入没有受影响时只运行另一个的 `.jsonl`, 保留其结果. 复审报告中写明仍成立且本轮变化没有解决它的旧问题, 若已在台账记录处置, 不再重新分流. 处置台账: 不修复的问题记入问题所属授权 issue (无法归属时记入排序第一的) 的 `## Comments`, 每条一行 `台账: <文件和行或章节> <转入后续 issue|记录不修|冲突裁决> <理由>`, 定位精确到句子或行且只覆盖所列问题 (过宽的条目会让 Reviewer 漏报邻近的真实问题), 并在 `prepare` 前暂存; `prepare` 把全部授权 issue 的 `## Comments` 交给 Reviewer, 本轮变化没有触及其定位和影响范围的台账问题不再被报告. 轮次按同一次提交尝试 (同一授权范围) 中 `prepare` 的次数计, 第 3 轮起只为行为缺陷开修复轮 (无论由谁引入, 拿不准按行为缺陷处理), 措辞, 重复和文档去重类问题记 "记录不修" 后不再修. Code Standards 与要求符合审核的结论互相冲突时, Main Agent 按 effort spec 裁决并记 "冲突裁决". 台账不用于驳回 Reviewer 的问题, 认为问题无效仍走质疑规则.
