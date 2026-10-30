@@ -51,7 +51,7 @@ Main Agent 负责暂存, Request, 审核协调和处理问题, 不代写语义�
 - 只含上述规则与文档 Markdown 的改动, 不要求就绪记录. 运行 `arw text check`, Main Agent 用 grep 自查跨文档引用和副本一致性. 例外: 改动审核系统本身 (Reviewer 角色, 关卡语义) 或长期规范合同条款时, 由 Main Agent 按 `reviewer-launch` 的 Other reviews 手工准备并启动一个 `requirements-reviewer` (普通身份, `issueIds` 为空数组, 再次审核按 `reviewer-launch` 复用原线程, 不用 `commit-audit prepare`), 最多一轮, 不运行 Spec Readiness; Main Agent 处理报告问题后提交, 不复审.
 - 安全的 `gitlink`. 它把子模块提交记录为当前仓库状态, 是否符合条件不取决于 Application 配置, 自身路径或其他已暂存项; Main Agent 仍按实际语义把它归入本次 effort.
 
-候选可以删除该 effort 的辅助文件, 但必须保留每个已提交的 ARW Artifact 身份; 类型和编号不变的重命名属于身份保留. 候选使实施 issue 新进入 `completed` 或 `wontfix` (包括从另一个终态转换) 时不符合条件; `HEAD` 中已处于相同终态的 issue 不因其他字节变化而再次进入该状态.
+候选可以删除该 effort 的辅助文件, 但必须保留每个已提交的 ARW Artifact 身份; 类型和编号不变的重命名属于身份保留. 候选使实施 issue 新进入 `completed` (包括从另一个终态转换) 时, 只有该 issue 没有就绪记录 (它的全部交付都是规则, 文档和 `.scratch` 记录) 才符合条件, 有就绪记录的 issue 走实施 issue 工作流; 新进入 `wontfix` 不受此限; `HEAD` 中已处于相同终态的 issue 不因其他字节变化而再次进入该状态.
 
 运行 `arw commit-audit verify --non-implementation`, 它完成上述分类, 单一 effort, 未暂存替代内容 (含子模块 `HEAD`), 终态转换, ARW Artifact 解析, 文本格式, `git diff --cached --check` 和身份保留的全部机械检查, 不做语义或跨文件检查. 错误列表为空才提交; 失败时修复候选后重跑, 完整候选包含实施工作时改用实施 issue 工作流.
 

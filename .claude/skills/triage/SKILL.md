@@ -18,7 +18,7 @@ disable-model-invocation: true
 
 转换: 未分流的 issue 通常先到 `needs-triage`, 再到 `needs-info`, `ready-for-agent`, `ready-for-human` 或 `wontfix`; `needs-info` 在报告者回复后回到 `needs-triage`. 用户可以随时覆盖. 转换看起来不寻常时先指出并询问.
 
-`wontfix` 是终态. 把实施 issue 置为 `wontfix` 属于终态转换, 须在 `commit` Skill 要求的授权范围内, 不属于它的非实施提交.
+`wontfix` 是终态. 把实施 issue 置为 `wontfix` 的提交路径见 `commit` Skill 的非实施工作流.
 
 ## Invocation
 

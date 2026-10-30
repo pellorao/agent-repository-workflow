@@ -6,7 +6,7 @@
 
 ## Decision
 
-ARW 对每个实施 issue 使用机械检查和独立语义审核共同判断 Spec Readiness. Engine 检查结构, 路径, 字节绑定, 派生结果和新鲜度; `spec-readiness-reviewer` 判断治理设计, 理由, ADR 和 Module Design 是否充分. 两层中的任何问题都关闭式阻止开始实施; 就绪记录只授权开始实施, 此后提交只核对审核对象 (subject), 理由与成本见 ADR 0023; 已授权且不依赖该结果的实施可与首次审核并行, 具体检查时点由[设计就绪工作流](../../.agents/skills/spec-readiness/SKILL.md#authorization-timing)拥有. 必要设计决定和真实前置依赖仍须先满足. Application Source Issue 与 Wayfinder issue 不进入这项检查.
+ARW 对每个实施 issue 使用机械检查和独立语义审核共同判断 Spec Readiness. Engine 检查结构, 路径, 字节绑定, 派生结果和新鲜度; `spec-readiness-reviewer` 判断治理设计, 理由, ADR 和 Module Design 是否充分. 两层中的任何问题都关闭式阻止开始实施; 就绪记录只授权开始实施, 此后提交只核对审核对象 (subject), 理由与成本见 ADR 0023; 已授权且不依赖该结果的实施可与首次审核并行, 具体检查时点由[设计就绪工作流](../../.agents/skills/spec-readiness/SKILL.md#authorization-timing)拥有. 必要设计决定和真实前置依赖仍须先满足. Application Source Issue 与 Wayfinder issue 不进入这项检查; 交付只含非实施分类内容 (Agent 规则与文档 Markdown 和 `.scratch` 记录) 的实施 issue 同样不进入, 见 [ADR 0035](0035-allow-rule-only-issues-terminal-status-in-non-implementation-commits.md).
 
 Engine 从当前 issue 的连续交付结果和验收条件冻结准确审核对象, 并与显式治理输入, Reviewer Role 身份及与用户沟通的 Main Agent 选定的草稿路径一起绑定到不可变 Reviewer Request. 审核对象只证明本次交付范围, 不能自行证明设计质量. issue 不声明治理要求引用: 治理 Input 仍由 Main Agent 显式给出并受摘要绑定, 只有哪些既有章节与 issue 相关由 Reviewer 自行检索, 检索结果只作比较证据, 不授权也不记录. 原先由 issue 声明引用的理由是显式比启发式易审计, 但引用选择本身成为就绪缺口的主要来源, 而 Input 绑定已保证审核事实可审计. Agent 指令规范 Reviewer 行为, Reviewer Role 正文与平台配置另有职责; 它们均不作为治理输入或设计证据. 审核对象身份对行尾及验收任务列表的完成标记作限定规范化, 其他内容变化使就绪失效.
 

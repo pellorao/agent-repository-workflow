@@ -1,0 +1,5 @@
+interface:
+  display_name: "Unattended Run"
+  short_description: "Split human-only steps in driver-played runs"
+policy:
+  allow_implicit_invocation: false

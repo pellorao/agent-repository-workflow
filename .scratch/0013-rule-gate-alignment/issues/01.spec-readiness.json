@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0013:01",
+  "request": {
+    "digest": "50bc3bdeb0b6bdb92b17a257a4802e80c1d40181adce7b53851c4bc4027cba8c",
+    "filePath": ".tmp/claude-code/c0e60747-0cc3-447f-9257-7d8bd88847ff/0013_01/spec-readiness/requests/request-51b184d0-3a12-4b4e-88b0-bee9dd42adc4.json",
+    "id": "51b184d0-3a12-4b4e-88b0-bee9dd42adc4"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "f797bb611ba9cf50c0ccfab4d029b2a32fd44b771b7b9338a0a31bb48ddba14a"
+  },
+  "inputs": [
+    {
+      "filePath": ".scratch/0013-rule-gate-alignment/spec.md",
+      "role": "governing-spec",
+      "sha256": "9f77984f91cade3bd2f17121b525879b08fbd60121278bed54d8d0a4609bb665"
+    },
+    {
+      "filePath": "docs/adr/0006-enforce-spec-readiness-with-independent-review.md",
+      "role": "adr",
+      "sha256": "ecd93eecb0ca0283670f10f1cda3d955b6c4a389263abbf0a243f72d212a8ddc"
+    },
+    {
+      "filePath": "docs/adr/0023-separate-commit-audit-review-from-implementation.md",
+      "role": "adr",
+      "sha256": "4cb0f2a348249c980d3efa25ecb48bb7ca80c4e19b35bf679deba332716e3b55"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow-development/spec.md",
+      "role": "governing-spec",
+      "sha256": "8f29bf4abb867e1affcf5a9c7258cf3f6395346142807c467ec3e944e2029ecc"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow/spec.md",
+      "role": "governing-spec",
+      "sha256": "339a47afd2bc32c5aa9fa4e9bc73e2bc51bbcc4768c0ab64272d320e65a9c78a"
+    },
+    {
+      "filePath": "lib/commit-audit/commit-audit.mjs",
+      "role": "architecture-evidence",
+      "sha256": "3c1ad25353b36aed7afebc5576533eb7f386e2df0ad1f401fb00dae81ac616b6"
+    },
+    {
+      "filePath": "lib/workflow-distribution/workflow-distribution-sync.mjs",
+      "role": "architecture-evidence",
+      "sha256": "9b5657e07d78c813c4a17df9cdd17394ec90a9a70b5345ea451c9f83b723c824"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0013-rule-gate-alignment/issues/01-terminal-docs-issues-and-unattended-run.md",
+    "sha256": "18fe3436bea45558b88818454f17d7629c22f686ff083fa39ef24b5b16e99917"
+  },
+  "result": "satisfied"
+}

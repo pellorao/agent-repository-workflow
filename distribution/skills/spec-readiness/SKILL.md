@@ -5,7 +5,7 @@ name: spec-readiness
 
 # Spec Readiness
 
-Spec Readiness 针对每个实施 issue 运行, 不针对 Application Source Issue 或 Wayfinder issue. 它证明该 issue 具有当前且经过独立审查的治理设计, 或仍然有效的明确例外. 实施授权, 阻断项和用户设计决定仍由各自工作流判断.
+Spec Readiness 针对每个实施 issue 运行 (交付只含非实施分类内容的除外, 见 `implement` 与 `commit` Skill), 不针对 Application Source Issue 或 Wayfinder issue. 它证明该 issue 具有当前且经过独立审查的治理设计, 或仍然有效的明确例外. 实施授权, 阻断项和用户设计决定仍由各自工作流判断.
 
 ## Authorization timing
 

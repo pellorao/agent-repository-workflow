@@ -34,11 +34,11 @@ Commit Audit Reviewer 审查线程身份是 `spawn_agent` 首次调用或 `follo
 
 Gate 2 是 effort 级 Spec Audit. 它只审核 `git diff <since> <tree>` 中治理文档 (`docs/specs`, `docs/adr`, 当前 effort 的 `spec.md` 与 `PRD.md`) 的改动, `since` 由引擎从 Git 历史推导为 effort 起点, 不存储基线; 没有改动时无需审核, 不再有 `gate2Exception`. 原先限定"不从作为输出修改的长期 Spec 扩大"的做法被撤销: effort 修改的长期规范和 ADR 正是需要对照代码审核的内容. 每次实施提交另做由差异驱动的回归检查, Reviewer 检索改动代码所服务的既有要求并核对仍成立. 此前从未审核过的旧 ADR 按现状接受.
 
-用户请求 Git 提交后, Main Agent 从准确的已暂存路径集合选择纯规划或实现路线. 每个提交只包含一个 effort. 纯规划路线只接受该 effort 中跟踪器内部的 `spec.md`, `map.md`, 可以被 ARW 解析的 Wayfinder issue, 未在当前变更中进入 `completed` 或 `wontfix` 的实施 issue, 以及 `research/**` 和 `prototype/**` 下任意扩展名的安全普通文件. 它允许新增, 更新和删除. 辅助文件不要求由 map, issue, spec 或其他文件引用.
+用户请求 Git 提交后, Main Agent 从准确的已暂存路径集合选择纯规划或实现路线. 每个提交只包含一个 effort. 纯规划路线只接受该 effort 中跟踪器内部的 `spec.md`, `map.md`, 可以被 ARW 解析的 Wayfinder issue, 实施 issue (终态转换的放行见 [ADR 0035](0035-allow-rule-only-issues-terminal-status-in-non-implementation-commits.md)), 以及 `research/**` 和 `prototype/**` 下任意扩展名的安全普通文件. 它允许新增, 更新和删除. 辅助文件不要求由 map, issue, spec 或其他文件引用.
 
-纯规划路线只做机械验证. Main Agent 冻结准确的已暂存路径, 状态, 普通文件模式和 blob 标识, 检查安全路径, ARW Artifact 基本格式, 实施 issue 是否进入终态, 适用文本格式和限定范围的已暂存空白字符, 并在提交前确认候选不变. 它不验证规划内容的意义, 完整性或价值, 不检查阻塞项, 生命周期完成状态, 链接, 覆盖范围, 跨文件关系或删除后的剩余状态. 任一失败停止提交, 修正后从路径清单重新开始.
+纯规划路线 (含规则与文档候选) 由 `arw commit-audit verify --non-implementation` 只做机械验证. Main Agent 冻结准确的已暂存路径, 状态, 普通文件模式和 blob 标识, 检查安全路径, ARW Artifact 基本格式, 有就绪记录的实施 issue 是否新进入 `completed` (按 ADR 0035), 适用文本格式和限定范围的已暂存空白字符, 并在提交前确认候选不变. 它不验证规划内容的意义, 完整性或价值, 不检查阻塞项, 生命周期完成状态, 链接, 覆盖范围, 跨文件关系或删除后的剩余状态. 任一失败停止提交, 修正后从路径清单重新开始.
 
-纯规划路线不运行 Spec Readiness 记录, Commit Audit, Gate 1, Gate 2, `arw commit-audit verify`, Gate 3, Code Review 或独立 Reviewer. 它接受没有独立语义审核的限制, 因为规划记录不声称证明未来实现的符合性. 后续实现仍经过完整独立审核.
+纯规划路线不运行 Spec Readiness 记录, Commit Audit, Gate 1, Gate 2, Gate 3, Code Review 或独立 Reviewer. 它接受没有独立语义审核的限制, 因为规划记录不声称证明未来实现的符合性. 后续实现仍经过完整独立审核.
 
 只要已暂存候选包含任何不属于纯规划分类的内容, 完整候选就使用实现提交流程. 同一 effort 和实现授权范围内的规划记录可以留在该候选中, 不因文件类别强制拆分原子变更. 不在该授权范围内的规划记录仍须先取得自己的适用授权.
 

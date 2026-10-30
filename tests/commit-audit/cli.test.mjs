@@ -116,6 +116,15 @@ test('prepare adds Gate 1 for terminal transitions and Gate 2 documents changed 
     await assert.rejects(prepare(repository.root, {authorizingIssueIds: ['issue:0001:01', 'issue:0001:02'], gate2Exception: {}}), /only authorizingIssueIds/);
 });
 
+test('Gate 1 also covers an issue moving from wontfix to completed', async t => {
+    const repository = await stagedRepository(t, {statuses: ['wontfix']});
+    await commitAll(repository.root, 'wontfix');
+    await writeIssue(repository.root, '0001-workflow', '01-issue.md', issueText('completed'));
+    await runGit(repository.root, ['add', '.']);
+    const {request} = await prepare(repository.root, {authorizingIssueIds: ['issue:0001:01']});
+    assert.deepEqual(request.gate1, ['issue:0001:01']);
+});
+
 test('Gate 2 documents are only the changed governing documents of this effort, so an unchanged effort needs no exception', async t => {
     const repository = await stagedRepository(t, {spec: false, statuses: ['completed']});
     await writeArtifact(repository.root, '0002-other', 'spec.md', specification);
@@ -186,10 +195,29 @@ test('verify --non-implementation accepts planning records and rejects other or 
     assert.match(unstaged.events[0].message, /unstaged replacement/u);
     await writeFile(join(repository.root, 'code.mjs'), 'export {};\n', 'utf8');
     await writeIssue(repository.root, '0001-plan', '01-task.md', issueText('completed'));
+    await writeFile(join(repository.root, '.scratch', '0001-plan', 'issues', '01.spec-readiness.json'), '{}\n', 'utf8');
     await runGit(repository.root, ['add', '.']);
     const failures = (await verify()).events[0].message;
-    for (const pattern of [/code\.mjs[^]*not eligible/u, /LF line endings/u, /terminal status/u]) assert.match(failures, pattern);
+    for (const pattern of [/code\.mjs[^]*not eligible/u, /LF line endings/u, /readiness record/u]) assert.match(failures, pattern);
     assert.equal((await run(['commit-audit', 'verify', '--strict'], repository)).result, 2);
+});
+
+test('verify --non-implementation lets an issue without a readiness record complete, any issue become wontfix, and rejects wontfix to completed with a readiness record', async t => {
+    const repository = await createRepository(t);
+    await writeIssue(repository.root, '0001-plan', '01-task.md', issueText('ready-for-agent'));
+    await writeIssue(repository.root, '0001-plan', '02-task.md', issueText('ready-for-agent'));
+    await writeFile(join(repository.root, '.scratch', '0001-plan', 'issues', '02.spec-readiness.json'), '{}\n', 'utf8');
+    await commitAll(repository.root, 'planning records');
+    await writeIssue(repository.root, '0001-plan', '01-task.md', issueText('completed'));
+    await writeIssue(repository.root, '0001-plan', '02-task.md', issueText('wontfix'));
+    await runGit(repository.root, ['add', '.']);
+    assert.equal((await run(['commit-audit', 'verify', '--non-implementation'], repository)).result, 0);
+    await commitAll(repository.root, 'terminal records');
+    await writeIssue(repository.root, '0001-plan', '02-task.md', issueText('completed'));
+    await runGit(repository.root, ['add', '.']);
+    const rejected = await run(['commit-audit', 'verify', '--non-implementation'], repository);
+    assert.equal(rejected.result, 1);
+    assert.match(rejected.events[0].message, /readiness record/u);
 });
 
 test('verify --non-implementation accepts a candidate of only Agent rule and documentation Markdown', async t => {
