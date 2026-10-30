@@ -16,7 +16,7 @@ Workflow Distribution 的大部分清单数据可以从安全固定目录树或�
 
 源码仓库实际 Skill 视图中的 `$reviewer-capability` 是能力测试操作的唯一权威, 仅供 Source Checkout 使用. 发布前同步在源码选择阶段排除该 Skill, 使它不进入 Workflow Distribution. 这一选择使完整安装载荷已经满足源码限定边界, 避免安装或平台投影另行维护能力测试 Skill 的排除规则. 显式调用政策由 [ADR 0015](0015-use-versioned-skill-package-grammars.md#decision) 拥有.
 
-发布前, 独立的发布前同步从实际文件形成 Workflow Distribution. 这套完整安装载荷经用户审核并授权写入后, 发布, 安装和目标仓库工作流只消费已经形成的载荷, 不反向修改实际来源, 也不重新决定转换内容.
+发布前, 独立的发布前同步从实际文件形成 Workflow Distribution. 这套完整安装载荷经审核并授权写入后 (审核与写入授权的主体见 [ADR 0034](0034-let-the-main-agent-complete-distribution-sync-review.md), 其取代本句中的用户审核授权), 发布, 安装和目标仓库工作流只消费已经形成的载荷, 不反向修改实际来源, 也不重新决定转换内容.
 
 Workflow Distribution 不再使用完整的带类型清单, 也不再分别保存两个平台的事实和发布证据. 固定安全目录树直接给出载荷清单.
 

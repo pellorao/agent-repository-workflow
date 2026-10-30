@@ -122,7 +122,7 @@ Before-release synchronization and production checks use these command names:
 
 ~~~text
 node scripts/sync-workflow-distribution.mjs review
-node scripts/sync-workflow-distribution.mjs review --confirm <additional-skill-references-hash> <skill-reference-normalizations-hash>
+node scripts/sync-workflow-distribution.mjs review --complete
 node scripts/sync-workflow-distribution.mjs prepare
 node scripts/sync-workflow-distribution.mjs apply --plan-digest <plan-digest>
 node scripts/check-workflow-distribution.mjs

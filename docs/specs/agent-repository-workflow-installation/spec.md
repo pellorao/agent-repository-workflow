@@ -109,7 +109,7 @@ Installation Payload Module 验证清单的封闭结构, 平台启动器选择, 
 
 `agents` 是可选对象, 缺失时等同于空对象. 每个属性名是精确 Agent 配置名称. 条目的 `command` 必须是非空 PATH 命令名或可执行文件的绝对路径, `args` 必须是只包含字符串的固定数组. 形似相对路径的命令会被拒绝. 任一格式错误的已知字段使配置关闭式失败.
 
-`editor` 服务不要求现有打开操作等待进程退出. `reviewEditor` 服务需要在独立窗口中打开审核文件, 并在用户保存和关闭后立即验证文件, 因而所配置程序必须支持新窗口和等待模式. 默认 VS Code 参数是 `--new-window --wait {file}`. 两者都要求 `command` 是 PATH 命令或绝对路径, `args` 恰好包含一个 `{file}`. ARW 不拼接命令解释器命令字符串, 不读取 `ISSUE_EDITOR`.
+`editor` 服务不要求现有打开操作等待进程退出. `reviewEditor` 当前没有使用者 (源码仓库引用审核不再打开编辑器), 保留是为了让旧版本 ARW 读取 v3 配置时不关闭式失败, 移除留到下一次配置版本升级; 其默认 VS Code 参数是 `--new-window --wait {file}`. 两者都要求 `command` 是 PATH 命令或绝对路径, `args` 恰好包含一个 `{file}`. ARW 不拼接命令解释器命令字符串, 不读取 `ISSUE_EDITOR`.
 
 `jira.listLimit` 是十进制正安全整数. 它只提供 JIRA 列表的一页默认显示数量, 当前默认值是 `50`. Application 与 JIRA 长期规格拥有该值的命令使用行为; Installation 只拥有全局字段, 默认值和升级.
 
@@ -496,7 +496,7 @@ Uninstallation Module 与 Engine Installation Module 分离, 因为卸载只消�
 
 全局配置保留 `configVersion`, 因为它由不同安装版本长期读取并升级. Workflow Distribution 和发布载荷配置与代码由同一 Git 修订版本绑定, 没有同样责任, 因而不从它们删除版本字段推导出全局配置也应无版本.
 
-`reviewEditor` 与普通 `editor` 分离, 因为已有编辑器程序不保证等待模式. 共享内部子进程启动实现可以避免重复进程逻辑, 但两个公开行为的完成语义仍不同.
+`reviewEditor` 是不再使用的遗留字段, 其历史原因是已有编辑器程序不保证等待模式; 保留它的理由见上文, 移除它需要升级配置版本.
 
 Bootstrap Module 与 `Bootstrap Artifact Module` 分离, 因为稳定发布选择, 压缩包下载与解压, 安装交接和临时目录清理是一次外部执行生命周期, 单文件生成与验证则是只依赖当前源码和配置的确定性转换. 合并两者会让生成操作取得网络和安装责任, 只保留生成物又会复制发布选择规则. 当前选择接受两个 Module 共享规范远端投影, 配置变化时必须重新生成和验证单文件的成本.
 

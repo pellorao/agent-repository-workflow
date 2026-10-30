@@ -249,7 +249,7 @@ Run `arw migrate artifacts` to upgrade the entire repository before retrying.
 
 ARW 等待进程退出并传播正常退出码. 启动失败或没有正常数值退出码时输出稳定诊断并返回 `1`. 该启动命令不保存进程或会话登记表. 它执行外部 Main Agent CLI, 不承担共享 Reviewer 运行控制或平台投射责任.
 
-全局配置结构, 创建和升级由安装长期规格拥有. 本文只要求 Agent 启动器使用 `agents`, 打开操作使用不等待退出的 `editor`, 源码仓库用户审核使用等待退出的 `reviewEditor`. 命令不输出完整配置内容.
+全局配置结构, 创建和升级由安装长期规格拥有. 本文只要求 Agent 启动器使用 `agents`, 打开操作使用不等待退出的 `editor`. 命令不输出完整配置内容.
 
 ## Background Agent control
 

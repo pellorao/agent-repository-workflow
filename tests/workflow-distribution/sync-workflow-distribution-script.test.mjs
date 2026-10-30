@@ -4,6 +4,7 @@ import {join} from 'node:path';
 import test from 'node:test';
 
 import {createTemporaryDirectory} from '../helpers/cleanup.mjs';
+import {createScopedFilesystem} from '../../lib/common/filesystem.mjs';
 import {
     renderWorkflowDistributionSyncPlan,
     runWorkflowDistributionSyncCli,
@@ -16,7 +17,7 @@ import {
 
 /** @typedef {{additionalSkillReferencesHash: string, skillReferenceNormalizationsHash: string}} ReviewHashes */
 /** @typedef {{column: number, context?: string, identity: string, line: number, path: string}} SkillNormalization */
-/** @typedef {{additionalSkillReferences: unknown, confirmHashes?: ReviewHashes, emitHash?: (hash: string) => unknown, reviewEditor?: {args: string[], command: string}, skillReferenceNormalizations: unknown, workspaceDirectory: string}} TestReviewInput */
+/** @typedef {{additionalSkillReferences: unknown, complete?: boolean, confirmHashes?: ReviewHashes, skillReferenceNormalizations: unknown, workspaceDirectory: string}} TestReviewInput */
 
 const identityAdapter = {
     getCurrentAgentIdentity: () => ({platform: 'codex', sessionId: 'sync-test'}),
@@ -60,7 +61,6 @@ const createHarness = async (/** @type {test.TestContext} */ t) => {
     const stdout = [];
     return {
         dependencies: {
-            configurationLoader: async () => ({reviewEditor: {args: ['--wait', '{file}'], command: 'code'}}),
             platformAdapter: identityAdapter,
             repositoryRoot,
             stderr: (/** @type {string} */ value) => stderr.push(value),
@@ -72,7 +72,7 @@ const createHarness = async (/** @type {test.TestContext} */ t) => {
     };
 };
 
-test('sync CLI carries an explicit review confirmation through prepare and digest-bound apply', async t => {
+test('sync CLI carries review completion through prepare and digest-bound apply', async t => {
     const harness = await createHarness(t);
     /** @type {TestReviewInput[]} */
     const reviewCalls = [];
@@ -84,13 +84,7 @@ test('sync CLI carries an explicit review confirmation through prepare and diges
         ...harness.dependencies,
         review: async (/** @type {TestReviewInput} */ input) => {
             reviewCalls.push(input);
-            if (input.confirmHashes === undefined) {
-                if (input.emitHash === undefined) throw new Error('Expected review hash emitter.');
-                input.emitHash(completedReview.additionalSkillReferencesHash);
-                input.emitHash(completedReview.skillReferenceNormalizationsHash);
-                return blockedReview('review-confirmation-required', 'Confirm unchanged files.');
-            }
-            return completedReview;
+            return input.complete === false ? {diagnostics: [], paths: ['/w/a.txt', '/w/n.jsonl'], status: /** @type {const} */ ('succeeded')} : completedReview;
         },
         syncApply: async (/** @type {Parameters<typeof applyWorkflowDistributionSync>[0]} */ {authorization, plan: authorizedPlan}) => {
             if (authorization === null || authorization.approved !== true
@@ -112,73 +106,27 @@ test('sync CLI carries an explicit review confirmation through prepare and diges
         syncReview: async () => analysis,
     };
 
-    assert.equal(await runWorkflowDistributionSyncCli(['review'], dependencies), 1);
-    assert.match(harness.stdout.join(''), /additionalSkillReferencesHash/u);
-    assert.match(harness.stdout.join(''), new RegExp(completedReview.additionalSkillReferencesHash, 'u'));
+    assert.equal(await runWorkflowDistributionSyncCli(['review'], dependencies), 0);
+    assert.match(harness.stdout.join(''), /^\/w\/a\.txt\n\/w\/n\.jsonl\n/u);
     assert.equal(preparedReviews.length, 0);
 
-    harness.stderr.length = 0;
     harness.stdout.length = 0;
-    assert.equal(await runWorkflowDistributionSyncCli([
-        'review',
-        '--confirm',
-        completedReview.additionalSkillReferencesHash,
-        completedReview.skillReferenceNormalizationsHash,
-    ], dependencies), 0);
-    assert.equal(reviewCalls[1]?.reviewEditor, undefined);
-    assert.deepEqual(reviewCalls[1]?.confirmHashes, {
-        additionalSkillReferencesHash: completedReview.additionalSkillReferencesHash,
-        skillReferenceNormalizationsHash: completedReview.skillReferenceNormalizationsHash,
-    });
+    assert.equal(await runWorkflowDistributionSyncCli(['review', '--complete'], dependencies), 0);
+    assert.match(harness.stdout.join(''), new RegExp(`^${completedReview.additionalSkillReferencesHash}\\n${completedReview.skillReferenceNormalizationsHash}\\n`, 'u'));
 
     harness.stdout.length = 0;
     assert.equal(await runWorkflowDistributionSyncCli(['prepare'], dependencies), 0);
-    assert.match(harness.stdout.join(''), new RegExp(plan.planDigest, 'u'));
     assert.equal(harness.stdout.join('').includes(renderWorkflowDistributionSyncPlan(plan)), true);
     assert.deepEqual(JSON.parse(renderWorkflowDistributionSyncPlan(plan)), {planDigest: plan.planDigest});
     assert.equal(applied.length, 0);
 
-    harness.stdout.length = 0;
-    assert.equal(await runWorkflowDistributionSyncCli([
-        'apply',
-        '--plan-digest',
-        plan.planDigest,
-    ], dependencies), 0);
-    assert.deepEqual(applied, [{
-        authorization: {approved: true, planDigest: plan.planDigest},
-        plan,
-    }]);
+    assert.equal(await runWorkflowDistributionSyncCli(['apply', '--plan-digest', plan.planDigest], dependencies), 0);
+    assert.deepEqual(applied, [{authorization: {approved: true, planDigest: plan.planDigest}, plan}]);
     assert.equal(preparedReviews.length, 2);
     assert.equal(preparedReviews.every(value => value === completedReview), true);
     assert.equal(reviewCalls.length, 4);
     assert.equal(new Set(reviewCalls.map(call => call.workspaceDirectory)).size, 1);
     assert.match(reviewCalls[0]?.workspaceDirectory ?? '', /[\\/]\.tmp[\\/]codex[\\/]sync-test[\\/]_workflow-distribution-sync$/u);
-});
-
-test('sync CLI saves a completed first review without requiring confirmation', async t => {
-    const harness = await createHarness(t);
-    let prepared = false;
-    const dependencies = {
-        ...harness.dependencies,
-        review: async (/** @type {TestReviewInput} */ input) => {
-            if (input.confirmHashes === undefined) {
-                if (input.emitHash === undefined) throw new Error('Expected review hash emitter.');
-                input.emitHash(completedReview.additionalSkillReferencesHash);
-                input.emitHash(completedReview.skillReferenceNormalizationsHash);
-            }
-            return completedReview;
-        },
-        syncPrepare: async (/** @type {Parameters<typeof prepareWorkflowDistributionSync>[0]} */ {review}) => {
-            assert.deepEqual(review, completedReview);
-            prepared = true;
-            return plan;
-        },
-        syncReview: async () => analysis,
-    };
-
-    assert.equal(await runWorkflowDistributionSyncCli(['review'], dependencies), 0);
-    assert.equal(await runWorkflowDistributionSyncCli(['prepare'], dependencies), 0);
-    assert.equal(prepared, true);
 });
 
 test('sync CLI reuses its fixed workspace through the production review files', async t => {
@@ -193,7 +141,7 @@ test('sync CLI reuses its fixed workspace through the production review files', 
     let prepared = 0;
     const dependencies = {
         ...harness.dependencies,
-        review: (/** @type {Parameters<typeof reviewSkillReferences>[0]} */ input) => reviewSkillReferences({...input, launchEditor: async () => {}}),
+        review: reviewSkillReferences,
         syncPrepare: async (/** @type {Parameters<typeof prepareWorkflowDistributionSync>[0]} */ {review}) => {
             assert.deepEqual(review.additionalSkillReferences, []);
             assert.deepEqual(review.skillReferenceNormalizations, []);
@@ -203,17 +151,18 @@ test('sync CLI reuses its fixed workspace through the production review files', 
         syncReview: async () => emptyAnalysis,
     };
 
-    assert.equal(await runWorkflowDistributionSyncCli(['review'], dependencies), 0);
-    assert.equal(await runWorkflowDistributionSyncCli(['prepare'], dependencies), 0);
-    assert.equal(await runWorkflowDistributionSyncCli(['review'], dependencies), 0);
-    assert.equal(await runWorkflowDistributionSyncCli(['prepare'], dependencies), 0);
+    for (let round = 0; round < 2; round += 1) {
+        assert.equal(await runWorkflowDistributionSyncCli(['review'], dependencies), 0);
+        assert.equal(await runWorkflowDistributionSyncCli(['review', '--complete'], dependencies), 0);
+        assert.equal(await runWorkflowDistributionSyncCli(['prepare'], dependencies), 0);
+    }
     assert.equal(prepared, 2);
 });
 
 test('sync CLI separates usage errors and missing or changed review handoffs from writes', async t => {
     const harness = await createHarness(t);
     let inspectedIdentity = false;
-    assert.equal(await runWorkflowDistributionSyncCli(['review', '--confirm', 'invalid'], {
+    assert.equal(await runWorkflowDistributionSyncCli(['review', '--confirm', 'a'.repeat(64), 'b'.repeat(64)], {
         ...harness.dependencies,
         platformAdapter: {
             getCurrentAgentIdentity() {
@@ -250,27 +199,37 @@ test('sync CLI separates usage errors and missing or changed review handoffs fro
         },
         syncReview: async () => analysis,
     };
-    assert.equal(await runWorkflowDistributionSyncCli(['review'], changedDependencies), 0);
+    assert.equal(await runWorkflowDistributionSyncCli(['review', '--complete'], changedDependencies), 0);
     prepared = false;
     assert.equal(await runWorkflowDistributionSyncCli(['prepare'], changedDependencies), 1);
     assert.equal(prepared, false);
     assert.match(harness.stderr.join(''), /review-input-changed/u);
 });
 
-test('sync CLI stops before review when the natural Engine configuration has no reviewEditor', async t => {
+test('sync CLI fails without printing hashes when completed-review.json cannot be written', async t => {
     const harness = await createHarness(t);
-    let reviewed = false;
-    const result = await runWorkflowDistributionSyncCli(['review'], {
+    const dependencies = {
         ...harness.dependencies,
-        configurationLoader: async () => ({editor: {args: ['{file}'], command: 'code'}}),
-        review: async () => {
-            reviewed = true;
-            return completedReview;
+        createFilesystem: async (/** @type {Parameters<typeof createScopedFilesystem>[0]} */ input) => {
+            const created = await createScopedFilesystem(input);
+            if (created.status !== 'succeeded') return created;
+            const {scopedFilesystem} = created;
+            return {
+                ...created,
+                scopedFilesystem: {
+                    ...scopedFilesystem,
+                    write: async (/** @type {Parameters<typeof scopedFilesystem.write>[0]} */ write) => write.path === 'completed-review.json'
+                        ? {diagnostics: [{code: 'disk-full', message: 'No space.'}], stage: 'write', status: /** @type {const} */ ('failed')}
+                        : scopedFilesystem.write(write),
+                },
+            };
         },
+        review: reviewSkillReferences,
         syncReview: async () => analysis,
-    });
-
-    assert.equal(result, 1);
-    assert.equal(reviewed, false);
-    assert.match(harness.stderr.join(''), /review-editor-unavailable/u);
+    };
+    assert.equal(await runWorkflowDistributionSyncCli(['review'], dependencies), 0);
+    harness.stdout.length = 0;
+    assert.equal(await runWorkflowDistributionSyncCli(['review', '--complete'], dependencies), 1);
+    assert.match(harness.stderr.join(''), /disk-full/u);
+    assert.equal(harness.stdout.join(''), '');
 });

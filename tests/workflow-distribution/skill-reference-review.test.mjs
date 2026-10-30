@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
-import {createHash} from 'node:crypto';
 import {readFile, writeFile} from 'node:fs/promises';
-import {basename, join} from 'node:path';
+import {join} from 'node:path';
 import test from 'node:test';
 
 import {createTemporaryDirectory} from '../helpers/cleanup.mjs';
@@ -24,211 +23,135 @@ const createWorkspace = async (/** @type {test.TestContext} */ t) => {
     return join(parent, 'review');
 };
 
-const sha256Hex = (/** @type {string} */ text) => createHash('sha256').update(text).digest('hex');
-const NORMALIZATIONS_FILE_TEXT = [
-    '{"path":"skills/alpha/SKILL.md","line":1,"column":1,"identity":"alpha","context":"$alpha,"}',
-    '{"path":"skills/beta/SKILL.md","line":2,"column":3,"identity":"beta","context":"$beta."}',
-    '',
-].join('\n');
+const alphaLine = '{"path":"skills/alpha/SKILL.md","line":1,"column":1,"identity":"alpha","context":"$alpha,"}';
+const betaLine = '{"path":"skills/beta/SKILL.md","line":2,"column":3,"identity":"beta","context":"$beta."}';
+const review = (/** @type {string} */ workspaceDirectory, /** @type {Record<string, unknown>} */ extra = {}) => reviewSkillReferences({
+    ...candidates,
+    workspaceDirectory,
+    ...extra,
+});
+const writeFiles = async (/** @type {string} */ workspaceDirectory, /** @type {string} */ additional, /** @type {string} */ normalizations) => {
+    await writeFile(join(workspaceDirectory, ADDITIONAL_SKILL_REFERENCES_FILE), additional);
+    await writeFile(join(workspaceDirectory, SKILL_REFERENCE_NORMALIZATIONS_FILE), normalizations);
+};
 
 test('reference review rejects normalization paths outside canonical Skill Markdown', async t => {
     const workspaceDirectory = await createWorkspace(t);
     await assert.rejects(() => reviewSkillReferences({
         additionalSkillReferences: [],
-        launchEditor: async () => assert.fail('invalid candidates must not open an editor'),
-        reviewEditor: {args: ['{file}'], command: 'editor'},
-        skillReferenceNormalizations: [{
-            column: 1,
-            context: '$alpha',
-            identity: 'alpha',
-            line: 1,
-            path: 'docs/example.md',
-        }],
+        skillReferenceNormalizations: [{column: 1, context: '$alpha', identity: 'alpha', line: 1, path: 'docs/example.md'}],
         workspaceDirectory,
     }), /skillReferenceNormalizations must be valid and sorted/);
 });
 
-test('reference review opens two files in order and accepts deletion-only results', async t => {
+test('reference review writes both full candidate files and returns their paths', async t => {
     const workspaceDirectory = await createWorkspace(t);
-    /** @type {string[]} */
-    const opened = [];
-    /** @type {string[]} */
-    const hashes = [];
-    const result = await reviewSkillReferences({
-        ...candidates,
-        emitHash: hash => hashes.push(hash),
-        launchEditor: async ({filePath, wait}) => {
-            assert.equal(wait, true);
-            assert.equal(typeof filePath, 'string');
-            if (typeof filePath !== 'string') throw new TypeError('filePath must be a string.');
-            opened.push(basename(filePath));
-            if (filePath.endsWith(ADDITIONAL_SKILL_REFERENCES_FILE)) {
-                await writeFile(filePath, 'alpha\n');
-            } else {
-                await writeFile(filePath, '');
-            }
-        },
-        reviewEditor: {args: ['--wait', '{file}'], command: 'editor'},
-        workspaceDirectory,
-    });
+    const result = await review(workspaceDirectory);
     assert.equal(result.status, 'succeeded');
-    assert.deepEqual(opened, [ADDITIONAL_SKILL_REFERENCES_FILE, SKILL_REFERENCE_NORMALIZATIONS_FILE]);
-    assert.equal(hashes.length, 2);
-    assert.deepEqual(result.additionalSkillReferences, ['alpha']);
-    assert.deepEqual(result.skillReferenceNormalizations, []);
+    assert.deepEqual('paths' in result && result.paths, [
+        join(workspaceDirectory, ADDITIONAL_SKILL_REFERENCES_FILE),
+        join(workspaceDirectory, SKILL_REFERENCE_NORMALIZATIONS_FILE),
+    ]);
+    assert.equal(await readFile(join(workspaceDirectory, ADDITIONAL_SKILL_REFERENCES_FILE), 'utf8'), 'alpha\nbeta\n');
+    assert.equal(await readFile(join(workspaceDirectory, SKILL_REFERENCE_NORMALIZATIONS_FILE), 'utf8'), `${alphaLine}\n${betaLine}\n`);
 });
 
-test('reference review shows normalizations only for in-scope and retained additional Skills', async t => {
+test('reference review reports a candidate write failure', async t => {
     const workspaceDirectory = await createWorkspace(t);
-    let normalizationFile = '';
-    const result = await reviewSkillReferences({
-        additionalSkillReferences: ['alpha', 'beta'],
-        launchEditor: async ({filePath}) => {
-            if (typeof filePath !== 'string') throw new TypeError('filePath must be a string.');
-            if (filePath.endsWith(ADDITIONAL_SKILL_REFERENCES_FILE)) {
-                await writeFile(filePath, 'alpha\n');
-                return;
-            }
-            normalizationFile = await readFile(filePath, 'utf8');
-            await writeFile(filePath, '{"path":"skills/alpha/SKILL.md","line":1,"column":1,"identity":"alpha","context":"$alpha,"}\n');
-        },
-        reviewEditor: {args: ['{file}'], command: 'editor'},
-        skillReferenceNormalizations: [
-            {path: 'skills/alpha/SKILL.md', line: 1, column: 1, identity: 'alpha', context: '$alpha,'},
-            {path: 'skills/beta/SKILL.md', line: 2, column: 3, identity: 'beta', context: '$beta.'},
-            {path: 'skills/local/SKILL.md', line: 3, column: 5, identity: 'local', context: '$local,'},
-        ],
-        workspaceDirectory,
+    const result = await review(workspaceDirectory, {
+        createFilesystem: async () => ({
+            scopedFilesystem: {
+                inspect: async () => ({entry: {kind: 'missing'}, status: 'succeeded'}),
+                write: async () => ({diagnostics: [{code: 'disk-full', message: 'No space.'}], status: 'failed'}),
+            },
+            status: 'succeeded',
+        }),
     });
-
-    assert.equal(result.status, 'succeeded');
-    assert.equal(normalizationFile, [
-        '{"path":"skills/alpha/SKILL.md","line":1,"column":1,"identity":"alpha","context":"$alpha,"}',
-        '{"path":"skills/local/SKILL.md","line":3,"column":5,"identity":"local","context":"$local,"}',
-        '',
-    ].join('\n'));
+    assert.equal(result.status, 'failed');
+    assert.equal('stage' in result && result.stage, 'review-write');
 });
 
-test('unchanged nonempty review requires Human confirmation and returns no hash in the blocked result', async t => {
+test('complete accepts deletion-only results and unchanged files', async t => {
     const workspaceDirectory = await createWorkspace(t);
-    /** @type {string[]} */
-    const hashes = [];
-    const first = await reviewSkillReferences({
-        ...candidates,
-        emitHash: hash => hashes.push(hash),
-        launchEditor: async () => {},
-        reviewEditor: {args: ['{file}'], command: 'editor'},
-        workspaceDirectory,
-    });
-    assert.deepEqual(first, {
-        diagnostics: [{code: 'review-confirmation-required', message: 'Confirm that no candidates should be deleted before completing this review.'}],
-        status: 'blocked',
-    });
-    assert.equal(hashes.length, 2);
+    await review(workspaceDirectory);
+    const unchanged = await review(workspaceDirectory, {complete: true});
+    assert.equal(unchanged.status, 'succeeded');
+    assert.deepEqual('additionalSkillReferences' in unchanged && unchanged.additionalSkillReferences, ['alpha', 'beta']);
 
-    const confirmed = await reviewSkillReferences({
-        ...candidates,
-        confirmHashes: {
-            additionalSkillReferencesHash: hashes[0],
-            skillReferenceNormalizationsHash: hashes[1],
-        },
-        launchEditor: async () => assert.fail('confirm must not reopen an editor'),
-        workspaceDirectory,
+    await writeFiles(workspaceDirectory, 'alpha\n', `${alphaLine}\n`);
+    const edited = await review(workspaceDirectory, {complete: true});
+    assert.equal(edited.status, 'succeeded');
+    assert.deepEqual('additionalSkillReferences' in edited && edited.additionalSkillReferences, ['alpha']);
+    assert.deepEqual('skillReferenceNormalizations' in edited && edited.skillReferenceNormalizations.map(record => record.identity), ['alpha']);
+});
+
+test('complete blocks inserted, rewritten, reordered, or invalid lines', async t => {
+    const workspaceDirectory = await createWorkspace(t);
+    await review(workspaceDirectory);
+    for (const [additional, normalizations] of [
+        ['beta\nalpha\n', `${alphaLine}\n${betaLine}\n`],
+        ['alpha\ngamma\n', `${alphaLine}\n${betaLine}\n`],
+        ['alpha\nbeta\n', `${betaLine}\n${alphaLine}\n`],
+        ['alpha\nbeta\n', `${alphaLine.replace('"line":1', '"line":9')}\n`],
+        ['alpha\nbeta\n', `${alphaLine}\nnot json\n`],
+        ['alpha\nbeta', `${alphaLine}\n`],
+    ]) {
+        await writeFiles(workspaceDirectory, additional, normalizations);
+        const result = await review(workspaceDirectory, {complete: true});
+        assert.equal(result.status, 'blocked');
+        assert.deepEqual(result.diagnostics.map(entry => entry.code), ['review-edit-not-delete-only']);
+    }
+});
+
+test('complete blocks normalizations for additional Skills removed from the first file', async t => {
+    const workspaceDirectory = await createWorkspace(t);
+    await review(workspaceDirectory);
+    await writeFiles(workspaceDirectory, 'alpha\n', `${alphaLine}\n${betaLine}\n`);
+    const result = await review(workspaceDirectory, {complete: true});
+    assert.equal(result.status, 'blocked');
+    assert.deepEqual(result.diagnostics.map(entry => entry.code), ['review-edit-not-delete-only']);
+});
+
+test('complete keeps in-scope normalizations when no additional Skills are retained', async t => {
+    const workspaceDirectory = await createWorkspace(t);
+    const local = {path: 'skills/local/SKILL.md', line: 3, column: 5, identity: 'local', context: '$local,'};
+    const input = {skillReferenceNormalizations: [candidates.skillReferenceNormalizations[0], local]};
+    await review(workspaceDirectory, input);
+    await writeFiles(workspaceDirectory, '', `${JSON.stringify(local)}\n`);
+    const result = await review(workspaceDirectory, {...input, complete: true});
+    assert.equal(result.status, 'succeeded');
+});
+
+test('complete blocks when review was not run and fails when a file cannot be read', async t => {
+    const workspaceDirectory = await createWorkspace(t);
+    const missing = await review(workspaceDirectory, {complete: true});
+    assert.equal(missing.status, 'blocked');
+
+    await review(workspaceDirectory);
+    const failed = await review(workspaceDirectory, {
+        complete: true,
+        createFilesystem: async () => ({
+            scopedFilesystem: {read: async () => ({diagnostics: [{code: 'read-failed', message: 'No read.'}], status: 'failed'})},
+            status: 'succeeded',
+        }),
     });
-    assert.equal(confirmed.status, 'succeeded');
-    assert.deepEqual(confirmed.additionalSkillReferences, candidates.additionalSkillReferences);
-    assert.deepEqual(confirmed.skillReferenceNormalizations, candidates.skillReferenceNormalizations);
+    assert.equal(failed.status, 'failed');
+    assert.equal('stage' in failed && failed.stage, 'review-read');
 });
 
 test('confirmation blocks when either reviewed file changed after the reported hashes', async t => {
     const workspaceDirectory = await createWorkspace(t);
-    /** @type {string[]} */
-    const hashes = [];
-    await reviewSkillReferences({
-        ...candidates,
-        emitHash: hash => hashes.push(hash),
-        launchEditor: async () => {},
-        reviewEditor: {args: ['{file}'], command: 'editor'},
-        workspaceDirectory,
-    });
-    await writeFile(join(workspaceDirectory, ADDITIONAL_SKILL_REFERENCES_FILE), 'alpha\n');
-    const result = await reviewSkillReferences({
-        ...candidates,
-        confirmHashes: {
-            additionalSkillReferencesHash: hashes[0],
-            skillReferenceNormalizationsHash: hashes[1],
-        },
-        workspaceDirectory,
-    });
+    await review(workspaceDirectory);
+    const completed = await review(workspaceDirectory, {complete: true});
+    if (!('additionalSkillReferencesHash' in completed)) throw new Error('Expected a completed review.');
+    const confirmHashes = {
+        additionalSkillReferencesHash: completed.additionalSkillReferencesHash,
+        skillReferenceNormalizationsHash: completed.skillReferenceNormalizationsHash,
+    };
+    assert.equal((await review(workspaceDirectory, {confirmHashes})).status, 'succeeded');
+
+    await writeFile(join(workspaceDirectory, SKILL_REFERENCE_NORMALIZATIONS_FILE), `${alphaLine}\n`);
+    const result = await review(workspaceDirectory, {confirmHashes});
     assert.equal(result.status, 'blocked');
     assert.deepEqual(result.diagnostics.map(entry => entry.code), ['review-input-changed']);
-    assert.equal('additionalSkillReferencesHash' in result, false);
-});
-
-test('confirmation blocks normalizations for additional Skills removed from the first file', async t => {
-    const workspaceDirectory = await createWorkspace(t);
-    await reviewSkillReferences({
-        ...candidates,
-        launchEditor: async () => {},
-        reviewEditor: {args: ['{file}'], command: 'editor'},
-        workspaceDirectory,
-    });
-    await writeFile(join(workspaceDirectory, ADDITIONAL_SKILL_REFERENCES_FILE), '');
-    const result = await reviewSkillReferences({
-        ...candidates,
-        confirmHashes: {
-            additionalSkillReferencesHash: sha256Hex(''),
-            skillReferenceNormalizationsHash: sha256Hex(NORMALIZATIONS_FILE_TEXT),
-        },
-        workspaceDirectory,
-    });
-
-    assert.equal(result.status, 'blocked');
-    assert.deepEqual(result.diagnostics.map(entry => entry.code), ['review-edit-not-delete-only']);
-});
-
-test('reference review rejects inserted, rewritten, or reordered lines', async t => {
-    const workspaceDirectory = await createWorkspace(t);
-    const result = await reviewSkillReferences({
-        ...candidates,
-        launchEditor: async ({filePath}) => {
-            assert.equal(typeof filePath, 'string');
-            if (typeof filePath !== 'string') throw new TypeError('filePath must be a string.');
-            if (filePath.endsWith(ADDITIONAL_SKILL_REFERENCES_FILE)) await writeFile(filePath, 'beta\nalpha\n');
-        },
-        reviewEditor: {args: ['{file}'], command: 'editor'},
-        workspaceDirectory,
-    });
-    assert.equal(result.status, 'blocked');
-    assert.deepEqual(result.diagnostics.map(entry => entry.code), ['review-edit-not-delete-only']);
-});
-
-test('reference review identifies a normalization editor failure', async t => {
-    const workspaceDirectory = await createWorkspace(t);
-    const result = await reviewSkillReferences({
-        additionalSkillReferences: [],
-        launchEditor: async ({filePath}) => {
-            if (typeof filePath !== 'string') throw new TypeError('filePath must be a string.');
-            if (filePath.endsWith(SKILL_REFERENCE_NORMALIZATIONS_FILE)) throw new Error('No normalization editor.');
-        },
-        reviewEditor: {args: ['{file}'], command: 'editor'},
-        skillReferenceNormalizations: [{
-            column: 1,
-            context: '$local,',
-            identity: 'local',
-            line: 1,
-            path: 'skills/local/SKILL.md',
-        }],
-        workspaceDirectory,
-    });
-
-    assert.deepEqual(result, {
-        diagnostics: [{
-            code: 'review-editor-failed',
-            message: 'No normalization editor.',
-            path: SKILL_REFERENCE_NORMALIZATIONS_FILE,
-        }],
-        stage: 'editor',
-        status: 'failed',
-    });
 });

@@ -3,7 +3,6 @@
 import {fileURLToPath} from 'node:url';
 import {dirname, resolve} from 'node:path';
 
-import {loadConfig} from '../lib/arw-common/config.mjs';
 import {createScopedFilesystem} from '../lib/common/filesystem.mjs';
 import {parseJson, writeJson} from '../lib/common/json.mjs';
 import {createCurrentPlatformAdapter} from '../lib/arw-common/platform-adapter.mjs';
@@ -21,7 +20,7 @@ const REVIEW_HANDOFF_PATH = 'completed-review.json';
 const HASH = /^[0-9a-f]{64}$/u;
 const CLI_USAGE = 'Usage:\n'
     + '  node scripts/sync-workflow-distribution.mjs review\n'
-    + '  node scripts/sync-workflow-distribution.mjs review --confirm <additional-skill-references-hash> <skill-reference-normalizations-hash>\n'
+    + '  node scripts/sync-workflow-distribution.mjs review --complete\n'
     + '  node scripts/sync-workflow-distribution.mjs prepare\n'
     + '  node scripts/sync-workflow-distribution.mjs apply --plan-digest <plan-digest>\n';
 /** @param {string} code @param {string} message @returns {{diagnostics: SyncDiagnostic[], status: 'blocked'}} */
@@ -30,29 +29,16 @@ const blocked = (code, message) => ({diagnostics: [{code, message}], status: 'bl
 /** @typedef {{additionalSkillReferencesHash: string, skillReferenceNormalizationsHash: string}} ReviewHashes */
 /** @typedef {{diagnostics?: SyncDiagnostic[], status: string}} SyncResult */
 /** @typedef {{getCurrentAgentIdentity: () => {platform: string, sessionId: string}}} SyncPlatformAdapter */
-/** @typedef {(repositoryRoot: string) => Promise<Record<string, unknown> & {reviewEditor?: {args: string[], command: string}}>} ConfigurationLoader */
-/** @typedef {{additionalSkillReferences: unknown, confirmHashes?: ReviewHashes, emitHash?: (hash: string) => unknown, reviewEditor?: {args: string[], command: string}, skillReferenceNormalizations: unknown, workspaceDirectory: string}} ReviewInput */
+/** @typedef {{additionalSkillReferences: unknown, complete?: boolean, confirmHashes?: ReviewHashes, skillReferenceNormalizations: unknown, workspaceDirectory: string}} ReviewInput */
 /** @typedef {{additionalSkillReferences: string[], additionalSkillReferencesHash: string, skillReferenceNormalizations: Array<{column: number, context?: string, identity: string, line: number, path: string}>, skillReferenceNormalizationsHash: string, status: 'succeeded'}} CompletedReview */
-/** @typedef {(input: ReviewInput) => Promise<CompletedReview | {diagnostics?: SyncDiagnostic[], status: 'blocked' | 'failed'}>} ReviewFunction */
-/** @typedef {{configurationLoader?: ConfigurationLoader, createFilesystem?: typeof createScopedFilesystem, platformAdapter?: SyncPlatformAdapter, repositoryRoot?: string, review?: ReviewFunction, stderr?: (value: string) => unknown, stdout?: (value: string) => unknown, syncApply?: typeof applyWorkflowDistributionSync, syncPrepare?: typeof prepareWorkflowDistributionSync, syncReview?: typeof prepareWorkflowDistributionReview}} SyncCliOptions */
+/** @typedef {(input: ReviewInput) => Promise<CompletedReview | {diagnostics?: SyncDiagnostic[], paths: string[], status: 'succeeded'} | {diagnostics?: SyncDiagnostic[], status: 'blocked' | 'failed'}>} ReviewFunction */
+/** @typedef {{createFilesystem?: typeof createScopedFilesystem, platformAdapter?: SyncPlatformAdapter, repositoryRoot?: string, review?: ReviewFunction, stderr?: (value: string) => unknown, stdout?: (value: string) => unknown, syncApply?: typeof applyWorkflowDistributionSync, syncPrepare?: typeof prepareWorkflowDistributionSync, syncReview?: typeof prepareWorkflowDistributionReview}} SyncCliOptions */
 
 /** @param {string[]} args */
 const parseInvocation = args => {
     if (!Array.isArray(args) || args.some(value => typeof value !== 'string')) return null;
-    if (args.length === 1 && args[0] === 'review') return {command: 'review', confirmHashes: null};
-    if (args.length === 4
-        && args[0] === 'review'
-        && args[1] === '--confirm'
-        && HASH.test(args[2])
-        && HASH.test(args[3])) {
-        return {
-            command: 'review',
-            confirmHashes: {
-                additionalSkillReferencesHash: args[2],
-                skillReferenceNormalizationsHash: args[3],
-            },
-        };
-    }
+    if (args.length === 1 && args[0] === 'review') return {command: 'review'};
+    if (args.length === 2 && args[0] === 'review' && args[1] === '--complete') return {command: 'complete'};
     if (args.length === 1 && args[0] === 'prepare') return {command: 'prepare'};
     if (args.length === 3
         && args[0] === 'apply'
@@ -176,79 +162,37 @@ const readReviewHandoff = async ({createFilesystem, workspaceDirectory}) => {
     return {diagnostics: [], hashes: parsed.value, status: 'succeeded'};
 };
 
-/** @param {ReviewHashes} hashes */
-const renderReviewHashes = hashes => JSON.stringify({
-    additionalSkillReferencesHash: hashes.additionalSkillReferencesHash,
-    skillReferenceNormalizationsHash: hashes.skillReferenceNormalizationsHash,
-}, null, 2);
-
 /** @param {{planDigest: string}} plan */
 export const renderWorkflowDistributionSyncPlan = plan => JSON.stringify({
     planDigest: plan.planDigest,
 }, null, 2);
 
-/** @param {{configurationLoader: ConfigurationLoader, confirmHashes: ReviewHashes | null, createFilesystem: typeof createScopedFilesystem, repositoryRoot: string, review: ReviewFunction, stdout: (value: string) => unknown, syncReview: typeof prepareWorkflowDistributionReview, workspaceDirectory: string}} input */
-const runReview = async ({
-    configurationLoader,
-    confirmHashes,
-    createFilesystem,
-    repositoryRoot,
-    review,
-    stdout,
-    syncReview,
-    workspaceDirectory,
-}) => {
-    let reviewEditor;
-    if (confirmHashes === null) {
-        const configuration = await configurationLoader(repositoryRoot);
-        if (configuration.reviewEditor === undefined) {
-            return blocked(
-                'review-editor-unavailable',
-                'The Source Checkout configuration does not provide reviewEditor.',
-            );
-        }
-        reviewEditor = configuration.reviewEditor;
-    }
-
+/** @param {{complete: boolean, createFilesystem: typeof createScopedFilesystem, repositoryRoot: string, review: ReviewFunction, stdout: (value: string) => unknown, syncReview: typeof prepareWorkflowDistributionReview, workspaceDirectory: string}} input */
+const runReview = async ({complete, createFilesystem, repositoryRoot, review, stdout, syncReview, workspaceDirectory}) => {
     const analysis = await syncReview({repositoryRoot});
     if (analysis.status !== 'succeeded') return analysis;
-    if (confirmHashes === null) {
+    if (!complete) {
         const invalidated = await invalidateReviewHandoff({createFilesystem, workspaceDirectory});
         if (invalidated.status !== 'succeeded') return invalidated;
     }
 
-    /** @type {string[]} */
-    const emittedHashes = [];
     const reviewed = await review({
         additionalSkillReferences: analysis.additionalSkillReferences,
-        ...(confirmHashes === null ? {emitHash: hash => emittedHashes.push(hash), reviewEditor} : {confirmHashes}),
+        complete,
         skillReferenceNormalizations: analysis.skillReferenceNormalizations,
         workspaceDirectory,
     });
-    const outputHashes = emittedHashes.length === 2
-        ? {
-            additionalSkillReferencesHash: emittedHashes[0],
-            skillReferenceNormalizationsHash: emittedHashes[1],
-        }
-        : reviewed.status === 'succeeded' && hasReviewHashes(reviewed)
-            ? {
-                additionalSkillReferencesHash: reviewed.additionalSkillReferencesHash,
-                skillReferenceNormalizationsHash: reviewed.skillReferenceNormalizationsHash,
-            }
-            : null;
-    if (outputHashes !== null && exactReviewHashes(outputHashes)) stdout(`${renderReviewHashes(outputHashes)}\n`);
     if (reviewed.status !== 'succeeded') return reviewed;
+    if (!complete) {
+        if ('paths' in reviewed) stdout(`${reviewed.paths.join('\n')}\n`);
+        return reviewed;
+    }
     if (!hasReviewHashes(reviewed)) return invalidReviewHandoff();
 
-    const written = await writeReviewHandoff({
-        createFilesystem,
-        review: {
-            additionalSkillReferencesHash: reviewed.additionalSkillReferencesHash,
-            skillReferenceNormalizationsHash: reviewed.skillReferenceNormalizationsHash,
-        },
-        workspaceDirectory,
-    });
-    return written.status === 'succeeded' ? reviewed : written;
+    const written = await writeReviewHandoff({createFilesystem, review: reviewed, workspaceDirectory});
+    if (written.status !== 'succeeded') return written;
+    stdout(`${reviewed.additionalSkillReferencesHash}\n${reviewed.skillReferenceNormalizationsHash}\n`);
+    return reviewed;
 };
 
 /** @param {{createFilesystem: typeof createScopedFilesystem, repositoryRoot: string, review: ReviewFunction, syncReview: typeof prepareWorkflowDistributionReview, workspaceDirectory: string}} input */
@@ -278,21 +222,22 @@ const renderDiagnostic = diagnostic => {
     return `${diagnostic.code}${path}: ${diagnostic.message}`;
 };
 
+const MESSAGES = /** @type {Record<string, string>} */ ({
+    apply: 'Workflow Distribution synchronization completed.',
+    complete: 'Workflow Distribution review completed.',
+    prepare: 'Workflow Distribution sync plan prepared.',
+    review: 'Workflow Distribution review candidates written.',
+});
+
 /** @param {{command: string, result: SyncResult, stderr: (value: string) => unknown, stdout: (value: string) => unknown}} input */
 const presentResult = ({command, result, stderr, stdout}) => {
     for (const diagnostic of result.diagnostics ?? []) stderr(`${renderDiagnostic(diagnostic)}\n`);
     if (result.status !== 'succeeded') return 1;
-    const message = command === 'review'
-        ? 'Workflow Distribution review completed.'
-        : command === 'prepare'
-            ? 'Workflow Distribution sync plan prepared.'
-            : 'Workflow Distribution synchronization completed.';
-    stdout(`${message}\n`);
+    stdout(`${MESSAGES[command]}\n`);
     return 0;
 };
 
 export const runWorkflowDistributionSyncCli = async (/** @type {string[]} */ args, /** @type {SyncCliOptions} */ {
-    configurationLoader = loadConfig,
     createFilesystem = createScopedFilesystem,
     platformAdapter = createCurrentPlatformAdapter(),
     repositoryRoot = SOURCE_ROOT,
@@ -312,10 +257,9 @@ export const runWorkflowDistributionSyncCli = async (/** @type {string[]} */ arg
     try {
         const workspaceDirectory = resolveReviewWorkspace({platformAdapter, repositoryRoot});
         let result;
-        if (invocation.command === 'review') {
+        if (invocation.command === 'review' || invocation.command === 'complete') {
             result = await runReview({
-                configurationLoader,
-                confirmHashes: invocation.confirmHashes ?? null,
+                complete: invocation.command === 'complete',
                 createFilesystem,
                 repositoryRoot,
                 review,

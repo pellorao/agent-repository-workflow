@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0012:01",
+  "request": {
+    "digest": "3ff75cf83f063548223b2733c4bf0f774d6045e2147cfd91953c239cf9d0e817",
+    "filePath": ".tmp/claude-code/c0e60747-0cc3-447f-9257-7d8bd88847ff/0012_01/spec-readiness/requests/request-feb193c8-9d05-44f0-b8b0-17dc32f4fe81.json",
+    "id": "feb193c8-9d05-44f0-b8b0-17dc32f4fe81"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "f797bb611ba9cf50c0ccfab4d029b2a32fd44b771b7b9338a0a31bb48ddba14a"
+  },
+  "inputs": [
+    {
+      "filePath": ".scratch/0012-distribution-sync-agent-review/spec.md",
+      "role": "governing-spec",
+      "sha256": "76591e5ead8bb7415f50b793460d1692f7cb1b1e7110fc9c9208c5a09595beec"
+    },
+    {
+      "filePath": "docs/adr/0026-use-source-checkout-workflow-files-as-distribution-authority.md",
+      "role": "adr",
+      "sha256": "e5e29034a12f213fd23b99b7a782077294bf36c56c399ff1dc06ecd1060e15ed"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow-development/spec.md",
+      "role": "governing-spec",
+      "sha256": "9dbfc52eeceabc71f287a0197e8011d63b142d0b72ef0d41fdc829dcff662e9d"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow-installation/spec.md",
+      "role": "governing-spec",
+      "sha256": "be5e52de6b393c332c922c28f99c931925bfa4c1bcdb23b68718cd54ff51605f"
+    },
+    {
+      "filePath": "lib/arw-common/config.mjs",
+      "role": "architecture-evidence",
+      "sha256": "09c9530365c13edc7037a9b0ef96c4bace5847cb65e51167e64db6d83cc84dfc"
+    },
+    {
+      "filePath": "lib/workflow-distribution/skill-reference-review.mjs",
+      "role": "architecture-evidence",
+      "sha256": "98ef5c5892ee8e3b8d111aaee66cf4ca75c7a57744478cf7e0f2efce02341363"
+    },
+    {
+      "filePath": "scripts/sync-workflow-distribution.mjs",
+      "role": "architecture-evidence",
+      "sha256": "9dd567b36c3bd3cb7c0e8b06f8948f66b84845d90f0a751939034d4e4b1b6456"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0012-distribution-sync-agent-review/issues/01-agent-completed-sync-review.md",
+    "sha256": "9d1261fa19962ceba3a2a630240d7fcec4131bfd36efb1d1fb15fe00b957e59f"
+  },
+  "result": "satisfied"
+}
