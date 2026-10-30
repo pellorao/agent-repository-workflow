@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0010:02",
+  "request": {
+    "digest": "1d0f45f779fb0e900ae5b418cb01e842f1ecf9101a53e2f6ce145781aa1416d1",
+    "filePath": ".tmp/claude-code/c0e60747-0cc3-447f-9257-7d8bd88847ff/0010_02/spec-readiness/requests/request-31e8eb52-bf24-4fc3-9322-b672db053076.json",
+    "id": "31e8eb52-bf24-4fc3-9322-b672db053076"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "f797bb611ba9cf50c0ccfab4d029b2a32fd44b771b7b9338a0a31bb48ddba14a"
+  },
+  "inputs": [
+    {
+      "filePath": "CONTEXT.md",
+      "role": "domain-context",
+      "sha256": "e4ec7d0aaeea4a87cc122ecc5eb2fa2cb80394a73d0ad53222b09872720b2f38"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow-application-jira/spec.md",
+      "role": "governing-spec",
+      "sha256": "dd082ffa12dd3157cfb4cc4a58d9d922fbcb8411d29fa0e05aa1ace8d697cd4b"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow-development/spec.md",
+      "role": "governing-spec",
+      "sha256": "9dbfc52eeceabc71f287a0197e8011d63b142d0b72ef0d41fdc829dcff662e9d"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow/spec.md",
+      "role": "governing-spec",
+      "sha256": "79daf4648959e4f7f51b91090bac6b99179bf7ec01700f4594e134753c4ba40c"
+    },
+    {
+      "filePath": "docs/specs/arw-reader-documentation/spec.md",
+      "role": "governing-spec",
+      "sha256": "09affa79a65b92eee4755b3c63ef59bd872506c7abec2134f0629b5b023d3ac9"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0010-triage-rule-manual-alignment/issues/02-align-association-and-review-manuals.md",
+    "sha256": "86b152fb33daf6ce4318cac218ac8b24924a9f53f9d7cb328e0081ba6813d7db"
+  },
+  "result": "satisfied"
+}
