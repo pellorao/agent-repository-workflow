@@ -76,7 +76,7 @@ When an authorized implementation issue already exists, you can send:
 
 > Please use $implement to implement issue:NNNN:NN.
 
-The implementation gates address different concerns. Spec Readiness checks governance preparation before implementation. Code Review separately checks repository standards and governance requirements before a commit. Commit Audit checks the frozen commit candidate against the requirements. The Agent must not omit or rewrite these or other applicable gates on its own. Only an explicit user decision and applicable authorization from the user can create an exception.
+The implementation gates address different concerns. Spec Readiness checks governance preparation before implementation. For a commit, Commit Audit prepares a frozen candidate and runs the two Code Review axes in parallel: Code Standards checks repository standards, and the requirements review checks governance requirements. The Agent must not omit or rewrite these or other applicable gates on its own. Only an explicit user decision and applicable authorization from the user can create an exception.
 
 If you are confident in the document or code prepared for commit and accept the risk of not having an independent review, you can explicitly grant an exception for this work only:
 

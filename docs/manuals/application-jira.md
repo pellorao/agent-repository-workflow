@@ -178,7 +178,7 @@ Before association, confirm:
 
 - Every configured Module is on the distribution branch.
 - The affected Application effort and all related Module efforts have no unstaged or untracked content.
-- Each repository's Git index is clean or contains an Agent-prepared staged baseline. You do not need to stage the two work records just to run the association command.
+- Each repository's Git index is clean or contains an Agent-prepared staged baseline. Stage new or modified work records as part of that recovery baseline before running the association command.
 - Work records in one Module effort distributed from the same Application effort use the same Module effort.
 
 The command always treats the Git index bytes in each repository at invocation time as the recovery baseline. It analyzes the full impact before writing and starts only if all replacements can be made.
