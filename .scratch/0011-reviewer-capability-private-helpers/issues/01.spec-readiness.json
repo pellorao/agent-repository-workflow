@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0011:01",
+  "request": {
+    "digest": "e2524493c2c1bbe41e48682b6fdd813b504db318b37b02ea60f433416b6c56b1",
+    "filePath": ".tmp/claude-code/c0e60747-0cc3-447f-9257-7d8bd88847ff/0011_01/spec-readiness/requests/request-f84b658e-1e5b-4f83-a1c6-daef3ad7e8c5.json",
+    "id": "f84b658e-1e5b-4f83-a1c6-daef3ad7e8c5"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "f797bb611ba9cf50c0ccfab4d029b2a32fd44b771b7b9338a0a31bb48ddba14a"
+  },
+  "inputs": [
+    {
+      "filePath": ".scratch/0011-reviewer-capability-private-helpers/spec.md",
+      "role": "governing-spec",
+      "sha256": "15951bbf4157a083045a4c7d66084c55adf3f107fe871c922e7114a9af723e06"
+    },
+    {
+      "filePath": "CONTEXT.md",
+      "role": "domain-context",
+      "sha256": "e4ec7d0aaeea4a87cc122ecc5eb2fa2cb80394a73d0ad53222b09872720b2f38"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow-development/spec.md",
+      "role": "governing-spec",
+      "sha256": "9dbfc52eeceabc71f287a0197e8011d63b142d0b72ef0d41fdc829dcff662e9d"
+    },
+    {
+      "filePath": "lib/reviewer-capability/evidence.mjs",
+      "role": "architecture-evidence",
+      "sha256": "c86ab82746093a567f1f3cb6de79899090a0203332bcb47b7de3d57853d303cd"
+    },
+    {
+      "filePath": "lib/reviewer-capability/pool.mjs",
+      "role": "architecture-evidence",
+      "sha256": "353a756e11bdd5ae76ca13d5cb748b3b885e8cf041f2521ef380e6be73bac3ae"
+    },
+    {
+      "filePath": "tests/reviewer-capability/format-penalty.test.mjs",
+      "role": "architecture-evidence",
+      "sha256": "9e2c8767fd4fa4a333d335eee89e5a5ab75561744ea0949c414c34dfafb120e5"
+    },
+    {
+      "filePath": "tests/reviewer-capability/pool.test.mjs",
+      "role": "architecture-evidence",
+      "sha256": "aec5b4b79bd373d4446e5e06cb26a479393b52f0d7d3aabdc9c76e2f13d5d4da"
+    },
+    {
+      "filePath": "tests/reviewer-capability/reviewer-capability.test.mjs",
+      "role": "architecture-evidence",
+      "sha256": "455439bc39d226e18a02cc51a946ea96657baa054d124a82fee219b72130f3fe"
+    },
+    {
+      "filePath": "tests/reviewer-capability/statistics.test.mjs",
+      "role": "architecture-evidence",
+      "sha256": "417689f3bde9a31c978529d2b71564131dfc20d08788b3670e8124f2e6065d4e"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0011-reviewer-capability-private-helpers/issues/01-remove-unused-exports.md",
+    "sha256": "a5c8aaae0830870ecb3a1f34294c0e872a42c33d84a8605d86ba1bc7d8957137"
+  },
+  "result": "satisfied"
+}
