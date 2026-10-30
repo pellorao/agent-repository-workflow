@@ -107,7 +107,7 @@ test('global background list preserves title and full session identity without M
         });
         assert.equal(result.result,0);
         assert.equal(result.events.length,1);
-        assert.match(result.events[0].message,/中文标题 with l\.\.\. \(01a0ec14/u);
+        assert.match(result.events[0].message,/01a0ec14\S* +中文标题 with lo\.\.\.$/mu);
         assert.ok(result.events[0].message.includes(ownerId));
         assert.ok(result.events[0].message.includes(unknownId));
         assert.ok(result.events[0].message.includes('requirements-reviewer'));
@@ -154,7 +154,7 @@ test('background list commands distinguish confirmed manager absence from unavai
         const empty = await run(args, repository, {backgroundAgentList: async () => []});
         assert.equal(empty.result, 0);
         assert.equal(empty.events[0].channel, 'stdout');
-        assert.match(empty.events[0].message, /Status.*Role.*Main session.*Elapsed/s);
+        assert.match(empty.events[0].message, /Status.*Role.*Elapsed.*Session.*Title/s);
 
         const otherError = await run(args, repository, {backgroundAgentList: async () => {throw new Error('Credential is invalid.');}});
         assert.deepEqual(otherError, {result: 1, events: [{channel: 'stderr', message: 'Credential is invalid.'}]});

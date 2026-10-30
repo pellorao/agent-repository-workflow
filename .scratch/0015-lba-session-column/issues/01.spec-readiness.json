@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0015:01",
+  "request": {
+    "digest": "2d12d117a98d504f6987ae5750dcd01d4683d6c4009d1bc73a0970db104bb8b1",
+    "filePath": ".tmp/claude-code/c0e60747-0cc3-447f-9257-7d8bd88847ff/0015_01/spec-readiness/requests/request-2fa6adbb-bf90-417d-80d1-da297f41c99e.json",
+    "id": "2fa6adbb-bf90-417d-80d1-da297f41c99e"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "f797bb611ba9cf50c0ccfab4d029b2a32fd44b771b7b9338a0a31bb48ddba14a"
+  },
+  "inputs": [
+    {
+      "filePath": ".scratch/0015-lba-session-column/spec.md",
+      "role": "governing-spec",
+      "sha256": "bc0abfc15e6d7a441be31118812876d8cf26d151f6b216ae863f7decf0afdd68"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow/spec.md",
+      "role": "governing-spec",
+      "sha256": "3d6abc5776ea3b30b664c348471fd440d0420bce6d72d0b7f6a345cb1c76f47b"
+    },
+    {
+      "filePath": "lib/background-agent/presentation.mjs",
+      "role": "architecture-evidence",
+      "sha256": "5d34f6d694180015ac9db228797948f49029227e8f0f1af4c9ae7292e6f52939"
+    },
+    {
+      "filePath": "lib/common/text-table.mjs",
+      "role": "architecture-evidence",
+      "sha256": "a430def74fd11cd041b700e8c8412199f583e4e0cf781640ebb330dcc6d379cf"
+    },
+    {
+      "filePath": "uninstall.mjs",
+      "role": "architecture-evidence",
+      "sha256": "fee6f5c43865ac77069c73bae609aea21a7635d86bea56a124505bba5be13261"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0015-lba-session-column/issues/01-lba-session-title-columns.md",
+    "sha256": "5a6cc27605720fd522f52c7a86a2b38ff7df765bdd52a7ae357d7ee250758bc8"
+  },
+  "result": "satisfied"
+}

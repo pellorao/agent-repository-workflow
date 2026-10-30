@@ -4,7 +4,7 @@ import {stripVTControlCharacters} from 'node:util';
 
 import {renderBackgroundAgents} from '../../lib/background-agent/presentation.mjs';
 
-test('background Agent overview uses four columns and retains full Main identity and elapsed time', () => {
+test('background Agent overview uses five columns and retains full Main identity and elapsed time', () => {
     const fullId = '019caaaa-bbbb-cccc-dddd-eeeeeeeeeeee';
     const fullTitle = '日本語の長い Main タイトル 😀';
     const result = renderBackgroundAgents([
@@ -15,28 +15,26 @@ test('background Agent overview uses four columns and retains full Main identity
     ], true);
     const [heading, divider, first, second, third, fourth] = result.split('\n');
 
-    assert.match(heading, /^Status\s{2,}Role\s{2,}Main session\s{2,}Elapsed$/u);
+    assert.match(heading, /^Status\s{2,}Role\s{2,}Elapsed\s{2,}Session\s{2,}Title$/u);
     assert.match(divider, /^[- ]+$/u);
-    assert.equal(divider.split(/ {2,}/u).length, 4);
-    assert.ok(first.includes(`${fullTitle} (${fullId})`));
-    assert.ok(first.endsWith('1:01:01'));
-    assert.ok(second.endsWith('0:00:03'));
-    assert.ok(second.includes('main-2'));
+    assert.equal(divider.split(/ {2,}/u).length, 5);
+    assert.ok(first.includes(`1:01:01  ${fullId}  ${fullTitle}`));
+    assert.match(second, /0:00:03  main-2 +ASCII$/u);
     assert.match(third, /\u001b\[90mN\/A\u001b\[0m/u);
     assert.match(fourth, /\u001b\[90mN\/A\u001b\[0m/u);
     assert.ok(third.includes('unknown'));
     assert.ok(third.includes('spec-readiness-reviewer'));
-    assert.ok(third.includes('main-3'));
-    assert.ok(third.endsWith('  -'));
-    assert.ok(fourth.endsWith('0:00:00'));
-    assert.match(third, /\u001b\[90mN\/A\u001b\[0m \(main-3\)/u);
+    assert.match(third, / -  +main-3 +\u001b/u);
+    assert.match(fourth, /0:00:00  main-4 +\u001b/u);
 });
-
-
-
-
-
-
+test('default width truncates only Title and keeps Session whole', () => {
+    const row = {role: 'reviewer', ownerId: 'id-'.repeat(8), ownerTitle: 'T'.repeat(150), state: 'idle', taskElapsedMs: 0};
+    const line = renderBackgroundAgents([row], false).split('\n')[2];
+    assert.ok(line.includes(row.ownerId));
+    assert.match(line, /T\.\.\.$/u);
+    assert.ok(line.length <= 100);
+    assert.ok(renderBackgroundAgents([row], true).endsWith('T'.repeat(150)));
+});
 
 test('untrusted titles cannot emit terminal controls while missing titles retain gray N/A', () => {
     const rows = renderBackgroundAgents([
@@ -47,5 +45,5 @@ test('untrusted titles cannot emit terminal controls while missing titles retain
     assert.doesNotMatch(rows[0], /[\p{Cc}\p{Bidi_Control}]/u);
     assert.match(rows[0], /BeforeAfter\\u0007\\u202e/u);
     assert.match(rows[0], /root-unsafe/u);
-    assert.match(rows[1], /\u001b\[90mN\/A\u001b\[0m \(root-missing\)/u);
+    assert.match(rows[1], /root-missing  \u001b\[90mN\/A\u001b\[0m$/u);
 });

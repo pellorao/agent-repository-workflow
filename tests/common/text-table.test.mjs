@@ -24,12 +24,9 @@ test('formatTextTable truncates only the name to the cap with ... and never spli
     assert.equal(family, `${'👨‍👩‍👧'.repeat(8)}...`);
 });
 
-test('formatTextTable keeps 16 columns of the name when other columns are wide and keeps suffixes whole', () => {
+test('formatTextTable keeps 16 columns of the name when other columns are wide', () => {
     const wideOther = formatTextTable(['Other', 'Title'], [['o'.repeat(95), 'n'.repeat(50)]], {flexColumn: 1, width: 100}).split('\n')[2];
     assert.ok(wideOther.endsWith(`${'n'.repeat(13)}...`));
-    const suffixed = formatTextTable(['Title', 'E'], [['t'.repeat(91), 'e']], {flexColumn: 0, width: 100, suffixes: [' (id-1)']}).split('\n')[2];
-    assert.equal(suffixed, `${'t'.repeat(87)}... (id-1)  e`);
-    assert.equal(formatTextTable(['Title'], [['t'.repeat(90)]], {flexColumn: 0, suffixes: [' (id-1)']}).split('\n')[2], `${'t'.repeat(90)} (id-1)`);
 });
 
 test('list renderers truncate by default and print full names with full', () => {
@@ -46,6 +43,6 @@ test('list renderers truncate by default and print full names with full', () => 
     assert.match(renderJiraList(jira, false).split('\n').at(-1) ?? '', /^PAY-1  T+\.\.\.$/u);
     assert.ok(renderJiraList(jira, true).endsWith(title));
     const rows = [{role: 'reviewer', ownerId: 'sess-1', ownerTitle: title, state: 'idle', taskElapsedMs: 1000}];
-    assert.match(renderBackgroundAgents(rows, false).split('\n')[2], /T\.\.\. \(sess-1\)  0:00:01$/u);
-    assert.ok(renderBackgroundAgents(rows, true).includes(`${title} (sess-1)`));
+    assert.match(renderBackgroundAgents(rows, false).split('\n')[2], /sess-1 +T+\.\.\.$/u);
+    assert.ok(renderBackgroundAgents(rows, true).endsWith(title));
 });
