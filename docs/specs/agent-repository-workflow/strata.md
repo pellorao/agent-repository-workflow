@@ -8,7 +8,7 @@
 
 ## Runtime parameters
 
-Strata 模型 ID `qwen3.8-flash-next-q2_0`, `qwen3.8-flash-next-iq2_xs` 和 `qwen3.8-flash-next-iq3_xxs` 分别映射为 `/ownership/start` 的 `Q2_0`, `IQ2_XS` 和 `IQ3_XXS`. ARW 自动传入 `engine_overrides` 中的 `spec-min-p: 0.7` 和 `max-context: 206584`, 以及 `request_defaults` 中的 `temperature: 0`, `top_p: 1` 和 `top_k: 20`; 未指定的服务参数沿用安装配置. 量化与推理强度由本次任务选择, 不固定为 `medium`, 不增加用户配置字段或额外调用步骤.
+Strata 模型 ID `qwen3.8-flash-next-q2_0`, `qwen3.8-flash-next-iq2_xs` 和 `qwen3.8-flash-next-iq3_xxs` 分别映射为 `/ownership/start` 的 `Q2_0`, `IQ2_XS` 和 `IQ3_XXS`. ARW 自动传入 `engine_overrides` 中的 `spec-min-p: 0.7` 和 `max-context: 206584`, 以及 `request_defaults` 中的 `temperature: 0`, `top_p: 1` 和 `top_k: 20`; 未指定的服务参数沿用安装配置. 量化与推理强度沿用 Reviewer 配置解析的结果, 不在此固定, 不增加用户配置字段或额外调用步骤.
 
 共享模型目录生成时只对已通过提供方配置接入 Strata 的三个模型条目把 `context_window` 和 `max_context_window` 固定为 `206584`, 其他字段保留; 其他模型条目原样合并. 不写回原生缓存或用户自定义来源, 同一共享 App Server 存活期间不重写生成目录. 模型目录和原生上下文采用一致容量, 避免不同来源分别采用不同窗口.
 
@@ -16,7 +16,7 @@ Strata 模型 ID `qwen3.8-flash-next-q2_0`, `qwen3.8-flash-next-iq2_xs` 和 `qwe
 
 ARW 对已接入的 Strata 模型自动使用 `model_context_window=206584` 和 `model_auto_compact_token_limit=150000`, 与[运行参数](#runtime-parameters)中的模型与目录容量保持一致. 固定支持不增加 `backgroundAgent.providers` 中的用户可调字段或新的调用步骤; 其他提供方的模型条目与原生运行设置保持其既有来源. 这些设置为实际模型容量保留固定压缩预算.
 
-Strata 历史压缩使用其实际安装目录中的 `config/compact_prompt.txt` 作为基础. 程序读取基础文件, 若调用方已有摘要提示则只追加一次作为补充, 把组合内容写入原任务绑定的私有临时文件, 通过 Codex 的 `experimental_compact_prompt_file` 使用它. 调用方已指向同一基础文件或提供相同基础内容时不重复拼接. 不复制维护 Codex 特定版本的默认摘要快照, 不以自定义摘要要求替代基础指令, 不把压缩提示加入普通审核提示. 服务自动接入的普通启动指令不在调用方重复添加.
+Strata 历史压缩使用其实际安装目录中的 `config/compact_prompt.txt` 作为基础. 程序读取基础文件, 若调用方已有摘要提示则只追加一次作为补充, 把组合内容写入原任务绑定的私有临时文件, 通过 Codex 的 `experimental_compact_prompt_file` 使用它. 调用方已指向同一基础文件或提供相同基础内容时不重复拼接. 不复制维护 Codex 特定版本的默认摘要快照, 不以自定义摘要要求替代基础指令, 不把压缩提示加入普通审核提示.
 
 组合文件由运行程序在调用方原任务的 ARW Engine 临时工作区内创建, 保持当前用户私有权限, 不扩大 Reviewer 的报告写入范围. 原任务恢复记录绑定准确文件及内容身份, 续做和恢复使用相同字节, 不因安装基础或调用方补充随后改变而重组该任务. 基础或已有补充不能读取, 组合写入失败, 或恢复时绑定内容不可核实时, 在受影响原生审核继续前报告具体原因; 不静默丢弃基础或补充. 文件在原任务仍可恢复或仍被原生运行使用时保留, 结束后仅按原任务临时工作区已有的管理边界处理, 不增加跨会话自动清理或删除旧工作区的权限. 新审核按当时基础与补充建立自己的绑定.
 

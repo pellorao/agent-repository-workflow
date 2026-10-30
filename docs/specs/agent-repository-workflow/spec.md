@@ -119,7 +119,7 @@ Status: <status>
 
 `## What to build` 和 `## Acceptance criteria` 必须各出现一次 (围栏外) 且前者在先; 两者之间的章节 (旧格式的 `## Spec Requirement`) 属于审核对象正文, 因此 `## Validation` 与 `## Comments` 不得放在两者之间. issue 不声明治理要求引用: Spec Readiness Reviewer 根据交付内容自行检索相关既有章节, Commit Audit 的差异回归检查也从代码差异出发检索.
 
-ARW 写出的 `Status:` 位于 H1 后第一个段落; 读取时只要求它唯一且取值有效, 不检查位置.
+ARW 写出的 `Status:` 位于 H1 后第一个段落; 读取时只要求它唯一且取值有效 (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `completed`, `wontfix` 之一), 不检查位置.
 
 `## What to build` 只描述完整交付结果, 验收条件只描述可验证完成条件. `## Blocked by` 无阻断问题时准确写 `- None - can start immediately`; 带标题阻断问题时写 `- <number> - <title>`. Issue 完成证据满足后可以把 `Status:` 改为终态值; 终态转换的提交门禁由提交流程独立处理.
 
@@ -147,7 +147,7 @@ Blocked by: <none-or-ticket-numbers>
 ...
 ```
 
-尚未领取的 issue 可以省略 `Status:`. 领取时使用 `claimed`; 回答后追加 `## Answer`, 更新 Code Map, 再使用 `resolved`. Wayfinder `Type:` 是工作流字段, 不等同于清单中的 `implementation | application-source | wayfinder` 分类.
+尚未领取的 issue 可以省略 `Status:`. 领取时使用 `claimed`; 回答后追加 `## Answer`, 更新 Code Map, 再使用 `resolved`. Wayfinder `Type:` 取 `research`, `prototype`, `grilling`, `task` 之一, 含义见 [Wayfinder Skill](../../../.agents/skills/wayfinder/SKILL.md); 它是工作流字段, 不等同于清单中的 `implementation | application-source | wayfinder` 分类.
 
 ### Document content boundaries
 
@@ -202,7 +202,7 @@ arw workflow remove [--non-interactive --platform-agent-configs <retain|delete> 
 arw --version
 ```
 
-只在源码仓库中使用的维护命令不是公开的 `arw` 操作. 开发, 安装和发布规格以及 `upstream-sync` Skill 分别列出这些命令的入口与生命周期归属.
+`jira`, `application`, `module` 和 `submodule` 命名空间同样是公开命令, 由 Application 与 JIRA 长期规格的 [JIRA 命令](../agent-repository-workflow-application-jira/spec.md#public-commands), [Association](../agent-repository-workflow-application-jira/spec.md#application-and-module-issue-association), [Module correction check](../agent-repository-workflow-application-jira/spec.md#module-correction-check) 和 [Submodule branch switching](../agent-repository-workflow-application-jira/spec.md#submodule-branch-switching) 拥有; `jl`, `jo`, `ssb` 分别是 `jira list`, `jira open`, `submodule switch-branch` 的命令别名. 只在源码仓库中使用的维护命令不是公开的 `arw` 操作. 开发, 安装和发布规格以及 `upstream-sync` Skill 分别列出这些命令的入口与生命周期归属.
 
 `print` 是机器可读原文读取 Interface. `open` 是用户便捷 Interface. 两者只接受一个本地 Canonical ID, 从类型前缀选择 ARW Artifact, 并拒绝有名称限定的 issue ID. 不保留类型化 `open` 或 `print`, `oi`, `om`, `os`, `tracker` 启动器, 顶层 `update` 或隐式帮助. 无参数和未知命令都是退出码 `2` 的用法错误.
 
@@ -481,7 +481,7 @@ Codex 与 Claude Code 都完整支持静态 Skill 与 `AGENTS.md` / `CLAUDE.md` 
 
 ### Prepare and independent review
 
-`prepare --issue` 从 `stdin` 或 `--input <temp-json-path>` 接受只含 `inputs` 的显式治理输入. 治理输入至少包含一个 `governing-spec` 或 `governing-prd`, 也可以包含适用的 ADR, 领域上下文或架构证据. Agent 指令与 Reviewer Role 正文不属于治理输入. 输入路径必须是安全的仓库相对普通文件, 且不能指向本地跟踪器 issue. `prepare` 写出审核轮后对审核对象和 Input 文本做三项机械预检, 每个命中向标准错误输出一行 `warning: ...`, 不阻断, 不改变标准输出 (仍只有轮目录) 和退出码, 不进入 Request: `path:line` 引用指向已存在的文件而行号超过其行数; 以反引号包裹且首段是仓库根目录下已存在目录的带扩展名路径不存在 (该行含 "新建", "新增", "创建" 时跳过); `## Acceptance criteria` 中既无 "观察" 也无反引号内容的任务列表项.
+`prepare --issue` 从 `stdin` 或 `--input <temp-json-path>` 接受只含 `inputs` 的显式治理输入. 治理输入每项是 `{role, filePath}`, `role` 取 `governing-spec`, `governing-prd`, `adr`, `domain-context`, `architecture-evidence` 之一, 至少包含一个 `governing-spec` 或 `governing-prd`, 其余按适用性加入. Agent 指令与 Reviewer Role 正文不属于治理输入. 输入路径必须是安全的仓库相对普通文件, 且不能指向本地跟踪器 issue. `prepare` 写出审核轮后对审核对象和 Input 文本做三项机械预检, 每个命中向标准错误输出一行 `warning: ...`, 不阻断, 不改变标准输出 (仍只有轮目录) 和退出码, 不进入 Request: `path:line` 引用指向已存在的文件而行号超过其行数; 以反引号包裹且首段是仓库根目录下已存在目录的带扩展名路径不存在 (该行含 "新建", "新增", "创建" 时跳过); `## Acceptance criteria` 中既无 "观察" 也无反引号内容的任务列表项.
 
 Engine 在当前 Main Agent 会话与 issue 的 `spec-readiness` 用途工作区下新建审核轮目录 `rounds/<requestId>/`, 草稿固定为其中的 `report/draft.txt`, 也是 Reviewer 的绑定报告. Engine 创建零字节草稿, 从 Canonical ID 定位准确 issue, 然后把以下内容绑定到 `requests/` 下的不可变 Reviewer Request, 并按 [Review rounds](#review-rounds) 写出本轮其余文件, 只输出轮目录路径:
 
@@ -508,7 +508,7 @@ Reviewer 在完成全部适用检查和绑定文件写入后单独返回完成�
 
 审核后的结果按生成, 提升, 验证的顺序交接. 生成临时结果不等于把它写入工作记录, 写入工作记录也不等于已经取得实施授权.
 
-`generate --issue --input <draft-path>` 要求路径与活动请求完全相同. 普通审核中, 零字节或仅含空白的草稿失败 (错误提示重新 `prepare` 并重发 Reviewer), 不生成规范结果文件; 去除首尾空白后精确为 `No problems.` 时结果为 `satisfied`, 否则为 `gap`. Engine 不解析问题条目, 问题的有效性由 Main Agent 独立核对, Main Agent 每轮自选一两处 Reviewer 应当检查的要求或代码位置抽查. 正式结果使用模式版本 7, 不含检查项. 例外草稿必须包含明确理由和用户确认时间, 且用户确认不能推断. 普通结果与例外结果都绑定当前审核对象的规范化身份. 有效结果只在 Engine 管理的临时工作区生成规范结果文件并返回路径. `generate` 不写 `.scratch` 或基线.
+`generate --issue --input <draft-path>` 要求路径与活动请求完全相同. 普通审核中, 零字节或仅含空白的草稿失败 (错误提示重新 `prepare` 并重发 Reviewer), 不生成规范结果文件; 去除首尾空白后精确为 `No problems.` 时结果为 `satisfied`, 否则为 `gap`. Engine 不解析问题条目, 问题的有效性由 Main Agent 独立核对, Main Agent 每轮自选一两处 Reviewer 应当检查的要求或代码位置抽查. 正式结果使用模式版本 7, 不含检查项. 例外只在应用治理设计和 ADR 触发条件后用户明确确认不需要治理设计, 且 effort 的 `issues/` 目录只含待审的这一个 issue 文件时可用, 失败的普通审核不得转为例外; 此时 `--input` 是 Main Agent 写在该 issue 当前 Agent 临时工作区内的绝对 `.json` 路径 (不经 Reviewer), 例外草稿必须包含明确理由和用户确认时间 (`exception.reason`, `exception.confirmedAt`), 且用户确认不能推断, 结果为 `not-applicable`. 普通结果与例外结果都绑定当前审核对象的规范化身份. 有效结果只在 Engine 管理的临时工作区生成规范结果文件并返回路径. `generate` 不写 `.scratch` 或基线.
 
 `promote --input <generated-path>` 在任何写入前重验 issue, 请求, 当前治理输入字节 (`architecture-evidence` 除外, `verify` 同此), 当前审核对象内容身份, 当前 Reviewer Role 字节, 结构, 路径归属和派生结果. 它是写 `.scratch/<NNNN>-<effort-slug>/issues/<NN>.spec-readiness.json` 和更新已完成基线的唯一边界. 有效的 `gap` 可以保存, 但不能满足最终就绪授权. 旧结构不能授权.
 
