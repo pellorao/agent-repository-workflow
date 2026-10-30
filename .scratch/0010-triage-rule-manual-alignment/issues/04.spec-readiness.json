@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0010:04",
+  "request": {
+    "digest": "17822ff43b33e1093827bfcdbf7ef4fc78b59d33d2625d400fc40a68d04e91bc",
+    "filePath": ".tmp/claude-code/c0e60747-0cc3-447f-9257-7d8bd88847ff/0010_04/spec-readiness/requests/request-eeb4734b-f868-4ed3-abdb-40f2c8d79401.json",
+    "id": "eeb4734b-f868-4ed3-abdb-40f2c8d79401"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "f797bb611ba9cf50c0ccfab4d029b2a32fd44b771b7b9338a0a31bb48ddba14a"
+  },
+  "inputs": [
+    {
+      "filePath": "CONTEXT.md",
+      "role": "domain-context",
+      "sha256": "e4ec7d0aaeea4a87cc122ecc5eb2fa2cb80394a73d0ad53222b09872720b2f38"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow-development/spec.md",
+      "role": "governing-spec",
+      "sha256": "9dbfc52eeceabc71f287a0197e8011d63b142d0b72ef0d41fdc829dcff662e9d"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow/spec.md",
+      "role": "governing-spec",
+      "sha256": "79daf4648959e4f7f51b91090bac6b99179bf7ec01700f4594e134753c4ba40c"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0010-triage-rule-manual-alignment/issues/04-align-wizard-workflow.md",
+    "sha256": "765467145cd37912523ff818727e12a2409e608974039e86cf2c740da214a456"
+  },
+  "result": "satisfied"
+}

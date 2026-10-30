@@ -9,7 +9,7 @@ A **wizard** is a bash script that walks a human, step by step, through a manual
 
 The delightful UX is already solved by [template.sh](template.sh) — stage-by-stage progress, confirmation gates, cross-platform URL opening (including WSL), hidden secret entry, idempotent `.env` upserts, `gh secret`/`gh variable` writes, and a closing summary. **Your job is only to scope the procedure and author its stages.** The library above the `STAGES` marker is identical in every wizard; that consistency is the point — never hand-edit it.
 
-A wizard is ephemeral by default — built for one run, saved to a scratch or `scripts/` path, deleted when the job's done. Commit it only when the user wants a repeatable setup path that should live in the repo.
+A wizard is ephemeral by default. Save a one-run script in the current session workspace defined by [environment.md](../../../docs/agents/environment.md). Before writing any script, prepare its recovery baseline under [agent-writes.md](../../../docs/agents/agent-writes.md). For a repeatable script delivered in the repository, first confirm an authorized issue through the [implement](../implement/SKILL.md) Entry, then choose its path from the target repository layout.
 
 ## Process
 
@@ -38,7 +38,7 @@ Hold the bar the template sets: open the URL before asking for its value, use `a
 
 ### 4. Verify and hand off
 
-- `bash -n <script>`; run `shellcheck` if available.
+- Run `bash -n <script>`. Use [validation](../validation/SKILL.md) to select the target repository's declared checks.
 - `chmod +x <script>`.
 - Don't run it end-to-end yourself — it opens browsers and blocks on human input. Trace it statically instead: every value from step 1 is captured and lands where step 1 said, and every `set_secret` name exactly matches a `secrets.*` reference in CI.
-- Tell the user how to run it. If it's a repeatable setup path, commit it and link it from the README so the next person runs the script instead of asking an AI.
+- Tell the user how to run it. For a repeatable setup path, document its entry point as authorized by the issue and handle any commit through the [commit](../commit/SKILL.md) Skill.
