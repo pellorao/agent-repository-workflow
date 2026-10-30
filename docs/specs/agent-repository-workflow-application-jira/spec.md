@@ -169,8 +169,8 @@ Engine 安装目录的全局 `config.json` 保存 JIRA 列表显示限制:
 
 JIRA 命令是:
 
-- `arw jira list [--limit <N>]`
-- `arw jl [--limit <N>]`
+- `arw jira list [--limit <N>] [--full]`
+- `arw jl [--limit <N>] [-f]`
 - `arw jira print <issue-key>`
 - `arw jira open <issue-key>`
 - `arw jo <issue-key>`
@@ -200,7 +200,7 @@ Key          Title
 P20274-1643  First story
 ~~~
 
-每行只有键与标题. 标题中连续空白字符和控制字符变成一个 ASCII 空格, 然后去掉首尾空白. 标题不截断.
+每行只有键与标题. 标题中连续空白字符和控制字符变成一个 ASCII 空格, 然后去掉首尾空白. 标题列按总规格 [ARW Artifact operations](../agent-repository-workflow/spec.md#arw-artifact-operations) 中的表格截断规则排版, `--full | -f` 时不截断.
 
 空结果输出:
 

@@ -229,8 +229,8 @@ test('Module correction check reports Git and filesystem read failures without w
 });
 
 test('JIRA list commands block Application Members before external requests', async t => {
-    assert.deepEqual(parseCommand(['jira', 'list']), {kind: 'jira-list', limit: null});
-    assert.deepEqual(parseCommand(['jl']), {kind: 'jira-list', limit: null});
+    assert.deepEqual(parseCommand(['jira', 'list']), {kind: 'jira-list', limit: null, full: false});
+    assert.deepEqual(parseCommand(['jl']), {kind: 'jira-list', limit: null, full: false});
 
     const repository = await createRepository(t);
     for (const args of [['jira', 'list'], ['jl']]) {

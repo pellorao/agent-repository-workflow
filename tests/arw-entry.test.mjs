@@ -14,11 +14,11 @@ import {parseCommand, UsageError} from '../lib/arw.mjs';
 const SOURCE_DIRECTORY = dirname(dirname(fileURLToPath(import.meta.url)));
 const NO_COMMAND_MESSAGE = [
     'Usage:',
-    '  arw list issues [--all-statuses | --status <status>[,<status>...]] [--type <type>[,<type>...]]',
-    '  arw li [-a | -s <status>[,<status>...]] [-t <type>[,<type>...]]',
-    '  arw list maps | arw lm',
-    '  arw list specs | arw ls',
-    '  arw list background-agents | arw lba',
+    '  arw list issues [--all-statuses | --status <status>[,<status>...]] [--type <type>[,<type>...]] [--full]',
+    '  arw li [-a | -s <status>[,<status>...]] [-t <type>[,<type>...]] [-f]',
+    '  arw list maps [--full] | arw lm [-f]',
+    '  arw list specs [--full] | arw ls [-f]',
+    '  arw list background-agents [--full] | arw lba [-f]',
     '  arw print <local-canonical-id>',
     '  arw open <local-canonical-id>',
     '  arw agent start <name> [agent-arguments...]',
@@ -27,7 +27,7 @@ const NO_COMMAND_MESSAGE = [
     '  arw text check | arw text fix',
     '  arw terms check [--strict] [--include <repository-relative-directory>]...',
     '  arw language inspect <repository-relative-path>...',
-    '  arw jira list [--limit <positive-integer>] | arw jl [--limit <positive-integer>]',
+    '  arw jira list [--limit <positive-integer>] [--full] | arw jl [--limit <positive-integer>] [-f]',
     '  arw jira open <issue-key> | arw jo <issue-key>',
     '  arw jira print <issue-key>',
     '  arw submodule switch-branch <branch> | arw ssb <branch>',
@@ -80,9 +80,18 @@ test('configuration is validated before repository discovery', async t => {
 });
 
 test('global background list preserves title and full session identity without Main ownership or repository discovery', async t => {
-    assert.deepEqual(parseCommand(['list','background-agents']),{kind:'list-background-agents'});
-    assert.deepEqual(parseCommand(['lba']),{kind:'list-background-agents'});
-    for (const args of [['lba','extra'],['list','background-agents','--all']]) assert.throws(() => parseCommand(args),UsageError);
+    assert.deepEqual(parseCommand(['list','background-agents']),{kind:'list-background-agents', full: false});
+    assert.deepEqual(parseCommand(['lba']),{kind:'list-background-agents', full: false});
+    for (const args of [['lba','extra'],['list','background-agents','--all'],['lba','-f','-f'],['lm','-a'],['ls','--full','x']]) assert.throws(() => parseCommand(args),UsageError);
+    assert.deepEqual(parseCommand(['lba','-f']),{kind:'list-background-agents', full: true});
+    assert.deepEqual(parseCommand(['list','background-agents','--full']),{kind:'list-background-agents', full: true});
+    assert.equal(parseCommand(['lm','-f']).options.full, true);
+    assert.equal(parseCommand(['list','specs']).options.full, false);
+    assert.equal(parseCommand(['li','-a','--full']).options.full, true);
+    assert.throws(() => parseCommand(['li','-f','--full']),UsageError);
+    assert.deepEqual(parseCommand(['jl','-f','--limit','5']),{kind:'jira-list', limit: 5, full: true});
+    assert.deepEqual(parseCommand(['jira','list','--limit','5','--full']),{kind:'jira-list', limit: 5, full: true});
+    assert.throws(() => parseCommand(['jl','-f','--full']),UsageError);
     const repository = await createRepository(t);
     const outside = await createTemporaryDirectory(t,'background-list-outside-');
     const ownerId = '01a0ec14-e396-7d63-a075-a20c21e0f1cb';
@@ -98,7 +107,7 @@ test('global background list preserves title and full session identity without M
         });
         assert.equal(result.result,0);
         assert.equal(result.events.length,1);
-        assert.match(result.events[0].message,/中文标题 with long visible text/u);
+        assert.match(result.events[0].message,/中文标题 with l\.\.\. \(01a0ec14/u);
         assert.ok(result.events[0].message.includes(ownerId));
         assert.ok(result.events[0].message.includes(unknownId));
         assert.ok(result.events[0].message.includes('requirements-reviewer'));

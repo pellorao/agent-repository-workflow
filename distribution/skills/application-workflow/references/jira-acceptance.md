@@ -7,8 +7,8 @@
 以下命令不修改 JIRA:
 
 ```text
-arw jira list
-arw jira list --limit <N>
+arw jira list --full
+arw jira list --limit <N> --full
 arw jira print <jira-issue-key>
 arw jira open <jira-issue-key>
 ```

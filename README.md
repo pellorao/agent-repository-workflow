@@ -209,7 +209,7 @@ arw list maps
 arw list specs
 ```
 
-The short aliases are `arw lm` and `arw ls`. After finding a record, use its complete Canonical ID to open or print it:
+The short aliases are `arw lm` and `arw ls`. The `li`, `lm`, `ls`, `lba` and `jl` tables are laid out at 100 display columns by default and only the name column (`Title`, or the session title in `lba`) is truncated with `...`; add `--full` (`-f`) to print full names, for example `arw li -a -f`. After finding a record, use its complete Canonical ID to open or print it:
 
 ```text
 arw open issue:0007:02
@@ -337,6 +337,7 @@ This section summarizes everyday entry points. For complete syntax, run the inst
 | `arw list issues --all-statuses` | `arw li -a` | What issues have valid structure and status? |
 | `arw list issues --status <status>[,<status>...]` | `arw li -s <status>[,<status>...]` | Which issues use the selected statuses? |
 | `arw list issues --type <type>[,<type>...]` | `arw li -t <type>[,<type>...]` | Which issues are `implementation`, `application-source`, or `wayfinder`? |
+| `arw list issues --full` | `arw li -f` | What are the full, untruncated titles? |
 | `arw list maps` | `arw lm` | Which Wayfinder maps are registered? |
 | `arw list specs` | `arw ls` | Which local specs are registered? |
 | `arw open <canonical-id>` | - | How do I open a local ARW Artifact in the configured editor? |

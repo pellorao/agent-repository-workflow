@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0014:01",
+  "request": {
+    "digest": "83aea9d229bc796a7b8271fdf1811549a67c9da902509b70610e278e42f96391",
+    "filePath": ".tmp/claude-code/c0e60747-0cc3-447f-9257-7d8bd88847ff/0014_01/spec-readiness/requests/request-d2fa9c0e-f08b-460e-94f4-87108526c4a8.json",
+    "id": "d2fa9c0e-f08b-460e-94f4-87108526c4a8"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "f797bb611ba9cf50c0ccfab4d029b2a32fd44b771b7b9338a0a31bb48ddba14a"
+  },
+  "inputs": [
+    {
+      "filePath": ".scratch/0014-list-column-truncation/spec.md",
+      "role": "governing-spec",
+      "sha256": "c9a9f5a61b4a2d7f4b62c86578fb9354e028e11fa91730878c507df1c6c38ea7"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow-application-jira/spec.md",
+      "role": "governing-spec",
+      "sha256": "dd082ffa12dd3157cfb4cc4a58d9d922fbcb8411d29fa0e05aa1ace8d697cd4b"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow/spec.md",
+      "role": "governing-spec",
+      "sha256": "fe8f4acb7a3dc4fd5dfc871a60d2b9936e668d61957f8041f66899efab838f91"
+    },
+    {
+      "filePath": "lib/application-jira/jira-presentation.mjs",
+      "role": "architecture-evidence",
+      "sha256": "cd25541e737541779ce6b049402a2aa95bd3b7fdbeabd44cedd1ebdf000de296"
+    },
+    {
+      "filePath": "lib/arw-common/artifacts.mjs",
+      "role": "architecture-evidence",
+      "sha256": "38a50a876abc1920fae75ed892bfc77d73f1daea738819a6950214ebe7920721"
+    },
+    {
+      "filePath": "lib/arw.mjs",
+      "role": "architecture-evidence",
+      "sha256": "01c39cd6dc210da9a276a011837199938fb39e8b0e5e3fb1298f2498325b4895"
+    },
+    {
+      "filePath": "lib/background-agent/presentation.mjs",
+      "role": "architecture-evidence",
+      "sha256": "07a055d5f8fa4487df8e055e17e4d4a976a1abff548dfaa14d54c017ae02204e"
+    },
+    {
+      "filePath": "lib/common/text-table.mjs",
+      "role": "architecture-evidence",
+      "sha256": "54212f625592db3ac3526ef44244b3b095ae70b951dbcf3b49dae10460cc2fc7"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0014-list-column-truncation/issues/01-list-column-truncation.md",
+    "sha256": "cb90eb189607e4ed264054399c8357a03f6ea1f91bfbe3b3ca09687969c18fbd"
+  },
+  "result": "satisfied"
+}

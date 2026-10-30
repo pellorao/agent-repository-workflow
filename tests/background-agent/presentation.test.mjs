@@ -12,7 +12,7 @@ test('background Agent overview uses four columns and retains full Main identity
         {role: 'code-standards-reviewer', ownerId: 'main-2', ownerTitle: 'ASCII', state: 'idle', taskElapsedMs: 3_000},
         {role: 'spec-readiness-reviewer', ownerId: 'main-3', ownerTitle: null, state: 'unknown', taskElapsedMs: null},
         {role: 'spec-readiness-reviewer', ownerId: 'main-4', ownerTitle: ' \t ', state: 'starting', taskElapsedMs: 0},
-    ]);
+    ], true);
     const [heading, divider, first, second, third, fourth] = result.split('\n');
 
     assert.match(heading, /^Status\s{2,}Role\s{2,}Main session\s{2,}Elapsed$/u);
@@ -42,7 +42,7 @@ test('untrusted titles cannot emit terminal controls while missing titles retain
     const rows = renderBackgroundAgents([
         {role: 'reviewer', ownerId: 'root-unsafe', ownerTitle: 'Before\u001b[2J\u001b[31mAfter\u001b[0m\u0007\u202e', state: 'running', taskElapsedMs: 0},
         {role: 'reviewer', ownerId: 'root-missing', ownerTitle: null, state: 'idle', taskElapsedMs: 0},
-    ]).split('\n').slice(2);
+    ], false).split('\n').slice(2);
     assert.equal(stripVTControlCharacters(rows[0]), rows[0]);
     assert.doesNotMatch(rows[0], /[\p{Cc}\p{Bidi_Control}]/u);
     assert.match(rows[0], /BeforeAfter\\u0007\\u202e/u);

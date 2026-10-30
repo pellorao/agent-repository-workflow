@@ -207,7 +207,7 @@ arw list maps
 arw list specs
 ```
 
-对应的用户短别名是 `arw lm` 和 `arw ls`. 找到目标后, 使用完整 Canonical ID 打开或读取:
+对应的用户短别名是 `arw lm` 和 `arw ls`. `li`, `lm`, `ls`, `lba` 和 `jl` 的表格默认按 100 个显示列排版, 只截断名称列 (`Title`, `lba` 为会话标题) 并以 `...` 结尾; 加 `--full` (`-f`) 输出全文, 例如 `arw li -a -f`. 找到目标后, 使用完整 Canonical ID 打开或读取:
 
 ```text
 arw open issue:0007:02
@@ -335,6 +335,7 @@ Main Agent 先确认完成证据和准确 staged candidate, 再运行 `arw commi
 | `arw list issues --all-statuses` | `arw li -a` | 全部结构和状态有效的 issues 是什么. |
 | `arw list issues --status <status>[,<status>...]` | `arw li -s <status>[,<status>...]` | 哪些 issues 使用指定状态. |
 | `arw list issues --type <type>[,<type>...]` | `arw li -t <type>[,<type>...]` | 哪些 issues 属于 `implementation`, `application-source` 或 `wayfinder`. |
+| `arw list issues --full` | `arw li -f` | 完整未截断的标题是什么. |
 | `arw list maps` | `arw lm` | 已登记的 Wayfinder maps 是什么. |
 | `arw list specs` | `arw ls` | 已登记的本地 specs 是什么. |
 | `arw open <canonical-id>` | - | 怎样用配置的编辑器打开本地 ARW Artifact. |

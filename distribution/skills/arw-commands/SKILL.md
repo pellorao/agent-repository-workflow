@@ -20,10 +20,10 @@ arw text fix
 arw terms check [--strict] [--include <repository-relative-directory>]...
 arw language inspect <repository-relative-path>...
 arw module check-correction <local-module-issue-id>
-arw list issues [--all-statuses | --status <status>[,<status>...]] [--type <implementation|application-source|wayfinder>[,...]]
-arw list maps
-arw list specs
-arw list background-agents
+arw list issues [--all-statuses | --status <status>[,<status>...]] [--type <implementation|application-source|wayfinder>[,...]] [--full]
+arw list maps [--full]
+arw list specs [--full]
+arw list background-agents [--full]
 arw print <canonical-id>
 arw open <canonical-id>
 arw migrate artifacts
@@ -42,7 +42,7 @@ arw --version
 
 ## Command notes
 
-- `arw list issues` 默认返回当前最前沿的 issue. 带参数使用时, 尽量结合 `rg` 等过滤工具验证期望条目或统计条目数 (排除表头和分隔行), 保留 `arw` 自身的退出码和诊断, 并区分过滤未匹配与命令失败. 只有确实需要逐项查看时才返回完整列表.
+- `arw list issues` 默认返回当前最前沿的 issue. 带参数使用时, 尽量结合 `rg` 等过滤工具验证期望条目或统计条目数 (排除表头和分隔行), 保留 `arw` 自身的退出码和诊断, 并区分过滤未匹配与命令失败. 只有确实需要逐项查看时才返回完整列表. `li`, `lm`, `ls`, `lba` 和 `jl` 默认按 100 列截断名称列 (`Title`, `lba` 为会话标题); 过滤, 计数或读取完整名称时加 `--full | -f`.
 - `arw list background-agents` 只读查询当前用户跨仓库尚未确认退出的后台环境, 不启动管理进程或模型, 也不授予分派或控制权限; 管理进程未运行时显示 `The manager process is not running; ...` 并返回 `0`. `arw background-agent` 是供 Agent 工具连接的机器入口, 不属于面向用户的命令清单; 使用方式见 `reviewer-launch` Skill.
 - `print` 把原始 ARW Artifact 内容写到标准输出, 诊断写到标准错误; `open` 是供用户使用的便捷操作. 两者只接受本地 `issue:<NNNN>:<NN>`, `map:<NNNN>` 或 `spec:<NNNN>`, 拒绝限定的 issue ID, 不读取其他仓库或 Git 历史.
 - `arw terms check` 使用最近的 Git 仓库根目录和即时模式的工作树, `--strict` 使用发布模式的保留要求; 两者都不写入仓库状态. 默认排除仓库根目录下的 `.scratch/**`; 重复使用 `--include` 只覆盖这一项排除, 仍受 Git 忽略规则, `.arwignore` 和其他通用排除约束. 结果按 `validation` Skill 处理.

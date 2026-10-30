@@ -15,7 +15,7 @@ try {
             }
 
             if (decision === 'stopBackgroundAgents') {
-                process.stdout.write(`${renderBackgroundAgents(/** @type {import('./lib/background-agent/presentation.mjs').BackgroundAgentOverview[]} */ (activeAgents ?? []))}\n`);
+                process.stdout.write(`${renderBackgroundAgents(/** @type {import('./lib/background-agent/presentation.mjs').BackgroundAgentOverview[]} */ (activeAgents ?? []), true)}\n`);
             }
             return askYesNo({
                 question: decision === 'stopBackgroundAgents'

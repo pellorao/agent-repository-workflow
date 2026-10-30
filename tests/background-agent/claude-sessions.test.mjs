@@ -227,7 +227,7 @@ test('a Claude Code Main starts, waits for, follows up and messages a Claude Rev
     const first = await report('first');
     const {runId} = await dispatch('spawn_agent', {...handoff, ...first});
     assert.deepEqual(await completion(runId), {status: 'ready', reportPath: first.reportPath});
-    assert.match(renderBackgroundAgents(await started.manager.list()), /idle +requirements-reviewer +.*main-session/);
+    assert.match(renderBackgroundAgents(await started.manager.list(), false), /idle +requirements-reviewer +.*main-session/);
     const calls = (await readFile(log, 'utf8')).trim().split('\n').map(line => JSON.parse(line));
     assert.equal(calls[0].args[calls[0].args.indexOf('--model') + 1], 'haiku');
     assert.equal(calls[0].baseUrl, 'https://host.example');
