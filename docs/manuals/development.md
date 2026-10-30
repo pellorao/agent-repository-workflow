@@ -200,7 +200,7 @@ The dependency direction allows specific business implementations to depend on `
 - `tests/` is organized by the long-term responsibilities in `lib/`. Root-level tests cover root wiring and cross-responsibility invariants; `tests/helpers/` and `tests/fixtures/` contain shared test infrastructure.
 - `.scratch/` contains ARW Artifacts and completion evidence; it is not the Engine's temporary directory.
 - `.tmp/` contains short-lived Engine state for the current platform and session, not authoritative Git-managed data.
-- `upstream/` contains external-source configuration and adoption records. The three-way view is written to the ignored `.tmp/upstream-sync/`.
+- `upstream/` contains external-source configuration and adoption records. The three-way view is written to the ignored `.tmp/<agent-platform>/<sessionId>/_upstream-sync/<source>/`.
 
 ## Further reading
 

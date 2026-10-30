@@ -2,7 +2,7 @@
 
 ## Context
 
-ARW 的仓库工作流, 发布前同步和 Upstream Sync 都要处理 Codex 与 Claude Code 的格式差异. 各平台的目标路径, Skill 引用语法和原生 subagent 种子格式不同. 这些差异需要配置驱动的权威来源, 但 Adapter 不取得仓库归属, 用户授权, Git 恢复或业务事务责任.
+ARW 的仓库工作流和发布前同步都要处理 Codex 与 Claude Code 的格式差异. 各平台的目标路径, Skill 引用语法和原生 subagent 种子格式不同. 这些差异需要配置驱动的权威来源, 但 Adapter 不取得仓库归属, 用户授权, Git 恢复或业务事务责任.
 
 旧 Platform Adapter 还扫描环境中的 Agent 与 Skill, 返回观察结果, 证明, 内置身份和冲突优先级证据. 当前支持平台已经保证仓库本地目标位于所需覆盖位置. 每次操作重复证明平台内部优先级既不能改变 ARW 自己的写入安全性, 也扩大了无法由目标 Git 仓库文件系统可靠发现的状态范围.
 
@@ -23,7 +23,7 @@ Adapter 可以完成以下纯计算责任:
 
 Adapter 不返回环境观察结果, 证明, 证据表, 保留身份, 内置对象内容表或发现优先级. 它不扫描用户级, 系统级, 平台内置或嵌套 Git 仓库中的 Agent 与 Skill. 目标 Git 仓库的根目录现有文件观察由 Repository State Inspector 按 [ADR 0025](0025-use-root-only-repository-platform-discovery.md#decision) 提供, Repository Workflow Module 决定冲突, 归属, 授权和事务.
 
-发布前同步与 Upstream Sync 调用同一个 Skill 引用分析和转换责任, 避免各自复制平台规则 (Upstream Sync 现已不调用 Adapter, 见 [ADR 0011](0011-use-source-only-human-reviewed-upstream-sync.md) 的状态说明). Adapter 仍不写源码仓库, 不修改 Git 暂存区, 不运行编辑器, 不取得审核或恢复状态.
+发布前同步复用统一的 Skill 引用分析和转换责任, 避免复制平台规则. Upstream Sync 仅通过 Platform Adapter 取得会话身份, 不调用 Skill 引用分析和转换, 其采用流程见 [ADR 0011](0011-use-source-only-human-reviewed-upstream-sync.md) 的状态说明. Adapter 仍不写源码仓库, 不修改 Git 暂存区, 不运行编辑器, 不取得审核或恢复状态.
 
 Repository Workflow Module 在一次完整的写入前检查中组合所有已选平台的结果. 任一阻断问题都会阻止整个事务, 不允许已选平台集合部分成功. 确定性合并, 共享目标冲突和最后写入锁文件的责任仍归 Repository Workflow Module.
 
@@ -37,4 +37,4 @@ Repository Workflow Module 在一次完整的写入前检查中组合所有已�
 
 ## Consequences
 
-平台特定语法与目标事实只有一个配置驱动的计算边界. 仓库工作流, 发布前同步和 Upstream Sync 可以复用同一转换, 同时各自保留状态, 授权和写入责任. Adapter 结果更小且可以直接测试. 代价是调用方必须提供自己生命周期已经安全取得的准确输入字节, 并负责组合多个平台结果与所有事务影响.
+平台特定语法与目标事实只有一个配置驱动的计算边界. 仓库工作流和发布前同步可以复用同一转换, 同时各自保留状态, 授权和写入责任. Adapter 结果更小且可以直接测试. 代价是调用方必须提供自己生命周期已经安全取得的准确输入字节, 并负责组合多个平台结果与所有事务影响.

@@ -17,7 +17,9 @@ disable-model-invocation: true
 
 ## 2. 生成三方视图
 
-运行 `node scripts/upstream-sync.mjs <source> <commit>`. 脚本取得 Base 与 Theirs, 先打印范围内的上游提交日志, 然后每个上游变化一行: `<A|M|D|R>`, Ours 状态, 本地路径 (改名时附 `(from <旧本地路径>)`, Ours 取旧路径). 改出映射范围的路径显示为 `D`, 改入的显示为 `A`; 对照提交日志区分上游真删除和移到其他类别 (如 `in-progress`). 快照写入 `.tmp/upstream-sync/<source>/base/` 和 `theirs/`; Ours 有本地改动且两边都有文件时, `git merge-file` 的结果写入 `merged/`, 行内 `conflicts=<n>` 是冲突块数.
+运行 `node scripts/upstream-sync.mjs <source> <commit>`. 脚本取得 Base 与 Theirs, 先打印范围内的上游提交日志, 然后每个上游变化一行: `<A|M|D|R>`, Ours 状态, 本地路径 (改名时附 `(from <旧本地路径>)`, Ours 取旧路径). 改出映射范围的路径显示为 `D`, 改入的显示为 `A`; 对照提交日志区分上游真删除和移到其他类别 (如 `in-progress`). Git 缓存和快照写入当前会话的 `.tmp/<agent-platform>/<sessionId>/_upstream-sync/<source>/`, 快照位于 `base/` 和 `theirs/`; Ours 有本地改动且两边都有文件时, `git merge-file` 的结果写入 `merged/`, 行内 `conflicts=<n>` 是冲突块数.
+
+平台与会话身份由现有 Platform Adapter 提供, 身份缺失时脚本在创建目录和拉取前停止. 临时工作区遵循 [environment.md](../../../docs/agents/environment.md).
 
 按 Ours 状态决定候选:
 
@@ -53,7 +55,7 @@ disable-model-invocation: true
 
 1. 把 `source.json` 的 `commit` 改为目标提交.
 2. 在 `adoptions.md` 末尾追加一节: 日期, 旧提交 -> 新提交, 采用, 部分采用和拒绝的 Skill 或路径及原因.
-3. 运行 `node scripts/project-claude-skills.mjs`, `node scripts/check-workflow-distribution.mjs` 和 `pnpm test`. 采用的变化要进入发布时, 另外按 [开发手册](../../../docs/manuals/development.zh-CN.md) 的发布前同步路线运行 `node scripts/sync-workflow-distribution.mjs` 的各子命令.
+3. 运行 `node scripts/project-claude-skills.mjs` 更新投影, 按 [validation Skill](../validation/SKILL.md) 和 [源码仓库验证](../../../docs/agents/source-checkout-validation.md) 完成全部适用检查. 采用的变化要进入发布时, 另外按 [开发手册](../../../docs/manuals/development.zh-CN.md) 的发布前同步路线运行 `node scripts/sync-workflow-distribution.mjs` 的各子命令.
 4. 维护者确认最终 `git diff` 后, 提交 `.agents/skills/`, `.claude/skills/`, 许可证, `source.json` 和 `adoptions.md`, 提交说明写明来源和新旧提交.
 
-中途放弃时, 用 `git restore` 还原已写入的路径即可; `.tmp/upstream-sync/` 可随时删除.
+中途放弃时, 按 [agent-writes.md](../../../docs/agents/agent-writes.md) 恢复本次已写入的路径. 维护者可删除本次生成的当前会话来源目录 `.tmp/<agent-platform>/<sessionId>/_upstream-sync/<source>/`; 临时目录的管理边界按 environment.md 和 agent-writes.md 执行.

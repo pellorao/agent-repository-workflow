@@ -1,12 +1,15 @@
 #!/usr/bin/env node
 // upstream-sync Skill 的三方视图: 取得上游旧固定提交 (Base) 和新提交 (Theirs), 列出范围内每个上游变化及本地 (Ours) 状态.
 // 用法: node scripts/upstream-sync.mjs <source> <full-commit-id>
-// 输出到 .tmp/upstream-sync/<source>/{base,theirs,merged}/<本地路径>, 不修改仓库文件.
+// 输出到 .tmp/<agent-platform>/<sessionId>/_upstream-sync/<source>/{base,theirs,merged}/<本地路径>, 不修改仓库文件.
 
 import {execFileSync, spawnSync} from 'node:child_process';
 import {existsSync, mkdirSync, readFileSync, rmSync, writeFileSync} from 'node:fs';
 import {dirname, join} from 'node:path';
 import {fileURLToPath} from 'node:url';
+
+import {createCurrentPlatformAdapter} from '../lib/arw-common/platform-adapter.mjs';
+import {createTemporaryWorkspace} from '../lib/arw-common/temporary-workspace.mjs';
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const [sourceId, target] = process.argv.slice(2);
@@ -16,7 +19,12 @@ if (sourceId === undefined || !/^[0-9a-f]{40}$/u.test(target ?? '')) {
 }
 /** @type {{url: string, commit: string, map: Record<string, string>, exclude: string[]}} */
 const source = JSON.parse(readFileSync(join(ROOT, 'upstream/sources', sourceId, 'source.json'), 'utf8'));
-const work = join(ROOT, '.tmp/upstream-sync', sourceId);
+const workspace = await createTemporaryWorkspace({
+    repositoryRoot: ROOT,
+    agentIdentity: createCurrentPlatformAdapter().getCurrentAgentIdentity(),
+    purpose: '_upstream-sync',
+});
+const work = join(workspace, sourceId);
 const repo = join(work, 'repo.git');
 const git = (/** @type {string[]} */ ...args) => execFileSync('git', ['--git-dir', repo, '-c', 'core.quotePath=false', ...args], {maxBuffer: 1 << 28});
 

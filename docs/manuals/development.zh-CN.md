@@ -200,7 +200,7 @@ node scripts/reviewer-capability.mjs pool build|prompt|split|override ...
 - `tests/` 按 `lib/` 的长期责任组织, 根级测试只覆盖根连接和跨责任不变量, `tests/helpers/` 与 `tests/fixtures/` 保存共享测试基础设施.
 - `.scratch/` 保存 ARW Artifact 和完成证据, 不是 Engine 临时目录.
 - `.tmp/` 保存当前平台和会话的短期 Engine 状态, 不保存受 Git 管理的权威数据.
-- `upstream/` 保存外部来源配置和采用记录. 三方视图写在被忽略的 `.tmp/upstream-sync/`.
+- `upstream/` 保存外部来源配置和采用记录. 三方视图写在被忽略的 `.tmp/<agent-platform>/<sessionId>/_upstream-sync/<source>/`.
 
 ## 进一步阅读
 

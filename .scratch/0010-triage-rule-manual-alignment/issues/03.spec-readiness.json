@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0010:03",
+  "request": {
+    "digest": "85f8e09a192e10e4772be6b3c71dad5d717dc2f98a47a0786cf9a3178298a6fd",
+    "filePath": ".tmp/claude-code/c0e60747-0cc3-447f-9257-7d8bd88847ff/0010_03/spec-readiness/requests/request-671e836d-57aa-4c87-b93f-556996db6157.json",
+    "id": "671e836d-57aa-4c87-b93f-556996db6157"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "f797bb611ba9cf50c0ccfab4d029b2a32fd44b771b7b9338a0a31bb48ddba14a"
+  },
+  "inputs": [
+    {
+      "filePath": ".scratch/0010-triage-rule-manual-alignment/spec.md",
+      "role": "governing-spec",
+      "sha256": "e49012fd1b8fc4d3dab09e7017f75f8cf1947718b4e55c8a72efe63adbd67c7c"
+    },
+    {
+      "filePath": "CONTEXT.md",
+      "role": "domain-context",
+      "sha256": "e4ec7d0aaeea4a87cc122ecc5eb2fa2cb80394a73d0ad53222b09872720b2f38"
+    },
+    {
+      "filePath": "docs/adr/0022-place-source-checkout-scripts-under-scripts.md",
+      "role": "adr",
+      "sha256": "e7a00875ac08a667960e4287efd0e89e37a61cbc15417bd3b75a7b6602014ef6"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow-development/spec.md",
+      "role": "governing-spec",
+      "sha256": "9dbfc52eeceabc71f287a0197e8011d63b142d0b72ef0d41fdc829dcff662e9d"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow/spec.md",
+      "role": "governing-spec",
+      "sha256": "79daf4648959e4f7f51b91090bac6b99179bf7ec01700f4594e134753c4ba40c"
+    },
+    {
+      "filePath": "lib/arw-common/platform-adapter.mjs",
+      "role": "architecture-evidence",
+      "sha256": "6e4a60abd8165e9645587071997c97d7bd45b2e4638319005d45889797985807"
+    },
+    {
+      "filePath": "lib/arw-common/temporary-workspace.mjs",
+      "role": "architecture-evidence",
+      "sha256": "27d813ca9518d3ac8be3a4c3fc74e26e04e22cca8effa91822eb23261ac47d36"
+    },
+    {
+      "filePath": "scripts/upstream-sync.mjs",
+      "role": "architecture-evidence",
+      "sha256": "cfc5a094d68d491e2d40893100873e35ec5be5138c067fc5542ea912a7d1278d"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0010-triage-rule-manual-alignment/issues/03-clarify-remaining-triage-evidence.md",
+    "sha256": "197bf1371c9f3bfe73ff11dc28d70625548733c9dfdc6fa58c5f74e00b8c9d94"
+  },
+  "result": "satisfied"
+}
