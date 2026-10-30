@@ -363,7 +363,7 @@ Strata 驱动只从[共享模型目录](../agent-repository-workflow-installatio
 
 实际 Strata 分支的固定模型映射与运行支持只按 [Strata 专用规则](strata.md#runtime-parameters)读取, 其他提供方不加载其参数或工作策略. 这些变体共用同一提供方身份和限额, 不另领 key 或另建容量; 控制器拒绝或状态无法核实时明确报告具体故障, 不把目标模型当作已就绪或创建原生根线程.
 
-程序工作策略消费通用原生事实与 Reviewer 调用层绑定的用途, 不使通用管理层取得公共角色, 报告或评分语义. 实际 Strata 分支才读取 [专用工作策略](strata.md#work-policy)及 [本地测量时限](strata.md#local-measurement-time-limit), 不从提供方名称或提示文字推导审核用途. 所有 Reviewer 的用户等待沟通仅由 [Reviewer 指引](../../agents/reviewer.md)拥有.
+程序工作策略消费通用原生事实与 Reviewer 调用层绑定的用途, 不使通用管理层取得公共角色, 报告或评分语义. 实际 Strata 分支才读取 [专用工作策略](strata.md#work-policy)及 [本地测量时限](strata.md#local-measurement-time-limit), 不从提供方名称或提示文字推导审核用途. Reviewer 等待期间的用户沟通见 [`reviewer-launch` Skill](../../../.agents/skills/reviewer-launch/SKILL.md#long-running-and-paused-reviews).
 
 管理进程与共享 App Server 保持标准输入输出连接. 管理进程故障可能中断全部根线程的工作; 新管理进程使用[安装私有状态规则](../agent-repository-workflow-installation/spec.md#background-agent-management)记录的 PID 定位候选系统进程, 再以操作系统报告的进程创建时间确认是否仍是原来那次启动, 不用文件时间代替. 原生进程句柄已确认退出, 操作系统确认该 PID 不存在, 或相同 PID 当前对应不同创建时间, 均能证明旧进程已结束; 创建时间不同不能对新占用者执行停止或其他操作. 未有其他确认退出事实时, 相同 PID 和创建时间的进程仍活动, 或系统查询权限, 读取或身份核对失败, 均使旧进程退出保持未知, 不启动第二个共享 App Server, 受影响根线程保留未知状态与容量名额. 默认 `stdio` 关闭可能未使旧进程及时退出, 不因此自动强杀或重新连接接管旧进程. 共享 App Server 意外退出时保留其 PID 与操作系统创建时间文件及未确认归还的提供方记录, 不在退出回调或只读查询时删除文件或归还 key. 下一次需要启动共享进程时, 先按该文件确认旧进程实际退出, 再核对并处理原 key; 旧身份或归还结果未知时保留事实并拒绝新启动, 不凭数据库缺行或本地仍有 key 猜测远端状态. 无法确认的任务返回明确不完整状态. 后续新工作由管理进程核对原线程身份并在内部恢复后交付, 不自动重放先前未完成的任务. 安装与更新对管理进程的互斥关闭和重启交接由[安装事务规则](../agent-repository-workflow-installation/spec.md#installation-transaction-and-recovery)拥有; 卸载的独立后台 Agent 关闭确认和删除前交接由[卸载规则](../agent-repository-workflow-installation/spec.md#uninstallation)拥有.
 
@@ -815,7 +815,7 @@ flowchart TD
 | Git 暂存区及 HEAD | 当前准确提交候选和比较来源 | Commit Audit, 提交流程 | 用户和 Main Agent 的 Git 流程; 审计旧轮完整结束前保持不变 |
 | 不可变 Git 对象与本轮完整输入副本 | Code Review 启动时固定的完整候选, 代码上下文, 治理来源和执行规则 | Gate 3 的独立双轴审核 | Main Agent 在启动前固定, 源工作树后续修改不替换本轮内容 |
 | 当前完整角色规则, 模型与提供方设置, 授权输入和报告绑定 | 角色与共同责任拥有审核行为, 调用工作流拥有本轮输入和授权范围 | 共享 Reviewer 运行 Module, 独立运行环境中的 Reviewer | 调用方先准备并冻结, Reviewer 亲自写入绑定报告, 运行入口不代写或提升 |
-| 调用方 `stateDirectory` 下的运行恢复记录 (`background-agent-<runId>.json`; 该目录位于 `cwd` 之下, Reviewer 轮次使用工作区 `.tmp` 下的轮次目录) | 管理进程为准确运行保存的绑定副本, 记录存在时须与用户私有状态中的恢复事实一致才允许回收和恢复; 记录文件已不存在的空闲运行可回收但不可恢复 | 后台 Agent 管理 Module 的回收与恢复核验 | 管理进程在首次保存线程身份时写入, `newThread: true` 创建替代线程时同样由管理进程改写; 工作区删除方负责先卸载引用它的运行 |
+| 调用方 `stateDirectory` 下的运行恢复记录 (`background-agent-<runId>.json`; 非 Reviewer 运行的该目录位于 `cwd` 之下, Reviewer 运行的位于当前会话工作区 `.tmp/<platform>/<sessionId>/` 之下, 能力验证与基准的隔离实例放在实例旁, 不在其 `cwd` 之下) | 管理进程为准确运行保存的绑定副本, 记录存在时须与用户私有状态中的恢复事实一致才允许回收和恢复; 记录文件已不存在的空闲运行可回收但不可恢复 | 后台 Agent 管理 Module 的回收与恢复核验 | 管理进程在首次保存线程身份时写入, `newThread: true` 创建替代线程时同样由管理进程改写; 工作区删除方负责先卸载引用它的运行 |
 | 原生线程身份, 实际上下文和累计用量 | Codex App Server 与原生会话事实 | 后台 Agent 管理 Module 控制原线程, 共享 Reviewer 运行 Module 核对本轮没有子 Agent 参与并计量该线程 | 恢复沿原身份继续观测和去重; 无法核对必要事实或违规时拒绝 Reviewer 结果; 未知计量保留未知 |
 | Claude Code 与 Codex 的 Main 原生会话记录 (`CODEX_HOME` 的 `sessions`) | 所属 Main 的原生标题与首条用户消息 | 后台 Agent 管理 Module 在环境打开时的标题读取 (结果保存供列表显示) | 对应平台; ARW 只读, 读不到时标题未知 |
 
