@@ -97,7 +97,7 @@ ARW 必须在 Codex 和 Claude Code 中都完整可用, 包括 `arw background-a
 # Source Checkout Validation
 
 - 测试命令: `pnpm test`, `pnpm typecheck`, `node scripts/check-workflow-distribution.mjs`, `node scripts/project-claude-skills.mjs --check`, `node scripts/generate-install-arw.mjs --check`. 只含 Agent 规则与文档的提交也运行这三个脚本, 作为 `commit` Skill 非实施分类的补充, 此类提交的分类另含 `distribution/` 副本与根 `README.zh-CN.md` 中的 Markdown. 确定性覆盖和完整验证命令见 `docs/agents/source-checkout-validation.md`; 发布验证和发布只在维护者显式调用 `$release` Skill 时进行.
-- Reviewer 能力测试在维护者显式调用 `$reviewer-capability` Skill 时进行; 改动 Reviewer 规则 (Reviewer 角色指令, `docs/agents/reviewer.md`, Reviewer 交接与 Request 内容, 各 Skill 中约束 Reviewer 行为或复审处置的规则) 时, 也视同维护者已调用: 用受影响角色的能力场景对比改动前后, 评分不降低才接受改动. 速度提升很大而评分略有降低时, 交用户决定 (列入状态页 `decide`).
+- Reviewer 能力测试在维护者显式调用 `$reviewer-capability` Skill 时进行; 改动 Reviewer 规则 (Reviewer 角色指令, `docs/agents/reviewer.md`, Reviewer 交接与 Request 内容, 各 Skill 中约束 Reviewer 行为或复审处置的规则) 时, 也视同维护者已调用: 用受影响角色的能力场景对比改动前后, 评分不降低才接受改动. 速度提升很大而评分略有降低时, 交用户决定 (列入状态页 `decide`). 只删除重复表述或改为引用, 不改变任何规则含义的改动不做能力测试.
 - 单个测试回调耗时阈值为 100 毫秒.
 - 不对本仓库运行 `arw workflow init|update|verify|remove`; 它是 Workflow Distribution 的创作源, 各 Skill 中 `arw workflow verify` 的回退在本仓库不适用. Source Checkout 验证使用 Workflow Distribution 的生产检查, Repository Workflow 验证使用隔离的目标仓库.
 - 安装: `node install.mjs` (相关 issue 授权时从克隆安装), 卸载: 在安装目录运行 `node uninstall.mjs`.
