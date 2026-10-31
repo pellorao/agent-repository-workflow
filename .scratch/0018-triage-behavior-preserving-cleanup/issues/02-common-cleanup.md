@@ -1,6 +1,6 @@
 # 复用公共排序并删除不可达判断
 
-Status: ready-for-agent
+Status: completed
 
 ## What to build
 
@@ -10,10 +10,23 @@ Status: ready-for-agent
 
 ## Acceptance criteria
 
-- [ ] 通过差异检查和 `tests/arw-common/artifacts.test.mjs` 验证五项清理全部完成, 诊断按原 sourceKey/message 规则排序, 中文路径和相同 sourceKey 的多条诊断不变.
-- [ ] 通过 `tests/arw-common/identity.test.mjs` 与 `tests/repository-workflow/cli.test.mjs` 的既有断言验证空路径, 根路径, 前后斜杠, 遍历路径, 无效 UTF-8, 无效 JSON 和错误软件包身份保持原结果.
-- [ ] 复用既有公共模块与身份测试; 完整 Source Checkout 验证包含 `pnpm test`, `pnpm typecheck`, 三个生产脚本, 受影响文件语法, 文本, 当前 effort 术语和差异检查, 全部通过.
+- [x] 通过差异检查和 `tests/arw-common/artifacts.test.mjs` 验证五项清理全部完成, 诊断按原 sourceKey/message 规则排序, 中文路径和相同 sourceKey 的多条诊断不变.
+- [x] 通过 `tests/arw-common/identity.test.mjs` 与 `tests/repository-workflow/cli.test.mjs` 的既有断言验证空路径, 根路径, 前后斜杠, 遍历路径, 无效 UTF-8, 无效 JSON 和错误软件包身份保持原结果.
+- [x] 复用既有公共模块与身份测试; 完整 Source Checkout 验证包含 `pnpm test`, `pnpm typecheck`, 三个生产脚本, 受影响文件语法, 文本, 当前 effort 术语和差异检查, 全部通过.
 
 ## Blocked by
 
 - None - can start immediately
+
+## Validation
+
+- `pnpm test`: 沙盒外完整套件 808 项通过, 0 失败, 3119.97819 毫秒.
+- `pnpm typecheck`, 三个 Source Checkout 生产检查脚本, 四个受影响模块的 `node --check`, `node arw.mjs text check`, `node arw.mjs terms check --include .scratch/0018-triage-behavior-preserving-cleanup/`, `git diff --check`: 全部退出 0.
+- `compareText` 与删除的局部实现逐字保持同一大小比较表达式; 两处 sourceKey/message 排序共同调用同一私有比较器. 路径 split 在空字符串时仍含一个元素, 空段与点号判断保留. 无效 UTF-8 与 JSON 仍从 parseJsonText 的诊断映射为原消息.
+- 只删减与合并自查完成, 生产代码新增 17 行, 删除 26 行, 净减少 9 行, 未超预算. 测试文件未修改.
+
+## Comments
+
+Spec Readiness 首轮缺少 compareText 定义证据; 补入 `lib/common/json.mjs` 后由原 Reviewer 增量复审通过, 未修改要求或设计.
+
+提交审核首轮要求移出 issue 0018:01 的独立 know 记录, 已取消该路径的暂存并由原要求符合 Reviewer 增量复审通过. 新旧候选仅差该 Comments 记录, 没有实现, 要求, 授权或验证事实变化, 依据 issue 记录章节与结论复用规则保留上一轮 Code Standards 无问题结果. 两轴报告分别为 `_commit-audit/4/requirements-reviewer/review.txt` 与 `_commit-audit/3/code-standards-reviewer/review.txt`, 均在本会话临时目录下.

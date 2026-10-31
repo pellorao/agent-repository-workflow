@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0018:02",
+  "request": {
+    "digest": "96ba8aab582a2da49b35b11cc50c631ce2b77b26eeb149bc96d4b421fa35b259",
+    "filePath": ".tmp/codex/01a18f66-31da-74d1-8e8a-f1d3a6ebcd2f/0018_02/spec-readiness/requests/request-9fae3978-848a-4a8b-9d79-f6fb78db0ee5.json",
+    "id": "9fae3978-848a-4a8b-9d79-f6fb78db0ee5"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "f797bb611ba9cf50c0ccfab4d029b2a32fd44b771b7b9338a0a31bb48ddba14a"
+  },
+  "inputs": [
+    {
+      "filePath": "CONTEXT.md",
+      "role": "domain-context",
+      "sha256": "6f89aa3efc9e393170b2d9380bacf5b1b11aea0d9c614e9367384d99767bb1fb"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow-development/spec.md",
+      "role": "governing-spec",
+      "sha256": "f98656799ad1455c0960910514cca26ad244d3e639c943875d544e7d38624c74"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow-installation/spec.md",
+      "role": "governing-spec",
+      "sha256": "725c0634f9d9d835c6a4d494b63164edef02ff67ecbcaea18e8c3769a0edf442"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow/spec.md",
+      "role": "governing-spec",
+      "sha256": "025828e2a586faccfc8d15159e3f232d929e8278d3a692d9858df6e773fb32ee"
+    },
+    {
+      "filePath": "lib/arw-common/artifacts.mjs",
+      "role": "architecture-evidence",
+      "sha256": "b4bcf67c5018844431e3a5fd254014910493f6c25b89bfe4e9cc04a67845a817"
+    },
+    {
+      "filePath": "lib/arw-common/issue-documents.mjs",
+      "role": "architecture-evidence",
+      "sha256": "a159841a88b6af605aaf4cd7e110623647ccbe32005b58976c0738e450525a3b"
+    },
+    {
+      "filePath": "lib/arw-common/product-identity.mjs",
+      "role": "architecture-evidence",
+      "sha256": "2fdc5a2a558b878def7ca5b33e4fe5cbd9db44167e6562e25dec867286bf1ceb"
+    },
+    {
+      "filePath": "lib/common/canonical-contract.mjs",
+      "role": "architecture-evidence",
+      "sha256": "5e13c1c17fd4a0ad34ece62c22e3c0b9e965e9b506bb2dee502ab3a3b52a195a"
+    },
+    {
+      "filePath": "lib/common/json.mjs",
+      "role": "architecture-evidence",
+      "sha256": "f620d4746ab42ec98cd4dd48b73ac1f0762784b3841cc92a2d137e65893063e3"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0018-triage-behavior-preserving-cleanup/issues/02-common-cleanup.md",
+    "sha256": "3548bf0f73e2ae09e3d3d6be456995c3488a9fd98ec112558def075b73792ff7"
+  },
+  "result": "satisfied"
+}
