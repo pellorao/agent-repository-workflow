@@ -20,4 +20,4 @@
 
 ## Consequences
 
-`verify` 只能证明候选中没有就绪记录, 不能证明该 issue 历史上没有实施字节, 也发现不了 issue 分类错误. 兜底是非实施分类本身的路径限制 (不能携带代码), 此前任何代码改动都经过 `implement` Entry 的就绪检查和实施提交的 Commit Audit, 以及用户对整体 diff 的复核.
+`verify` 只能证明候选中没有就绪记录, 不能证明该 issue 历史上没有实施字节, 也发现不了 issue 分类错误. 兜底是非实施分类本身的路径限制 (不能携带代码), 此前任何代码改动都经过 `implement` Entry 的就绪检查 (行为保持重构例外见 [ADR 0037](0037-skip-spec-readiness-for-behavior-preserving-refactors.md), 它没有就绪记录, 其终态只经实施提交) 和实施提交的 Commit Audit, 以及用户对整体 diff 的复核.

@@ -42,7 +42,7 @@ name: issue-tracking
 - issue 终态与 Commit Audit 相互独立: 实施 issue 可以进入 `completed`, Application Source Issue 可以镜像 `completed | wontfix`, Wayfinder issue 可以进入 `resolved`, 都不需要审计伴随文件.
 - 实施完成证据写在精确的 `## Validation` 标题下, 内容非空; 其他标题不满足生命周期要求. Wayfinder issue 记录所需的解决证据, 工作实际完成时才更新状态.
 - 已取得代码审查结果后补记 `Status` 或验收勾选时, 按 `code-review` Skill 的[完成记录规则](../code-review/result-reuse.md#completion-records)判断结果是否仍有效.
-- 每个实施 issue 在 `.scratch/<NNNN>-<effort-slug>/issues/<NN>.spec-readiness.json` 拥有自己的就绪记录, 只授权该 issue, 不通过 effort 根目录共享. 就绪 subject 及其失效规则见 `spec-readiness` Skill.
+- 每个实施 issue (行为保持重构例外的 issue 除外) 在 `.scratch/<NNNN>-<effort-slug>/issues/<NN>.spec-readiness.json` 拥有自己的就绪记录, 只授权该 issue, 不通过 effort 根目录共享. 就绪 subject 及其失效规则见 `spec-readiness` Skill.
 
 ## Issue record sections
 

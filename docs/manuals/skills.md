@@ -91,7 +91,7 @@ These 11 Skills are written for ARW and implement its workflow: records under `.
 #### `commit` (automatic, only after you ask for a commit)
 
 - When: you ask for a Git commit. Finishing an issue alone never starts it.
-- What it does: classifies the staged files. A candidate with implementation work gets the full workflow: update the issue record, `arw commit-audit prepare`, two parallel Reviewers (requirement conformance and Code Standards), check each finding, `arw commit-audit verify`, `arw spec-readiness verify --subject-only`, then commit. A candidate of only planning records, Agent rules and documents (including the root README, `CONTEXT.md` and `CLAUDE.md`) uses the lighter path checked by `arw commit-audit verify --non-implementation`. Commit messages follow Conventional Commits. Any failed gate stops the commit.
+- What it does: classifies the staged files. A candidate with implementation work gets the full workflow: update the issue record, `arw commit-audit prepare`, two parallel Reviewers (requirement conformance and Code Standards), check each finding, `arw commit-audit verify`, `arw spec-readiness verify --subject-only` (skipped for behavior-preserving refactor issues, which have no readiness record), then commit. A candidate of only planning records, Agent rules and documents (including the root README, `CONTEXT.md` and `CLAUDE.md`) uses the lighter path checked by `arw commit-audit verify --non-implementation`. Commit messages follow Conventional Commits. Any failed gate stops the commit.
 - Leaves behind: review rounds under `.tmp` and the commit itself.
 - Related: `code-review`, `reviewer-launch`, `spec-readiness`, `issue-tracking`.
 

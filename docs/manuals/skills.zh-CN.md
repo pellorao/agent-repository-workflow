@@ -91,7 +91,7 @@
 #### `commit` (自动使用, 仅在你要求提交后)
 
 - 何时: 你要求 Git 提交. 仅仅完成 issue 不会启动它.
-- 做什么: 对已暂存内容分类. 含实施工作的候选走完整流程: 更新 issue 记录, `arw commit-audit prepare`, 并行两个 Reviewer (要求符合和 Code Standards), 逐条核对问题, `arw commit-audit verify`, `arw spec-readiness verify --subject-only`, 然后提交. 只含规划记录, Agent 规则和文档 (包括根 README, `CONTEXT.md` 和 `CLAUDE.md`) 的候选走较轻的路线, 由 `arw commit-audit verify --non-implementation` 检查. 提交说明遵循 Conventional Commits. 任何关卡失败都会停止提交.
+- 做什么: 对已暂存内容分类. 含实施工作的候选走完整流程: 更新 issue 记录, `arw commit-audit prepare`, 并行两个 Reviewer (要求符合和 Code Standards), 逐条核对问题, `arw commit-audit verify`, `arw spec-readiness verify --subject-only` (行为保持重构例外的 issue 没有就绪记录, 跳过此项), 然后提交. 只含规划记录, Agent 规则和文档 (包括根 README, `CONTEXT.md` 和 `CLAUDE.md`) 的候选走较轻的路线, 由 `arw commit-audit verify --non-implementation` 检查. 提交说明遵循 Conventional Commits. 任何关卡失败都会停止提交.
 - 留下什么: `.tmp` 下的审核轮和提交本身.
 - 相关: `code-review`, `reviewer-launch`, `spec-readiness`, `issue-tracking`.
 
