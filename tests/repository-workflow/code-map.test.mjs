@@ -90,6 +90,74 @@ test('Code Map still rejects invalid UTF-8 in a complete frontmatter README', ()
     assert.ok(result.diagnostics.some(entry => entry.code === 'invalid-code-map-text'));
 });
 
+test('Code Map 保留普通 README 诊断及多个根目录的最终排序', () => {
+    const ordinary = Buffer.from('# Ordinary README\n');
+    const result = verifyCodeMaps({
+        agentScopeExcludedPaths: [],
+        gitVisibleEntries: [{kind: 'file', path: 'src/value.js'}],
+        profile: {excludes: [], includes: ['src/**/*.js'], roots: ['z', 'src', 'a']},
+        readmes: [{bytes: ordinary, frontmatterBytes: ordinary, kind: 'file', path: 'src/README.md'}],
+        rootObservations: [
+            {kind: 'missing', path: 'z'},
+            {kind: 'directory', path: 'src'},
+            {kind: 'missing', path: 'a'},
+        ],
+    });
+
+    assert.deepEqual(result.missingReadmes, ['src/README.md']);
+    assert.deepEqual(result.diagnostics.map(({code, path}) => [code, path]), [
+        ['dormant-code-map-root', 'a'],
+        ['dormant-code-map-root', 'z'],
+        ['ordinary-readme-at-code-map-path', 'src/README.md'],
+    ]);
+});
+
+test('Code Map 根目录路径在状态输入和实时 Git 下保持规范形式', async () => {
+    const bytes = Buffer.from(codeMap());
+    const filesystem = {
+        inspectPath: async (/** @type {{path: string}} */ {path}) => ({kind: path.endsWith('.js') ? 'file' : 'directory', path}),
+        listDirectory: async (/** @type {{path: string}} */ {path}) => path === '.'
+            ? [{kind: 'directory', name: 'src'}, {kind: 'file', name: 'README.md'}]
+            : [{kind: 'file', name: 'README.md'}],
+        readBytes: async (/** @type {{path: string}} */ {path}) => {
+            assert.ok(['README.md', 'src/README.md'].includes(path));
+            return bytes;
+        },
+        readFrontmatterBytes: async () => bytes,
+    };
+    const profile = {excludes: [], includes: ['**/*.js'], roots: ['.']};
+    await assert.rejects(inspectCodeMapCoverage({filesystem, policyAvailable: true, profile}), {
+        message: 'Code Map inspection requires Git when Repository state is not supplied.',
+    });
+    const observations = await inspectCodeMapCoverage({
+        filesystem, policyAvailable: true, profile,
+        repositoryState: {git: {agentScopeExcludedPaths: [], gitVisiblePaths: ['index.js', 'src/index.js']}},
+    });
+    const result = verifyCodeMaps(observations);
+    assert.equal(result.satisfied, true, JSON.stringify(result.diagnostics));
+    assert.deepEqual(result.requiredDirectories, ['.', 'src']);
+    assert.deepEqual(observations.readmes.map(({path}) => path), ['README.md', 'src/README.md']);
+
+    const stateExcluded = await inspectCodeMapCoverage({
+        filesystem, policyAvailable: true, profile,
+        repositoryState: {git: {agentScopeExcludedPaths: ['arw-code-map-probe'], gitVisiblePaths: []}},
+    });
+    const gitExcluded = await inspectCodeMapCoverage({
+        filesystem, policyAvailable: true, profile,
+        git: {run: async (/** @type {{argv: string[], input?: Buffer}} */ {argv, input}) => {
+            const ignored = input?.equals(Buffer.from('.\0arw-code-map-probe\0'));
+            return {
+                code: argv.includes('ls-files') || ignored ? 0 : 1,
+                failure: null,
+                stdout: ignored ? Buffer.from('arw-code-map-probe\0') : Buffer.alloc(0),
+            };
+        }},
+    });
+    for (const excluded of [stateExcluded, gitExcluded]) {
+        assert.ok(verifyCodeMaps(excluded).diagnostics.some(entry => entry.code === 'excluded-code-map-root' && entry.path === '.'));
+    }
+});
+
 test('Code Map 窄扫描不读取孤立正文并拒绝遍历符号链接', async () => {
     /** @type {string[]} */
     const fullReads = [];
