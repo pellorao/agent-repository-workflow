@@ -289,3 +289,16 @@ test('Code Map CLI 只公开有命名空间的只读验证操作', async t => {
         assert.throws(() => parseCommand(args), error => error instanceof UsageError && error.exitCode === 2);
     }
 });
+
+test('workflow init and remove reject dry-run as an inapplicable option', async () => {
+    for (const operation of ['init', 'remove']) {
+        /** @type {string[]} */
+        const diagnostics = [];
+        const result = await runArw(['workflow', operation, '--dry-run'], {
+            stderr: message => diagnostics.push(message),
+            stdout: () => assert.fail('Invalid arguments must not produce standard output.'),
+        });
+        assert.equal(result, 2);
+        assert.match(diagnostics.join('\n'), new RegExp(`workflow ${operation} received an inapplicable option`));
+    }
+});

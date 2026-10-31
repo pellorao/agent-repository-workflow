@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0017:03",
+  "request": {
+    "digest": "ee5491680e04a61b22c8fe1c65624f0c1bbd6dbe81449d43a7f140fffa80db8d",
+    "filePath": ".tmp/codex/01a18f4e-59e6-7f23-9582-eb591c8f16d8/0017_03/spec-readiness/requests/request-185ac2f0-03c8-4bb1-910c-81587e34ca8e.json",
+    "id": "185ac2f0-03c8-4bb1-910c-81587e34ca8e"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "f797bb611ba9cf50c0ccfab4d029b2a32fd44b771b7b9338a0a31bb48ddba14a"
+  },
+  "inputs": [
+    {
+      "filePath": "CONTEXT.md",
+      "role": "domain-context",
+      "sha256": "6f89aa3efc9e393170b2d9380bacf5b1b11aea0d9c614e9367384d99767bb1fb"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow-development/spec.md",
+      "role": "governing-spec",
+      "sha256": "f98656799ad1455c0960910514cca26ad244d3e639c943875d544e7d38624c74"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow/spec.md",
+      "role": "governing-spec",
+      "sha256": "025828e2a586faccfc8d15159e3f232d929e8278d3a692d9858df6e773fb32ee"
+    },
+    {
+      "filePath": "lib/arw-common/document-language-inspection.mjs",
+      "role": "architecture-evidence",
+      "sha256": "7936d97ef8c2aacd86a7624b80061d682e11b0b4550a8c44989f603046442c79"
+    },
+    {
+      "filePath": "lib/arw.mjs",
+      "role": "architecture-evidence",
+      "sha256": "a0ecfcbd415e2ab962823d5014d95f7fcc63e07a6c3cd90a8c5b73f4f3f6d8b9"
+    },
+    {
+      "filePath": "lib/document-terms/document-terms-repository.mjs",
+      "role": "architecture-evidence",
+      "sha256": "e9495114916de1f7acd556e9edcb34a9613999caa0ba44b14402057e5d89f13c"
+    },
+    {
+      "filePath": "lib/reviewer-runtime/reviewer-measurement.mjs",
+      "role": "architecture-evidence",
+      "sha256": "dd85a1c9ca34369a091788a617e86ce62b2b27e93927e1b85e39fc77e57370b2"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0017-triage-dead-code/issues/03-runtime-cleanup.md",
+    "sha256": "0e00c7b55badbac8dfa43af4b19c3b5b2813a09d086a8c3782e7a1ec8566efe7"
+  },
+  "result": "satisfied"
+}

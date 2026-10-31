@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0017:01",
+  "request": {
+    "digest": "147296d83bd7d1a879ac0f1a670269c011e3918a6706ec1920c262737fd3c45a",
+    "filePath": ".tmp/codex/01a18f4e-59e6-7f23-9582-eb591c8f16d8/0017_01/spec-readiness/requests/request-7f87a896-0fbd-4f8c-a495-107cf23edc11.json",
+    "id": "7f87a896-0fbd-4f8c-a495-107cf23edc11"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "f797bb611ba9cf50c0ccfab4d029b2a32fd44b771b7b9338a0a31bb48ddba14a"
+  },
+  "inputs": [
+    {
+      "filePath": "CONTEXT.md",
+      "role": "domain-context",
+      "sha256": "6f89aa3efc9e393170b2d9380bacf5b1b11aea0d9c614e9367384d99767bb1fb"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow-application-jira/spec.md",
+      "role": "governing-spec",
+      "sha256": "03620092a3fdad4c0862d6ce7a3120a2b1e7c350a17fd894e9c2019aabaf20fa"
+    },
+    {
+      "filePath": "lib/application-jira/jira-client.mjs",
+      "role": "architecture-evidence",
+      "sha256": "b76e8ccb8c4b7d0397087c42cb935953b0b7ea02c2e01f9fa64f3dde5adf2046"
+    },
+    {
+      "filePath": "lib/application-jira/jira-convergence-adapter.mjs",
+      "role": "architecture-evidence",
+      "sha256": "16315f640806922bd57ca5aecb3228dd95aeae24dfc5f5253ae9439f908a66bb"
+    },
+    {
+      "filePath": "lib/application-jira/jira-convergence.mjs",
+      "role": "architecture-evidence",
+      "sha256": "cf418239c5de29ec4732d8c23f57ce2b1d05fabd394750c5074ffe34809c103f"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0017-triage-dead-code/issues/01-jira-cleanup.md",
+    "sha256": "cb7eab19fb343c044c8fc1b49e55d0e030b34761af0ccb8477d5cfc1dc09f33e"
+  },
+  "result": "satisfied"
+}
