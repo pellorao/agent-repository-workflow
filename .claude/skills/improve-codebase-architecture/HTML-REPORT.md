@@ -105,11 +105,7 @@ module 用带边框和标签的 `<div>` 表示. 箭头用相对容器上绝对�
 
 ## Tone
 
-平实, 简洁, 但架构上的名词和动词直接取自 `/codebase-design` Skill. 简洁不是偏离词汇的借口.
-
-**严格使用:** module, interface, implementation, depth, deep, shallow, seam, adapter, leverage, locality.
-
-**绝不替换:** component, service, unit (代指 module 时) · API, signature (代指 interface 时) · boundary (代指 seam 时) · layer, wrapper (想说 module 时).
+平实, 简洁, 但架构上的名词和动词直接取自 `/codebase-design` Skill. 简洁不是偏离词汇的借口. 另外不用 layer, wrapper 代指 module.
 
 **符合风格的措辞:**
 

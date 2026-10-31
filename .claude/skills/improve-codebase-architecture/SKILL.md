@@ -10,7 +10,7 @@ disable-model-invocation: true
 
 这个命令以项目的领域模型为依据, 建立在共享的设计词汇之上:
 
-- 运行 `/codebase-design` Skill, 获取架构词汇 (**module**, **interface**, **depth**, **seam**, **adapter**, **leverage**, **locality**) 及其原则 (删除测试, "Interface 就是测试面", "一个 Adapter = 假想的 Seam, 两个 = 真正的 Seam"). 在每条建议中严格使用这些术语, 不要滑向 "component", "service", "API" 或 "boundary".
+- 运行 `/codebase-design` Skill, 获取架构词汇 (**module**, **interface**, **depth**, **seam**, **adapter**, **leverage**, **locality**) 及其原则 (删除测试, "Interface 就是测试面", "一个 Adapter = 假想的 Seam, 两个 = 真正的 Seam").
 - `CONTEXT.md` 中的领域语言为好的 Seam 命名; `docs/adr/` 中的 ADR 记录了该命令不应重新争论的决定.
 
 ## Process
@@ -40,14 +40,7 @@ disable-model-invocation: true
 
 报告用 **Tailwind (CDN)** 做布局和样式, 在用图/流程/时序能可靠表达结构的地方用 **Mermaid (CDN)** 画图. 把 Mermaid 与手工制作的 CSS/SVG 视觉混用: 关系呈图状 (调用图, 依赖, 时序) 时用 Mermaid, 想要更有编辑感的东西 (质量图, 剖面, 折叠动画) 时用手工搭的 div/SVG. 每个候选都有一个 **前后对比可视化**. 要有视觉感.
 
-为每个候选渲染一张卡片, 包含:
-
-- **文件**: 涉及哪些文件/Module
-- **问题**: 当前架构为什么造成摩擦
-- **方案**: 用平实的语言描述将改变什么
-- **收益**: 用 locality 和 leverage 解释, 以及测试将如何改善
-- **前后对比图**: 并排的, 手工绘制的, 说明浅的现状及加深后的样子
-- **推荐强度**: `Strong`, `Worth exploring`, `Speculative` 之一, 以徽章形式渲染
+为每个候选渲染一张卡片, 字段见 `./HTML-REPORT.md` 的 Candidate card 节; 收益用 locality 和 leverage 解释, 并说明测试将如何改善.
 
 报告以 **首选推荐** 章节收尾: 你会先处理哪个候选, 以及为什么.
 
@@ -65,7 +58,7 @@ disable-model-invocation: true
 
 随着决定逐渐成形, 副作用就地发生, 运行 `/domain-modeling` Skill 让领域模型随之保持最新:
 
-- **用适用上下文文件中没有的概念为加深后的 Module 命名?** 把该术语加到那里. 如果所选的领域布局缺失, 报告 Repository 设置缺口, 不要自行选择布局或创建上下文文件.
+- **用适用上下文文件中没有的概念为加深后的 Module 命名?** 把该术语加到那里.
 - **对话中澄清了一个模糊术语?** 当场更新适用的上下文文件.
 - **用户以有分量的理由否决了候选?** 提议记录 ADR, 措辞类似: _"要我把它记录为 ADR, 以免今后的架构评审再次建议它吗?"_ 只有当未来的探索者确实需要该理由来避免重复建议同一件事时才提议, 跳过临时性的理由 ("现在不值得") 和不言自明的理由.
 - **想为加深后的 Module 探索备选 Interface?** 运行 `/codebase-design` Skill, 使用其 design-it-twice 并行 sub-agent 模式.

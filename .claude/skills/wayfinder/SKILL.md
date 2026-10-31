@@ -84,7 +84,7 @@ Not yet specified 不含已决定的 (Decisions so far), 已是活动 issue 的,
 
 ## Invocation
 
-两种模式. 每个 Agent 会话最多解决一个 issue.
+两种模式.
 
 ### Chart the map
 

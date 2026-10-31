@@ -1,6 +1,6 @@
 # 规则文档去重清扫
 
-Status: ready-for-agent
+Status: completed
 
 ## What to build
 
@@ -69,11 +69,21 @@ Status: ready-for-agent
 
 ## Acceptance criteria
 
-- [ ] 17 项已核查候选与约 24 项待核查候选都已处理或在 Comments 中逐项说明保留原因 (已不存在, 复述长度不足以抵路径引用, 属冲突或规范之间重复).
-- [ ] 保留的权威位置正确, 被改位置的增量约束未丢失, 引用均为前置 issue 规定的反引号路径, 取两种形式中较短者, 且在分发载荷内可解析.
-- [ ] Reviewer 角色文件未改动, 或已按能力对比规则处理并记录.
-- [ ] 必要验证通过, 文档净增量不超过 0 字符.
+- [x] 17 项已核查候选与约 24 项待核查候选都已处理或在 Comments 中逐项说明保留原因 (已不存在, 复述长度不足以抵路径引用, 属冲突或规范之间重复).
+- [x] 保留的权威位置正确, 被改位置的增量约束未丢失, 引用均为前置 issue 规定的反引号路径, 取两种形式中较短者, 且在分发载荷内可解析.
+- [x] Reviewer 角色文件未改动, 或已按能力对比规则处理并记录.
+- [x] 必要验证通过, 文档净增量不超过 0 字符.
 
 ## Blocked by
 
 - 01 - 规则文档改用反引号路径引用
+
+## Validation
+
+- `arw text check`, `arw terms check`, `git diff --check`, `node scripts/check-workflow-distribution.mjs` 通过.
+- `pnpm test`: 812 项中 811 通过; 唯一失败是 `.claude/skills` 投影过期 (`project-claude-skills --check`), 因本轮按约定未运行投影/同步脚本, 由 Main 运行后消除.
+- 文档净变化: 18 个文件, 相对 369a449 净 -1720 个 Unicode 码点, 无任何一处增加.
+
+## Comments
+
+处理结果 (Main 10-31 据实施报告整理): 15 项改为引用或删除复述, 另 3 处单 Agent 规则, subagent 分配与 Fast 说明的复述已删; 第 1 项权威方向改为保留 `SKILL.md` (每次必读). 保留原因: 已核查清单第 8 项残余复述约 20 字符, 短于引用; 第 9 至 14, 16 项在 HEAD 已不重复或已是引用; 第 5, 15, 17 项是规则与长期规范之间的重复, 分发文档不能引用 ARW 的 `docs/specs`; `AGENTS.md` 触发条件, `application-workflow` 的 `SKILL.md:9` 与 `configuration.md`, `jira-acceptance` 与 `jira-completion`, `configuration` 与 `synchronization`, `CONTEXT-FORMAT.md:59`, `validation:20`, `writing-for-agents:78` 的复述不长于引用或带有增量约束; `code-standards-reviewer.md:61` 与 `spec-readiness-reviewer.md:89` 残余约 10 字符. 措辞或强度不同的冲突 (`code-standards-reviewer.md:43` 与 `writing.md` Common capabilities; `code-standards-reviewer.md:45` 与 `AGENTS.md` 体积预算; `codebase-design/DEEPENING.md:29` 与 `codebase-design/SKILL.md:65`) 未改, 交用户决定. Reviewer 角色文件未改动.

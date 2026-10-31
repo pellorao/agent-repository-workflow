@@ -19,20 +19,7 @@
 
 **1. 使用依赖注入**
 
-把外部依赖传进来, 而不是在内部创建:
-
-```typescript
-// 易于 mock
-function processPayment(order, paymentClient) {
-  return paymentClient.charge(order.total);
-}
-
-// 难以 mock
-function processPayment(order) {
-  const client = new StripeClient(process.env.STRIPE_KEY);
-  return client.charge(order.total);
-}
-```
+把外部依赖传进来, 而不是在内部创建 (见 `../codebase-design/SKILL.md#designing-for-testability` 第 1 条).
 
 **2. 优先 SDK 风格的 Interface, 而不是通用的 fetcher**
 

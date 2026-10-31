@@ -60,6 +60,6 @@ code-map-kind: directory
 
 ## Verification and conflicts
 
-更改已配置的 Code Map 或覆盖范围内的源码后, 运行 `arw code-map verify`. 完成 issue 前解决每个适用的问题.
+更改已配置的 Code Map 或覆盖范围内的源码后, 运行 `arw code-map verify`.
 
 不得覆盖必要 Code Map 路径中的普通 README. 没有适用的用户明确选择时, 不得删除或降级位于变更的 Repository Profile 之外的 Code Map. 如果当前源码, Repository Profile 和现有 Code Map 之间的分歧需要设计或责任归属决定, 停止受影响的写入并询问用户.

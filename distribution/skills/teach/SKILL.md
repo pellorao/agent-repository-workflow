@@ -14,7 +14,7 @@ disable-model-invocation: true
 - `GLOSSARY.md`: 本工作区的规范术语. 格式见 `./GLOSSARY-FORMAT.md`.
 - `./reference/*.html`: 参考资料, 即课程的压缩所得: 速查表, 参考算法, 语法, 瑜伽体式, 术语表. 它们是学习的原始单元, 应当美观, 打印效果好, 便于快速查阅.
 - `RESOURCES.md`: 可用来为教学提供情境知识, 或用来获取知识与智慧的资源清单. 格式见 `./RESOURCES-FORMAT.md`.
-- `./learning-records/*.md`: 学习记录, 记录用户学到了什么. 大致相当于软件开发中的架构决策记录, 保存今后可能需要修正或推动后续会话的非显然教训和关键洞见, 用于判断最近发展区. 文件名为 `0001-<dash-case-name>.md`, 编号递增. 格式见 `./LEARNING-RECORD-FORMAT.md`.
+- `./learning-records/*.md`: 学习记录, 记录用户学到了什么. 格式见 `./LEARNING-RECORD-FORMAT.md`.
 - `./lessons/*.html`: 课程. **课程** 是单个自包含的 HTML 输出, 教一件与使命紧密相关, 范围很窄的事, 是本工作区教学的主要单元.
 - `./assets/*`: 各课程共享的可复用 **组件**, 见 Assets 节.
 - `NOTES.md`: 供你记录用户偏好或工作笔记的草稿本.

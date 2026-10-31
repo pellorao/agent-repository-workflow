@@ -43,4 +43,4 @@ arw application associate issue:<application-effort-number>:<application-issue-n
 arw submodule switch-branch <branch>
 ```
 
-用户可以使用简写 `arw ssb <branch>`, 但 Agent 编写的指令使用规范形式. 命令要求每个 Module 具有干净的工作树和 Git 索引. 它会预检每个 Module, 不获取远程更新, 并在切换或恢复失败时报告最终分支和提交状态.
+用户可以使用简写 `arw ssb <branch>`. 命令要求每个 Module 具有干净的工作树和 Git 索引. 它会预检每个 Module, 不获取远程更新, 并在切换或恢复失败时报告最终分支和提交状态.

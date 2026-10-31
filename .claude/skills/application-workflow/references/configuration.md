@@ -4,7 +4,7 @@
 
 ## Repository role
 
-Application 类型仓库的根 `arw.config.json` 包含完整的 `application` 对象. 该仓库绑定 Application Leader 角色. 没有该对象的仓库属于 `module` 类型, 使用 Application Member 角色和对应授权. ARW 不认证运行命令的人员身份.
+Application 类型仓库的根 `arw.config.json` 包含完整的 `application` 对象. 没有该对象的仓库属于 `module` 类型. 角色映射见 `../SKILL.md`.
 
 ## Required configuration
 

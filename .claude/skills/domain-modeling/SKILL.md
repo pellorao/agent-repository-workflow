@@ -43,7 +43,7 @@ name: domain-modeling
 │       └── docs/adr/
 ```
 
-ARW 仓库已经有选定的领域布局: 根目录的 `CONTEXT.md`, 或由其条目指出上下文文件的根目录 `CONTEXT-MAP.md`. 在第一个术语得到确定前, 上下文文件的 `## Language` 章节可以为空. 如果选定的布局缺失, 报告仓库设置缺口, 而不选择布局或创建上下文文件. 在首次需要 ADR 时, 再按需创建 `docs/adr/`.
+ARW 仓库已经有选定的领域布局: 根目录的 `CONTEXT.md`, 或由其条目指出上下文文件的根目录 `CONTEXT-MAP.md`. 在第一个术语得到确定前, 上下文文件的 `## Language` 章节可以为空. 如果选定的布局缺失, 报告仓库设置缺口, 而不选择布局或创建上下文文件.
 
 ## During the session
 
@@ -71,13 +71,7 @@ ARW 仓库已经有选定的领域布局: 根目录的 `CONTEXT.md`, 或由其�
 
 ### Offer ADRs sparingly
 
-只有同时满足以下三项时, 才提出创建 ADR:
-
-1. **难以撤销** - 日后改变主意的代价不可忽略.
-2. **没有上下文就会令人意外** - 未来读者会问: "他们为什么这样做?"
-3. **真实取舍的结果** - 存在真正的替代方案, 并因具体理由选定其中一个.
-
-缺少任意一项时, 不创建 ADR. 使用 `./ADR-FORMAT.md` 中的格式.
+只有满足 `./ADR-FORMAT.md` 的 When to offer an ADR 节的全部三项条件时, 才提出创建 ADR, 并使用该文件中的格式.
 
 ## Long-term specification boundary
 

@@ -11,4 +11,4 @@ name: resolving-merge-conflicts
 
 4. 使用 `validation` Skill 选择并运行项目声明的 **自动化检查**. 修复合并造成的任何破坏.
 
-5. **交接 Git 写入.** 如果你是 subagent, 向 Main Agent 报告已解决的路径, 检查结果和剩余的冲突状态. Main Agent 按 `docs/agents/agent-writes.md` 只暂存已获授权的路径. 继续 merge 或 rebase 可能产生提交, 因此由 Main Agent 在适用的 Git 授权下处理. 只有用户明确要求 Git 提交后, 才进入 `commit` Skill 的工作流.
+5. **交接 Git 写入.** 如果你是 subagent, 向 Main Agent 报告已解决的路径, 检查结果和剩余的冲突状态. Main Agent 按 `docs/agents/agent-writes.md` 只暂存已获授权的路径. 继续 merge 或 rebase 可能产生提交, 因此由 Main Agent 在适用的 Git 授权下处理.

@@ -15,7 +15,7 @@ name: rule-and-design-changes
 
 ## Reviewer-proposed changes
 
-独立 Reviewer (Spec Readiness 或提交审核) 的问题要求修改 spec 或 PRD 时, 不逐次向用户确认, 由 Main Agent 和一个独立 subagent 共同决定是否修改及怎样修改. subagent 使用与 Main Agent 相同的模型和推理强度; 这是 `docs/agents/subagent-allocation.md` 所说的预定义角色配置, 不按其映射选择, 也不需要先完成其首次配置.
+独立 Reviewer (Spec Readiness 或提交审核) 的问题要求修改 spec 或 PRD 时, 不逐次向用户确认, 由 Main Agent 和一个独立 subagent 共同决定是否修改及怎样修改. subagent 的模型和推理强度见 `docs/agents/subagent-allocation.md`.
 
 - 同一审核轮全部报告 (提交审核有两份) 中的此类问题合并为一次决定, 每轮只启动一个 subagent, 不逐条启动.
 - subagent 收到报告, 相关 spec 或 PRD 和 issue, 不先看 Main Agent 的结论, 对每个问题给出是否修改及拟议内容; Main Agent 对比双方意见.

@@ -3,7 +3,7 @@
 
 ## Scope
 
-本文件负责任务委派, 实例创建和复用, 以及非预定义 subagent 的模型和推理强度. 与用户沟通的 Main Agent 和其他非 Reviewer 运行环境的 Main Agent 管理各自的子 Agent. 独立 Reviewer 按 `./reviewer.md#single-agent-execution` 自行完成全部审核, 不创建或恢复子 Agent; 本文件以下的委派和模型映射规则不用于 Reviewer. 并发数量, 容量和空闲线程由 harness 与用户级配置管理. 其他预定义角色使用其已有完整配置; 共同决定 Reviewer 的 spec 修改意见的 subagent (`rule-and-design-changes` Skill) 是预定义角色, 使用与所属 Main Agent 相同的模型和推理强度.
+本文件负责任务委派, 实例创建和复用, 以及非预定义 subagent 的模型和推理强度. 与用户沟通的 Main Agent 和其他非 Reviewer 运行环境的 Main Agent 管理各自的子 Agent. 独立 Reviewer 按 `./reviewer.md#single-agent-execution` 执行; 本文件以下的委派和模型映射规则不用于 Reviewer. 并发数量, 容量和空闲线程由 harness 与用户级配置管理. 其他预定义角色使用其已有完整配置; 共同决定 Reviewer 的 spec 修改意见的 subagent (`rule-and-design-changes` Skill) 是预定义角色, 使用与所属 Main Agent 相同的模型和推理强度.
 
 ## Delegation and reuse
 
@@ -75,8 +75,6 @@ Claude Code 使用以下映射; 用户级规则另有模型选择要求时以用
 | 低 | `haiku` | `low` | `medium` | `high` |
 | 中 | `sonnet` | `low` | `medium` | `high` |
 | 高 | `opus` | `low` | `medium` | `high` |
-
-当前创建非预定义 subagent 的 Interface 不能逐次设置 Fast 参数. 表中的模型和推理强度是当前可传递的配置; Standard 主会话下的实际 Fast 状态由平台决定, 不属于本映射的承诺.
 
 作为 Baseline 例外, 本仓库不开启 Fast 模式: 上述位置一律使用标准层级, 不适用用户要求时开启的例外.
 

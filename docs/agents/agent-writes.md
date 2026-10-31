@@ -5,7 +5,7 @@
 
 所有 Agent 文件写入都使用本规则, 包括代码, 测试, 文档, 新建文件和临时产物. 各运行环境的 Main Agent 负责其授权范围内的可恢复基线, 写入分配和交接; 与用户沟通的 Main Agent 独占 Git 写入及 Git 恢复责任. 自己写入时也遵守同一责任边界. 任务委派和实例复用遵循 `./subagent-allocation.md`.
 
-本规则管理 Agent 的写入分工, 不替代 ARW Engine 各操作已有的事务与恢复合同. 独立 Reviewer 按 `./reviewer.md#single-agent-execution` 只写调用方指定的绑定报告, 不分配子 Agent 写入范围或维护协作文件, 保留独立判断和准确字节提升要求.
+本规则管理 Agent 的写入分工, 不替代 ARW Engine 各操作已有的事务与恢复合同. 独立 Reviewer 的写入限制见 `./reviewer.md#single-agent-execution`, 保留独立判断和准确字节提升要求.
 
 ## Prepare the baseline
 

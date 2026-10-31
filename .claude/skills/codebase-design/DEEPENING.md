@@ -27,7 +27,7 @@
 ## Seam discipline
 
 - **一个 Adapter 意味着假想的 Seam, 两个 Adapter 才是真正的 Seam.** 除非至少有两个 Adapter 站得住 (通常是生产加测试), 否则不要引入端口. 只有一个 Adapter 的 Seam 只是多余的间接层.
-- **内部 Seam 与外部 Seam.** 深 Module 可以有内部 Seam (实现私有, 供自己的测试使用), 也有位于其 Interface 处的外部 Seam. 不要仅因为测试用到内部 Seam, 就通过 Interface 把它暴露出去.
+- **内部 Seam 与外部 Seam** (定义见 `./SKILL.md`). 不要仅因为测试用到内部 Seam, 就通过 Interface 把它暴露出去.
 
 ## Testing strategy: replace, don't layer
 
