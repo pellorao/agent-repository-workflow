@@ -25,3 +25,7 @@ Status: completed
 - 三个受影响模块的 `node --check`, `node arw.mjs text check`, `node arw.mjs terms check --include .scratch/0018-triage-behavior-preserving-cleanup/`, `git diff --check`: 全部通过.
 - 复核数据库路径由安装目录下固定生成, relative 与原解析结果一致; 责任归属长度上限仍先于逐项验证执行. 目标路径保持同一 compareText 排序及大小写归一化位置, 错误结果消息不变.
 - 只删减与合并自查完成, 生产代码新增 16 行, 删除 22 行, 净减少 6 行, 未超预算. 测试文件未修改.
+
+## Comments
+
+know: 提交 `4905eb8`, 五项保行为清理完成, 两个 Commit Audit Reviewer 无问题, 无设计偏离和本 issue 遗留.

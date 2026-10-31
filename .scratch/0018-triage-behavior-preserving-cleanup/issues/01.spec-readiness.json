@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0018:01",
+  "request": {
+    "digest": "5d0ad60aa60b301804af5009177de284976061ad2f7370c9f98561b8b8159d73",
+    "filePath": ".tmp/codex/01a18f66-31da-74d1-8e8a-f1d3a6ebcd2f/0018_01/spec-readiness/requests/request-eeb8f61c-313c-482d-8558-c21961e5d564.json",
+    "id": "eeb8f61c-313c-482d-8558-c21961e5d564"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "f797bb611ba9cf50c0ccfab4d029b2a32fd44b771b7b9338a0a31bb48ddba14a"
+  },
+  "inputs": [
+    {
+      "filePath": "CONTEXT.md",
+      "role": "domain-context",
+      "sha256": "6f89aa3efc9e393170b2d9380bacf5b1b11aea0d9c614e9367384d99767bb1fb"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow-development/spec.md",
+      "role": "governing-spec",
+      "sha256": "f98656799ad1455c0960910514cca26ad244d3e639c943875d544e7d38624c74"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow/spec.md",
+      "role": "governing-spec",
+      "sha256": "025828e2a586faccfc8d15159e3f232d929e8278d3a692d9858df6e773fb32ee"
+    },
+    {
+      "filePath": "lib/arw.mjs",
+      "role": "architecture-evidence",
+      "sha256": "15c7464718974c5777b1e96c4a896445952a625aea55543a3668ad604443e61a"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0018-triage-behavior-preserving-cleanup/issues/01-cli-cleanup.md",
+    "sha256": "5088bb7edf00b3543c13e48e258f26453ba14eb311daa41a05df1a233cf8eb02"
+  },
+  "result": "satisfied"
+}
