@@ -3,7 +3,7 @@
 
 ## Scope
 
-本文件负责任务委派, 实例创建和复用, 以及非预定义 subagent 的模型和推理强度. 与用户沟通的 Main Agent 和其他非 Reviewer 运行环境的 Main Agent 管理各自的子 Agent. 独立 Reviewer 按 [Reviewer 单 Agent 执行规则](reviewer.md#single-agent-execution) 自行完成全部审核, 不创建或恢复子 Agent; 本文件以下的委派和模型映射规则不用于 Reviewer. 并发数量, 容量和空闲线程由 harness 与用户级配置管理. 其他预定义角色使用其已有完整配置; 共同决定 Reviewer 的 spec 修改意见的 subagent (`rule-and-design-changes` Skill) 是预定义角色, 使用与所属 Main Agent 相同的模型和推理强度.
+本文件负责任务委派, 实例创建和复用, 以及非预定义 subagent 的模型和推理强度. 与用户沟通的 Main Agent 和其他非 Reviewer 运行环境的 Main Agent 管理各自的子 Agent. 独立 Reviewer 按 `./reviewer.md#single-agent-execution` 自行完成全部审核, 不创建或恢复子 Agent; 本文件以下的委派和模型映射规则不用于 Reviewer. 并发数量, 容量和空闲线程由 harness 与用户级配置管理. 其他预定义角色使用其已有完整配置; 共同决定 Reviewer 的 spec 修改意见的 subagent (`rule-and-design-changes` Skill) 是预定义角色, 使用与所属 Main Agent 相同的模型和推理强度.
 
 ## Delegation and reuse
 
@@ -13,7 +13,7 @@
 - 无法合理拆分.
 - 工作很小, 交接成本明显更高.
 
-与用户沟通的 Main Agent 可以转发少量用户沟通, 不阻止普通任务委派. Reviewer 输入缺失或工作阻塞时, 按 [Reviewer 的通信与输入不足处理规则](reviewer.md#communication-and-observation) 交付不完整状态, 不向用户或与用户沟通的 Main Agent 提问.
+与用户沟通的 Main Agent 可以转发少量用户沟通, 不阻止普通任务委派. Reviewer 输入缺失或工作阻塞时, 按 `./reviewer.md#communication-and-observation` 交付不完整状态, 不向用户或与用户沟通的 Main Agent 提问.
 
 各运行环境的 Main Agent 可以把会污染自身上下文, 无谓地大量占用上下文, 或不值得使用自身智力和努力程度处理的工作委派出去. 委派后, 该 Main Agent 负责协调, 由受派 Agent 完成执行过程; 同领域复用则保留已经获得的理解.
 
@@ -23,11 +23,11 @@
 - 现有实例的上下文已经混杂或过长.
 - 工作确实需要并行执行.
 
-独立 Reviewer 的身份, 初始上下文隔离和原线程复用遵循 `reviewer-launch` Skill, 结论有效性遵循 [Reviewer 报告交接规则](reviewer.md#review-handoff).
+独立 Reviewer 的身份, 初始上下文隔离和原线程复用遵循 `reviewer-launch` Skill, 结论有效性遵循 `./reviewer.md#review-handoff`.
 
 subagent 可以向所属运行环境的 Main Agent 申请协作者, 不自行创建下级实例. 该 Main Agent 提供获分配实例的标识和任务关系, 使双方可以直接沟通.
 
-直接沟通不授予改变任务范围, 分配写入责任或决定重要问题的权限. 文件交付使用 [共同写入规则](agent-writes.md), 不要求 subagent 只返回建议再由 Main Agent 重写.
+直接沟通不授予改变任务范围, 分配写入责任或决定重要问题的权限. 文件交付使用 `./agent-writes.md`, 不要求 subagent 只返回建议再由 Main Agent 重写.
 
 ## Task assessment
 

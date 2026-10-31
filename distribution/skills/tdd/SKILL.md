@@ -13,7 +13,7 @@ TDD 就是红 → 绿循环. 这个 Skill 是让该循环产出值得保留的�
 
 测试通过公开 Interface 验证行为, 不验证实现细节. 代码可以整个改写, 测试不该变. 好测试读起来像规格说明, "user can checkout with valid cart" 准确说明存在什么能力, 并且因为不关心内部结构而经得起重构.
 
-示例见 [tests.md](tests.md), mock 准则见 [mocking.md](mocking.md).
+示例见 `./tests.md`, mock 准则见 `./mocking.md`.
 
 ## Seams: where tests go
 

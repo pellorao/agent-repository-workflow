@@ -5,7 +5,7 @@ description: 为 agent 编写文档. 创建或编辑 Skill, 或修改 AGENTS.md 
 
 编写任何供 agent 读取的文档时的参考, 包括 Skill, `AGENTS.md` / `CLAUDE.md`, 以及通过指针到达的文档. 封装方式不同, 写法相同: 同样的杠杆让每一种文档都变得可预测, 即 agent 每次运行都走同样的 _过程_, 而不是产出相同的输出.
 
-编写的文档是 Skill 时, 阅读 [`SKILL-MECHANICS.md`](SKILL-MECHANICS.md) 了解 frontmatter, 调用方式的选择和路由 Skill.
+编写的文档是 Skill 时, 阅读 `./SKILL-MECHANICS.md` 了解 frontmatter, 调用方式的选择和路由 Skill.
 
 ## Context pointers
 
@@ -56,7 +56,7 @@ description: 为 agent 编写文档. 创建或编辑 Skill, 或修改 AGENTS.md 
 把一份文档拆成两份要花掉两种负载之一, 所以只有当这一刀值得时才拆:
 
 - **按顺序**: 当完成后步骤诱使 agent 赶工眼前这一步时, 在一串步骤中拆开. 把它们挡在视野之外, 能推动对当前任务做更多跑腿功夫. 要警惕反面: 合并序列会让每个步骤暴露于后续内容, 招致过早完成.
-- **按调用方式**: Skill 专有, 见 [`SKILL-MECHANICS.md`](SKILL-MECHANICS.md).
+- **按调用方式**: Skill 专有, 见 `./SKILL-MECHANICS.md`.
 
 ## Leading words
 

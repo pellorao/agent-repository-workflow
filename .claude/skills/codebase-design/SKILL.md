@@ -110,5 +110,5 @@ name: codebase-design
 
 ## Going deeper
 
-- **在已知依赖的前提下加深一组 Module**: 见 [DEEPENING.md](DEEPENING.md), 内容为依赖类别, Seam 纪律, 以及替换而非叠加的测试策略.
-- **探索备选 Interface**: 见 [DESIGN-IT-TWICE.md](DESIGN-IT-TWICE.md), 并行启动多个 sub-agent, 用几种截然不同的方式设计该 Interface, 再按 Depth, Locality 和 Seam 位置比较.
+- **在已知依赖的前提下加深一组 Module**: 见 `./DEEPENING.md`, 内容为依赖类别, Seam 纪律, 以及替换而非叠加的测试策略.
+- **探索备选 Interface**: 见 `./DESIGN-IT-TWICE.md`, 并行启动多个 sub-agent, 用几种截然不同的方式设计该 Interface, 再按 Depth, Locality 和 Seam 位置比较.

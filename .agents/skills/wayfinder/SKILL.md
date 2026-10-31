@@ -50,7 +50,7 @@ Wayfinder 默认是 **规划**: 每个 issue 解决一个决定, 没有什么需
 
 ### Issues
 
-每个 Wayfinder issue 属于地图所在的 effort, 按一个 Agent 会话的容量确定问题大小. 按 [Ticket Types](#ticket-types) 选择 `research`, `prototype`, `grilling` 或 `task`. 阻断它的 issue 全部解决时它即 **未阻塞**; **前沿** 是 effort 中未解决, 未阻塞, 未领取的 issue, 位于已知的边缘. 解决 issue 期间创建的资产从该 issue 链接.
+每个 Wayfinder issue 属于地图所在的 effort, 按一个 Agent 会话的容量确定问题大小. 按 Ticket Types 节选择 `research`, `prototype`, `grilling` 或 `task`. 阻断它的 issue 全部解决时它即 **未阻塞**; **前沿** 是 effort 中未解决, 未阻塞, 未领取的 issue, 位于已知的边缘. 解决 issue 期间创建的资产从该 issue 链接.
 
 ## Ticket Types
 
@@ -104,7 +104,7 @@ Not yet specified 不含已决定的 (Decisions so far), 已是活动 issue 的,
 1. 加载 **地图** (低分辨率视图), 不加载每个 issue 正文.
 2. 选择 issue. 用户指定了就用它, 否则取按顺序的第一个前沿 issue, 工作前 **先领取**.
 3. 处理问题并 **按需放大**: 随时读取相关或已关闭 issue 的完整正文; 调用 `## Notes` 点名的 Skill; 拿不准时用 `$grilling` 和 `$domain-modeling`.
-4. 完成 issue. 位于路线上时记录 `## Answer`, **在地图的 Decisions so far 追加上下文指针**, 再把 `Status:` 设为 `resolved`; 位于目的地之外时改按 [Out of scope](#out-of-scope).
+4. 完成 issue. 位于路线上时记录 `## Answer`, **在地图的 Decisions so far 追加上下文指针**, 再把 `Status:` 设为 `resolved`; 位于目的地之外时改按 Out of scope 节.
 5. 添加新浮现的 issue 并记录其阻断; 把答案已使其能说清的迷雾转为 issue, 并从 Not yet specified 中清除, 使它只以新 issue 的形式存在. 答案若显示另一个 issue 位于目的地之外, 留给单独的会话处理; 决定若使地图其他部分失效, 更新受影响的 issue.
 
 用户可能并行运行未阻塞的 issue, 因此其他会话可能同时在编辑跟踪器.

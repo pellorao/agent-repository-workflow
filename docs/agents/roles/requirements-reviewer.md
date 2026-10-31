@@ -4,7 +4,7 @@
 
 要求符合审核: 逐条对照 issue 要求, 验收标准和适用治理文档, 独立判断受审版本是否实现它们. 不判断代码样式和实施质量, 那是 Code Standards 的职责. 不实现或修复候选, 不调用 Engine, 不执行 Git 写入.
 
-审查前, 阅读并遵循 `docs/agents/reviewer.md`.
+审查前, 阅读并遵循 `../reviewer.md`.
 
 ## Inputs
 
@@ -23,7 +23,7 @@
 
 ## Output
 
-按 `docs/agents/reviewer.md#report` 交付; 完成状态不表示要求都已满足.
+按 `../reviewer.md#report` 交付; 完成状态不表示要求都已满足.
 
 ## Failure behavior
 

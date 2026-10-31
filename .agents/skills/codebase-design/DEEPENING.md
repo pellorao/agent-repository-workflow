@@ -1,6 +1,6 @@
 # 加深
 
-如何在已知依赖的前提下, 安全地加深一组浅 Module. 以 [SKILL.md](SKILL.md) 中的词汇为前提: **module**, **interface**, **seam**, **adapter**.
+如何在已知依赖的前提下, 安全地加深一组浅 Module. 以 `./SKILL.md` 中的词汇为前提: **module**, **interface**, **seam**, **adapter**.
 
 ## Dependency categories
 

@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # Agent 平台标准
 
-只在 ARW Source Checkout 中研究或修改平台标准时使用. 它不进入 Workflow Distribution. 修改前阅读 [开发长期规范](../../../docs/specs/agent-repository-workflow-development/spec.md).
+只在 ARW Source Checkout 中研究或修改平台标准时使用. 它不进入 Workflow Distribution. 修改前阅读 `docs/specs/agent-repository-workflow-development/spec.md`.
 
 ## Responsibility boundary
 
@@ -34,7 +34,7 @@ Platform Adapter 与操作无关且只读: 解释 Projection 配置, 生成有�
 
 只有 Skill Package 中的 Markdown 文件参与引用分析和转换, 其他文件保留精确字节. 统一来源语法是 Codex `$name`. 有效身份只在 ASCII 空格, 水平制表符, 换行或反引号前结束.
 
-已知身份后接非终止符使发布前同步失败, 当前 Skill 身份集合以外的未知身份成为提示, 由 Main Agent 按开发长期规格的 [Reference check](../../../docs/specs/agent-repository-workflow-development/spec.md#reference-check) 判断并写入 `additionalSkillReferences`. 不维护非 Skill 拒绝清单, 不推断平台名称映射.
+已知身份后接非终止符使发布前同步失败, 当前 Skill 身份集合以外的未知身份成为提示, 由 Main Agent 按开发长期规格的 `docs/specs/agent-repository-workflow-development/spec.md#reference-check` 判断并写入 `additionalSkillReferences`. 不维护非 Skill 拒绝清单, 不推断平台名称映射.
 
 ## Validation
 

@@ -10,13 +10,13 @@ disable-model-invocation: true
 
 教学工作区是用户指定的目录, 学习状态保存在其中. 教学产物 (HTML 课程, 学习记录等) 不属于 ARW 仓库的交付内容, 所以工作区不得放在 ARW 仓库的工作树内; 在 ARW 仓库中被调用而用户没有指定仓库外目录时, 先询问. 工作区由下列文件组成:
 
-- `MISSION.md`: 记录用户对该主题感兴趣的 _原因_, 所有教学都以它为根据. 格式见 [MISSION-FORMAT.md](./MISSION-FORMAT.md).
-- `GLOSSARY.md`: 本工作区的规范术语. 格式见 [GLOSSARY-FORMAT.md](./GLOSSARY-FORMAT.md).
+- `MISSION.md`: 记录用户对该主题感兴趣的 _原因_, 所有教学都以它为根据. 格式见 `./MISSION-FORMAT.md`.
+- `GLOSSARY.md`: 本工作区的规范术语. 格式见 `./GLOSSARY-FORMAT.md`.
 - `./reference/*.html`: 参考资料, 即课程的压缩所得: 速查表, 参考算法, 语法, 瑜伽体式, 术语表. 它们是学习的原始单元, 应当美观, 打印效果好, 便于快速查阅.
-- `RESOURCES.md`: 可用来为教学提供情境知识, 或用来获取知识与智慧的资源清单. 格式见 [RESOURCES-FORMAT.md](./RESOURCES-FORMAT.md).
-- `./learning-records/*.md`: 学习记录, 记录用户学到了什么. 大致相当于软件开发中的架构决策记录, 保存今后可能需要修正或推动后续会话的非显然教训和关键洞见, 用于判断最近发展区. 文件名为 `0001-<dash-case-name>.md`, 编号递增. 格式见 [LEARNING-RECORD-FORMAT.md](./LEARNING-RECORD-FORMAT.md).
+- `RESOURCES.md`: 可用来为教学提供情境知识, 或用来获取知识与智慧的资源清单. 格式见 `./RESOURCES-FORMAT.md`.
+- `./learning-records/*.md`: 学习记录, 记录用户学到了什么. 大致相当于软件开发中的架构决策记录, 保存今后可能需要修正或推动后续会话的非显然教训和关键洞见, 用于判断最近发展区. 文件名为 `0001-<dash-case-name>.md`, 编号递增. 格式见 `./LEARNING-RECORD-FORMAT.md`.
 - `./lessons/*.html`: 课程. **课程** 是单个自包含的 HTML 输出, 教一件与使命紧密相关, 范围很窄的事, 是本工作区教学的主要单元.
-- `./assets/*`: 各课程共享的可复用 **组件**, 见 [Assets](#assets).
+- `./assets/*`: 各课程共享的可复用 **组件**, 见 Assets 节.
 - `NOTES.md`: 供你记录用户偏好或工作笔记的草稿本.
 
 ## Philosophy

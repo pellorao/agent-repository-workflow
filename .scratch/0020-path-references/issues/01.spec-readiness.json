@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0020:01",
+  "request": {
+    "digest": "09b26031bb086b67ec48793fe7423506957a7d385a984fddc9b103f41e72b461",
+    "filePath": ".tmp/claude-code/c0e60747-0cc3-447f-9257-7d8bd88847ff/0020_01/spec-readiness/requests/request-da1600a2-566e-4640-ba1a-10a264705826.json",
+    "id": "da1600a2-566e-4640-ba1a-10a264705826"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "f797bb611ba9cf50c0ccfab4d029b2a32fd44b771b7b9338a0a31bb48ddba14a"
+  },
+  "inputs": [
+    {
+      "filePath": "docs/specs/agent-repository-workflow-development/spec.md",
+      "role": "governing-spec",
+      "sha256": "f98656799ad1455c0960910514cca26ad244d3e639c943875d544e7d38624c74"
+    },
+    {
+      "filePath": "lib/workflow-distribution/workflow-distribution.mjs",
+      "role": "architecture-evidence",
+      "sha256": "9f4ba9c74554ac7930ad167c8f765befb253803b797d0712a628ca88c62ab7fd"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0020-path-references/issues/01-path-references.md",
+    "sha256": "1ec5d4491617642add4774f085a6caf7b5bd43acef8362ef2ac6dfbe1f1bc0ae"
+  },
+  "result": "satisfied"
+}

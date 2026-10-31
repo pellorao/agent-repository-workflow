@@ -10,7 +10,7 @@ Spec Readiness 针对每个实施 issue 运行 (交付只含非实施分类内�
 ## Authorization timing
 
 - Spec Readiness 在 spec 和 issue 设计定稿时审核一次, 不在报告完成或提交审核时重复. 首次修改本 issue 的实现文件前 (行为保持重构例外的 issue 除外) 须取得 `satisfied` 或例外记录 (`implement` Skill 的 Entry 检查完整 `verify`). 记录只授权开始实施; 开始实施后的设计改动由提交审核核对.
-- 不通过时修正后复审: 重新执行 `prepare -> review -> generate -> promote`, Reviewer 按 [复审规则](../../../docs/agents/reviewer.md#re-review) 只看改动部分及其影响范围. 开始实施前, 治理 Input 字节, Reviewer Role 或 subject 变化后旧记录不授权新版本, 须做增量复审, 不由 Main Agent 自行判断改动是否相关. `architecture-evidence` 是 issue 本身会修改的实现事实, 不受字节检查.
+- 不通过时修正后复审: 重新执行 `prepare -> review -> generate -> promote`, Reviewer 按 `docs/agents/reviewer.md#re-review` 只看改动部分及其影响范围. 开始实施前, 治理 Input 字节, Reviewer Role 或 subject 变化后旧记录不授权新版本, 须做增量复审, 不由 Main Agent 自行判断改动是否相关. `architecture-evidence` 是 issue 本身会修改的实现事实, 不受字节检查.
 - 已开始实施后, 提交审核提出的只涉及措辞, 重复或一致性 (不改变范围, 行为或验收含义) 的问题不修改 subject: 在 issue 的 `## Comments` 记录处置, 由提交审核的要求符合审核对照 spec 与实现核对, 不重跑本工作流. 改变范围, 行为或验收含义的真实变化仍修改 subject 并做增量复审. 判断由 Main Agent 作出, 拿不准时按真实变化处理.
 - "已开始实施" 只按规则判断, 不由引擎判断: 当前分支已有本 issue 授权的实施提交, 或工作树已有本 issue 的实现改动. 已开始实施后 Input 与 Reviewer Role 的字节变化不再阻断, 中断后恢复实施也不重跑完整 `verify`. 实现文件指该 issue 交付的所有已跟踪文件 (代码, 测试, 文档, 规则, 含它的治理 Input), 不含 `.scratch` 中该 issue 的 issue 文件与就绪记录.
 - `arw spec-readiness verify --issue issue:<NNNN>:<NN>` 在开始实施前运行完整核对; 实施提交前 (含让 issue 进入终态的收尾提交; 行为保持重构例外的 issue 除外) 运行 `verify --subject-only`, 只核对 subject; 除实施提交外不为收尾或已完成的 issue 另行验证. 都必须取得退出码 `0`; `1` 表示记录缺失, 格式错误, 过期, 语义未满足或对该 issue 无效, `2` 表示命令用法无效. 缺失, 过期或 `gap` 结果阻断实施和提交, 不阻断不依赖该结果的其他工作.
@@ -32,17 +32,17 @@ issue 不列治理要求引用: Reviewer 根据 `## What to build` 在 `docs/spe
 1. 准备 Input 对象: 非空的 `inputs` 数组, 每项是 `role` 和仓库相对的 `filePath`. 至少包含一个 `governing-spec` 或 `governing-prd`, 以及每个适用的 `adr`, `domain-context` (每个适用的上下文文档) 和 `architecture-evidence` (已有的必要实现事实). 每个 Input 准备时必须已经存在, 并且是本轮权威设计或必要证据, 不用尚未创建的内容代替. Agent 指令, Reviewer Role, 平台 Agent 配置和本地跟踪器 issue 永远不是 Input; 不推断省略的 Input, 也不加入无关的术语表或决定.
 2. `prepare` 前自检 (多数重复复审问题都能由此提前发现): `What to build` 与验收标准中的命令, 字段和行为名称都能 grep 到 (`path:line` 越界, 不存在的路径和缺观察方式的验收项由 `prepare` 的 stderr `warning:` 行报告, 逐条处理); subject 与 spec 对同一命令, 字段, 规则的表述一致 (改过一处就 grep 另一处旧写法); 声明的每项责任或规则都有 Interface 条目 (输入, 输出, 错误和重复, 缺失分支的结果); 设计依赖的外部事实 (运行时输出形状, 冻结补丁, 他处规格) 已在 Input 中.
 3. 运行 `arw spec-readiness prepare --issue issue:<NNNN>:<NN>`, Input 对象从标准输入传入, 或用 `--input <temp-json-path>`. 它冻结 subject, 创建不可变的 Reviewer Request, 在 issue 工作区写出审核轮目录 `rounds/<requestId>/` (空草稿 `report/draft.txt`, subject 与 Input 快照, 规则副本和 `.jsonl` 请求; 复审时另有两轮快照差异 `changes.diff`), 只打印轮目录. 后续 `prepare` 使较早的请求失去生成和提升资格.
-4. 按 `reviewer-launch` 的 [审核轮](../reviewer-launch/SKILL.md#review-rounds) 运行本轮 Reviewer. 运行中的 Request 及其快照保持不变, 修正后的版本重新 `prepare`. 只有 Reviewer 返回最终 `ready` 后才把草稿当作完整结果; 草稿格式由 [角色输出规则](../../../docs/agents/roles/spec-readiness-reviewer.md#output) 定义.
+4. 按 `../reviewer-launch/SKILL.md#review-rounds` 运行本轮 Reviewer. 运行中的 Request 及其快照保持不变, 修正后的版本重新 `prepare`. 只有 Reviewer 返回最终 `ready` 后才把草稿当作完整结果; 草稿格式由 `docs/agents/roles/spec-readiness-reviewer.md#output` 定义.
 
 ## Generate, promote and verify
 
 - Reviewer 返回 `ready` 后运行 `arw spec-readiness generate --issue issue:<NNNN>:<NN> --input <轮目录>/report/draft.txt`. Engine 拒绝其他路径和空草稿; 草稿精确为 `No problems.` 时记为 `satisfied`, 否则记为 `gap`. 它在当前 issue 工作区写入模式版本 7 记录并只打印其路径. 生成本身不授权实施. Main Agent 每轮自选一两处 Reviewer 应当检查的要求或代码位置抽查; 发现漏检时该轮结果作废并重审.
 - 运行 `arw spec-readiness promote --input <generated-path>`, 传入精确生成路径, 不编辑其字节. 它是写入 `.scratch/<NNNN>-<effort-slug>/issues/<NN>.spec-readiness.json` 的唯一边界, 写入前重新验证请求, subject, Input 字节, Reviewer Role 和派生结果; 任何失败都保留先前记录. 有效的 `gap` 记录可以作为诊断结果提升, 但不满足授权.
-- 按 [授权时点](#authorization-timing) 运行 `verify`. 只有模式版本 7 记录有效; 更早版本和 effort 根目录的 `spec-readiness.json` 只是历史记录, Engine 不读取, 不迁移也不删除它们.
+- 按 Authorization timing 节运行 `verify`. 只有模式版本 7 记录有效; 更早版本和 effort 根目录的 `spec-readiness.json` 只是历史记录, Engine 不读取, 不迁移也不删除它们.
 
 ## Respond to findings
 
-Main Agent 在修改 issue 前独立验证每个问题. 问题有效时修正设计或 issue: 要求修改 spec 或 PRD 的问题按 `rule-and-design-changes` Skill 的 [Reviewer-proposed changes](../rule-and-design-changes/SKILL.md#reviewer-proposed-changes) 由 Main Agent 与独立 subagent 共同决定, 只有分歧交用户. 然后对新内容执行完整工作流 (已开始实施后的措辞, 重复或一致性问题按 [Authorization timing](#authorization-timing) 只记录不改 subject). 按 [来源分流](../../../docs/agents/subagent-findings.md#triage-by-origin) 属于既有缺口的问题记入后续 issue, 并按下段质疑, 理由是本次交付不引入, 不改变也不依赖该缺口; Reviewer 指出交付对缺失事实的具体依赖而保留它时, 它不是既有缺口, 按本次影响的问题修正; 提交审核只修改代码时就绪记录仍有效, 不重跑.
+Main Agent 在修改 issue 前独立验证每个问题. 问题有效时修正设计或 issue: 要求修改 spec 或 PRD 的问题按 `../rule-and-design-changes/SKILL.md#reviewer-proposed-changes` 由 Main Agent 与独立 subagent 共同决定, 只有分歧交用户. 然后对新内容执行完整工作流 (已开始实施后的措辞, 重复或一致性问题按 Authorization timing 节只记录不改 subject). 按 `docs/agents/subagent-findings.md#triage-by-origin` 属于既有缺口的问题记入后续 issue, 并按下段质疑, 理由是本次交付不引入, 不改变也不依赖该缺口; Reviewer 指出交付对缺失事实的具体依赖而保留它时, 它不是既有缺口, 按本次影响的问题修正; 提交审核只修改代码时就绪记录仍有效, 不重跑.
 
 结果符合 `docs/agents/subagent-findings.md` 的质疑条件时, 用未变的 subject 和 Input 重新 `prepare`, 通过 `followup_task` 把新请求, 每个受质疑问题的具体证据和推理错误交给原 Reviewer. 质疑消息只是提示, 不是 Input, 证据或授权. 有争议的结果在替代结果完成 `generate -> promote` 前继续阻断提交. subject 或 Input 已改变时改用普通的新请求.
 

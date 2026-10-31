@@ -1,6 +1,6 @@
 # Skill 机制
 
-[`writing-for-agents`](SKILL.md) 中针对 Skill 的分支: 当文档是 Skill 时有什么不同, 即 frontmatter, 调用方式的选择, 以及路由 Skill. 其余关于如何编写的内容都是 `SKILL.md` 中的通用参考.
+`./SKILL.md` 中针对 Skill 的分支: 当文档是 Skill 时有什么不同, 即 frontmatter, 调用方式的选择, 以及路由 Skill. 其余关于如何编写的内容都是 `SKILL.md` 中的通用参考.
 
 ## Invocation
 

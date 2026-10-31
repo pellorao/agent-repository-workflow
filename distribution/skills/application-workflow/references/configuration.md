@@ -16,7 +16,7 @@ Application 类型仓库的根 `arw.config.json` 包含完整的 `application` �
 - `application.modules`, 包含 Module 类型仓库的唯一名称, 以及相对于仓库根目录的唯一安全路径, 任意两个路径不得相同或互相包含.
 - `application.jira.baseUrl`, `projectKey`, `issueType`, `candidateStatus`, `acceptedStatus` 和 `completedStatus`.
 
-不得在上述配置文件中存储认证信息. 除打开浏览器外, JIRA 操作的令牌读取方式见 [JIRA 接受](jira-acceptance.md).
+不得在上述配置文件中存储认证信息. 除打开浏览器外, JIRA 操作的令牌读取方式见 `./jira-acceptance.md`.
 
 ## Setup boundary
 

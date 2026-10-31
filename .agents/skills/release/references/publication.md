@@ -45,7 +45,7 @@ HOME=<tmp>/home node <tmp>/install-arw.mjs --version <version> --non-interactive
 
 ## Rollback after the tag
 
-压缩包生成, Release 的创建, 核对或公开 Bootstrap 验证失败发生在 tag 推送之后. 回滚边界和公告后的处理见 [release spec](../../../../docs/specs/agent-repository-workflow-release/spec.md#failure-recovery-and-authorization), 本 Skill 运行期间一律视为尚未公告.
+压缩包生成, Release 的创建, 核对或公开 Bootstrap 验证失败发生在 tag 推送之后. 回滚边界和公告后的处理见 `docs/specs/agent-repository-workflow-release/spec.md#failure-recovery-and-authorization`, 本 Skill 运行期间一律视为尚未公告.
 
 1. 运行 `gh release view <version> --repo <project> --json tagName,url,assets`, 把准确状态记入发布准备 issue 的 `## Comments`. 输出 Release 不存在是有效的 "无 Release" 状态 (压缩包生成或创建前失败); 认证, 网络等其他读取失败时停止.
 2. 只删除本次运行创建的对象: `git ls-remote --tags origin <version>` 指向本次验证 commit, 且 Release (若存在) 由本次运行的 `gh release create` 创建. 不满足时 (包括 Release 已存在而停止的情形) 停止, 不删除.

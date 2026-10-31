@@ -3,9 +3,9 @@
 
 ## Scope
 
-所有 Agent 文件写入都使用本规则, 包括代码, 测试, 文档, 新建文件和临时产物. 各运行环境的 Main Agent 负责其授权范围内的可恢复基线, 写入分配和交接; 与用户沟通的 Main Agent 独占 Git 写入及 Git 恢复责任. 自己写入时也遵守同一责任边界. 任务委派和实例复用遵循 [Subagent 分配](subagent-allocation.md).
+所有 Agent 文件写入都使用本规则, 包括代码, 测试, 文档, 新建文件和临时产物. 各运行环境的 Main Agent 负责其授权范围内的可恢复基线, 写入分配和交接; 与用户沟通的 Main Agent 独占 Git 写入及 Git 恢复责任. 自己写入时也遵守同一责任边界. 任务委派和实例复用遵循 `./subagent-allocation.md`.
 
-本规则管理 Agent 的写入分工, 不替代 ARW Engine 各操作已有的事务与恢复合同. 独立 Reviewer 按 [Reviewer 单 Agent 执行与报告写入规则](reviewer.md#single-agent-execution) 只写调用方指定的绑定报告, 不分配子 Agent 写入范围或维护协作文件, 保留独立判断和准确字节提升要求.
+本规则管理 Agent 的写入分工, 不替代 ARW Engine 各操作已有的事务与恢复合同. 独立 Reviewer 按 `./reviewer.md#single-agent-execution` 只写调用方指定的绑定报告, 不分配子 Agent 写入范围或维护协作文件, 保留独立判断和准确字节提升要求.
 
 ## Prepare the baseline
 
@@ -23,7 +23,7 @@
 
 分派时交代任务要求, 允许写入的范围, 恢复基线, 所需定向验证和应返回的证据.
 
-承担任务的 Agent 发现需要修改分配范围之外的文件, 或遇到尚未解决的重要决定时, 先向所属运行环境的 Main Agent 报告. 与用户沟通的 Main Agent 协调写入范围, 或按重要决定规则提交用户确认. 独立 Reviewer 不分配写入任务; 缺少必要输入或授权时, 按 [Reviewer 的通信与输入不足处理规则](reviewer.md#communication-and-observation) 返回不完整状态并说明原因. 在此之前, 不执行依赖该协调或决定的修改.
+承担任务的 Agent 发现需要修改分配范围之外的文件, 或遇到尚未解决的重要决定时, 先向所属运行环境的 Main Agent 报告. 与用户沟通的 Main Agent 协调写入范围, 或按重要决定规则提交用户确认. 独立 Reviewer 不分配写入任务; 缺少必要输入或授权时, 按 `./reviewer.md#communication-and-observation` 返回不完整状态并说明原因. 在此之前, 不执行依赖该协调或决定的修改.
 
 共享文件由所属运行环境的 Main Agent 在授权范围内安排串行修改. 该 Main Agent 也可以先确认原写入者停止并交接当前结果, 再转交文件, 让接收者明确当前内容和基线. 不引入文件锁或任务领取命令.
 
@@ -51,7 +51,7 @@
 
 承担任务的 Agent 完成范围内交付和定向验证, 向所属运行环境的 Main Agent 返回修改结果, 验证证据及未解决的问题. 所属运行环境的 Main Agent 核对子 Agent 交付的结果; 与用户沟通的 Main Agent 组织最终集成验证, 管理正式完成记录和状态, 并按适用工作流组织实施前与提交前审查.
 
-独立 Reviewer 的结果由与用户沟通的 Main Agent 按 [Subagent 问题处理](subagent-findings.md) 独立核对, 完成必要的用户决定后再分派修复. 交接前重新确认范围和基线. 实现者不组织这些审查, 不审核自己的候选内容. 提交只在用户请求后按 `commit` Skill 进行.
+独立 Reviewer 的结果由与用户沟通的 Main Agent 按 `./subagent-findings.md` 独立核对, 完成必要的用户决定后再分派修复. 交接前重新确认范围和基线. 实现者不组织这些审查, 不审核自己的候选内容. 提交只在用户请求后按 `commit` Skill 进行.
 <!-- arw:managed:end -->
 <!-- arw:repository-owned:start -->
 None.

@@ -25,7 +25,7 @@ name: issue-tracking
 - Application Source Issue: 沿用实施 issue 结构, 由精确的 `Module implementation issue:` 关联字段标识. 它镜像 Module 状态, 状态只来自 Application 同步, 不执行本地实施, Spec Readiness, 验证或 Commit Audit, 也不添加本地完成证据.
 - Wayfinder issue: H1 后使用 `Type:`, 可选的 `Status:` 和 `Blocked by:` 元数据, 正文使用 `##### Question`. 这里的 `Type:` 是 Wayfinder 字段.
 
-已发布的 Module 实施 issue 的受保护内容存在真实问题, 导致已同意的范围无法继续时, 说明问题并请求用户授权精确修正. 获准后只遵循 `application-workflow` Skill 的 [module-correction.md](../application-workflow/references/module-correction.md), 不更改或建议更改已关联的 Application issue.
+已发布的 Module 实施 issue 的受保护内容存在真实问题, 导致已同意的范围无法继续时, 说明问题并请求用户授权精确修正. 获准后只遵循 `../application-workflow/references/module-correction.md`, 不更改或建议更改已关联的 Application issue.
 
 ## Triage labels
 
@@ -41,14 +41,14 @@ name: issue-tracking
 
 - issue 终态与 Commit Audit 相互独立: 实施 issue 可以进入 `completed`, Application Source Issue 可以镜像 `completed | wontfix`, Wayfinder issue 可以进入 `resolved`, 都不需要审计伴随文件.
 - 实施完成证据写在精确的 `## Validation` 标题下, 内容非空; 其他标题不满足生命周期要求. Wayfinder issue 记录所需的解决证据, 工作实际完成时才更新状态.
-- 已取得代码审查结果后补记 `Status` 或验收勾选时, 按 `code-review` Skill 的[完成记录规则](../code-review/result-reuse.md#completion-records)判断结果是否仍有效.
+- 已取得代码审查结果后补记 `Status` 或验收勾选时, 按 `../code-review/result-reuse.md#completion-records` 判断结果是否仍有效.
 - 每个实施 issue (行为保持重构例外的 issue 除外) 在 `.scratch/<NNNN>-<effort-slug>/issues/<NN>.spec-readiness.json` 拥有自己的就绪记录, 只授权该 issue, 不通过 effort 根目录共享. 就绪 subject 及其失效规则见 `spec-readiness` Skill.
 
 ## Issue record sections
 
 `## Validation` 保存当前验收项对应的实际命令, 测试, 文件位置和结果; `## Comments` 在 issue 底部保存讨论, 审核事件和已取得的结论. 这两章整章是记录:
 
-- 它们不承载实施要求, 验收条件或授权例外, 不成为独立通过的权威. 有效要求和替代决定写入 `## What to build` 或 `## Acceptance criteria`; 已开始实施后只涉及措辞, 重复或一致性的处置不改这两章, 按 `spec-readiness` 的 [Authorization timing](../spec-readiness/SKILL.md#authorization-timing) 记入 `## Comments`. 正式验收以某审核通过为条件时, 必须先取得该事实.
+- 它们不承载实施要求, 验收条件或授权例外, 不成为独立通过的权威. 有效要求和替代决定写入 `## What to build` 或 `## Acceptance criteria`; 已开始实施后只涉及措辞, 重复或一致性的处置不改这两章, 按 `../spec-readiness/SKILL.md#authorization-timing` 记入 `## Comments`. 正式验收以某审核通过为条件时, 必须先取得该事实.
 - 它们的变化不改变审核对象身份, 不触发 Spec Readiness, Code Standards 或要求符合审核的语义复审. 修改后机械核对准确章节范围, 文本和证据定位, 确认没有其他实现, 要求, 输入或授权变化. 提交审核运行中先改工作树, 暂存时点见 `commit` Skill. `Status` 和验收勾选不属于此例外.
 - 链接不扩大 Reviewer 读取权限, 成功声明不替代独立判断. 新失败和反证仍须处理, 删除记录不消除已知失败.
 - 其他工作流对记录中结构化信息的解析, 同步, 关联和纠错合同不变.

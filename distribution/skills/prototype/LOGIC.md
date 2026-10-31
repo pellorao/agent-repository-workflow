@@ -11,7 +11,7 @@
 - "我想在写 API 之前先感受一下它该是什么样子."
 - 任何希望**按按钮并观察状态变化**的场景.
 
-如果问题是 "它应当如何呈现", 就选错了分支, 改用 [UI.md](UI.md).
+如果问题是 "它应当如何呈现", 就选错了分支, 改用 `./UI.md`.
 
 ## Process
 
@@ -55,7 +55,7 @@
 
 ### 5. Capture the answer and the prototype
 
-原型回答了问题之后, 先记录答案, 再按 [SKILL](SKILL.md) 的描述保留原型. 逻辑原型的具体对应: 经过验证的 reducer, 状态机或函数集搬进正式模块 (决定被吸收); HTML 外壳作为一手资料保留在对应 effort 的 `.scratch/<NNNN>-<effort-slug>/prototype/<name>/` 目录下, 且因为它是单个自包含文件, 在那里也能轻松重新运行.
+原型回答了问题之后, 先记录答案, 再按 `./SKILL.md` 的描述保留原型. 逻辑原型的具体对应: 经过验证的 reducer, 状态机或函数集搬进正式模块 (决定被吸收); HTML 外壳作为一手资料保留在对应 effort 的 `.scratch/<NNNN>-<effort-slug>/prototype/<name>/` 目录下, 且因为它是单个自包含文件, 在那里也能轻松重新运行.
 
 ## Anti-patterns
 

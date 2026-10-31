@@ -36,7 +36,7 @@ disable-model-invocation: true
 
 ### 2. Present candidates as an HTML report
 
-把一个自包含的 HTML 文件写到会话工作区 (见 [Agent 环境](../../../docs/agents/environment.md)), 使仓库的受跟踪路径里不留任何东西. 写入 `<workspace>/architecture-review-<timestamp>.html`, 使每次运行得到新文件. 替用户打开它 (Linux 用 `xdg-open <path>`, macOS 用 `open <path>`, Windows 用 `start <path>`), 并告诉他绝对路径.
+把一个自包含的 HTML 文件写到会话工作区 (见 `docs/agents/environment.md`), 使仓库的受跟踪路径里不留任何东西. 写入 `<workspace>/architecture-review-<timestamp>.html`, 使每次运行得到新文件. 替用户打开它 (Linux 用 `xdg-open <path>`, macOS 用 `open <path>`, Windows 用 `start <path>`), 并告诉他绝对路径.
 
 报告用 **Tailwind (CDN)** 做布局和样式, 在用图/流程/时序能可靠表达结构的地方用 **Mermaid (CDN)** 画图. 把 Mermaid 与手工制作的 CSS/SVG 视觉混用: 关系呈图状 (调用图, 依赖, 时序) 时用 Mermaid, 想要更有编辑感的东西 (质量图, 剖面, 折叠动画) 时用手工搭的 div/SVG. 每个候选都有一个 **前后对比可视化**. 要有视觉感.
 
@@ -55,7 +55,7 @@ disable-model-invocation: true
 
 **ADR 冲突**: 如果某个候选与现有 ADR 矛盾, 只有当摩擦真实到值得重新审视该 ADR 时才提出. 在卡片中明确标出 (例如警告提示框: _"与 ADR-0007 矛盾, 但值得重新讨论, 因为..."_). 不要列出 ADR 所禁止的每一种理论上的重构.
 
-完整的 HTML 骨架, 图示模式和样式指引见 [HTML-REPORT.md](HTML-REPORT.md).
+完整的 HTML 骨架, 图示模式和样式指引见 `./HTML-REPORT.md`.
 
 现在 **不要** 提出 Interface. 文件写好后, 询问用户: "你想探索其中哪几项?"
 

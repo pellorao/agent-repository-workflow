@@ -580,3 +580,25 @@ test('self-contained check reports dangling links, paths and ARW-internal names'
         ...Array(5).fill(['skills/s/SKILL.md', 'distribution-reference-unresolved']),
     ]);
 });
+
+test('self-contained check resolves file-relative backtick paths and reports dangling ones', () => {
+    const diagnostics = checkDistributionSelfContained(payloadOf({
+        'baseline/docs/agents/a.md': '`./b.md#x` `../../.agents/skills/s/SKILL.md` `./gone.md#y`\n```\n`./fenced.md`\n```',
+        'baseline/docs/agents/b.md': 'text',
+        'skills/s/SKILL.md': '`../../../docs/agents/a.md` `./ref/r.md` `../../../.claude/skills/s/ref/r.md#z` `../t/SKILL.md`',
+        'skills/s/ref/r.md': 'text',
+    }));
+
+    assert.deepEqual(diagnostics.map(entry => [entry.path, entry.code, entry.message]), [
+        ['baseline/docs/agents/a.md', 'distribution-reference-unresolved', 'Distributed Markdown references docs/agents/gone.md, which is not part of the distribution.'],
+        ['skills/s/SKILL.md', 'distribution-reference-unresolved', 'Distributed Markdown references .agents/skills/t/SKILL.md, which is not part of the distribution.'],
+    ]);
+});
+
+test('self-contained check ignores tokens that are not file-relative paths', () => {
+    const diagnostics = checkDistributionSelfContained(payloadOf({
+        'skills/s/SKILL.md': '`./x` `../<name>/SKILL.md` `./*.md` `./a b.md` `./{x}.md`',
+    }));
+
+    assert.deepEqual(diagnostics, []);
+});

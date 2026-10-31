@@ -65,7 +65,7 @@ ARW 仓库已经有选定的领域布局: 根目录的 `CONTEXT.md`, 或由其�
 
 ### Update the applicable context file inline
 
-术语得到确定且用户明确确认后, 准备适用上下文文件的相应修改. 不要批量积压. 写入前遵循 [Agent 文件写入](../../../docs/agents/agent-writes.md) 和 `rule-and-design-changes` Skill. 使用 [CONTEXT-FORMAT.md](./CONTEXT-FORMAT.md) 中的格式.
+术语得到确定且用户明确确认后, 准备适用上下文文件的相应修改. 不要批量积压. 写入前遵循 `docs/agents/agent-writes.md` 和 `rule-and-design-changes` Skill. 使用 `./CONTEXT-FORMAT.md` 中的格式.
 
 上下文文件不得包含实现细节. 不要把它当作规范, 草稿本或保存实现决策的位置. 它只是术语表.
 
@@ -77,7 +77,7 @@ ARW 仓库已经有选定的领域布局: 根目录的 `CONTEXT.md`, 或由其�
 2. **没有上下文就会令人意外** - 未来读者会问: "他们为什么这样做?"
 3. **真实取舍的结果** - 存在真正的替代方案, 并因具体理由选定其中一个.
 
-缺少任意一项时, 不创建 ADR. 使用 [ADR-FORMAT.md](./ADR-FORMAT.md) 中的格式.
+缺少任意一项时, 不创建 ADR. 使用 `./ADR-FORMAT.md` 中的格式.
 
 ## Long-term specification boundary
 

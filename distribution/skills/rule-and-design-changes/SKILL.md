@@ -19,8 +19,8 @@ name: rule-and-design-changes
 
 - 同一审核轮全部报告 (提交审核有两份) 中的此类问题合并为一次决定, 每轮只启动一个 subagent, 不逐条启动.
 - subagent 收到报告, 相关 spec 或 PRD 和 issue, 不先看 Main Agent 的结论, 对每个问题给出是否修改及拟议内容; Main Agent 对比双方意见.
-- 双方一致的问题按一致内容直接修改; 双方一致认为不应修改的问题按 `docs/agents/subagent-findings.md` 的质疑规则交回原 Reviewer, 共同决定的理由作为质疑证据, 此后按该规则处理. 有分歧的问题按 [User confirmation](#user-confirmation) 交用户决定, 期间推进不依赖它的工作.
-- 改动只限于解决这些问题; 超出部分仍按 [User confirmation](#user-confirmation) 确认.
+- 双方一致的问题按一致内容直接修改; 双方一致认为不应修改的问题按 `docs/agents/subagent-findings.md` 的质疑规则交回原 Reviewer, 共同决定的理由作为质疑证据, 此后按该规则处理. 有分歧的问题按 User confirmation 节交用户决定, 期间推进不依赖它的工作.
+- 改动只限于解决这些问题; 超出部分仍按 User confirmation 节确认.
 
 ## Writing durable documents
 

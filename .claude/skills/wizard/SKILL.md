@@ -7,9 +7,9 @@ description: 生成交互式 bash 向导 (wizard), 引导人类完成只有人�
 
 **wizard** 是一个 bash 脚本, 逐步引导人类完成一套手工流程, 这类流程手动做很繁琐, 每次向 AI 重新解释也很繁琐. 它会打开每个 URL, 准确说明要点击和复制什么, 捕获这些值, 把它们写到该去的地方 (`.env`, GitHub secrets), 在每个阶段确认, 并显示还剩多少个阶段. 它可以配置第三方服务, 执行一次性迁移, 或把项目从一种状态迁移到另一种状态.
 
-[template.sh](template.sh) 已经解决了令人愉悦的交互体验: 分阶段进度, 确认关卡, 跨平台打开 URL (包括 WSL), 隐藏输入 secret, 幂等的 `.env` 更新写入, `gh secret`/`gh variable` 写入, 以及结尾摘要. **你的工作只是界定流程范围并编写各阶段.** `STAGES` 标记之上的库在每个 wizard 中都完全相同, 这种一致性正是关键所在, 绝不要手动修改它.
+`./template.sh` 已经解决了令人愉悦的交互体验: 分阶段进度, 确认关卡, 跨平台打开 URL (包括 WSL), 隐藏输入 secret, 幂等的 `.env` 更新写入, `gh secret`/`gh variable` 写入, 以及结尾摘要. **你的工作只是界定流程范围并编写各阶段.** `STAGES` 标记之上的库在每个 wizard 中都完全相同, 这种一致性正是关键所在, 绝不要手动修改它.
 
-wizard 默认是临时的. 一次性脚本保存在 [environment.md](../../../docs/agents/environment.md) 定义的当前会话工作区中. 写任何脚本之前, 先按 [agent-writes.md](../../../docs/agents/agent-writes.md) 准备其恢复基线. 对于要在仓库中交付的可重复使用脚本, 先通过 [implement](../implement/SKILL.md) 的 Entry 确认已授权的 issue, 再依据目标仓库的目录布局选择其路径.
+wizard 默认是临时的. 一次性脚本保存在 `docs/agents/environment.md` 定义的当前会话工作区中. 写任何脚本之前, 先按 `docs/agents/agent-writes.md` 准备其恢复基线. 对于要在仓库中交付的可重复使用脚本, 先通过 `../implement/SKILL.md` 的 Entry 确认已授权的 issue, 再依据目标仓库的目录布局选择其路径.
 
 ## Process
 
@@ -38,7 +38,7 @@ wizard 默认是临时的. 一次性脚本保存在 [environment.md](../../../do
 
 ### 4. Verify and hand off
 
-- 运行 `bash -n <script>`. 使用 [validation](../validation/SKILL.md) 选择目标仓库声明的检查.
+- 运行 `bash -n <script>`. 使用 `../validation/SKILL.md` 选择目标仓库声明的检查.
 - `chmod +x <script>`.
 - 不要自己端到端运行它, 因为它会打开浏览器并阻塞等待人工输入. 改为静态追踪: 第 1 步的每个值都被捕获, 并落在第 1 步所说的位置, 并且每个 `set_secret` 的名称都与 CI 中的某个 `secrets.*` 引用完全一致.
-- 告诉用户如何运行它. 对于可重复使用的设置路径, 按 issue 的授权记录其入口, 并通过 [commit](../commit/SKILL.md) Skill 处理任何提交.
+- 告诉用户如何运行它. 对于可重复使用的设置路径, 按 issue 的授权记录其入口, 并通过 `../commit/SKILL.md` Skill 处理任何提交.

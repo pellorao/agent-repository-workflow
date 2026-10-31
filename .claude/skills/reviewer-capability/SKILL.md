@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # Reviewer Capability
 
-只在 ARW 源码仓库中由维护者显式调用. 结果不提供审核, 实施, 发布或提交授权. 套件来自 qwen_strata benchmark v2, 完全由 `scripts/reviewer-capability.mjs` 和 `lib/reviewer-capability/` 实现 (Node, 无第三方依赖); 其合同在[开发规格](../../../docs/specs/agent-repository-workflow-development/spec.md#module-design).
+只在 ARW 源码仓库中由维护者显式调用. 结果不提供审核, 实施, 发布或提交授权. 套件来自 qwen_strata benchmark v2, 完全由 `scripts/reviewer-capability.mjs` 和 `lib/reviewer-capability/` 实现 (Node, 无第三方依赖); 其合同在 `docs/specs/agent-repository-workflow-development/spec.md#module-design`.
 
 ## Scenarios
 
@@ -66,7 +66,7 @@ disable-model-invocation: true
    每格前 5 个实例入主统计 (平均, SD, SE, 95% 区间, 负分数个数, 最小, 中位数), 其余列入 `extraIds` 并提示; 未定稿的输入返回 `blocked`.
 9. 在活动 issue 中写结果表: 每个模型 × 场景 (× 格式) 的 `score`, 召回, 误报和偷懒迹象 (未检查却声称满足, 批量填写, 错误定位, 格式损坏). 说明样本量和天花板效应.
 
-Strata 提供方先读 [Strata 程序合同](../../../docs/specs/agent-repository-workflow/strata.md). 直接启动的 `claude -p` 不在本流程内.
+Strata 提供方先读 `docs/specs/agent-repository-workflow/strata.md`. 直接启动的 `claude -p` 不在本流程内.
 
 ## Finish
 

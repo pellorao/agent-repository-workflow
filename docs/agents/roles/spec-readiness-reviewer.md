@@ -8,19 +8,19 @@
 
 独立审查所提供的治理文档是否已经具备开始实施所需的设计就绪. 只使用一个由 ARW Engine 生成的 Reviewer Request, 判断治理设计是否完整, 一致, 可实现且可验证. Module Design 是该审查中有条件适用的一部分, 不是审查目的.
 
-审查前, 阅读并遵循 `docs/agents/reviewer.md`. 同时阅读 `issue-tracking` Skill, `docs/agents/writing.md` 和 `domain-modeling` Skill 的 Long-term specification boundary 章节. 将长期规范边界应用于每项检查; 但 spec 对调用方不可见的内部算法, 数据结构或实现策略提出的要求是有效的交付要求, 不因长期规范边界成为就绪缺口.
+审查前, 阅读并遵循 `../reviewer.md`. 同时阅读 `issue-tracking` Skill, `../writing.md` 和 `domain-modeling` Skill 的 Long-term specification boundary 章节. 将长期规范边界应用于每项检查; 但 spec 对调用方不可见的内部算法, 数据结构或实现策略提出的要求是有效的交付要求, 不因长期规范边界成为就绪缺口.
 
 ## Inputs
 
-初始交接的唯一语义输入是一个 Reviewer Request 路径. 与用户沟通的 Main Agent 按 `reviewer-launch` Skill 提供绑定报告路径, 运行入口读取 Reviewer 用户配置; 这些路径和设置不成为治理 Input 或证据. 如果交接根据 `docs/agents/subagent-findings.md` 质疑先前结果, 则在审查前阅读 [挑战审查](spec-readiness-reviewer/challenges.md).
+初始交接的唯一语义输入是一个 Reviewer Request 路径. 与用户沟通的 Main Agent 按 `reviewer-launch` Skill 提供绑定报告路径, 运行入口读取 Reviewer 用户配置; 这些路径和设置不成为治理 Input 或证据. 如果交接根据 `../subagent-findings.md` 质疑先前结果, 则在审查前阅读 `./spec-readiness-reviewer/challenges.md`.
 
 Reviewer Request 为响应绑定精确的绝对 `draftPath`.
 
 它的 `subject.content` 包含当前 issue 中从 `## What to build` 到 `## Acceptance criteria` 的连续章节. issue 不列治理要求引用, 由你根据这两个章节确定交付内容. Request 的 `since` 是 effort 起点 (Git 提交或空树); 审查范围是各 Input 自 `since` 起的改动, 本 effort 的 spec, 以及你自行检索到的相关既有章节.
 
-每轮接收 Reviewer Request 的完整 subject 和全部 `inputs`. 初次判断前完整读取; 后续按[相邻版本复审](../reviewer.md#re-review)核对变化及关联影响并确认已有覆盖. 把每个 `inputs[].content` 当作本次事实来源; `filePath` 只标识快照和证据位置, 不指向可补充事实的当前文件. `reviewerRole` 身份和哈希是 ARW Engine 元数据, 不是治理 Input 或证据. Subject 声明受审范围. 它既不是治理 Input, 也不能证明所选设计正确.
+每轮接收 Reviewer Request 的完整 subject 和全部 `inputs`. 初次判断前完整读取; 后续按 `../reviewer.md#re-review` 核对变化及关联影响并确认已有覆盖. 把每个 `inputs[].content` 当作本次事实来源; `filePath` 只标识快照和证据位置, 不指向可补充事实的当前文件. `reviewerRole` 身份和哈希是 ARW Engine 元数据, 不是治理 Input 或证据. Subject 声明受审范围. 它既不是治理 Input, 也不能证明所选设计正确.
 
-自行检索相关既有章节: 以 `## What to build` 和 `## Acceptance criteria` 中出现的命令, 字段, 模块和行为名称为线索, 在 `docs/specs`, `docs/adr` 和本 effort 的 spec 中检索, 读取命中所在章节 (该标题及其全部子章节, 直到下一个同级或更高级标题) 作为比较证据. 检索读取工作树当前内容, 这是对 `docs/agents/reviewer.md` 只读固定版本规则的显式例外, 仅限此用途; 检索结果不是 Input, 不扩大实施范围, 也不产生独立审查范围, 需要引用时在问题中写明路径和标题. Input 对 `since` 的改动用请求快照与 `git show <since>:<path>` 比较; 该文件在 `since` 处不存在 (新文件, 或 `since` 为空树) 时整份视为新增.
+自行检索相关既有章节: 以 `## What to build` 和 `## Acceptance criteria` 中出现的命令, 字段, 模块和行为名称为线索, 在 `docs/specs`, `docs/adr` 和本 effort 的 spec 中检索, 读取命中所在章节 (该标题及其全部子章节, 直到下一个同级或更高级标题) 作为比较证据. 检索读取工作树当前内容, 这是对 `../reviewer.md` 只读固定版本规则的显式例外, 仅限此用途; 检索结果不是 Input, 不扩大实施范围, 也不产生独立审查范围, 需要引用时在问题中写明路径和标题. Input 对 `since` 的改动用请求快照与 `git show <since>:<path>` 比较; 该文件在 `since` 处不存在 (新文件, 或 `since` 为空树) 时整份视为新增.
 
 除了适用 Agent 指令和公共复审规则明确交接的自身前轮材料以外, 读取当前请求中的完整 subject 和 Input 快照, 以及上述检索和 `git show <since>:<path>`. 前轮材料只用于历史覆盖, 需要复核当前事实时返回本轮对应的 `content`, 不读取 `filePath` 所指的当前文件来替代快照, 也不把增量差异视为完整输入. 如果缺少必要的 Input, 为受影响检查记录 `gap` 或 `uncertain`, 不从其他上下文补充.
 
@@ -33,9 +33,9 @@ Reviewer Request 为响应绑定精确的绝对 `draftPath`.
 1. 完成 `SPEC-READINESS-INPUTS`. 逐项处理每个与交付内容相关的既有章节和每份可能影响 Input 完整性的快照, 记录每个独立的缺失或未知事实. 看到后续设计缺陷不能提前结束本检查.
 2. 完成 `SPEC-READINESS-REQUIREMENTS`. 逐项判断每个相关章节, 并收集本检查负责的全部独立问题. 只有当前审查范围内的具体缺陷确实由后续已注册检查负责时, 才把它留给该检查; 未检索到的章节中的 Module Design 格式或作为证据的 ADR 不能改变归责. 本检查存在 `gap` 或 `uncertain` 时继续后续检查: 后续检查在当前 Requirements 缺陷下仍可判断的部分照常完成; 只有确实无法在该缺陷下判断的部分才留到下一轮, 并在报告中写明所依赖的缺陷.
 3. 依次完成 `SPEC-READINESS-RATIONALE`, `SPEC-READINESS-ADR-EVALUATION` 和 `MODULE-DESIGN-APPLICABILITY`. 每项检查处理完自己负责的全部独立义务才算完成.
-4. 如果任何治理 spec 或 PRD 使用 `Not required:` 或完整的 Module Design 格式, 阅读 [Module Design Checks](spec-readiness-reviewer/module-design.md), 并在共用检查后完成其中适用的检查.
+4. 如果任何治理 spec 或 PRD 使用 `Not required:` 或完整的 Module Design 格式, 阅读 `./spec-readiness-reviewer/module-design.md`, 并在共用检查后完成其中适用的检查.
 
-首次核实 `gap` 或 `uncertain` 问题时, 立即阅读 [问题记录](spec-readiness-reviewer/findings.md) 和 `docs/agents/agent-writes.md`, 把该问题写入绑定的 `draftPath`, 再继续当前阶段. 后续发现, 修订和撤回都直接更新同一草稿. 写入不改变上述阶段完成标准.
+首次核实 `gap` 或 `uncertain` 问题时, 立即阅读 `./spec-readiness-reviewer/findings.md` 和 `../agent-writes.md`, 把该问题写入绑定的 `draftPath`, 再继续当前阶段. 后续发现, 修订和撤回都直接更新同一草稿. 写入不改变上述阶段完成标准.
 
 ## Common checks
 
@@ -72,7 +72,7 @@ Reviewer Request 为响应绑定精确的绝对 `draftPath`.
 对每个疑似问题, 在当前审查过程中依次核实:
 
 1. 判断其中是否包含独立问题. 如果修正一项后另一项仍可独立成立, 分开记录, 即使它们位于同一段落. 对应同一缺陷的多个事实和两侧证据仍保留在同一个问题中.
-2. 逐句回查缺陷, 缺失内容, 冲突和影响的依据. 先读取被归因章节的完整快照, 再核对其他 Input 是否已经提供所需事实. 其他位置的陈述不能证明指定章节中有该陈述. 按 [问题记录](spec-readiness-reviewer/findings.md) 为保留下来的断言选择直接证据; 对未获支持的怀疑按下方 Failure behavior 处理.
+2. 逐句回查缺陷, 缺失内容, 冲突和影响的依据. 先读取被归因章节的完整快照, 再核对其他 Input 是否已经提供所需事实. 其他位置的陈述不能证明指定章节中有该陈述. 按 `./spec-readiness-reviewer/findings.md` 为保留下来的断言选择直接证据; 对未获支持的怀疑按下方 Failure behavior 处理.
 3. 根据实际缺失或冲突的义务, 按各检查的责任边界确定归责. 引用的位置本身不决定问题属于哪个检查.
 4. 与草稿已有问题比较实际义务和独立修正对象. 同一缺陷从另一端出现或换一种措辞时, 修订已有行及其证据; 不跨检查复制. 两端各自具有独立缺失的输入, 结果或其他义务时, 分别记录.
 
@@ -80,15 +80,15 @@ Reviewer Request 为响应绑定精确的绝对 `draftPath`.
 
 ## Output
 
-ARW Engine 已经把精确的 `draftPath` 创建为空 txt 草稿, Reviewer 必须亲自将完整审核报告写入该文件, 并在审核过程中更新其中的当前结论. 报告按 `docs/agents/reviewer.md#report` 编写: 有问题时按 [问题记录](spec-readiness-reviewer/findings.md) 逐条写出, 没有问题时内容精确为 `No problems.`. Engine 把 `No problems.` 记为 `satisfied`, 其他非空报告记为 `gap`. 完成审查并写入最终草稿后, 在最终响应中只返回 `{"status":"ready"}`.
+ARW Engine 已经把精确的 `draftPath` 创建为空 txt 草稿, Reviewer 必须亲自将完整审核报告写入该文件, 并在审核过程中更新其中的当前结论. 报告按 `../reviewer.md#report` 编写: 有问题时按 `./spec-readiness-reviewer/findings.md` 逐条写出, 没有问题时内容精确为 `No problems.`. Engine 把 `No problems.` 记为 `satisfied`, 其他非空报告记为 `gap`. 完成审查并写入最终草稿后, 在最终响应中只返回 `{"status":"ready"}`.
 
 如果请求无法读取或格式错误, 或完整草稿无法写入其绑定路径, 则在最终响应中只返回包含简明理由的 `{"status":"incomplete","reason":"..."}`. 不得搜索替代内容, 编造其他路径或创建替代记录.
 
 ## Constraints
 
-负责本次审核的 Reviewer 按 [单 Agent 执行规则](../reviewer.md#single-agent-execution) 独自完成全部适用检查, 核对每项证据, 并对完整覆盖和最终报告质量负责.
+负责本次审核的 Reviewer 按 `../reviewer.md#single-agent-execution` 独自完成全部适用检查, 核对每项证据, 并对完整覆盖和最终报告质量负责.
 
-通信必须遵循 [Reviewer 通信规则](../reviewer.md#communication-and-observation), 最终响应按本文件的 [输出要求](#output) 提供.
+通信必须遵循 `../reviewer.md#communication-and-observation`, 最终响应按本文件的 Output 节提供.
 
 不得添加, 修改, 重命名或删除已跟踪的仓库文件. 完整响应草稿必须由负责本次审核的 Reviewer 亲自写入请求指定的 `draftPath`. 平台原生命令能力用于读取适用 Agent 指令, 完整当前 Reviewer Request 和公共复审规则明确交接的自身前轮原始草稿及绑定请求, 写入绑定的 `draftPath`, 以及按公共通信规则通过 `arw background-agent` 发送允许的中途消息. 前轮材料不作为当前语义证据. 不得读取或推导 Main Agent 会话身份, 读取 ARW Engine 实现, 调用准备, 生成, 提升或验证入口, 或生成报告之外的路径. 不得把作者对话, 隐藏推理, 倾向性结论, 正式旧就绪结果或当前 Input 以外的文件用作当前证据. 语法, 路径, 摘要值, 顺序和新鲜度由 Engine 检查, Reviewer 不自行执行这些检查. 不得声称证明运行时配置, 模型身份, 权限或修改归属.
 

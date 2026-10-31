@@ -43,7 +43,7 @@ disable-model-invocation: true
 
 issue 正文是实施的唯一要求来源, `## Comments` 不承载要求 (见 `issue-tracking` Skill). 把要求写进 `## What to build` 和 `## Acceptance criteria`:
 
-- **持久而非精确.** issue 可能放几天甚至几周, 代码库会变. 描述接口, 类型和行为合同, 可以点名 Agent 应查找或修改的类型, 函数签名或配置形状; 不引用文件路径和行号 (规则见 [to-spec](../to-spec/SKILL.md)).
+- **持久而非精确.** issue 可能放几天甚至几周, 代码库会变. 描述接口, 类型和行为合同, 可以点名 Agent 应查找或修改的类型, 函数签名或配置形状; 不引用文件路径和行号 (规则见 `../to-spec/SKILL.md`).
 - **行为而非过程.** 写系统应该做什么, 不写怎么实现. 好: "`SkillConfig` 应接受类型为 `CronExpression` 的可选 `schedule` 字段". 坏: "打开 src/types/skill.ts, 在第 42 行加字段".
 - **验收标准完整.** 每条都具体, 可独立验证. 好: "运行 `arw list issues --status needs-triage` 返回已完成初步分类的 issue". 坏: "分流应该正常工作".
 - **写明范围边界.** 说明不在本 issue 范围内的内容, 防止 Agent 过度发挥.

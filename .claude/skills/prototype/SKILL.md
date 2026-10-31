@@ -5,7 +5,7 @@ name: prototype
 
 # 原型
 
-原型是回答一个设计问题的可丢弃代码, 问题决定其形态. Main Agent 分配原型任务和写入范围. 写入前遵循 [Subagent 分配](../../../docs/agents/subagent-allocation.md) 和 [Agent 文件写入](../../../docs/agents/agent-writes.md).
+原型是回答一个设计问题的可丢弃代码, 问题决定其形态. Main Agent 分配原型任务和写入范围. 写入前遵循 `docs/agents/subagent-allocation.md` 和 `docs/agents/agent-writes.md`.
 
 原型作者把验证结果和未解决的重要决定交回 Main Agent, 不自行把原型合入正式代码或决定长期设计.
 
@@ -13,8 +13,8 @@ name: prototype
 
 识别要回答的问题, 可以来自用户请求, 周围代码或 Main Agent 提供的上下文:
 
-- `逻辑或状态模型是否合适?` -> [LOGIC.md](LOGIC.md). 构建一个可共享的 HTML 文件, 提供可自由操作的按钮, 并用标签页组织分步引导, 让非开发者也能操作状态机, 检验难以只靠文字推理的情况.
-- `它应当如何呈现?` -> [UI.md](UI.md). 在单一路由上生成多个设计明显不同的 UI 变体, 使用 URL 查询参数和底部浮动栏切换.
+- `逻辑或状态模型是否合适?` -> `./LOGIC.md`. 构建一个可共享的 HTML 文件, 提供可自由操作的按钮, 并用标签页组织分步引导, 让非开发者也能操作状态机, 检验难以只靠文字推理的情况.
+- `它应当如何呈现?` -> `./UI.md`. 在单一路由上生成多个设计明显不同的 UI 变体, 使用 URL 查询参数和底部浮动栏切换.
 
 两种分支产生不同产物. 问题确实不明确时, 把需要用户决定的选择交回 Main Agent.
 

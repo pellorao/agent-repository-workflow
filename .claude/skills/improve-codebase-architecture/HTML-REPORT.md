@@ -1,6 +1,6 @@
 # HTML 报告格式
 
-架构评审渲染为会话工作区 (见 [Agent 环境](../../../docs/agents/environment.md)) 中单个自包含的 HTML 文件. Tailwind 和 Mermaid 都来自 CDN. Mermaid 可靠地处理图状图示; 手工搭建的 div 和内联 SVG 处理更有编辑感的视觉 (质量图, 剖面). 两者混用, 不要所有东西都靠 Mermaid, 否则会开始显得千篇一律.
+架构评审渲染为会话工作区 (见 `docs/agents/environment.md`) 中单个自包含的 HTML 文件. Tailwind 和 Mermaid 都来自 CDN. Mermaid 可靠地处理图状图示; 手工搭建的 div 和内联 SVG 处理更有编辑感的视觉 (质量图, 剖面). 两者混用, 不要所有东西都靠 Mermaid, 否则会开始显得千篇一律.
 
 ## Scaffold
 

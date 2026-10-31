@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # 任务拆分
 
-将计划, 规范或当前对话拆分为一组纵向切片 issue, 每项声明阻断它的其他 issue. 编写前遵循 [Subagent 分配](../../../docs/agents/subagent-allocation.md) 与 [Agent 文件写入](../../../docs/agents/agent-writes.md).
+将计划, 规范或当前对话拆分为一组纵向切片 issue, 每项声明阻断它的其他 issue. 编写前遵循 `docs/agents/subagent-allocation.md` 与 `docs/agents/agent-writes.md`.
 
 ## Process
 
@@ -22,7 +22,7 @@ disable-model-invocation: true
 
 - 每个切片覆盖数据模式, API, UI 和测试等各层的一条狭窄且完整的路径, 而不是只覆盖单层.
 - 已完成切片可以独立演示或验证, 并适合在一个新的上下文窗口内完成.
-- 粒度宁粗勿细. 每个实施 issue 都有自己的 Spec Readiness 与提交审核开销 (只改规则和文档的 issue 除外, 行为保持重构 issue 没有 Spec Readiness 开销, 见 `implement` Skill), 太小的 issue 让审核开销超过改动本身. 合并规则见 [Agent 文件写入](../../../docs/agents/agent-writes.md#issue-concurrency); 只在超出一个上下文窗口, 或确需独立验证与独立回退时才拆开.
+- 粒度宁粗勿细. 每个实施 issue 都有自己的 Spec Readiness 与提交审核开销 (只改规则和文档的 issue 除外, 行为保持重构 issue 没有 Spec Readiness 开销, 见 `implement` Skill), 太小的 issue 让审核开销超过改动本身. 合并规则见 `docs/agents/agent-writes.md#issue-concurrency`; 只在超出一个上下文窗口, 或确需独立验证与独立回退时才拆开.
 
 为每个 issue 给出其阻断关系, 即必须先完成的其他 issue. 没有阻断项的 issue 可以立即开始.
 
@@ -46,7 +46,7 @@ disable-model-invocation: true
 
 ### 5. Write the issues
 
-issue 写入对话已建立的 effort; 需要新 effort 时按 `issue-tracking` Skill 创建. 每项一个文件, 路径, 编号和结构遵循 `issue-tracking` Skill, 按依赖顺序编号. 正文使用中文, H1 为中文标题, 下列 H2 保持英文, 内容避免 [to-spec](../to-spec/SKILL.md) 所禁止的文件路径和代码片段.
+issue 写入对话已建立的 effort; 需要新 effort 时按 `issue-tracking` Skill 创建. 每项一个文件, 路径, 编号和结构遵循 `issue-tracking` Skill, 按依赖顺序编号. 正文使用中文, H1 为中文标题, 下列 H2 保持英文, 内容避免 `../to-spec/SKILL.md` 所禁止的文件路径和代码片段.
 
 ```markdown
 # <issue 标题>

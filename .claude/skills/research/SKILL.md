@@ -3,7 +3,7 @@ description: 依据高可信的一手资料调查问题, 并把发现保存为�
 name: research
 ---
 
-由 Main Agent 把研究任务分配给合适的 subagent, 使 Main Agent 可以继续处理协调工作. 写入前遵循 [Subagent 分配](../../../docs/agents/subagent-allocation.md) 和 [Agent 文件写入](../../../docs/agents/agent-writes.md).
+由 Main Agent 把研究任务分配给合适的 subagent, 使 Main Agent 可以继续处理协调工作. 写入前遵循 `docs/agents/subagent-allocation.md` 和 `docs/agents/agent-writes.md`.
 
 研究者在已分配范围内:
 
