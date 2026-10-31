@@ -4,7 +4,7 @@ name: handoff
 disable-model-invocation: true
 ---
 
-编写一份交接文档, 总结当前对话, 使全新的 agent 能够继续这项工作. 保存到用户操作系统的临时目录, 不要保存到当前工作区.
+编写一份交接文档, 总结当前对话, 使全新的 agent 能够继续这项工作. 保存到会话工作区 (见 [Agent 环境](../../../docs/agents/environment.md)), 不要保存到仓库的受跟踪路径.
 
 文档中包含一个 "建议的 Skill" 章节, 建议该 agent 应当调用哪些 Skill.
 
