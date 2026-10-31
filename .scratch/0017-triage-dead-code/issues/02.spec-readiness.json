@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0017:02",
+  "request": {
+    "digest": "7b12e682014bae2ca0db6be3e8511fd8649aad06d6f679d9c694323d23900b5c",
+    "filePath": ".tmp/codex/01a18f4e-59e6-7f23-9582-eb591c8f16d8/0017_02/spec-readiness/requests/request-fb8fa957-f388-4443-afc3-bc527af416be.json",
+    "id": "fb8fa957-f388-4443-afc3-bc527af416be"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "f797bb611ba9cf50c0ccfab4d029b2a32fd44b771b7b9338a0a31bb48ddba14a"
+  },
+  "inputs": [
+    {
+      "filePath": "CONTEXT.md",
+      "role": "domain-context",
+      "sha256": "6f89aa3efc9e393170b2d9380bacf5b1b11aea0d9c614e9367384d99767bb1fb"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow-installation/spec.md",
+      "role": "governing-spec",
+      "sha256": "725c0634f9d9d835c6a4d494b63164edef02ff67ecbcaea18e8c3769a0edf442"
+    },
+    {
+      "filePath": "lib/installation/installation-contract.mjs",
+      "role": "architecture-evidence",
+      "sha256": "22744daada185d70f6e33f57a47f1d6c0b19211319221672f5f69af86e079185"
+    },
+    {
+      "filePath": "lib/installation/installation.mjs",
+      "role": "architecture-evidence",
+      "sha256": "c6c1f02be1808daefed28e13aef1a4d1e4abc860e1c2fd7afd36807df6074b91"
+    },
+    {
+      "filePath": "lib/installation/uninstallation.mjs",
+      "role": "architecture-evidence",
+      "sha256": "41ae137a1e8188d85cfb8eb35a2dc4a1e9a8bd125cac62b6e3def617c10d430e"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0017-triage-dead-code/issues/02-uninstaller-cleanup.md",
+    "sha256": "c302751f8f80bdba89de80b67089644bbf77a7f1ec218800d8badee89aca015c"
+  },
+  "result": "satisfied"
+}

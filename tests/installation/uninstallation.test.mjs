@@ -957,3 +957,12 @@ test('installed uninstall command executes through the real CLI entry point', as
     assert.match(stdout, /Uninstalled agent-repository-workflow from /);
     await assert.rejects(readdir(installationDirectory), {code: 'ENOENT'});
 });
+
+test('uninstallation removes an empty background Agent state directory with the installation', async t => {
+    const home = await createHome(t);
+    const installationDirectory = await writeInstallation(home);
+    await mkdir(backgroundAgentRuntimeDirectory(installationDirectory));
+
+    assert.equal((await runNonInteractive(home, ['--remove-config', 'true'])).result, 0);
+    await assert.rejects(readdir(installationDirectory), {code: 'ENOENT'});
+});
