@@ -522,7 +522,7 @@ Reviewer 在完成全部适用检查和绑定文件写入后单独返回完成�
 
 Main Agent 在仓库 `.tmp/` 下写一个 `input.json`, 只包含同一 effort 的排序 `authorizingIssueIds`, 不含其他字段. 每次运行 `arw commit-audit prepare --input <absolute-input-path>` 都在当前会话工作区下新建审核轮目录 `_commit-audit/<n>/` (`n` 从 1 递增), 从实时 Git 索引物化 `request.json` (授权范围, Gate 1 终态 issue, Gate 2 的治理文档与 `since`, `reviewPath`, `base` 为 `HEAD` 提交, `tree` 为 `git write-tree` 固定的已暂存树), 为 `requirements-reviewer` 和 `code-standards-reviewer` 各建一个只含空 `review.txt` 的报告目录, 并按 [Review rounds](#review-rounds) 写出本轮其余文件, 然后只输出轮目录绝对路径. Code Standards 的 handoff 列出按 `.arwignore` 和 effort `prototype/**`, `research/**` 排除后的纳入路径, 并指向授权 issue 的预估净增行数. 复审的相邻版本变化是 `git diff <前轮 tree> <tree>`. 每个 Reviewer 的交接还含一行处置台账指引, 指向全部授权 issue 的 `## Comments` 章节 (首轮, 复审和新建线程的轮次都有), 不复制章节内容.
 
-要求符合审核的 Reviewer 接收 Request 路径, 只用 `git diff <base> <tree>` 和 `git show <tree>:<path>` 读取受审版本, 把发现的要求问题逐条写入 `review.txt` (每条写明位置, 影响和修正方向), 没有问题时写 `No problems.`, 然后只返回 `ready | incomplete`. `incomplete` 结束本轮并交回 Main Agent.
+要求符合审核的 Reviewer 接收 Request 路径, 只用 `git diff <base> <tree>`, `git show <tree>:<path>` 和 `git ls-tree` 读取受审版本, 把发现的要求问题逐条写入 `review.txt` (每条写明位置, 影响和修正方向), 没有问题时写 `No problems.`, 然后只返回 `ready | incomplete`. `incomplete` 结束本轮并交回 Main Agent.
 
 提交门槛是两个 Reviewer 正常结束且报告中的问题都已处理 (修正, 证明无效, 转入后续 issue, 或按提交工作流的台账规则记 "记录不修" 或 "冲突裁决"; 第 3 轮起只为行为缺陷开修复轮, 措辞, 重复和文档去重类问题记 "记录不修"). Main Agent 独立核对每个问题, 每轮自选一两处 Reviewer 应当检查的要求或代码位置抽查; 发现漏检时该轮结果作废并重审. ARW 不生成或提升审核记录.
 

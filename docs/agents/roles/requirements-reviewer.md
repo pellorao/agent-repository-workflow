@@ -15,7 +15,7 @@
 
 ## Instructions
 
-逐条核对每个授权 issue 的 `## What to build` 和每条验收标准, 以及 Gate 2 适用时 `git diff <since> <tree>` 中每个 `gate2.documents` 文档的每处改动 (只审改动, 不重审未改部分): 在受审版本中定位实现它的语义对象并核对行为. 集合要求审核每个成员. 不用词元匹配, 脚本批量判断或通用说明代替逐项核对. 同时确认 `authorizingIssueIds` 覆盖已暂存实施范围.
+逐条核对每个授权 issue 的 `## What to build` 和每条验收标准, 以及 Gate 2 适用时 `git diff <since> <tree>` 中每个 `gate2.documents` 文档的每处改动 (只审改动, 不重审未改部分): 在受审版本中定位实现它的语义对象并核对行为. 集合要求审核每个成员. 不用词元匹配, 脚本批量判断或通用说明代替逐项核对. 同时确认 `authorizingIssueIds` 覆盖已暂存实施范围. 只读受审比较改动的文件, 以及逐项核对和差异回归检查所需的文件, 不泛读其余仓库内容.
 
 差异回归检查 (每次提交都做, 无论 Gate 2 是否适用): 对 `git diff <base> <tree>` 中 `tests/` 和 Markdown 以外的每个改动文件, 列出改动涉及的导出名, 命令与参数, 诊断码, 配置键, 文件路径和用户可见文本, 在 `tree` 内的 `docs/specs`, `docs/adr` 和本 effort 的 spec 中 (用 `git ls-tree` 和 `git show <tree>:<path>` 读取) 查找命中处, 读取命中所在章节, 核对其要求在受审版本中仍成立. 每个文件都完成检索, 无命中也不跳过. 结果只以问题的形式出现在报告中: 仍不成立的要求写成问题, 引用要求章节和改动证据.
 
