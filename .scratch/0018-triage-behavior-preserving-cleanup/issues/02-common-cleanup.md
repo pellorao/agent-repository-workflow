@@ -30,3 +30,5 @@ Status: completed
 Spec Readiness 首轮缺少 compareText 定义证据; 补入 `lib/common/json.mjs` 后由原 Reviewer 增量复审通过, 未修改要求或设计.
 
 提交审核首轮要求移出 issue 0018:01 的独立 know 记录, 已取消该路径的暂存并由原要求符合 Reviewer 增量复审通过. 新旧候选仅差该 Comments 记录, 没有实现, 要求, 授权或验证事实变化, 依据 issue 记录章节与结论复用规则保留上一轮 Code Standards 无问题结果. 两轴报告分别为 `_commit-audit/4/requirements-reviewer/review.txt` 与 `_commit-audit/3/code-standards-reviewer/review.txt`, 均在本会话临时目录下.
+
+know: 提交 `291f244`, 五项保行为清理完成, 两个 Commit Audit Reviewer 无问题, 无设计偏离和本 issue 遗留.

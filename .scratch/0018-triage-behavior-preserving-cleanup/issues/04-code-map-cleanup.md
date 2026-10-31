@@ -30,3 +30,4 @@ Status: completed
 
 - 筛选跳过 #15, #102: 共享表格格式化会改变宽字符 CLI 输出. 跳过 #80: 修正含 `$` 的编辑器参数会改变现有行为. 跳过 #91: 修正粗体阻断项解释会改变执行资格. 跳过 #169: 共享 Git 文件模式判断会改变接受范围. 跳过 #173: 移除额外规范化会改变非 JSON 对象的序列化结果. 这些条目未作为本 effort 的保行为实施项.
 - Code Map Spec Readiness 结束回执曾因报告目录中的四个空隐藏目录被拒绝; 仅移除空目录后, 原 Reviewer 的 list_agents 确认 ready, 原报告字节不变, 正常 generate 与 promote 通过.
+- know: 提交 `43f1636`, 四项保行为清理完成. 补充验收覆盖后, 原两位 Commit Audit Reviewer 复审均无问题; Gate 2 没有治理文档差异. 无设计偏离和已确认实施项遗留. 当前环境未配置状态页, 本 effort 的 know 记录保存在各 issue 的 Comments.

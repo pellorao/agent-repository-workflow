@@ -24,3 +24,7 @@ Status: completed
 - `pnpm typecheck`, 三个 Source Checkout 生产检查脚本, `node --check lib/arw.mjs`, `node arw.mjs text check`, `node arw.mjs terms check --include .scratch/0018-triage-behavior-preserving-cleanup/`, `git diff --check`: 全部退出 0.
 - `tests/arw-common/artifact-cli.test.mjs` 覆盖原始打印, 无目标, 结构诊断, 编辑器失败; Application JIRA 与 Repository Workflow 测试覆盖有效及无效参数路由. 抽查合并后的目标解析保持诊断先于操作, 有诊断返回 1, 无目标且无诊断抛原消息.
 - 只删减与合并自查完成, 生产代码新增 20 行, 删除 45 行, 净减少 25 行, 未超预算. 测试文件未修改.
+
+## Comments
+
+know: 提交 `a0d78ab`, 四项保行为清理完成, 两个 Commit Audit Reviewer 无问题, 无设计偏离和本 issue 遗留.
