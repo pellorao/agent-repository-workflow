@@ -1,6 +1,6 @@
 # 规则与文档候选允许无就绪记录的实施 issue 进入终态
 
-本决定部分取代 [ADR 0006](0006-enforce-spec-readiness-with-independent-review.md) 中 "对每个实施 issue" 运行 Spec Readiness 的适用范围, 以及 [ADR 0023](0023-separate-commit-audit-review-from-implementation.md) 中纯规划路线不接受进入终态的实施 issue, 且不运行 `arw commit-audit verify` 的表述. 两份 ADR 的其余决定不变.
+本决定部分取代 `./0006-enforce-spec-readiness-with-independent-review.md` 中 "对每个实施 issue" 运行 Spec Readiness 的适用范围, 以及 `./0023-separate-commit-audit-review-from-implementation.md` 中纯规划路线不接受进入终态的实施 issue, 且不运行 `arw commit-audit verify` 的表述. 两份 ADR 的其余决定不变.
 
 ## Context
 
@@ -20,4 +20,4 @@
 
 ## Consequences
 
-`verify` 只能证明候选中没有就绪记录, 不能证明该 issue 历史上没有实施字节, 也发现不了 issue 分类错误. 兜底是非实施分类本身的路径限制 (不能携带代码), 此前任何代码改动都经过 `implement` Entry 的就绪检查 (行为保持重构例外见 [ADR 0037](0037-skip-spec-readiness-for-behavior-preserving-refactors.md), 它没有就绪记录, 其终态只经实施提交) 和实施提交的 Commit Audit, 以及用户对整体 diff 的复核.
+`verify` 只能证明候选中没有就绪记录, 不能证明该 issue 历史上没有实施字节, 也发现不了 issue 分类错误. 兜底是非实施分类本身的路径限制 (不能携带代码), 此前任何代码改动都经过 `implement` Entry 的就绪检查 (行为保持重构例外见 `./0037-skip-spec-readiness-for-behavior-preserving-refactors.md`, 它没有就绪记录, 其终态只经实施提交) 和实施提交的 Commit Audit, 以及用户对整体 diff 的复核.

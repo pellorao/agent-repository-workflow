@@ -21,9 +21,9 @@ Adapter 可以完成以下纯计算责任:
 
 合法调用的公开结果使用 `succeeded | blocked | failed` 状态, 操作特定载荷和始终存在的诊断. 投影成功时返回调用方需要的受管目标, 仓库自有种子目标和准确字节. 阻断结果不返回可写的部分目标集合. 失败结果准确表达依赖或 I/O 失败. 无效调用同步抛出 `TypeError`.
 
-Adapter 不返回环境观察结果, 证明, 证据表, 保留身份, 内置对象内容表或发现优先级. 它不扫描用户级, 系统级, 平台内置或嵌套 Git 仓库中的 Agent 与 Skill. 目标 Git 仓库的根目录现有文件观察由 Repository State Inspector 按 [ADR 0025](0025-use-root-only-repository-platform-discovery.md#decision) 提供, Repository Workflow Module 决定冲突, 归属, 授权和事务.
+Adapter 不返回环境观察结果, 证明, 证据表, 保留身份, 内置对象内容表或发现优先级. 它不扫描用户级, 系统级, 平台内置或嵌套 Git 仓库中的 Agent 与 Skill. 目标 Git 仓库的根目录现有文件观察由 Repository State Inspector 按 `./0025-use-root-only-repository-platform-discovery.md` 的 Decision 节提供, Repository Workflow Module 决定冲突, 归属, 授权和事务.
 
-发布前同步复用统一的 Skill 引用分析和转换责任, 避免复制平台规则. Upstream Sync 仅通过 Platform Adapter 取得会话身份, 不调用 Skill 引用分析和转换, 其采用流程见 [ADR 0011](0011-use-source-only-human-reviewed-upstream-sync.md) 的状态说明. Adapter 仍不写源码仓库, 不修改 Git 暂存区, 不运行编辑器, 不取得审核或恢复状态.
+发布前同步复用统一的 Skill 引用分析和转换责任, 避免复制平台规则. Upstream Sync 仅通过 Platform Adapter 取得会话身份, 不调用 Skill 引用分析和转换, 其采用流程见 `./0011-use-source-only-human-reviewed-upstream-sync.md` 的状态说明. Adapter 仍不写源码仓库, 不修改 Git 暂存区, 不运行编辑器, 不取得审核或恢复状态.
 
 Repository Workflow Module 在一次完整的写入前检查中组合所有已选平台的结果. 任一阻断问题都会阻止整个事务, 不允许已选平台集合部分成功. 确定性合并, 共享目标冲突和最后写入锁文件的责任仍归 Repository Workflow Module.
 

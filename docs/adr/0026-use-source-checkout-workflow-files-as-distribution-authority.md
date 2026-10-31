@@ -14,9 +14,9 @@ Workflow Distribution 的大部分清单数据可以从安全固定目录树或�
 
 源码仓库实际使用的共享工作流文件是唯一编写来源, 包括实际 Skill, 受管理的 Agent 文档区域, 规范 Role 和 ARW 许可证文件. 普通开发直接修改这些位置, 不要求 `distribution/` 实时同步.
 
-源码仓库实际 Skill 视图中的 `$reviewer-capability` 是能力测试操作的唯一权威, 仅供 Source Checkout 使用. 发布前同步在源码选择阶段排除该 Skill, 使它不进入 Workflow Distribution. 这一选择使完整安装载荷已经满足源码限定边界, 避免安装或平台投影另行维护能力测试 Skill 的排除规则. 显式调用政策由 [ADR 0015](0015-use-versioned-skill-package-grammars.md#decision) 拥有.
+源码仓库实际 Skill 视图中的 `$reviewer-capability` 是能力测试操作的唯一权威, 仅供 Source Checkout 使用. 发布前同步在源码选择阶段排除该 Skill, 使它不进入 Workflow Distribution. 这一选择使完整安装载荷已经满足源码限定边界, 避免安装或平台投影另行维护能力测试 Skill 的排除规则. 显式调用政策由 `./0015-use-versioned-skill-package-grammars.md` 的 Decision 节拥有.
 
-发布前, 独立的发布前同步从实际文件形成 Workflow Distribution. 这套完整安装载荷由发布前同步验证后写入, 经普通 Git 提交审核后 (见 [ADR 0036](0036-run-distribution-sync-as-a-single-command.md), 其取代本句中的审核与授权), 发布, 安装和目标仓库工作流只消费已经形成的载荷, 不反向修改实际来源, 也不重新决定转换内容.
+发布前, 独立的发布前同步从实际文件形成 Workflow Distribution. 这套完整安装载荷由发布前同步验证后写入, 经普通 Git 提交审核后 (见 `./0036-run-distribution-sync-as-a-single-command.md`, 其取代本句中的审核与授权), 发布, 安装和目标仓库工作流只消费已经形成的载荷, 不反向修改实际来源, 也不重新决定转换内容.
 
 Workflow Distribution 不再使用完整的带类型清单, 也不再分别保存两个平台的事实和发布证据. 固定安全目录树直接给出载荷清单.
 
@@ -26,7 +26,7 @@ Workflow Distribution 不再使用完整的带类型清单, 也不再分别保�
 
 Upstream Sync 的 Ours 是源码仓库实际使用的 `.agents/skills/`. Base 与 Theirs 仍来自固定上游提交, 并继续经过用户审核的语义三方合并.
 
-Upstream Sync 只更新实际 Skill, 许可证目标和来源自身的配置与采用记录 (原 `finalize` 已随旧引擎删除, 见 [ADR 0011](0011-use-source-only-human-reviewed-upstream-sync.md)). Workflow Distribution 在后续独立的发布前同步中派生, 不进入 Upstream Sync 的批准或恢复状态.
+Upstream Sync 只更新实际 Skill, 许可证目标和来源自身的配置与采用记录 (原 `finalize` 已随旧引擎删除, 见 `./0011-use-source-only-human-reviewed-upstream-sync.md`). Workflow Distribution 在后续独立的发布前同步中派生, 不进入 Upstream Sync 的批准或恢复状态.
 
 ## Rejected alternatives
 

@@ -8,4 +8,4 @@ ARW 使用根发布配置指定的公开 GitHub HTTPS 来源, 安装者无须私
 
 用户可以只把当前源码文件快照建立为新的 Git 历史, 不引入原提交, 分支或 tag. 源码迁移不等于正式发布; 没有较早稳定版本时, 现有正式验证所需的旧版输入仍是必须先解决的前提, 不由迁移操作豁免.
 
-本决定取代 [ADR 0024](0024-use-ssh-for-private-gitlab-acquisition.md) 的私有 GitLab SSH 来源政策和 [ADR 0029](0029-use-external-glab-for-gitlab-release-publication.md) 的外部 GitLab 发布工具选择. 保留准确 Git 对象和字节核验, 单一来源配置, 已批准公告交接和失败停点, 以减少维护者需要承担的认证与远端状态责任.
+本决定取代 `./0024-use-ssh-for-private-gitlab-acquisition.md` 的私有 GitLab SSH 来源政策和 `./0029-use-external-glab-for-gitlab-release-publication.md` 的外部 GitLab 发布工具选择. 保留准确 Git 对象和字节核验, 单一来源配置, 已批准公告交接和失败停点, 以减少维护者需要承担的认证与远端状态责任.

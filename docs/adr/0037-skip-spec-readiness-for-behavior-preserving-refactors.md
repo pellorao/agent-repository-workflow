@@ -1,6 +1,6 @@
 # 行为保持重构的实施 issue 不运行 Spec Readiness
 
-本决定部分取代 [ADR 0006](0006-enforce-spec-readiness-with-independent-review.md) 中 "对每个实施 issue" 运行 Spec Readiness 的适用范围. ADR 0006 的其余决定和 [ADR 0023](0023-separate-commit-audit-review-from-implementation.md) 的 Commit Audit 不变.
+本决定部分取代 `./0006-enforce-spec-readiness-with-independent-review.md` 中 "对每个实施 issue" 运行 Spec Readiness 的适用范围. ADR 0006 的其余决定和 `./0023-separate-commit-audit-review-from-implementation.md` 的 Commit Audit 不变.
 
 ## Context
 
@@ -8,7 +8,7 @@
 
 ## Decision
 
-- 交付只是行为保持重构的实施 issue 不运行 Spec Readiness, 因而没有就绪记录, 实施提交不运行 `verify --subject-only`. 条件, 声明段落 `行为保持重构例外:` 和终态规则由[长期规范](../specs/agent-repository-workflow/spec.md)拥有.
+- 交付只是行为保持重构的实施 issue 不运行 Spec Readiness, 因而没有就绪记录, 实施提交不运行 `verify --subject-only`. 条件, 声明段落 `行为保持重构例外:` 和终态规则由长期规范 (`../specs/agent-repository-workflow/spec.md`) 拥有.
 - Commit Audit 照常运行, 是这类 issue 唯一的独立审核. 其 `completed` 转换只经实施提交 (Gate 1).
 
 ## Rejected alternatives

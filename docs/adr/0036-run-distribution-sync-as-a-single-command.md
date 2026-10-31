@@ -1,6 +1,6 @@
 # 发布前同步由一次命令验证后直接写入
 
-[ADR 0034](0034-let-the-main-agent-complete-distribution-sync-review.md) 被本决定完全取代. [ADR 0026](0026-use-source-checkout-workflow-files-as-distribution-authority.md) 与 [ADR 0015](0015-use-versioned-skill-package-grammars.md) 中涉及引用审核和写入授权的句子由本决定取代, 二者的其余决定保持不变.
+`./0034-let-the-main-agent-complete-distribution-sync-review.md` 被本决定完全取代. `./0026-use-source-checkout-workflow-files-as-distribution-authority.md` 与 `./0015-use-versioned-skill-package-grammars.md` 中涉及引用审核和写入授权的句子由本决定取代, 二者的其余决定保持不变.
 
 ## Context
 

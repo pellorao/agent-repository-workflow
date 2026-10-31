@@ -1,6 +1,6 @@
 # 维护 Matt Pocock 技能集合分支
 
-当前决定部分由 [ADR 0026](0026-use-source-checkout-workflow-files-as-distribution-authority.md#decision) 取代. ARW 仍维护由用户审核的上游 Skill 分支和语义差异.
+当前决定部分由 `./0026-use-source-checkout-workflow-files-as-distribution-authority.md` 的 Decision 节取代. ARW 仍维护由用户审核的上游 Skill 分支和语义差异.
 
 现在, Ours 是源码仓库实际使用的 `.agents/skills/`. Workflow Distribution 是后续发布前同步的派生载荷, 不再是 Upstream Sync 的编写权威.
 

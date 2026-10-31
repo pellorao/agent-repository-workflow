@@ -6,23 +6,23 @@
 
 ## Decision
 
-ARW 对每个实施 issue 使用机械检查和独立语义审核共同判断 Spec Readiness. Engine 检查结构, 路径, 字节绑定, 派生结果和新鲜度; `spec-readiness-reviewer` 判断治理设计, 理由, ADR 和 Module Design 是否充分. 两层中的任何问题都关闭式阻止开始实施; 就绪记录只授权开始实施, 此后提交只核对审核对象 (subject), 理由与成本见 ADR 0023; 已授权且不依赖该结果的实施可与首次审核并行, 具体检查时点由[设计就绪工作流](../../.agents/skills/spec-readiness/SKILL.md#authorization-timing)拥有. 必要设计决定和真实前置依赖仍须先满足. Application Source Issue 与 Wayfinder issue 不进入这项检查; 交付只含非实施分类内容 (Agent 规则与文档 Markdown 和 `.scratch` 记录) 的实施 issue 同样不进入, 见 [ADR 0035](0035-allow-rule-only-issues-terminal-status-in-non-implementation-commits.md); 行为保持重构例外的实施 issue 也不进入, 见 [ADR 0037](0037-skip-spec-readiness-for-behavior-preserving-refactors.md).
+ARW 对每个实施 issue 使用机械检查和独立语义审核共同判断 Spec Readiness. Engine 检查结构, 路径, 字节绑定, 派生结果和新鲜度; `spec-readiness-reviewer` 判断治理设计, 理由, ADR 和 Module Design 是否充分. 两层中的任何问题都关闭式阻止开始实施; 就绪记录只授权开始实施, 此后提交只核对审核对象 (subject), 理由与成本见 ADR 0023; 已授权且不依赖该结果的实施可与首次审核并行, 具体检查时点由 `.agents/skills/spec-readiness/SKILL.md` 的 Authorization timing 节拥有. 必要设计决定和真实前置依赖仍须先满足. Application Source Issue 与 Wayfinder issue 不进入这项检查; 交付只含非实施分类内容 (Agent 规则与文档 Markdown 和 `.scratch` 记录) 的实施 issue 同样不进入, 见 `./0035-allow-rule-only-issues-terminal-status-in-non-implementation-commits.md`; 行为保持重构例外的实施 issue 也不进入, 见 `./0037-skip-spec-readiness-for-behavior-preserving-refactors.md`.
 
 Engine 从当前 issue 的连续交付结果和验收条件冻结准确审核对象, 并与显式治理输入, Reviewer Role 身份及与用户沟通的 Main Agent 选定的草稿路径一起绑定到不可变 Reviewer Request. 审核对象只证明本次交付范围, 不能自行证明设计质量. issue 不声明治理要求引用: 治理 Input 仍由 Main Agent 显式给出并受摘要绑定, 只有哪些既有章节与 issue 相关由 Reviewer 自行检索, 检索结果只作比较证据, 不授权也不记录. 原先由 issue 声明引用的理由是显式比启发式易审计, 但引用选择本身成为就绪缺口的主要来源, 而 Input 绑定已保证审核事实可审计. Agent 指令规范 Reviewer 行为, Reviewer Role 正文与平台配置另有职责; 它们均不作为治理输入或设计证据. 审核对象身份对行尾及验收任务列表的完成标记作限定规范化, 其他内容变化使就绪失效.
 
 独立 Reviewer 通过共享运行入口在独立 Codex 根线程中独自审查, 不创建子 Agent. 第一次启动的线程不含作者对话. Reviewer 读取完整请求和适用指令, 并亲自把问题或明确的无问题结论写入本轮绑定的草稿. 平台的 `ready` 回复只表示交付完成, 空草稿不能表示无问题. 同一 issue 后续的真实治理修复复用符合单 Reviewer 合同的可靠原线程, 每轮仍依据新的完整请求交付完整替代结果; 能力验证场景的线程不能充当真实审核线程.
 
-后续复审遵循[当前版本与结果有效性合同](../specs/agent-repository-workflow/spec.md#review-versions-and-result-validity), 默认核对相邻版本差异及其全部关联影响. Reviewer 自己已完成的前轮原始报告与准确绑定输入可以证明历史覆盖, 当前设计证据仍来自完整当前版本. 旧问题和未完成检查不能省略, 需要全盘审核时由 Reviewer 给出具体理由. 正常请求准备, 草稿生成, 原样提升和 verify 保持不变, 不因保留历史覆盖而复用已经过期的正式记录.
+后续复审遵循 `../specs/agent-repository-workflow/spec.md` 的 Review versions and result validity 节, 默认核对相邻版本差异及其全部关联影响. Reviewer 自己已完成的前轮原始报告与准确绑定输入可以证明历史覆盖, 当前设计证据仍来自完整当前版本. 旧问题和未完成检查不能省略, 需要全盘审核时由 Reviewer 给出具体理由. 正常请求准备, 草稿生成, 原样提升和 verify 保持不变, 不因保留历史覆盖而复用已经过期的正式记录.
 
-共享 Reviewer 运行 Module 负责原生会话启动, 工作指示, 通知, 恢复, 单 Reviewer 运行事实核对和该线程的计量, 不判断治理设计是否充分. Spec Readiness Module 仍只机械验证绑定草稿并生成, 提升和验证正式记录, 不代写 Reviewer 结论, 不把文件新鲜度检查说成写入者身份审计. 运行合同由[长期规格的 Reviewer 工作流](../specs/agent-repository-workflow/spec.md#reviewer-workflow)拥有, 模型与平台权益不能从安装成功或种子默认值推断.
+共享 Reviewer 运行 Module 负责原生会话启动, 工作指示, 通知, 恢复, 单 Reviewer 运行事实核对和该线程的计量, 不判断治理设计是否充分. Spec Readiness Module 仍只机械验证绑定草稿并生成, 提升和验证正式记录, 不代写 Reviewer 结论, 不把文件新鲜度检查说成写入者身份审计. 运行合同由 `../specs/agent-repository-workflow/spec.md` 的 Reviewer workflow 节拥有, 模型与平台权益不能从安装成功或种子默认值推断.
 
-公开生命周期是 `prepare -> review -> generate -> promote -> verify`. Engine 从最终草稿生成规范结果; 只有 `promote` 将准确结果写到当前 issue 旁边, 只有当前有效且满足要求的 `verify` 结果授权 Spec Readiness 这一前提. 旧 effort 根记录不是回退来源. Issue 分流状态和阻断项另行判断; Git 差异, 提交来源和终态审核不替代本项就绪. [长期规格](../specs/agent-repository-workflow/spec.md#spec-readiness) 负责准确命令, 记录, 证据和失败合同, [ADR 0023](0023-separate-commit-audit-review-from-implementation.md) 负责提交时的独立审核.
+公开生命周期是 `prepare -> review -> generate -> promote -> verify`. Engine 从最终草稿生成规范结果; 只有 `promote` 将准确结果写到当前 issue 旁边, 只有当前有效且满足要求的 `verify` 结果授权 Spec Readiness 这一前提. 旧 effort 根记录不是回退来源. Issue 分流状态和阻断项另行判断; Git 差异, 提交来源和终态审核不替代本项就绪. `../specs/agent-repository-workflow/spec.md` 的 Spec Readiness 节负责准确命令, 记录, 证据和失败合同, `./0023-separate-commit-audit-review-from-implementation.md` 负责提交时的独立审核.
 
 Module Design 的适用性依正式运行代码的行为变化判断: 不修改正式运行代码时省略该章节, 模块相关设计不变时使用 `Not required:`, 相关责任或边界变化时使用完整设计. 章节形态是唯一适用性来源, 省略章节仍须完成 Spec Readiness.
 
 源码仓库的定向 Reviewer 优化只有在当前 issue 已取得一次普通就绪, 且用户批准当前修改批次与定向验证后, 才能在该轮修改和验证之间延后重复审核. 优化结束且关闭 issue 前, 对最终治理输入重新完成普通就绪. 真实治理审核发现的问题直接进入普通修复和复审, 不进入能力验证的用户审核停点.
 
-源码仓库发布验证还保留两项由[发布长期规格](../specs/agent-repository-workflow-release/spec.md)准确限定的例外. 一次受验目标仓库的登记初始化 issue 可以省略 Spec Readiness, 例外身份由发布流程与 Release Validation Registry 判定, 不扩展 Engine. Source Checkout 发布准备 issue 先取得普通就绪; 默认候选修复循环允许在中间修改与完整本地验证之间延后重复审核, 然后对最终候选完成普通就绪及适用的后续审核. 审核对象和输入未变时可以复用通过结果, 审核要求改变候选时仍须重新完成适用审核与完整本地验证. 这些例外不授权普通实施, 远程发布或跳过最终候选所需的审核.
+源码仓库发布验证还保留两项由发布长期规格 (`../specs/agent-repository-workflow-release/spec.md`) 准确限定的例外. 一次受验目标仓库的登记初始化 issue 可以省略 Spec Readiness, 例外身份由发布流程与 Release Validation Registry 判定, 不扩展 Engine. Source Checkout 发布准备 issue 先取得普通就绪; 默认候选修复循环允许在中间修改与完整本地验证之间延后重复审核, 然后对最终候选完成普通就绪及适用的后续审核. 审核对象和输入未变时可以复用通过结果, 审核要求改变候选时仍须重新完成适用审核与完整本地验证. 这些例外不授权普通实施, 远程发布或跳过最终候选所需的审核.
 
 ## Decision rationale
 

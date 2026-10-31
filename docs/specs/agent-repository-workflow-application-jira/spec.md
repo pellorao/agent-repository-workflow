@@ -110,7 +110,7 @@ Application Leader 仍可修改 Application spec, 在 Application Repository 中
 | `application.jira.acceptedStatus` | true | `"需求开发中"` |
 | `application.jira.completedStatus` | true | `"上线成功"` |
 
-`reviewers` 的字段格式由 [安装配置规格](../agent-repository-workflow-installation/spec.md#reviewer-configuration) 拥有, 本表只声明它在规则对象中的位置. `application` 是可以不存在且没有默认值的父路径. 它不存在时, 全部后代都不活动, 仓库是 Application Member. 它存在时, 后代的 `required: true` 要求字段在来源配置中实际存在; 默认值不修复缺失的必需来源字段. `modules` 作为数组叶字段处理, 条目的名称/路径结构由 v2 验证器检查. `application.jira` 是父路径, 没有自己的默认值.
+`reviewers` 的字段格式由 `../agent-repository-workflow-installation/spec.md` 的 Reviewer configuration 节拥有, 本表只声明它在规则对象中的位置. `application` 是可以不存在且没有默认值的父路径. 它不存在时, 全部后代都不活动, 仓库是 Application Member. 它存在时, 后代的 `required: true` 要求字段在来源配置中实际存在; 默认值不修复缺失的必需来源字段. `modules` 作为数组叶字段处理, 条目的名称/路径结构由 v2 验证器检查. `application.jira` 是父路径, 没有自己的默认值.
 
 只接受 v2, 其他版本明确失败, 不提供版本转换. v2 验证器是 Application 字段类型, Module 条目, 名称/路径, URL 和准确 JIRA 字串约束的唯一权威. 字段路径, 默认值, 顺序和转换静态一致性由通用仓库配置模块负责.
 
@@ -200,7 +200,7 @@ Key          Title
 P20274-1643  First story
 ~~~
 
-每行只有键与标题. 标题中连续空白字符和控制字符变成一个 ASCII 空格, 然后去掉首尾空白. 标题列按总规格 [ARW Artifact operations](../agent-repository-workflow/spec.md#arw-artifact-operations) 中的表格截断规则排版, `--full | -f` 时不截断.
+每行只有键与标题. 标题中连续空白字符和控制字符变成一个 ASCII 空格, 然后去掉首尾空白. 标题列按总规格 `../agent-repository-workflow/spec.md` 的 ARW Artifact operations 节中的表格截断规则排版, `--full | -f` 时不截断.
 
 空结果输出:
 
@@ -725,17 +725,17 @@ JIRA 评论优先和状态收敛优先保证可向前重试. JIRA API 不提供�
 
 ### ADR Evaluation
 
-[ADR-0027](../../adr/0027-separate-repository-configuration-from-workflow-lock.md) 拥有 `arw.config.json` 与 `arw-lock.json` 的责任分离, Application 配置的用户归属, 以及配置存在时的 Application Leader 身份. 本文细化该 Application 配置的字段和使用行为, 不建立另一份配置权威.
+`docs/adr/0027-separate-repository-configuration-from-workflow-lock.md` 拥有 `arw.config.json` 与 `arw-lock.json` 的责任分离, Application 配置的用户归属, 以及配置存在时的 Application Leader 身份. 本文细化该 Application 配置的字段和使用行为, 不建立另一份配置权威.
 
-[ADR-0012](../../adr/0012-use-namespaced-arw-operation-surfaces.md) 继续拥有带命名空间的 CLI. `jira`, `application`, `module` 和 `submodule` 是公开命名空间, `jl`, `jo` 和 `ssb` 是明确批准的简化入口, 不是旧命令兼容拼写. 新纠错检查位于 `module` 命名空间且没有短别名.
+`docs/adr/0012-use-namespaced-arw-operation-surfaces.md` 继续拥有带命名空间的 CLI. `jira`, `application`, `module` 和 `submodule` 是公开命名空间, `jl`, `jo` 和 `ssb` 是明确批准的简化入口, 不是旧命令兼容拼写. 新纠错检查位于 `module` 命名空间且没有短别名.
 
-[ADR-0013](../../adr/0013-use-main-agent-single-writer-orchestration.md) 拥有 Main Agent 协调分工写入和 Git 写入的责任边界. 用户授权的 Module issue 或 spec 修改可以由获分派的 subagent 在明确范围内完成, Git 写入仍由 Main Agent 执行, JIRA 步骤仍按其独立授权执行. 纠错命令保持只读, ARW 不自动启动 Agent.
+`docs/adr/0013-use-main-agent-single-writer-orchestration.md` 拥有 Main Agent 协调分工写入和 Git 写入的责任边界. 用户授权的 Module issue 或 spec 修改可以由获分派的 subagent 在明确范围内完成, Git 写入仍由 Main Agent 执行, JIRA 步骤仍按其独立授权执行. 纠错命令保持只读, ARW 不自动启动 Agent.
 
-[ADR-0025](../../adr/0025-use-root-only-repository-platform-discovery.md) 只拥有 Repository Workflow 从最近 Git 仓库根发现平台定义的范围. Application 命令继续按总长期规格从当前最近 Git 仓库取得 Application 上下文, 每个 Module 作为独立 Git 仓库使用自己的 `.scratch`. 本文协调这些已经分离的跟踪器, 不把 Application 的子模块路径解释为两个跟踪器根合并, 也不扩大 ADR-0025 的平台发现结论.
+`docs/adr/0025-use-root-only-repository-platform-discovery.md` 只拥有 Repository Workflow 从最近 Git 仓库根发现平台定义的范围. Application 命令继续按总长期规格从当前最近 Git 仓库取得 Application 上下文, 每个 Module 作为独立 Git 仓库使用自己的 `.scratch`. 本文协调这些已经分离的跟踪器, 不把 Application 的子模块路径解释为两个跟踪器根合并, 也不扩大 ADR-0025 的平台发现结论.
 
-[ADR-0017](../../adr/0017-use-operation-specific-recovery-baselines.md) 要求不同生命周期使用各自真正可恢复的基线, 而不是建立通用回滚协议. Association 的逐仓库暂存区基线, 分支切换的反向恢复, 远端收敛的保留已完成的快进, 以及 Application 替换内容的独立暂存区基线都遵守该方向. 它们没有共享恢复日志或跨操作检查点, 失败影响由各自结果准确返回, 因而不与 ADR-0017 冲突, 也不为这些可独立重试的操作新增 ADR.
+`docs/adr/0017-use-operation-specific-recovery-baselines.md` 要求不同生命周期使用各自真正可恢复的基线, 而不是建立通用回滚协议. Association 的逐仓库暂存区基线, 分支切换的反向恢复, 远端收敛的保留已完成的快进, 以及 Application 替换内容的独立暂存区基线都遵守该方向. 它们没有共享恢复日志或跨操作检查点, 失败影响由各自结果准确返回, 因而不与 ADR-0017 冲突, 也不为这些可独立重试的操作新增 ADR.
 
-[ADR-0018](../../adr/0018-use-bounded-mechanical-trust-for-initial-arw-security.md) 拥有来源取得与信任根的有界机械边界, 不拥有实时 JIRA 凭据. `JIRA_ACCESS_TOKEN` 只来自当前进程, 重定向直接失败, 诊断信息删除秘密信息和原始 HTML, 没有新的持久凭据权威来源, 键也只作为编码后的路径段使用. 这些限制缩小现有 HTTP 请求的传播边界, 不建立签名, 凭据存储或身份信任体系, 因而不改变 ADR-0018, 也不需要独立安全 ADR.
+`docs/adr/0018-use-bounded-mechanical-trust-for-initial-arw-security.md` 拥有来源取得与信任根的有界机械边界, 不拥有实时 JIRA 凭据. `JIRA_ACCESS_TOKEN` 只来自当前进程, 重定向直接失败, 诊断信息删除秘密信息和原始 HTML, 没有新的持久凭据权威来源, 键也只作为编码后的路径段使用. 这些限制缩小现有 HTTP 请求的传播边界, 不建立签名, 凭据存储或身份信任体系, 因而不改变 ADR-0018, 也不需要独立安全 ADR.
 
 双向关联字段与 Downstream changes 子章节是跟踪文档中的持久格式, 但没有建立新的 issue 存储或独立历史权威来源. Module 实施 issue 保持实施状态, 证据和当前下游改动权威, Application Source Issue 只是可重新计算的投影; 关联硬锁, Module 软锁和唯一同步操作使两侧责任不竞争. 该格式和同步行为由本文完整拥有, 将来可以通过普通解析器与文档迁移演进, 因而不需要单独 ADR.
 

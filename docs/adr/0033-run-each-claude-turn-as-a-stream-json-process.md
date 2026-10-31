@@ -1,6 +1,6 @@
 # Claude 后端每回合运行一个 `stream-json` 输入进程
 
-Claude 后端必须与 Codex 后端同等实现 `Background Agent control` 的全部功能, 包括运行中的 `send_message`, 需要人工决定的请求和中断. [ADR 0032](0032-run-claude-reviewers-through-headless-claude.md) 中 "运行中的指示被拒绝" 及不维持 `stream-json` 输入进程的决定被本决定取代, 其余决定保持不变.
+Claude 后端必须与 Codex 后端同等实现 `Background Agent control` 的全部功能, 包括运行中的 `send_message`, 需要人工决定的请求和中断. `./0032-run-claude-reviewers-through-headless-claude.md` 中 "运行中的指示被拒绝" 及不维持 `stream-json` 输入进程的决定被本决定取代, 其余决定保持不变.
 
 每个 ARW 回合运行一个 `claude -p --input-format stream-json --output-format stream-json --verbose --replay-user-messages` 进程, 首轮用 `--session-id`, 后续回合用 `--resume` 续接同一会话. 标准输入在回合内保持打开: 回合任务和运行中的 `send_message` 都作为用户消息写入, 写入成功即为通道分发事实. Claude 在下一次模型请求边界取用新消息, 已在生成最终回复时则排到下一个 Claude 回合; `--replay-user-messages` 的回显是取用事实; `--include-partial-messages` 的流事件提供模型阶段计量事实. 管理进程在出现 `result` 且所有已写入消息都已回显时关闭标准输入, 进程退出后 ARW 回合才结束, 因此排队的消息仍属于同一 ARW 回合, 最终响应取最后一个 `result`.
 

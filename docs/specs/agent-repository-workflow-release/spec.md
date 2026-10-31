@@ -2,7 +2,7 @@
 
 ## Scope
 
-本文定义 ARW 源码仓库验证和发布稳定版本的长期规则: 发布候选, 本地检查, 跨平台 VM 验证, tag, 公开 Bootstrap 验证, GitHub 托管发布对象和失败恢复. 具体操作步骤由源码仓库专用且只能显式调用的 `$release` Skill (`.agents/skills/release/`) 拥有. [Agent Repository Workflow 长期规格](../agent-repository-workflow/spec.md) 拥有产品和仓库工作流. [开发长期规格](../agent-repository-workflow-development/spec.md) 拥有 Workflow Distribution 与平台投影. [安装长期规格](../agent-repository-workflow-installation/spec.md) 拥有 Bootstrap, 安装来源与载荷, Identity, Installation Contract 和 ARW 安装目录.
+本文定义 ARW 源码仓库验证和发布稳定版本的长期规则: 发布候选, 本地检查, 跨平台 VM 验证, tag, 公开 Bootstrap 验证, GitHub 托管发布对象和失败恢复. 具体操作步骤由源码仓库专用且只能显式调用的 `$release` Skill (`.agents/skills/release/`) 拥有. Agent Repository Workflow 长期规格 (`../agent-repository-workflow/spec.md`) 拥有产品和仓库工作流. 开发长期规格 (`../agent-repository-workflow-development/spec.md`) 拥有 Workflow Distribution 与平台投影. 安装长期规格 (`../agent-repository-workflow-installation/spec.md`) 拥有 Bootstrap, 安装来源与载荷, Identity, Installation Contract 和 ARW 安装目录.
 
 ## Release validation configuration
 
@@ -27,7 +27,7 @@
 
 ## Reviewer capability tests
 
-Reviewer 能力测试不是发布门禁. 维护者需要时显式调用源码专用的 `$reviewer-capability` Skill (`.agents/skills/reviewer-capability/`): 用 `tests/fixtures/reviewer-capability/<role>/<scenario>/` 中带隐藏预期的场景 (qwen_strata benchmark v2 (`benchmarks/multi-model-v2`) 的 4 个计划, 夹具直接保存物化结果, 不含补丁链), 通过 `arw background-agent` 在 Codex 和 Claude 后端运行 Reviewer, 再用 `scripts/reviewer-capability.mjs` 计分, 组盲池, 生成视图并统计, 由盲裁裁判 (至少 sonnet high) 裁决候选的召回和误报. 套件只属于 Source Checkout, 不进入 Workflow Distribution 和 release 安装包; 评分与盲裁工具的合同由[开发规格](../agent-repository-workflow-development/spec.md#module-design)拥有. 结果用于评估角色指令, 模型和报告格式, 不授权审核, 提交或发布.
+Reviewer 能力测试不是发布门禁. 维护者需要时显式调用源码专用的 `$reviewer-capability` Skill (`.agents/skills/reviewer-capability/`): 用 `tests/fixtures/reviewer-capability/<role>/<scenario>/` 中带隐藏预期的场景 (qwen_strata benchmark v2 (`benchmarks/multi-model-v2`) 的 4 个计划, 夹具直接保存物化结果, 不含补丁链), 通过 `arw background-agent` 在 Codex 和 Claude 后端运行 Reviewer, 再用 `scripts/reviewer-capability.mjs` 计分, 组盲池, 生成视图并统计, 由盲裁裁判 (至少 sonnet high) 裁决候选的召回和误报. 套件只属于 Source Checkout, 不进入 Workflow Distribution 和 release 安装包; 评分与盲裁工具的合同由 `../agent-repository-workflow-development/spec.md` 的 Module Design 节拥有. 结果用于评估角色指令, 模型和报告格式, 不授权审核, 提交或发布.
 
 ## Failure recovery and authorization
 
@@ -41,7 +41,7 @@ Reviewer 能力测试不是发布门禁. 维护者需要时显式调用源码专
 
 已存在 Release 的资产字节不由发布核对比较, 公开 Bootstrap 验证用该资产实际安装并核对版本, 证明其可安装且身份正确.
 
-公告之前无人下载该 tag 与 Release, 所以失败后整体回滚重试比停下等待更安全也更快; 公告之后 tag 可能已被依赖, 仍然保留. 回滚是删除后重建, 不是原地移动, 是对"不移动已推送 tag"的受限例外. 接受的成本: 公开 Bootstrap 验证与公告前可能的偶然获取者, 其持有的旧 tag 可能与重建的 tag 不一致, 公告前不预期有消费者, 接受该残余风险. 本例外的决定见 [ADR 0031](../../adr/0031-use-github-and-local-validation-sources.md).
+公告之前无人下载该 tag 与 Release, 所以失败后整体回滚重试比停下等待更安全也更快; 公告之后 tag 可能已被依赖, 仍然保留. 回滚是删除后重建, 不是原地移动, 是对"不移动已推送 tag"的受限例外. 接受的成本: 公开 Bootstrap 验证与公告前可能的偶然获取者, 其持有的旧 tag 可能与重建的 tag 不一致, 公告前不预期有消费者, 接受该残余风险. 本例外的决定见 `docs/adr/0031-use-github-and-local-validation-sources.md`.
 
 Reviewer 能力测试只在角色指令, 模型或报告格式变化时才有意义, 不随每次发布运行. 旧的发布能力门禁用程序准备, 评分, 折减和会话检查, 这些代码大多校验程序自己产生的数据; 现在由 Agent 按 Skill 运行场景; 保留场景, 隐藏预期, 一个入口脚本及其评分, 报告修复, 格式罚, 暂停扣分与盲裁实现, 这些是评估角色指令的方法本身 (与 qwen_strata 的评分体系一致, 结果可比), 不是对 ARW 程序产物的发布门禁. 残差折减, 暂停计数与基线归档校验是评分体系的一部分: 归档基线是固定标尺, 其校验保证评分尺度不被意外改动, 不是校验程序运行时自己产生的数据.
 
@@ -49,4 +49,4 @@ VM 验证只证明用户实际依赖的结果: 安装, PATH 登记, 初始化和
 
 ## Validation strategy
 
-固定测试验证发布配置读取, 以及 Bootstrap 生成物与配置一致. VM 验证和公开 Bootstrap 验证只在真实发布时由 `$release` Skill 执行, 不作为 implementation issue 的完成测试, 常规测试不访问公网. 源码仓库确定性测试矩阵由[验证规则](../../agents/source-checkout-validation.md#source-checkout-deterministic-coverage)承担.
+固定测试验证发布配置读取, 以及 Bootstrap 生成物与配置一致. VM 验证和公开 Bootstrap 验证只在真实发布时由 `$release` Skill 执行, 不作为 implementation issue 的完成测试, 常规测试不访问公网. 源码仓库确定性测试矩阵由 `docs/agents/source-checkout-validation.md` 的 Source Checkout deterministic coverage 节承担.

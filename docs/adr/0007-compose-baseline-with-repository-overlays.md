@@ -2,7 +2,7 @@
 
 ## Decision
 
-源码仓库实际使用的共享工作流文件是编写权威, 由 [ADR 0026](0026-use-source-checkout-workflow-files-as-distribution-authority.md#decision) 规定的发布前同步形成 Workflow Distribution. 每份 `docs/agents/*.md` 在负责同一主题的文件中保留 Git 仓库自有区域, 使仓库规则与适用触发条件相邻, 避免读取无关规则. 根 `AGENTS.md` 以仓库自有内容为主, 只嵌入较小的 ARW 受管区域.
+源码仓库实际使用的共享工作流文件是编写权威, 由 `./0026-use-source-checkout-workflow-files-as-distribution-authority.md` 的 Decision 节规定的发布前同步形成 Workflow Distribution. 每份 `docs/agents/*.md` 在负责同一主题的文件中保留 Git 仓库自有区域, 使仓库规则与适用触发条件相邻, 避免读取无关规则. 根 `AGENTS.md` 以仓库自有内容为主, 只嵌入较小的 ARW 受管区域.
 
 Code Map 根列表放在根 `AGENTS.md` 的常读区域. 如果只放在按条件读取的 `code-maps` Skill, Agent 必须先知道 Code Map 是否适用, 才能决定是否读取保存该事实的文件, 形成循环触发. Code Map 的具体启用选择仍由 Repository Profile 负责.
 
