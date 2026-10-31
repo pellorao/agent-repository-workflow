@@ -232,9 +232,6 @@ test('update inventory preflight aggregates path and input failures before every
     let writeCount = 0;
     const guardedFileSystem = {
         ...nodeFileSystem,
-        readFile: async (/** @type {string} */ path, /** @type {'utf8'} */ encoding) => path.endsWith('01-hidden.md')
-            ? Promise.reject(new Error('simulated read failure'))
-            : nodeFileSystem.readFile(path, encoding),
         rename: async (/** @type {string} */ source, /** @type {string} */ target) => {
             renameCount += 1;
             return nodeFileSystem.rename(source, target);

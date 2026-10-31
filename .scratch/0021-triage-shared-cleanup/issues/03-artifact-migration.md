@@ -1,6 +1,6 @@
 # 精简迁移模块重复逻辑
 
-Status: ready-for-agent
+Status: completed
 
 ## What to build
 
@@ -19,10 +19,26 @@ Status: ready-for-agent
 
 ## Acceptance criteria
 
-- [ ] 逐项复核并完成可保持行为的精简, 跳过项记录理由.
-- [ ] 命令输出, 公开 Interface, 错误结果和持久状态不变, 不修改长期规范.
-- [ ] 完整 Source Checkout 验证及适用检查通过, 记录预算实际值和验收证据.
+- [x] 逐项复核并完成可保持行为的精简, 跳过项记录理由.
+- [x] 命令输出, 公开 Interface, 错误结果和持久状态不变, 不修改长期规范.
+- [x] 完整 Source Checkout 验证及适用检查通过, 记录预算实际值和验收证据.
 
 ## Blocked by
 
 无.
+
+## Validation
+
+- #37: MigrationFilesystem 的生产调用只有 lstat, rename, rm 和 writeFile. 删除 tests/artifact-migration/cli.test.mjs 中未被读取的 readFile 覆盖; 不存在 readdir 覆盖. 注入读取失败的实际入口 inventoryFilesystem.readText 保留, 原测试仍检验读取和目录枚举失败时零写入.
+- #38: normalizeText 与 findFrontmatterEnd 从 issue-documents.mjs 导出并复用, 保留原扫描条件和 YAML frontmatter is not closed. 消息. BOM, CRLF, CR, 空文档, 闭合及未闭合前置区的 8 组对比结果与原实现一致.
+- #41: 移除 compareUtf8, 使用已有 compareText. slug 语法限制为 ASCII, 100 组排序对比结果相同; 现有迁移测试保留按提交历史及同提交 slug 排序的最终目录断言.
+- 非测试代码净增预算 0 行, 实际新增 5 行, 删除 15 行, 净减少 10 行. 另删除测试中 3 行无效注入, 未新增或语义修改测试案例. 提交前只删减与合并自查完成.
+- pnpm typecheck 通过; pnpm test 通过, 812 项测试, 0 失败, 0 跳过. 日志: .tmp/codex/01a1906d-513c-7b20-b0f2-7ecef5f3382b/0021_03/validation/tests.log.
+- node scripts/check-workflow-distribution.mjs, node scripts/project-claude-skills.mjs --check 和 node scripts/generate-install-arw.mjs --check 均通过.
+- 3 个修改的 JavaScript 文件均通过 node --check; node arw.mjs text check, node arw.mjs terms check --include .scratch/0021-triage-shared-cleanup/ 和 git diff --check 均通过.
+
+## Comments
+
+#45 跳过: migrateIssueDocuments 的输出确实来自相同 documents, 但 Map.get 返回 IssueDocument | undefined, 当前异常同时承担类型收窄. 删除它需要改变配对构建或添加类型断言, 本次保留现有配对与收窄, 不扩大类型改动. 本 issue 满足行为保持重构例外, 不创建 Spec Readiness 记录.
+
+- Commit Audit 第 1 轮: requirements-reviewer 和 code-standards-reviewer 均以 ready 完成, 两份绑定报告均为 No problems. 受审树为 fc2f25750f0c5271ff589494f87d135819f6d912, 报告目录为 .tmp/codex/01a1906d-513c-7b20-b0f2-7ecef5f3382b/_commit-audit/1/. Main Agent 已回归抽查迁移幂等结果, 同提交 slug 排序和读取失败零写入的既有断言, 并核对 ASCII slug 语法与共享比较器, 未发现漏检.
