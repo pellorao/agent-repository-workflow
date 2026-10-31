@@ -58,3 +58,11 @@ test('JIRA Convergence Adapter rejects malformed comment pagination without part
         assert.equal(result.diagnostics[0]?.code, 'jira-response-invalid');
     }
 });
+
+test('JIRA Convergence Adapter reports no matching comment for an empty exhausted page', async () => {
+    const adapter = createJiraConvergenceAdapter({
+        baseUrl: 'https://jira.example.test/',
+        request: async () => ({diagnostics: [], status: /** @type {'succeeded'} */ ('succeeded'), value: {comments: [], startAt: 0, total: 0}}),
+    });
+    assert.deepEqual(await adapter.findComment({body: 'exact', issueKey: 'PAY-1'}), {diagnostics: [], found: false, status: 'succeeded'});
+});
