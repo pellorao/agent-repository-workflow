@@ -1,6 +1,6 @@
 # 合并安装模块重复定义
 
-Status: ready-for-agent
+Status: completed
 
 ## What to build
 
@@ -21,10 +21,24 @@ Status: ready-for-agent
 
 ## Acceptance criteria
 
-- [ ] 逐项复核并完成可保持行为的精简, 跳过项记录理由.
-- [ ] 命令输出, 公开 Interface, 错误结果和持久状态不变, 不修改长期规范.
-- [ ] 完整 Source Checkout 验证及适用检查通过, 记录预算实际值和验收证据.
+- [x] 逐项复核并完成可保持行为的精简, 跳过项记录理由.
+- [x] 命令输出, 公开 Interface, 错误结果和持久状态不变, 不修改长期规范.
+- [x] 完整 Source Checkout 验证及适用检查通过, 记录预算实际值和验收证据.
 
 ## Blocked by
 
 无.
+
+## Validation
+
+- #84, #77, #71, #53, #221 和 #241 均完成, 没有跳过项. 类型定义和排序复用已有实现, isConfiguredEditor 保持原样, 正常退出码和空退出码处理保持原有结果.
+- 非测试代码净增预算 0 行, 实际新增 16 行, 删除 25 行, 净减少 9 行. 只删减与合并自查完成, 未修改测试或长期规范.
+- pnpm test 通过: 812 项测试, 0 失败; pnpm typecheck 通过. 现有覆盖检验安装清单, 身份解析, 编辑器与 Agent 启动以及卸载行为, 包含 Codex 和 Claude Code 的确定性覆盖.
+- node scripts/check-workflow-distribution.mjs, node scripts/project-claude-skills.mjs --check 和 node scripts/generate-install-arw.mjs --check 均通过.
+- 5 个修改的 JavaScript 文件均通过 node --check; node arw.mjs text check, node arw.mjs terms check --include .scratch/0021-triage-shared-cleanup/ 和 git diff --check 均通过.
+- 使用 HEAD 中的原参数解析器与当前公开 parseUninstallArguments 比较长度 0 到 5 的参数序列, 覆盖两个布尔选项, 非交互选项, true, false, 无效值和未知选项, 返回值及错误消息完全一致.
+
+## Comments
+
+- Commit Audit 第 1 轮的 requirements-reviewer 和 code-standards-reviewer 均以 ready 完成, 报告均为 No problems. 审核对象树为 2a6c252266329f54d2df2b9e6e6c6020a8c36079.
+- Main Agent 回归抽查了 tests/arw-common/agent-cli.test.mjs 的空退出码失败结果与 tests/installation/uninstallation.test.mjs 的重复选项, 缺值和无效值边界, 并核对共享 compareText 与原排序表达式相同. 参数解析对比共覆盖 19,608 组输入, 未发现遗漏或行为变化.
