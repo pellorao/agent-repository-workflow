@@ -1,6 +1,6 @@
 # 合并其他模块相同逻辑
 
-Status: ready-for-agent
+Status: completed
 
 ## What to build
 
@@ -23,10 +23,30 @@ Status: ready-for-agent
 
 ## Acceptance criteria
 
-- [ ] 逐项复核并完成可保持行为的精简, 跳过项记录理由.
-- [ ] 命令输出, 公开 Interface, 错误结果和持久状态不变, 不修改长期规范.
-- [ ] 完整 Source Checkout 验证及适用检查通过, 记录预算实际值和验收证据.
+- [x] 逐项复核并完成可保持行为的精简, 跳过项记录理由.
+- [x] 命令输出, 公开 Interface, 错误结果和持久状态不变, 不修改长期规范.
+- [x] 完整 Source Checkout 验证及适用检查通过, 记录预算实际值和验收证据.
 
 ## Blocked by
 
 无.
+
+## Validation
+
+- #16: 候选响应错误共用一个局部函数, 保留诊断, 阶段和结果; 6 个响应案例与 HEAD 实现逐项对照一致.
+- #272: 两处重通知共用 notifyAgain, 各自条件和调用时机不变; 现有 Reviewer Runtime 停止, 通知重入和期限覆盖全部通过.
+- #278: 删除从同一规范路径片段推导的包含检查, 保留 resolveTemporaryWorkspace 验证与错误映射; 现有恢复路径与临时工作区失败覆盖通过.
+- #246: 将已有 probe 传给 rootIgnoreState, 删除重复计算, 净减 1 行.
+- pnpm test: 812 项通过, 无失败或跳过. pnpm typecheck 通过.
+- node scripts/check-workflow-distribution.mjs, node scripts/project-claude-skills.mjs --check, node scripts/generate-install-arw.mjs --check 全部通过.
+- 4 个受影响 ESM 文件的 node --check, node arw.mjs text check, node arw.mjs terms check --include .scratch/0021-triage-shared-cleanup/, git diff --check 全部通过.
+- 非测试代码净增预算 0 行, 实际净减 3 行. 未增加或修改测试案例, 未修改长期规范或 lib/background-agent/**.
+
+## Comments
+
+- 跳过 #31: 两个 Map.get 返回值仍为包含 undefined 的联合类型, 删除异常分支会使读取最终状态的调用方失去类型收窄. 按本 issue 要求保留, 不引入断言或类型收窄传播.
+- 差异对照首次在沙盒内因 Node 子进程 spawnSync git EPERM 失败, 提权重跑后全部通过.
+- 跳过 #302: 首轮要求符合审核确认新增 safeRelativePath 导出会扩大 Module Interface, 不符合本 issue 的行为保持重构约束; 已恢复两个模块的原始实现与导出面. 先前 42 个路径组合对照仅验证已撤回候选, 不作为最终交付证据.
+- 首轮 Code Standards 报告 No problems.; 要求符合审核指出 #302 的导出变化. 修正后重新准备两个 Reviewer 审核, 最终结果另记.
+- 第二轮两个内置 Reviewer 均正常结束为 ready, 报告均为 No problems. 报告路径: .tmp/codex/01a19072-415c-7e02-ba1c-f1a22c6a93ad/_commit-audit/2/code-standards-reviewer/review.txt 和 .tmp/codex/01a19072-415c-7e02-ba1c-f1a22c6a93ad/_commit-audit/2/requirements-reviewer/review.txt.
+- Main Agent 抽查: requireReviewerRecoveryLocation 保留仓库 .tmp 边界, 平台与会话片段验证及原错误映射; notifyAgain 的两个原始调用条件未改变; rootIgnoreState 收到的探针仍来自相同 root. 修正后的完整验证再次通过.
