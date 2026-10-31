@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # Reviewer Capability
 
-只在 ARW 源码仓库中由维护者显式调用. 结果不提供审核, 实施, 发布或提交授权. 套件来自 qwen_strata benchmark v2, 完全由 `scripts/reviewer-capability.mjs` 和 `lib/reviewer-capability/` 实现 (Node, 无第三方依赖); 其合同在 `docs/specs/agent-repository-workflow-development/spec.md#module-design`.
+只在 ARW 源码仓库中由维护者显式调用. 结果不提供审核, 实施, 发布或提交授权. 套件来自 qwen_strata benchmark v2, 完全由 `scripts/reviewer-capability.mjs` 和 `lib/reviewer-capability/` 实现 (Node, 无第三方依赖); 其合同在 `docs/specs/agent-repository-workflow-development/spec.md` 的 Module Design 节.
 
 ## Scenarios
 

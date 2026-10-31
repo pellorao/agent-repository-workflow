@@ -4,7 +4,7 @@ name: to-spec
 disable-model-invocation: true
 ---
 
-本 Skill 把当前对话和已获得的代码库理解整理为规范, 不重新访谈用户. 编写前遵循 `docs/agents/subagent-allocation.md`, `docs/agents/agent-writes.md` 与 `docs/agents/writing.md#specification-design-presentation`.
+本 Skill 把当前对话和已获得的代码库理解整理为规范, 不重新访谈用户. 编写前遵循 `docs/agents/subagent-allocation.md`, `docs/agents/agent-writes.md` 与 `docs/agents/writing.md` 的 Specification design presentation 节.
 
 ## Process
 
@@ -13,7 +13,7 @@ disable-model-invocation: true
 3. 与用户核对这些边界是否符合预期.
 4. 用下列模板编写规范. 规范写入对话已建立的 effort 的 `spec.md`; 尚无 effort 时按 `issue-tracking` Skill 创建. spec 不带分流 `Status:`, 是否可实施由其下的 issue 表达. 按规范设计呈现规则自检全文后再交付.
 
-规范修改非测试运行时代码时, 按 `../spec-readiness/SKILL.md#governing-design` 增加 `## Module Design` 章节, 其形式 (`Not required:` 段落或完整格式) 由该 Skill 决定, 本 Skill 不重复; 其他情况省略该章节.
+规范修改非测试运行时代码时, 按 `../spec-readiness/SKILL.md` 的 Governing design 节增加 `## Module Design` 章节, 其形式 (`Not required:` 段落或完整格式) 由该 Skill 决定, 本 Skill 不重复; 其他情况省略该章节.
 
 规范和 issue 正文不写具体文件路径或代码片段, 它们很快会过期. 例外: 原型产生的片段如果比散文更精确地表达决定, 例如状态机, 状态更新函数, 数据模式或类型结构, 可以内嵌在相应决定中并简短注明来自原型; 只保留表达决定的部分, 不保留可运行演示.
 

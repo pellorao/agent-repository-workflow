@@ -16,14 +16,14 @@ name: commit
 
 ## Implementation issue commit workflow
 
-1. 确定完整排序的 `authorizingIssueIds`, 按 `../code-review/result-reuse.md#completion-records` 规则更新真实的 Status 和验收勾选, 暂存完整实施候选. 必要实施验证按 `validation` Skill, 可以与审核并行; 未完成的检查不提供通过事实.
+1. 确定完整排序的 `authorizingIssueIds`, 按 `../code-review/result-reuse.md` 的 Completion records 节规则更新真实的 Status 和验收勾选, 暂存完整实施候选. 必要实施验证按 `validation` Skill, 可以与审核并行; 未完成的检查不提供通过事实.
 2. 启动 Reviewer 前自查 (这些是复审的常见问题): 没有重新实现已有公共辅助函数; 无死代码, 文件内部导出已去掉; 测试名与断言相符, 测试回调耗时满足 `test-performance-optimization` Skill 的 Threshold 要求; 审核对象是已暂存的真实树, 不审私有索引 (`git write-tree` 取树).
 3. 按 Run 节准备审核轮, 并行运行 `requirements-reviewer` (要求符合审核) 和 `code-standards-reviewer`. 一次提交最多这两个并行 Reviewer.
 4. 两个 Reviewer 正常结束 (`ready`) 后, 按 `docs/agents/subagent-findings.md` 独立核对报告中的每个问题. 每轮自选一两处 Reviewer 应当检查的要求或代码位置抽查, 其中至少一处是回归抽查 (改动代码所服务的既有要求是否仍成立); 发现漏检时该轮结果作废并重审. Reviewer 返回 `incomplete` 时本轮结束, Main Agent 处理其原因后重新 `prepare`.
-5. 修复后暂存 (审核运行期间也可以暂存) 并用同一 `input.json` 再次 `prepare`; 新一轮自动沿原线程复审, 只交付相邻版本变化和该 Reviewer 的前轮报告 (`docs/agents/reviewer.md#re-review`). 某个 Reviewer 的输入没有受影响时只运行另一个的 `.jsonl`, 保留其结果. 复审报告中写明仍成立且本轮变化没有解决它的旧问题, 若已在台账记录处置, 不再重新分流. 处置台账: 不修复的问题记入问题所属授权 issue (无法归属时记入排序第一的) 的 `## Comments`, 每条一行 `台账: <文件和行或章节> <转入后续 issue|记录不修|冲突裁决> <理由>`, 定位精确到句子或行且只覆盖所列问题 (过宽的条目会让 Reviewer 漏报邻近的真实问题), 并在 `prepare` 前暂存; `prepare` 把全部授权 issue 的 `## Comments` 交给 Reviewer, 本轮变化没有触及其定位和影响范围的台账问题不再被报告. 轮次按同一次提交尝试 (同一授权范围) 中 `prepare` 的次数计, 第 3 轮起只为行为缺陷开修复轮 (无论由谁引入, 拿不准按行为缺陷处理), 措辞, 重复和文档去重类问题记 "记录不修" 后不再修. Code Standards 与要求符合审核的结论互相冲突时, Main Agent 按 effort spec 裁决并记 "冲突裁决". 台账不用于驳回 Reviewer 的问题, 认为问题无效仍走质疑规则.
-6. 按 `../issue-tracking/SKILL.md#issue-record-sections` 规则统一暂存收尾记录, 用 `git diff <受审 tree> $(git write-tree)` 核对最终暂存树相对受审版本只有记录差异. 只有记录差异不需要复审. `arw commit-audit verify` 也机械核对这一点 (规则见 spec 的 Commit Audit): 授权 issue 的 `Status` 和 What to build, Acceptance criteria 两段 (含验收勾选) 在 `prepare` 之后不得再改, 所以先勾选验收再 `prepare`; 失败时按提示重新 `prepare` 并复审.
-7. 提交门槛是两个 Reviewer 正常结束且报告中的问题都已处理 (修正, 按质疑规则证明无效, 按 `docs/agents/subagent-findings.md#triage-by-origin` 记入后续 issue, 或按台账记 "记录不修" 或 "冲突裁决", 前者仅限第 3 轮起的措辞, 重复和文档去重类问题). 只修改代码的修复不使 Spec Readiness 记录失效, 不重跑就绪审核. 未完成 issue 的问题只在确属计划中尚未完成的工作时保留. 运行 `arw commit-audit verify` 并取得空错误列表.
-8. 对每个授权 issue 先确认其 issue 文件没有未暂存修改 (`git diff --quiet -- <issue 文件>`), 再运行 `arw spec-readiness verify --subject-only --issue issue:<NNNN>:<NN>` 并取得 `0` (只核对 subject, 治理 Input 和 Reviewer Role 的变化不阻断), 然后提交. 按 `../implement/SKILL.md#entry` 的行为保持重构例外实施, 没有就绪记录的 issue 跳过 `verify`.
+5. 修复后暂存 (审核运行期间也可以暂存) 并用同一 `input.json` 再次 `prepare`; 新一轮自动沿原线程复审, 只交付相邻版本变化和该 Reviewer 的前轮报告 (`docs/agents/reviewer.md` 的 Re-review 节). 某个 Reviewer 的输入没有受影响时只运行另一个的 `.jsonl`, 保留其结果. 复审报告中写明仍成立且本轮变化没有解决它的旧问题, 若已在台账记录处置, 不再重新分流. 处置台账: 不修复的问题记入问题所属授权 issue (无法归属时记入排序第一的) 的 `## Comments`, 每条一行 `台账: <文件和行或章节> <转入后续 issue|记录不修|冲突裁决> <理由>`, 定位精确到句子或行且只覆盖所列问题 (过宽的条目会让 Reviewer 漏报邻近的真实问题), 并在 `prepare` 前暂存; `prepare` 把全部授权 issue 的 `## Comments` 交给 Reviewer, 本轮变化没有触及其定位和影响范围的台账问题不再被报告. 轮次按同一次提交尝试 (同一授权范围) 中 `prepare` 的次数计, 第 3 轮起只为行为缺陷开修复轮 (无论由谁引入, 拿不准按行为缺陷处理), 措辞, 重复和文档去重类问题记 "记录不修" 后不再修. Code Standards 与要求符合审核的结论互相冲突时, Main Agent 按 effort spec 裁决并记 "冲突裁决". 台账不用于驳回 Reviewer 的问题, 认为问题无效仍走质疑规则.
+6. 按 `../issue-tracking/SKILL.md` 的 Issue record sections 节规则统一暂存收尾记录, 用 `git diff <受审 tree> $(git write-tree)` 核对最终暂存树相对受审版本只有记录差异. 只有记录差异不需要复审. `arw commit-audit verify` 也机械核对这一点 (规则见 spec 的 Commit Audit): 授权 issue 的 `Status` 和 What to build, Acceptance criteria 两段 (含验收勾选) 在 `prepare` 之后不得再改, 所以先勾选验收再 `prepare`; 失败时按提示重新 `prepare` 并复审.
+7. 提交门槛是两个 Reviewer 正常结束且报告中的问题都已处理 (修正, 按质疑规则证明无效, 按 `docs/agents/subagent-findings.md` 的 Triage by origin 节记入后续 issue, 或按台账记 "记录不修" 或 "冲突裁决", 前者仅限第 3 轮起的措辞, 重复和文档去重类问题). 只修改代码的修复不使 Spec Readiness 记录失效, 不重跑就绪审核. 未完成 issue 的问题只在确属计划中尚未完成的工作时保留. 运行 `arw commit-audit verify` 并取得空错误列表.
+8. 对每个授权 issue 先确认其 issue 文件没有未暂存修改 (`git diff --quiet -- <issue 文件>`), 再运行 `arw spec-readiness verify --subject-only --issue issue:<NNNN>:<NN>` 并取得 `0` (只核对 subject, 治理 Input 和 Reviewer Role 的变化不阻断), 然后提交. 按 `../implement/SKILL.md` 的 Entry 节的行为保持重构例外实施, 没有就绪记录的 issue 跳过 `verify`.
 
 ## Commit Audit
 
@@ -36,8 +36,8 @@ name: commit
 
 ### Run
 
-1. 在仓库 `.tmp/` 下写一个 `input.json`, 只含完整排序的 `authorizingIssueIds`. 运行 `arw commit-audit prepare --input <absolute-input-path>`; 它新建审核轮目录 `_commit-audit/<n>/` (见 `../reviewer-launch/SKILL.md#review-rounds`), 其中 `request.json` 含 `gate1`, `gate2` (文档与 `since`), `reviewPath` 和受审版本 `base`, `tree`, 只打印轮目录.
-2. 按 `../reviewer-launch/SKILL.md#review-rounds` 运行 `cat <轮目录>/*.jsonl | arw background-agent --wait`. Reviewer 按 `docs/agents/reviewer.md#report` 逐条写入问题, 或写 `No problems.`.
+1. 在仓库 `.tmp/` 下写一个 `input.json`, 只含完整排序的 `authorizingIssueIds`. 运行 `arw commit-audit prepare --input <absolute-input-path>`; 它新建审核轮目录 `_commit-audit/<n>/` (见 `../reviewer-launch/SKILL.md` 的 Review rounds 节), 其中 `request.json` 含 `gate1`, `gate2` (文档与 `since`), `reviewPath` 和受审版本 `base`, `tree`, 只打印轮目录.
+2. 按 `../reviewer-launch/SKILL.md` 的 Review rounds 节运行 `cat <轮目录>/*.jsonl | arw background-agent --wait`. Reviewer 按 `docs/agents/reviewer.md` 的 Report 节逐条写入问题, 或写 `No problems.`.
 
 Main Agent 负责暂存, Request, 审核协调和处理问题, 不代写语义判断. Reviewer 只用只读 git 命令读取 `base` 和 `tree`, 不调用 Engine, 不修改索引.
 

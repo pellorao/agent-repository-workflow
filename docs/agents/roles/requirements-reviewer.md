@@ -23,7 +23,7 @@
 
 ## Output
 
-按 `../reviewer.md#report` 交付; 完成状态不表示要求都已满足.
+按 `../reviewer.md` 的 Report 节交付; 完成状态不表示要求都已满足.
 
 ## Failure behavior
 

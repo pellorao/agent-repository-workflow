@@ -22,7 +22,7 @@ disable-model-invocation: true
 
 - 每个切片覆盖数据模式, API, UI 和测试等各层的一条狭窄且完整的路径, 而不是只覆盖单层.
 - 已完成切片可以独立演示或验证, 并适合在一个新的上下文窗口内完成.
-- 粒度宁粗勿细. 每个实施 issue 都有自己的 Spec Readiness 与提交审核开销 (只改规则和文档的 issue 除外, 行为保持重构 issue 没有 Spec Readiness 开销, 见 `implement` Skill), 太小的 issue 让审核开销超过改动本身. 合并规则见 `docs/agents/agent-writes.md#issue-concurrency`; 只在超出一个上下文窗口, 或确需独立验证与独立回退时才拆开.
+- 粒度宁粗勿细. 每个实施 issue 都有自己的 Spec Readiness 与提交审核开销 (只改规则和文档的 issue 除外, 行为保持重构 issue 没有 Spec Readiness 开销, 见 `implement` Skill), 太小的 issue 让审核开销超过改动本身. 合并规则见 `docs/agents/agent-writes.md` 的 Issue concurrency 节; 只在超出一个上下文窗口, 或确需独立验证与独立回退时才拆开.
 
 为每个 issue 给出其阻断关系, 即必须先完成的其他 issue. 没有阻断项的 issue 可以立即开始.
 

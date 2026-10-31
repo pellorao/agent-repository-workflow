@@ -19,7 +19,7 @@
 
 **1. 使用依赖注入**
 
-把外部依赖传进来, 而不是在内部创建 (见 `../codebase-design/SKILL.md#designing-for-testability` 第 1 条).
+把外部依赖传进来, 而不是在内部创建 (见 `../codebase-design/SKILL.md` 的 Designing for testability 节第 1 条).
 
 **2. 优先 SDK 风格的 Interface, 而不是通用的 fetcher**
 

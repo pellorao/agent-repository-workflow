@@ -18,7 +18,7 @@ name: code-review
 
 非提交比较中, 要求调用方为 Requirements 轴提供适用的治理要求输入. 接受仓库相对路径, 在任一审查轴启动前, 将每份来源路径, SHA-256 和完整内容保存在本轮绑定的临时副本中. 不发现其他 issue, spec, PRD 或 ADR.
 
-Main Agent 按 `../reviewer-launch/SKILL.md#other-reviews` 固定适用的 Agent 指令. Standards Reviewer 按其规范角色读取这些完整的绑定副本. 它们是执行规则, 不是治理输入; Standards 轴不要求调用方选择标准文档路径集合, 也不要求确认没有标准.
+Main Agent 按 `../reviewer-launch/SKILL.md` 的 Other reviews 节固定适用的 Agent 指令. Standards Reviewer 按其规范角色读取这些完整的绑定副本. 它们是执行规则, 不是治理输入; Standards 轴不要求调用方选择标准文档路径集合, 也不要求确认没有标准.
 
 缺少治理要求输入时, 请用户提供, 或明确确认没有治理要求.
 
@@ -72,7 +72,7 @@ Not reviewed: no governing requirements were supplied.
 
 Reviewer 身份由审查轴固定的 `input.role` 值和完整排序的授权 issue ID 集合组成. Standards 使用 `code-standards-reviewer`, Requirements 使用 `requirements-reviewer`; Requirements 的身份另含比较区间, 与提交审核的线程分开. 复审和问题处理按 `./result-reuse.md` 进行.
 
-每个轴的每轮审查按 `docs/agents/reviewer.md#report` 使用新的空 `reportPath`, 不把上一轮报告复用为新草稿.
+每个轴的每轮审查按 `docs/agents/reviewer.md` 的 Report 节使用新的空 `reportPath`, 不把上一轮报告复用为新草稿.
 
 按 `reviewer-launch` Skill 固定版本并并行启动需要新判断的轴, 每轴使用本轮准确的 `reportPath`. 并行修改不替换本轮版本或自动授权新候选.
 

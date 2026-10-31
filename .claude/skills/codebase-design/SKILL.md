@@ -62,7 +62,7 @@ name: codebase-design
 - **Depth 是 Interface 的属性, 不是实现的属性.** 深 Module 内部可以由小的, 可 mock 的, 可替换的部分组成, 只是它们不属于 Interface. Module 可以有 **内部 Seam** (实现私有, 供自己的测试使用), 也有位于其 Interface 处的 **外部 Seam**.
 - **删除测试.** 想象删掉这个 Module. 复杂性消失, 说明它只是透传; 复杂性重新出现在 N 个调用方中, 说明它物有所值.
 - **Interface 就是测试面.** 调用方和测试穿过同一个 Seam. 想要越过 Interface 去测试, 多半说明 Module 的形状不对.
-- **一个 Adapter 意味着假想的 Seam, 两个 Adapter 才是真正的 Seam.** 除非确实有东西在其两侧变化, 否则不要引入 Seam.
+- **引入 Seam 的判据** 见 `./DEEPENING.md` (至少两个站得住的 Adapter).
 
 ## Designing for testability
 

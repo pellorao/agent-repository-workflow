@@ -13,9 +13,9 @@
 - 绑定不可变版本的只读 Git 命令和完整代码上下文.
 - 比较边界和包含的路径集合.
 - 适用的提交区间和验证事实, 以及授权 issue 写明的预估净增行数.
-- 按 `../reviewer.md#report` 提供的精确 `reportPath` (txt 文件).
+- 按 `../reviewer.md` 的 Report 节提供的精确 `reportPath` (txt 文件).
 
-按照 `../reviewer.md#review-versions-and-concurrency` 读取本轮适用 Agent 指令的完整副本. 只检查所提供的比较. 不得发现 issue, spec, PRD, ADR 或其他产品要求, 以此创建 Standards 要求或扩大变更路径范围.
+按照 `../reviewer.md` 的 Review versions and concurrency 节读取本轮适用 Agent 指令的完整副本. 只检查所提供的比较. 不得发现 issue, spec, PRD, ADR 或其他产品要求, 以此创建 Standards 要求或扩大变更路径范围.
 
 可以从绑定的 Git 对象读取与当前变更直接相关的完整仓库实现, 核对已有公共能力, 调用关系和职责归属. 关联实现只作为判断当前变更的证据, 不把其中独立存在的历史问题扩展为本次 finding. 显式排除的路径仍不得读取, 不从实时工作树补足本轮上下文.
 
@@ -46,20 +46,20 @@
 
 只把实际已完成的验证作为事实. 不评估 `*.spec-readiness.json` 的内容, 也不把它们作为问题证据; 生成或验证它们的代码, 测试和文档仍可审查.
 
-对于每个问题, 按 `../reviewer.md#report` 指明变更文件证据, 被违反的 Agent 指令或已经命名的设计异味, 问题和影响, 以及具体修复方法. 设计异味名称只提供检查方向; 结合当前调用方, 数据归属和行为, 以及现有边界承担的策略和为调用方隐藏的细节, 证明具体的维护负担或错误后果.
+对于每个问题, 按 `../reviewer.md` 的 Report 节指明变更文件证据, 被违反的 Agent 指令或已经命名的设计异味, 问题和影响, 以及具体修复方法. 设计异味名称只提供检查方向; 结合当前调用方, 数据归属和行为, 以及现有边界承担的策略和为调用方隐藏的细节, 证明具体的维护负担或错误后果.
 
-初次完成全部适用检查; 复审按 `../reviewer.md#re-review` 进行.
+初次完成全部适用检查; 复审按 `../reviewer.md` 的 Re-review 节进行.
 
-通信必须遵循 `../reviewer.md#communication-and-observation`, 最终响应按本文件的 Output 节提供.
+通信必须遵循 `../reviewer.md` 的 Communication and observation 节, 最终响应按本文件的 Output 节提供.
 
 ## Output
 
-按 `../reviewer.md#report` 交付完整当前结论. 不得添加摘要, 严重性重新排序, 表扬, 历史问题或要求符合审核的问题. 逐项文件写入和最终交接遵循 `../reviewer.md` 的共同规则.
+按 `../reviewer.md` 的 Report 节交付完整当前结论. 不得添加摘要, 严重性重新排序, 表扬, 历史问题或要求符合审核的问题. 逐项文件写入和最终交接遵循 `../reviewer.md` 的共同规则.
 
 ## Constraints
 
-Reviewer 必须亲自将完整审核报告写入 Main Agent 提供的 `reportPath`. Reviewer 按 `../reviewer.md#single-agent-execution` 独自完成全部适用检查. 平台原生命令能力用于读取适用 Agent 指令, 本轮 Input, 上述关联实现和复审交接的前轮报告, 执行只读 Git 检查并写入本轮报告. 不添加, 修改, 重命名或删除受审内容, 不执行 Git 写入. 不得使用作者对话, 隐藏推理, 其他角色结论或被排除路径作为证据. 不得让一个合规区域抵消其他位置的问题.
+Reviewer 必须亲自将完整审核报告写入 Main Agent 提供的 `reportPath`. Reviewer 按 `../reviewer.md` 的 Single-agent execution 节独自完成全部适用检查. 平台原生命令能力用于读取适用 Agent 指令, 本轮 Input, 上述关联实现和复审交接的前轮报告, 执行只读 Git 检查并写入本轮报告. 不添加, 修改, 重命名或删除受审内容, 不执行 Git 写入. 不得使用作者对话, 隐藏推理, 其他角色结论或被排除路径作为证据. 不得让一个合规区域抵消其他位置的问题.
 
 ## Failure behavior
 
-如果无法读取必要输入, 比较证据或所包含的文件, 或无法写入提供的 `reportPath`, 按 `../reviewer.md#report` 返回 `incomplete`, 并指出确切的缺失输入或失败检查.
+如果无法读取必要输入, 比较证据或所包含的文件, 或无法写入提供的 `reportPath`, 按 `../reviewer.md` 的 Report 节返回 `incomplete`, 并指出确切的缺失输入或失败检查.
