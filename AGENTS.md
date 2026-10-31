@@ -48,7 +48,7 @@ Subagent 只写 Main Agent 分配的范围, Git 写入只由与用户沟通的 M
 
 ## Workflow Triggers
 
-行动前使用每个匹配的条目, 并遵循所指 Skill 或文档中的条件性交接规则.
+行动前使用每个匹配的条目, 并遵循所指 Skill 或文档中的条件性交接规则. 到达触发点时才读取所指内容, 不在开工时预读后续步骤的规则.
 
 - 更改已跟踪文件, 或构建, 修复, 修改, 完成仓库交付内容前: `implement` Skill (Entry 确认授权 issue).
 - 实现前安排就绪审核与最终授权检查: `spec-readiness` Skill.
