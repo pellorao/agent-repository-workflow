@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0018:03",
+  "request": {
+    "digest": "d6161afa1ff9032ddaf0181632a471b392b32d7a1189ae973340e2d1016ea7ad",
+    "filePath": ".tmp/codex/01a18f66-31da-74d1-8e8a-f1d3a6ebcd2f/0018_03/spec-readiness/requests/request-5087df62-4528-43e9-b364-b0fd16298726.json",
+    "id": "5087df62-4528-43e9-b364-b0fd16298726"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "f797bb611ba9cf50c0ccfab4d029b2a32fd44b771b7b9338a0a31bb48ddba14a"
+  },
+  "inputs": [
+    {
+      "filePath": "CONTEXT.md",
+      "role": "domain-context",
+      "sha256": "6f89aa3efc9e393170b2d9380bacf5b1b11aea0d9c614e9367384d99767bb1fb"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow-development/spec.md",
+      "role": "governing-spec",
+      "sha256": "f98656799ad1455c0960910514cca26ad244d3e639c943875d544e7d38624c74"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow-installation/spec.md",
+      "role": "governing-spec",
+      "sha256": "725c0634f9d9d835c6a4d494b63164edef02ff67ecbcaea18e8c3769a0edf442"
+    },
+    {
+      "filePath": "lib/arw-common/installation-manifest.mjs",
+      "role": "architecture-evidence",
+      "sha256": "307cb21a8ef82bdc32296fa60966d1df1fb338de0982a2f0b287fefed60e139f"
+    },
+    {
+      "filePath": "lib/common/filesystem.mjs",
+      "role": "architecture-evidence",
+      "sha256": "224b79a528c0053d4f410dacd970aab6a350ab75ea25d096010a0c50a2251da2"
+    },
+    {
+      "filePath": "lib/common/json.mjs",
+      "role": "architecture-evidence",
+      "sha256": "f620d4746ab42ec98cd4dd48b73ac1f0762784b3841cc92a2d137e65893063e3"
+    },
+    {
+      "filePath": "lib/installation/installation-contract.mjs",
+      "role": "architecture-evidence",
+      "sha256": "e8650cc3b5ac07cd1cfb699d7b91fd2092808daeac5fb8a610e03e133f2adb51"
+    },
+    {
+      "filePath": "lib/installation/installation-payload.mjs",
+      "role": "architecture-evidence",
+      "sha256": "31b166173ceb0280e5284a8abd957c34ce0cbb751d0e6ebdf1e9baff43485835"
+    },
+    {
+      "filePath": "lib/installation/uninstallation.mjs",
+      "role": "architecture-evidence",
+      "sha256": "9d1cfac80f736be7593db460c5190e820ea606db6cf346c9dfcc7e10d3b7c0d2"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0018-triage-behavior-preserving-cleanup/issues/03-installation-cleanup.md",
+    "sha256": "c5fb4b137308d1bcc7804bd2edd7c3a2c278eae8272250d12eeee041dfd6bf0a"
+  },
+  "result": "satisfied"
+}
