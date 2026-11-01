@@ -31,7 +31,7 @@ ARW 不保存任何 Strata 部署参数. 每台机器的 Strata 配置只放在�
 
 Reviewer 配置中的 `model` 是 ARW 模型 ID. 它对应的 Strata 模型名, 是 `deployment.json` 的 `models` 中唯一一个满足 "模型 ID 以 `-` 加该名称的小写形式结尾" 的名称. 这条规则来自 Strata 安装手册公布的命名约定 (模型 ID 为模型系列前缀加对外模型名的小写), 因此 ARW 不写死系列前缀, 量化列表或任何模型名, 安装改变服务的模型时 ARW 无需修改.
 
-可选档位就是该安装在 `context_tiers.<模型名>` 中为该模型发布的档位, ARW 程序中不写死任何档位. 安装的档位记录除顺序外只有 `context_window` 能区分各档, Strata 前端的启动请求和 harness 设置也都以这个值表达档位, 所以 Strata 提供方条目的可选字段 `contextWindow` 取所选档的 `context_window` 整数. 设置时, 所选档是 `context_window` 等于该值的那一档; 省略时, 所选档是第一档, 即默认档. 安装增删或调整档位时 ARW 无需修改, 已有配置也不会因档位顺序变化而指向另一档. 该字段作用于该提供方解析的每个模型; Strata 安装只对外服务一个模型, 所以不提供按模型分别选择.
+可选档位就是该安装在 `context_tiers.<模型名>` 中为该模型发布的档位, ARW 程序中不写死任何档位. 安装的档位记录除顺序外只有 `context_window` 能区分各档, Strata 前端的启动请求和 harness 设置也都以这个值表达档位, 所以 Strata 提供方条目的可选字段 `contextWindow` 取所选档的 `context_window` 整数. 设置时, 所选档是 `context_window` 等于该值的那一档; 省略时, 所选档是第一档, 即默认档. 同一模型各档的 `context_window` 互不相同 (前端也只凭这个值选择档位); 安装若发布了相同的值, 取其中第一个相等的档. 安装增删或调整档位时 ARW 无需修改, 已有配置也不会因档位顺序变化而指向另一档. 该字段作用于该提供方解析的每个模型; Strata 安装只对外服务一个模型, 所以不提供按模型分别选择.
 
 `contextWindow` 的取值只在模型解析这一处核对: 解析读取安装发布的档位时, 把配置值与各档 `context_window` 精确比较, 没有相等的档 (包括配置值不是整数) 即为配置错误. 读取 `config.json` 时只确认该字段出现在 `driver: "strata"` 的条目中, 不另外核对取值, 因为只有安装文件才能说明哪些值有效. 解析结果交给启动请求, 共享模型目录和原生任务设置后, 这些消费方不再核对. 使用者修正或删除该字段 (提供方设置在管理进程启动时读取, 修改后重新启动管理进程生效), 或安装重新发布该档位后即可恢复.
 
@@ -51,19 +51,23 @@ Reviewer 配置中的 `model` 是 ARW 模型 ID. 它对应的 Strata 模型名, 
 | 连接 | 读取 `config/frontend.json`, 不启动任何进程 | 得到控制地址与模型请求地址 |
 | 领取 | `POST /lease/acquire`, 正文 `{}`, 不带 key | 返回非空字符串 `key`, 且 `lease` 为 `"held"` |
 | 状态 | `GET /model/status`, 带 key | `status` 为 `stopped`, `starting`, `unloaded` 或 `running`; `starting` 按管理进程已有的 `partial` 处理 (模型未完全加载, 切换前须先停止); `running` 时必须有字符串 `model` |
-| 启动 | `POST /model/start`, 正文恰好是 `{"model": <解析出的 Strata 模型名>, "context_window": <所选档窗口>}` | 返回 `status` 为 `"running"`, 且 `model` 等于请求的模型 ID |
+| 启动 | `POST /model/start`, 正文恰好是 `{"model": <解析出的 Strata 模型名>, "context_window": <所选档窗口>}` | 返回 `status` 为 `"running"`, 且 `model` 等于 ARW 模型 ID (见表后说明) |
 | 停止 | `POST /model/stop`, 正文 `{}` | 返回 `status` 为 `"stopped"`; `clean_unload` 按现有方式报告 |
 | 归还 | `POST /lease/release`, 正文 `{}` | 返回 `lease` 为 `"free"`; Strata 归还合同在成功时撤销 key, 驱动结果中的 `previousKeyRevoked` 仍为 `true` |
 
+`/model/start` 与 `/model/status` 返回的 `model` 是前端的模型 ID, 即安装的模型系列前缀加 `-` 和 Strata 模型名的小写 (与 Model resolution and tier selection 节的命名约定相同), 没有运行中的模型时为 `null`. 经模型请求地址发出的推理请求, 其 `model` 也必须等于这个 ID, 否则前端拒绝. 因此 Reviewer 配置的 ARW 模型 ID 就是前端的模型 ID: 驱动原样返回 `model`, 管理进程直接与 ARW 模型 ID 比较, 不做映射. ARW 模型 ID 的后缀能匹配某个名称但前缀与安装不同时, 解析成功而启动后的确认因 `model` 不等而失败, 按现有方式报告提供方未确认请求的模型.
+
 带 key 的请求使用 `Authorization: Bearer <key>`. HTTP 错误, 非 JSON 响应, 控制地址校验和错误消息中 key 的遮盖保持现有行为. 前端未运行时领取请求无法连接, 管理进程按现有合同报告提供方错误, 不持有 key, 不创建原生根线程. 前端以 400 拒绝启动 (例如安装不服务该模型) 时同样报告具体错误, 不把目标模型当作已就绪.
 
-新租约启动规则: 管理进程新领取租约后, 即使状态显示目标模型已在运行, 也发出一次启动请求, 不先停止, 再按现有方式确认状态. 原因是 `/model/status` 不报告档位, 上一个租约持有者可能留下同一模型的另一档; 若照旧因模型相同而跳过启动, 任务设置会按所选档设置窗口和压缩阈值, 而实际加载的是另一档. 前端对同一模型同一档直接复用已加载的模型, 档位不同时自行先停再启动, 所以这次请求在档位一致时不重新加载. 同一租约存续期间只有 ARW 启动模型, 且提供方设置在管理进程存活期间不变, 已持有的租约继续沿用 "模型相同即不启动" 的现有规则.
+新租约启动规则: 管理进程新领取租约后, 若状态显示目标模型已在运行 (`running` 且 `model` 等于 ARW 模型 ID), 仍发出一次启动请求, 不先停止, 也不做模型切换的冲突检查, 再按现有方式确认状态; 这次请求不切换模型, 档位不同时的重新加载正是为了让同一提供方此后的工作都使用所选档, 所以同一提供方另一运行正在等待启动时也不报切换冲突. 其他状态 (其他模型 `running`, `partial`, `stopped`, `unloaded`) 本来就要启动, 仍按现有切换规则: 冲突检查, `running` 或 `partial` 时先停止, 再启动和确认. 原因是 `/model/status` 不报告档位, 上一个租约持有者可能留下同一模型的另一档; 若照旧因模型相同而跳过启动, 任务设置会按所选档设置窗口和压缩阈值, 而实际加载的是另一档. 前端对同一模型同一档直接复用已加载的模型, 档位不同时自行先停再启动, 所以这次请求在档位一致时不重新加载. 同一租约存续期间只有 ARW 启动模型, 且提供方设置在管理进程存活期间不变, 已持有的租约继续沿用 "模型相同即不启动" 的现有规则.
 
 ### Window and compaction consistency
 
 同一提供方为同一模型解析出的所选档同时决定三处: 启动请求的 `context_window`, 共享模型目录中该模型条目的 `context_window` 与 `max_context_window`, 以及原生任务设置的 `model_context_window` 和 `model_auto_compact_token_limit`. Strata 安装手册要求调用方把 harness 的窗口和自动压缩阈值设为同一档的两个值; 三处取自同一来源, 避免模型实际容量, 目录和压缩预算各自采用不同窗口.
 
-共享模型目录生成时, 若配置中有 Strata 提供方, 按配置顺序取第一个. 目录中模型 ID 能按 Model resolution and tier selection 节匹配到该安装所服务模型的条目, 写入该提供方所选档的窗口, 其他字段保留; 其他条目原样合并. 读取安装事实失败, 或匹配到的模型没有所配置的档时, 目录生成失败并报告具体原因, 不启动 App Server, 与提供方设置无效时的现有结果一致. 限制: 配置多个 Strata 提供方, 且它们服务同一模型 ID 而所选档不同时, 目录只反映第一个; 当前没有多个 Strata 安装的使用者, 不为此增加核对. 启动请求和任务设置始终按任务所用提供方自己的安装取档.
+共享模型目录生成时, 若配置中有 Strata 提供方, 按配置顺序取第一个. 目录中模型 ID 能按 Model resolution and tier selection 节匹配到该安装所服务模型的条目, 写入该提供方所选档的窗口, 其他字段保留; 其他条目原样合并. 读取安装事实失败, 或匹配到的模型没有所配置的档时, 按现有的目录生成失败处理: 报告具体原因, 不启动 Codex App Server; 这不是提供方设置无效, 不拒绝 Claude 后端运行, Claude 后端也不读取 Strata 安装文件. 限制: 配置多个 Strata 提供方, 且它们服务同一模型 ID 而所选档不同时, 目录只反映第一个; 当前没有多个 Strata 安装的使用者, 不为此增加核对. 启动请求和任务设置始终按任务所用提供方自己的安装取档.
+
+目录中的窗口在共享 App Server 启动前生成时确定, 按现有生命周期在该 App Server 存活期间不重写; 启动请求和任务设置则在每次使用时读取安装. 设置了 `contextWindow` 时三处窗口都等于该配置值, 不会分歧. 省略时, 若安装在 App Server 存活期间改变了第一档, 目录保留旧窗口直到下一次共享 App Server 启动, 启动请求和任务设置已使用新的第一档. 安装改变档位是少见的维护操作, 不为此增加目录重写或核对.
 
 每次为 Strata 分支准备原生任务设置 (新任务和恢复) 时, 按任务所用提供方的 `contextWindow` 和安装当时发布的档位重新解析所选档. 恢复时安装已不再发布所配置的档, 恢复以配置错误失败, 不改用其他档. 压缩提示的读取, 组合, 绑定与恢复规则不变, 只把基础文件改为 `config/prompts/compact-prompt.txt`.
 
@@ -82,10 +86,10 @@ Reviewer 配置中的 `model` 是 ARW 模型 ID. 它对应的 Strata 模型名, 
 
 - 启动请求的方法, 路径和正文恰好是解析出的模型名与所选档窗口, 不含其他字段; 这防止写死的引擎或采样参数重新出现, 也防止发送前端会拒绝的字段.
 - 模型解析的成功, 无匹配, 多匹配, 档位缺失, 档位无效和 `contextWindow` 未发布 (含非整数值) 各给出对应错误, 且失败时不发出启动请求.
-- 安装发布两档时, 配置 `contextWindow` 为第二档的窗口, 启动正文, 共享模型目录条目和原生任务设置 (新任务和恢复) 都使用第二档的窗口与阈值; 省略该字段时都使用第一档. 这证明三处取自同一所选档, 防止某处仍用默认档或写死的档位.
+- 安装发布两档时, 配置 `contextWindow` 为第二档的窗口, 启动正文, 共享模型目录条目和原生任务设置 (新任务和恢复) 都使用第二档的窗口与阈值; 省略该字段时都使用第一档. 这证明三处取自同一所选档, 防止某处仍用默认档或写死的档位. 恢复时安装已不再发布所配置的档, 任务准备以配置错误失败, 不改用其他档.
 - 提供方配置接受 Strata 条目中的 `contextWindow`, 拒绝非 Strata 条目设置它, 其他未知字段仍被拒绝; 管理进程把配置的值交给驱动与任务支持.
-- 新领取租约时状态已是目标模型 `running`, 管理进程仍发出一次启动请求且之前没有停止请求; 已持有租约且模型相同时不发出启动请求. 这防止沿用上一个持有者留下的其他档位.
-- 连接只读取前端配置, 不启动进程; 前端配置缺失或无效时报告错误; 各操作使用表中的路径, `starting` 报告为 `partial`, 归还要求 `lease: "free"`.
+- 新领取租约时状态已是目标模型 `running`, 管理进程仍发出一次启动请求且之前没有停止请求; 已持有租约且模型相同时不发出启动请求; 新领取租约时同一提供方另一运行正在等待启动, 也不报切换冲突. 这防止沿用上一个持有者留下的其他档位.
+- 连接只读取前端配置, 不启动进程; 前端配置缺失或无效时报告错误; 各操作使用表中的路径, `starting` 报告为 `partial`, 归还要求 `lease: "free"`; 启动被前端以 400 拒绝时驱动报告前端的错误消息, 领取请求无法连接时驱动以错误失败; 领取失败时管理进程不持有 key, 不创建原生根线程 (现有 manager 测试用注入驱动观察).
 - 共享模型目录: 可解析的条目得到所选档窗口, 其他条目字节不变; 没有 Strata 提供方时安装文件读取一次也不发生; 安装部署配置无法读取, 或所配置的档未发布时, 目录生成失败并给出原因.
 - 原生任务设置的窗口, 压缩阈值和压缩提示路径取自安装事实.
 
@@ -101,9 +105,10 @@ Reviewer 配置中的 `model` 是 ARW 模型 ID. 它对应的 Strata 模型名, 
 
 ### Interfaces
 
-- 模型解析 (位于 `strata-models.mjs`, 输入 `installationDirectory`, `modelId`, 可选的 `contextWindow` (提供方配置原值) 和可选的文件读取函数): 返回所选档的 `{strataModel, contextWindow, autoCompactTokenLimit}`; 按 Model resolution and tier selection 节的失败结果抛出错误. 每次调用重新读取 `config/deployment.json`, 不缓存.
+- 模型解析 (位于 `strata-models.mjs`, 输入 `installationDirectory`, `modelId`, 可选的 `contextWindow` (提供方配置原值) 和可选的 `readText`): 返回所选档的 `{strataModel, contextWindow, autoCompactTokenLimit}`; 按 Model resolution and tier selection 节的失败结果抛出错误. 每次调用重新读取 `config/deployment.json`, 不缓存.
 - `createStrataDriver({installationDirectory, contextWindow?, readText?, fetchImpl?})`: 操作集合与结果形状不变 (`connect` 返回 `{controllerUrl, responsesUrl}`, `acquire` 返回 `{leaseKey}`, `status` 返回 `{status, model}`, `start` 返回 `{status: 'running', model}`, `stop` 返回 `{status: 'stopped', cleanUnload}`, `release` 返回 `{ownership: 'free', previousKeyRevoked: true}`); 删除 `runCommand` 输入.
-- 目录调整函数 (`applyStrataCatalogSupport`): 改为异步, 输入已核对的提供方设置, 按 Window and compaction consistency 节调整条目.
+- `readText(path)`: 以 UTF-8 读取绝对路径 `path` 的文件, 返回 `Promise<string>`, 读取失败时拒绝; 省略时使用文件系统读取. 模型解析, 驱动的连接和目录调整函数共用这一形状.
+- `applyStrataCatalogSupport(models, providers, readText?)`: 改为异步. `models` 是合并后的目录条目数组, `providers` 是已核对的 `backgroundAgent.providers` 对象. 没有 Strata 提供方时原样返回 `models`, 不调用 `readText`; 否则由本函数按配置顺序取第一个 Strata 提供方, 读取其安装事实, 对 `slug` 按模型解析的规则恰好匹配一个名称的条目写入所选档窗口, 其他条目原样保留, 返回 `Promise<unknown[]>`. 安装事实读取或核对失败, 或匹配到的模型没有所配置的档时, 以与模型解析相同的错误消息拒绝, 调用方按目录生成失败处理.
 - `createStrataTaskSupport({installationDirectory, contextWindow?})` 与 `prepareStrataSettings`: 增加可选的 `contextWindow` 并原样交给模型解析, 窗口与阈值改由模型解析提供.
 
 ### Seams and Adapters
@@ -121,3 +126,8 @@ Reviewer 配置中的 `model` 是 ARW 模型 ID. 它对应的 Strata 模型名, 
 ### ADR Evaluation
 
 `docs/adr/0030-use-user-wide-background-agent-management.md` 的决定 (管理进程持有 Strata key, 在私有 SQLite 中保存未确认归还的 key 与控制器地址) 不变, 控制地址只是改为从安装前端配置取得. `docs/adr/0032-run-claude-reviewers-through-headless-claude.md` 中 Strata 只属于 Codex 后端的边界不变. 不需要新 ADR: 本改动是提供方 Adapter 的协议更新和参数来源的调整, 容易撤销, 不改变安全, 授权, 持久化或公开 Interface 边界; 新增的可选配置字段只在安装已发布的值中选择, 不改变已有配置的含义; 选择理由写入 `docs/specs/agent-repository-workflow/strata.md`.
+
+按 ADR 的三项条件 (难以撤销, 无上下文会令人意外, 真实取舍) 分别评估本次两项决定:
+
+- 部署事实的权威从 ARW 程序常量改为运行时读取的 Strata 安装文件: 存在真实取舍 (见 Rejected alternatives 节), 读者也可能问为什么不由 ARW 自己保存这些值; 但它不难撤销: 读取只在 Strata 提供方程序内部; 恢复记录中的运行设置虽带有上次准备时的窗口与阈值, 恢复时按当前配置和安装重新解析并覆盖, 不作为权威, 所以改回其他来源只需修改这一 Adapter, 不迁移持久数据. 理由由长期规范 `strata.md` 保存, 不需要 ADR.
+- 恢复时安装已不再发布所配置的档则以配置错误失败, 不改用其他档: 这是让任务只在使用者选择的窗口下运行的直接结果, 改用其他档反而令人意外; 恢复不以记录中的窗口为准, 每次按当前配置和安装重新解析, 没有需要迁移的持久数据, 改变该失败结果只涉及一个分支, 容易撤销. 不需要 ADR.
