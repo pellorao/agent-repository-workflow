@@ -1,6 +1,6 @@
 # 修复记录存档与忽略规则中的本机路径
 
-Status: ready-for-agent
+Status: wontfix
 
 ## What to build
 
@@ -33,3 +33,4 @@ Status: ready-for-agent
 ## Comments
 
 - 规划记录: 本 issue 只改测试数据和忽略规则, 没有设计决定. 用户明确确认不需要治理设计时, 可按 `spec-readiness` Skill 的 Exception workflow 记录 `not-applicable`, 省去就绪审核; 否则以 effort spec 为治理 spec 运行 Spec Readiness.
+- 2026-11-02 不在本 effort 处理: 原样移到 issue:0024:01 单独成 effort, 以便使用 Spec Readiness 例外.
