@@ -1,6 +1,6 @@
 # 规则与文档去除本机专属内容
 
-Status: ready-for-agent
+Status: completed
 
 ## What to build
 
@@ -24,17 +24,28 @@ Status: ready-for-agent
 
 ## Acceptance criteria
 
-- [ ] `git grep -n -e "Autonomous Working Mode" -e "状态页" -- AGENTS.md docs distribution .agents .claude` 没有输出.
-- [ ] 根 `AGENTS.md` 与 `distribution/baseline/AGENTS.md` 的 `## Rule Conflicts` 第一句都是第 3 项的文字.
-- [ ] `docs/agents/writing.md` 受管理区域与 `distribution/baseline/docs/agents/writing.md` 都含第 6 项的段落, 位置在 "长期文档必须独立表达..." 段之后.
-- [ ] `docs/agents/agent-writes.md` 的 Repository-owned 区域内容恰为 `None.`; `docs/agents/subagent-allocation.md` 不再引用 `Autonomous Working Mode`.
-- [ ] `git grep -n -I -e "/mnt/[a-z]/Users" -e "wsl.localhost" -e "/home/" -- docs` 没有输出, 安装规范示例使用 `"/path/to/strata"`.
-- [ ] 预期验证中的命令全部成功, `arw commit-audit verify --non-implementation` 错误列表为空.
+- [x] `git grep -n -e "Autonomous Working Mode" -e "状态页" -- AGENTS.md docs distribution .agents .claude` 没有输出.
+- [x] 根 `AGENTS.md` 与 `distribution/baseline/AGENTS.md` 的 `## Rule Conflicts` 第一句都是第 3 项的文字.
+- [x] `docs/agents/writing.md` 受管理区域与 `distribution/baseline/docs/agents/writing.md` 都含第 6 项的段落, 位置在 "长期文档必须独立表达..." 段之后.
+- [x] `docs/agents/agent-writes.md` 的 Repository-owned 区域内容恰为 `None.`; `docs/agents/subagent-allocation.md` 不再引用 `Autonomous Working Mode`.
+- [x] `git grep -n -I -e "/mnt/[a-z]/Users" -e "wsl.localhost" -e "/home/" -- docs` 没有输出, 安装规范示例使用 `"/path/to/strata"`.
+- [x] 预期验证中的命令全部成功, `arw commit-audit verify --non-implementation` 错误列表为空.
 
 ## Blocked by
 
 - None - can start immediately
 
+## Validation
+
+- 验收条件 1: `git grep -n -e "Autonomous Working Mode" -e "状态页" -- AGENTS.md docs distribution .agents .claude` 无输出 (退出码 1).
+- 验收条件 2-3: 根 `AGENTS.md` 与 `distribution/baseline/AGENTS.md` 的 `## Rule Conflicts` 第一句已替换为第 3 项文字; `docs/agents/writing.md` 与 `distribution/baseline/docs/agents/writing.md` 在 "长期文档必须独立表达..." 段之后新增第 6 项段落 (源文与副本逐字一致, 脚本以同一字符串写入).
+- 验收条件 4: `docs/agents/agent-writes.md` 的 Repository-owned 区域内容为 `None.`; `docs/agents/subagent-allocation.md` 已删除最后一段.
+- 验收条件 5: `git grep -n -I -e "/mnt/[a-z]/Users" -e "wsl.localhost" -e "/home/" -- docs` 无输出; 安装规范示例为 `"/path/to/strata"`.
+- `node ./arw.mjs text check`, `node scripts/check-workflow-distribution.mjs`, `node scripts/project-claude-skills.mjs --check`, `node scripts/generate-install-arw.mjs --check` 全部成功; 对改动的源文档运行 `arw language inspect`, 中文占比 84.7% 至 94.3%.
+- 体积 (文档字符, 含两份分发副本): 净增 -1,098, 在上限 -900 以内.
+- 验收条件 6: Main Agent 暂存完整候选后运行 `arw commit-audit verify --non-implementation`, 错误列表为空.
+
 ## Comments
 
 - 规划记录: 本 issue 删除了 ARW 中的自主工作方式. 提交本 issue 前, 与用户沟通的 Main Agent 先把经用户确认的自主工作方式写入使用者的上层指令文件 (仓库之外, 不属于本 issue 的交付), 避免出现只有 Baseline 的空档.
+- 实施记录: 全部改动按 issue 完成, 无偏离; 体积净增 -1,098 字符 (预算 -1,090, 上限 -900).

@@ -54,5 +54,5 @@
 独立 Reviewer 的结果由与用户沟通的 Main Agent 按 `./subagent-findings.md` 独立核对, 完成必要的用户决定后再分派修复. 交接前重新确认范围和基线. 实现者不组织这些审查, 不审核自己的候选内容. 提交只在用户请求后按 `commit` Skill 进行.
 <!-- arw:managed:end -->
 <!-- arw:repository-owned:start -->
-作为 Baseline 例外, 本仓库遵循根 `AGENTS.md` 的 `Autonomous Working Mode`: Main Agent 在实施 issue 完成后不等用户请求即按 `commit` Skill 提交, 取代 `Delivery and review` 中提交只在用户请求后进行的规定; 提交审核进行期间可以开始不依赖它的下一个实施 issue 的写入; 当前 issue 实施或提交审核期间, 也可以写入下一个互不依赖的 issue 的 issue 文件并完成其 Spec Readiness (只写 `.scratch` 中该 issue 的文件和就绪记录), 使就绪审核不占关键路径, 总并行 Agent 数不超过用户级名额上限; 前一个 issue 的修复使该 issue 的治理 Input 变化时按增量复审处理. 二者都放宽 `Issue concurrency` 中上一个 issue 提交后才开始下一个的规定.
+None.
 <!-- arw:repository-owned:end -->

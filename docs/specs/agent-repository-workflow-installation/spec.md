@@ -226,7 +226,7 @@ Strata 配置示例 (`config.json` 片段):
     "providers": {
       "qwen_strata": {
         "driver": "strata",
-        "installationDirectory": "/mnt/c/Users/Pello/AppData/Local/Programs/qwen-3.8-flash-next",
+        "installationDirectory": "/path/to/strata",
         "maxInstances": 1
       }
     }
@@ -234,7 +234,7 @@ Strata 配置示例 (`config.json` 片段):
 }
 ```
 
-`qwen_strata` 的三个变体使用同一提供方身份和限额. 配置读取按 Background Agent configuration 节核对提供方限额与有效全局上限. Strata 的安装目录是 Windows 服务从 WSL 访问时的实际目录, 不改变 ARW 对其他操作系统的支持范围. 只有可变的目录和配额在此设置, Strata 的入口与控制请求由 `../agent-repository-workflow/spec.md` 的 Capacity and recovery 节拥有, 模型映射由 `../agent-repository-workflow/strata.md` 的 Runtime parameters 节拥有; 独占 key 由管理进程持有, 不写回配置, 原生缓存或用户自定义来源文件.
+`qwen_strata` 的三个变体使用同一提供方身份和限额. 配置读取按 Background Agent configuration 节核对提供方限额与有效全局上限. `installationDirectory` 填 ARW 运行环境中看到的安装目录路径 (例如 Strata 作为 Windows 程序安装而 ARW 运行在 WSL 中时, 填 WSL 中的挂载路径), 不改变 ARW 对其他操作系统的支持范围. 只有可变的目录和配额在此设置, Strata 的入口与控制请求由 `../agent-repository-workflow/spec.md` 的 Capacity and recovery 节拥有, 模型映射由 `../agent-repository-workflow/strata.md` 的 Runtime parameters 节拥有; 独占 key 由管理进程持有, 不写回配置, 原生缓存或用户自定义来源文件.
 
 管理进程每次准备创建共享 App Server 前, 从 Codex 用户目录读取原生 `models_cache.json` 和可选的用户 `models.custom.json` 的 `models` 数组 (后者缺失视为空数组), 按原生缓存记录在前, 用户自定义记录在后的顺序合并为 `{"models":[...]}`. 实际接入 Strata 驱动 (由 `backgroundAgent.providers` 判定) 时才读取 `../agent-repository-workflow/strata.md` 的 Runtime parameters 节, 对其模型条目应用生成目录调整; 其他模型条目原样合并. 提供方调整只属于生成目录, 不写回缓存或用户自定义来源, 也不从单个根线程切换共享目录. 该分支的原生压缩设置与私有任务绑定文件按 `../agent-repository-workflow/strata.md` 的 Compaction support 节准备, 其他分支不加载其参数或提示内容. 生成结果只写入实际 ARW 安装目录的用户私有运行状态 `<ARW 安装目录>/background-agent-state/models.json`, 路径随实际 ARW 安装目录解析 (与提供方条目的 `installationDirectory` 字段无关); 不复制原生缓存的身份, 刷新时间等其他字段或配置中的 `providers`, 不修改原生缓存, 也不把 GPT 描述写入用户自定义文件. App Server 启动时通过进程级 `model_catalog_json` 使用该生成文件; 不由单个根线程或单次请求选择目录. 原生缓存缺失, 任一来源文件无法解析, `models` 不是数组, 提供方设置无效, 或生成失败时明确报告并且不启动 App Server; 其中来源文件与生成失败只影响 Codex App Server, Claude 后端只读取 `backgroundAgent.providers`, 不访问 Codex 用户目录. 提供方设置无效或超过全局上限则拒绝新建或恢复任何运行, 包括 Claude 后端, 准入使用读取到的有效配置值, 不静默改用另一来源.
 

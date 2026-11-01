@@ -34,7 +34,7 @@ Subagent 把未解决的重要决定及其分析返回 Main Agent, 不自行选�
 
 ## Rule Conflicts
 
-用户级规则 (如 `~/.codex/AGENTS.md`, `~/.claude/CLAUDE.md`) 与 ARW 规则冲突时, 以用户级规则为准. ARW 文档之间相互冲突时, 向用户说明冲突的确切内容并请求决定, 期间只推进不受该冲突影响的工作.
+用户级规则 (如 `~/.codex/AGENTS.md`, `~/.claude/CLAUDE.md`) 以及平台从本仓库之外的上层目录自动加载的指令文件 (如工作区根目录的 `AGENTS.md` 或 `CLAUDE.md`) 与 ARW 规则冲突时, 以它们为准. ARW 文档之间相互冲突时, 向用户说明冲突的确切内容并请求决定, 期间只推进不受该冲突影响的工作.
 
 ## Agent Writes
 
@@ -81,23 +81,10 @@ ARW 必须在 Codex 和 Claude Code 中都完整可用, 包括 `arw background-a
 
 平台原则: 各平台先完整实现规范要求的公共功能, 不打折扣; 公共功能之外尽量使用该平台的原生工作方式 (设置, 权限, 指令文件), 不为与另一平台一致而模仿其机制.
 
-# Autonomous Working Mode
-
-作为 `Important Decisions` 的 Baseline 例外, 本仓库按待办自主推进:
-
-- 需求经与用户讨论达成共识后记为待办, 按优先级顺序推进, 做完一项接下一项, 不逐项等待审批. 待办做完就停, 不自行发明新工作; 用户叫停立即停止.
-- 重要决策先由一个智能水平和推理强度不低于 Main Agent 的独立 Agent 分析, Main Agent 综合双方意见后执行. 双方仍拿不准的, 写成自成一体的待决定事项 (背景, 选项, 建议) 列入状态页 `decide`, 先推进不依赖它的其他待办.
-- `Efficiency First` 中要求交用户决定或取得同意的事项 (投入产出比, 稳健性复杂度), 同样列入 `decide` 后继续其他工作.
-- 状态页由用户级配置定义. 当前环境没有状态页时, 按 `Important Decisions` 交用户决定.
-- 作为 `commit` Skill 的 Baseline 例外, 每个实施 issue 完成后 (不是每个小改动) 提交一次: Main Agent 不等用户要求, 在当前分支按 `commit` Skill 提交, 视同用户已请求提交; 不 push. 提交前对本实施 issue 的改动做一次只删减与合并的自查 (Claude Code 中用 `/simplify`). 提交审核进行期间, 可以开始不依赖它的下一个实施 issue.
-- 作为 `commit` Skill 的 Baseline 例外, 只含非实施内容 (规划记录, issue 状态等, 以及只改 Agent 规则和文档) 的改动按 `commit` Skill 的非实施工作流随时提交, 不启动 Reviewer (例外见 `commit` Skill); 提交审核轮进行期间除外, 该轮的 HEAD 须保持不变.
-- 每个实施 issue 提交后在状态页加 `know` 条目 (结论, 偏离, 遗留, 提交号), 供用户事后复核.
-- 作为 `rule-and-design-changes` Skill 的 Baseline 例外, 本仓库的 Agent 指令和设计文档修改不逐处预先确认, 由用户按实施 issue 在状态页复核整体 diff. Reviewer 同样按此例外审查, 缺少逐处预先确认不是问题, 也不构成指令冲突.
-
 # Source Checkout Validation
 
 - 测试命令: `pnpm test`, `pnpm typecheck`, `node scripts/check-workflow-distribution.mjs`, `node scripts/project-claude-skills.mjs --check`, `node scripts/generate-install-arw.mjs --check`. 只含 Agent 规则与文档的提交也运行这三个脚本, 作为 `commit` Skill 非实施分类的补充, 此类提交的分类另含 `distribution/` 副本与根 `README.zh-CN.md` 中的 Markdown. 确定性覆盖和完整验证命令见 `docs/agents/source-checkout-validation.md`; 发布验证和发布只在维护者显式调用 `$release` Skill 时进行.
-- Reviewer 能力测试在维护者显式调用 `$reviewer-capability` Skill 时进行; 改动 Reviewer 规则 (Reviewer 角色指令, `docs/agents/reviewer.md`, Reviewer 交接与 Request 内容, 各 Skill 中约束 Reviewer 行为或复审处置的规则) 时, 也视同维护者已调用: 用受影响角色的能力场景对比改动前后, 评分不降低才接受改动. 速度提升很大而评分略有降低时, 交用户决定 (列入状态页 `decide`). 只删除重复表述或改为引用, 不改变任何规则含义的改动不做能力测试.
+- Reviewer 能力测试在维护者显式调用 `$reviewer-capability` Skill 时进行; 改动 Reviewer 规则 (Reviewer 角色指令, `docs/agents/reviewer.md`, Reviewer 交接与 Request 内容, 各 Skill 中约束 Reviewer 行为或复审处置的规则) 时, 也视同维护者已调用: 用受影响角色的能力场景对比改动前后, 评分不降低才接受改动. 速度提升很大而评分略有降低时, 交用户决定. 只删除重复表述或改为引用, 不改变任何规则含义的改动不做能力测试.
 - 单个测试回调耗时阈值为 100 毫秒.
 - 不对本仓库运行 `arw workflow init|update|verify|remove`; 它是 Workflow Distribution 的创作源, 各 Skill 中 `arw workflow verify` 的回退在本仓库不适用. Source Checkout 验证使用 Workflow Distribution 的生产检查, Repository Workflow 验证使用隔离的目标仓库.
 - 安装: `node install.mjs` (相关 issue 授权时从克隆安装), 卸载: 在安装目录运行 `node uninstall.mjs`.

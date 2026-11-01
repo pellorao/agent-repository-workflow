@@ -77,6 +77,4 @@ Claude Code 使用以下映射; 用户级规则另有模型选择要求时以用
 | 高 | `opus` | `low` | `medium` | `high` |
 
 作为 Baseline 例外, 本仓库不开启 Fast 模式: 上述位置一律使用标准层级, 不适用用户要求时开启的例外.
-
-根 `AGENTS.md` 的 `Autonomous Working Mode` 要求分析重要决策的独立 Agent 的智力水平和推理强度不低于 Main Agent, 不按上表降级.
 <!-- arw:repository-owned:end -->
