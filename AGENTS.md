@@ -34,7 +34,7 @@ Subagent 把未解决的重要决定及其分析返回 Main Agent, 不自行选�
 
 ## Rule Conflicts
 
-用户级规则 (如 `~/.codex/AGENTS.md`, `~/.claude/CLAUDE.md`) 以及平台从本仓库之外的上层目录自动加载的指令文件 (如工作区根目录的 `AGENTS.md` 或 `CLAUDE.md`) 与 ARW 规则冲突时, 以它们为准. ARW 文档之间相互冲突时, 向用户说明冲突的确切内容并请求决定, 期间只推进不受该冲突影响的工作.
+用户级规则 (如 `~/.codex/AGENTS.md`, `~/.claude/CLAUDE.md`) 与 ARW 规则冲突时, 以用户级规则为准. ARW 文档之间相互冲突时, 向用户说明冲突的确切内容并请求决定, 期间只推进不受该冲突影响的工作.
 
 ## Agent Writes
 
