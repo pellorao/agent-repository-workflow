@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0024:01",
+  "exception": {
+    "confirmedAt": "2026-11-01T17:02:40Z",
+    "reason": "Only test data and ignore rules change; no design decision."
+  },
+  "subject": {
+    "filePath": ".scratch/0024-portable-format-baseline/issues/01-fixture-and-ignore-paths.md",
+    "sha256": "2befb3d30b2103bb17941bdeaf2097aa9e034fee3d79ce3332591de4cc254429"
+  },
+  "result": "not-applicable"
+}
