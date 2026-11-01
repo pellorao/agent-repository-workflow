@@ -127,7 +127,7 @@ Installation Payload Module 验证清单的封闭结构, 平台启动器选择, 
 
 管理进程的容量, 保存间隔和主动早退通知阈值在其存活期间固定. 其他入口连接同一个管理进程, 或用户修改配置文件, 均不改变这三项运行设置; 后续重新启动管理进程时才读取启动脚本届时的配置. 客户端的等待预算只约束自己的请求, 各入口可以不同, 无需获取管理进程配置. 这样既让每个入口遵循相同配置来源规则, 又让同一共享进程保持一致的容量, 保存与通知行为. 全部字段都不接受仓库配置或单次请求覆盖. 普通请求与 `wait_agent` 的独立等待预算及任务时长边界由 `../agent-repository-workflow/spec.md` 的 Machine entry 节拥有.
 
-字段或对象缺失时, 普通读取在内存中使用相应默认值, 不写配置. 安装与安装更新在同一配置事务中补入缺失的默认结构, 保留用户已设置的有效值和无关字段, 不因这些字段增加配置版本. 格式错误 (包括 `providers` 不是对象或条目不是对象) 时在启动后台进程或修改安装前明确失败; `providers` 条目内部字段 (`driver`, `installationDirectory`, `maxInstances` 的取值) 的核对只在后台运行时进行, 但安装对数值 `maxInstances` 大于全局上限的条目另行警告, 见下段. 配置来源不改变 Background Agent management 节的归属, 源码入口不因使用共享状态而隐式安装 ARW.
+字段或对象缺失时, 普通读取在内存中使用相应默认值, 不写配置. 安装与安装更新在同一配置事务中补入缺失的默认结构, 保留用户已设置的有效值和无关字段, 不因这些字段增加配置版本. 格式错误 (包括 `providers` 不是对象或条目不是对象) 时在启动后台进程或修改安装前明确失败; `providers` 条目内部字段 (`driver`, `installationDirectory`, `maxInstances` 的取值, 以及只用于 Strata 条目的 `contextWindow`, 其取值按 `../agent-repository-workflow/strata.md` 的 Runtime parameters 节只在模型解析中核对) 的核对只在后台运行时进行, 但安装对数值 `maxInstances` 大于全局上限的条目另行警告, 见下段. 配置来源不改变 Background Agent management 节的归属, 源码入口不因使用共享状态而隐式安装 ARW.
 
 共享模型目录中每个已设置的提供方 `maxInstances` 必须是正安全整数. 安装读取有效配置中所有已设置数值 `maxInstances` 的提供方时, 若某个上限大于有效 `backgroundAgent.maxInstances`, 只警告并继续, 不改动该提供方或用户明确设置的全局上限; 警告包含提供方身份及两个限额. 后台运行时读取所有提供方配置, 若任一提供方上限大于本次读取到的有效全局上限, 明确报错且不启动共享 App Server; 全局字段缺失时按默认 `16` 核对. 用户只读列表不因此启动或恢复 App Server. 提供方名额的准入, 回收顺序和占用状态由 `../agent-repository-workflow/spec.md` 的 Capacity and recovery 节拥有, 全局 `config.json` 不复制提供方限额.
 
@@ -202,7 +202,7 @@ Claude 后端的每个运行中回合进程以同样格式记录在 `claude-proc
 
 ### Shared model catalog
 
-ARW 自己的提供方设置保存在全局 `config.json` 的 `backgroundAgent.providers`, 不依赖 Codex 用户目录: 只使用 Claude 后端的机器无需 Codex, 安装也不创建, 读取或改写 `~/.codex` 或 `CODEX_HOME`. `providers` 是以原生 `modelProvider` ID 为键的对象, 条目字段见下表. 缺少时普通读取在内存中使用默认 `{"openai":{"maxInstances":4},"anthropic":{"maxInstances":4}}`, 安装补入缺失的默认提供方及其 `maxInstances`, 保留用户已设置的提供方, 字段与显式上限; 提供方条目内部字段的详细核对 (字段, Strata 安装目录, 上限不大于全局上限的报错) 只在后台运行时读取这些设置时进行 (安装仅对超过全局上限的数值上限另行警告), 其他命令及安装不因条目内部字段无效而失败, 只有 `providers` 或其条目不是对象的结构错误才在安装前失败.
+ARW 自己的提供方设置保存在全局 `config.json` 的 `backgroundAgent.providers`, 不依赖 Codex 用户目录: 只使用 Claude 后端的机器无需 Codex, 安装也不创建, 读取或改写 `~/.codex` 或 `CODEX_HOME`. `providers` 是以原生 `modelProvider` ID 为键的对象, 条目字段见下表. 缺少时普通读取在内存中使用默认 `{"openai":{"maxInstances":4},"anthropic":{"maxInstances":4}}`, 安装补入缺失的默认提供方及其 `maxInstances`, 保留用户已设置的提供方, 字段与显式上限; 提供方条目内部字段的详细核对 (字段, `contextWindow` 只出现在 Strata 条目, Strata 安装目录, 上限不大于全局上限的报错) 只在后台运行时读取这些设置时进行 (安装仅对超过全局上限的数值上限另行警告), 其他命令及安装不因条目内部字段无效而失败, 只有 `providers` 或其条目不是对象的结构错误才在安装前失败.
 
 Codex 自定义模型记录 `models.custom.json` 是 Codex 用户目录 (默认 `~/.codex`, 非空 `CODEX_HOME` 时为该准确目录) 中由用户拥有的可选文件, 只在启动 Codex App Server 时读取其 `models` 数组, 必须是 JSON 数组, 缺失视为空数组. ARW 不创建, 不补缺, 不改写它, 卸载时保留, 其中的 `providers` 不再被 ARW 读取.
 
@@ -216,6 +216,7 @@ Codex 自定义模型记录 `models.custom.json` 是 Codex 用户目录 (默认 
 | --- | --- |
 | `driver` | 可省略; 当前专用驱动值为 `"strata"`, 省略时只使用配置的提供方上限 |
 | `installationDirectory` | `driver: "strata"` 时必需, 本机可访问的绝对安装目录路径 |
+| `contextWindow` | 可省略, 只用于 `driver: "strata"`; 取安装为该模型发布的某一档的 `context_window`, 省略时用第一档 (默认档); 取值核对见 `../agent-repository-workflow/strata.md` 的 Runtime parameters 节 |
 | `maxInstances` | 可省略; 通用提供方省略时不增加提供方专用上限, Strata 省略时为 `1`; 设置时为正安全整数, 与有效全局上限的关系按 Background Agent configuration 节处理 |
 
 Strata 配置示例 (`config.json` 片段):
@@ -234,9 +235,9 @@ Strata 配置示例 (`config.json` 片段):
 }
 ```
 
-`qwen_strata` 的三个变体使用同一提供方身份和限额. 配置读取按 Background Agent configuration 节核对提供方限额与有效全局上限. `installationDirectory` 填 ARW 运行环境中看到的安装目录路径 (例如 Strata 作为 Windows 程序安装而 ARW 运行在 WSL 中时, 填 WSL 中的挂载路径), 不改变 ARW 对其他操作系统的支持范围. 只有可变的目录和配额在此设置, Strata 的入口与控制请求由 `../agent-repository-workflow/spec.md` 的 Capacity and recovery 节拥有, 模型映射由 `../agent-repository-workflow/strata.md` 的 Runtime parameters 节拥有; 独占 key 由管理进程持有, 不写回配置, 原生缓存或用户自定义来源文件.
+`qwen_strata` 所在安装服务的模型共用同一提供方身份和限额. 配置读取按 Background Agent configuration 节核对提供方限额与有效全局上限. `installationDirectory` 填 ARW 运行环境中看到的安装目录路径 (例如 Strata 作为 Windows 程序安装而 ARW 运行在 WSL 中时, 填 WSL 中的挂载路径), 不改变 ARW 对其他操作系统的支持范围. 只有可变的目录, 配额和档位选择在此设置, Strata 的入口与控制请求由 `../agent-repository-workflow/spec.md` 的 Capacity and recovery 节拥有, 模型解析与档位选择由 `../agent-repository-workflow/strata.md` 的 Runtime parameters 节拥有; 独占 key 由管理进程持有, 不写回配置, 原生缓存或用户自定义来源文件.
 
-管理进程每次准备创建共享 App Server 前, 从 Codex 用户目录读取原生 `models_cache.json` 和可选的用户 `models.custom.json` 的 `models` 数组 (后者缺失视为空数组), 按原生缓存记录在前, 用户自定义记录在后的顺序合并为 `{"models":[...]}`. 实际接入 Strata 驱动 (由 `backgroundAgent.providers` 判定) 时才读取 `../agent-repository-workflow/strata.md` 的 Runtime parameters 节, 对其模型条目应用生成目录调整; 其他模型条目原样合并. 提供方调整只属于生成目录, 不写回缓存或用户自定义来源, 也不从单个根线程切换共享目录. 该分支的原生压缩设置与私有任务绑定文件按 `../agent-repository-workflow/strata.md` 的 Compaction support 节准备, 其他分支不加载其参数或提示内容. 生成结果只写入实际 ARW 安装目录的用户私有运行状态 `<ARW 安装目录>/background-agent-state/models.json`, 路径随实际 ARW 安装目录解析 (与提供方条目的 `installationDirectory` 字段无关); 不复制原生缓存的身份, 刷新时间等其他字段或配置中的 `providers`, 不修改原生缓存, 也不把 GPT 描述写入用户自定义文件. App Server 启动时通过进程级 `model_catalog_json` 使用该生成文件; 不由单个根线程或单次请求选择目录. 原生缓存缺失, 任一来源文件无法解析, `models` 不是数组, 提供方设置无效, 或生成失败时明确报告并且不启动 App Server; 其中来源文件与生成失败只影响 Codex App Server, Claude 后端只读取 `backgroundAgent.providers`, 不访问 Codex 用户目录. 提供方设置无效或超过全局上限则拒绝新建或恢复任何运行, 包括 Claude 后端, 准入使用读取到的有效配置值, 不静默改用另一来源.
+管理进程每次准备创建共享 App Server 前, 从 Codex 用户目录读取原生 `models_cache.json` 和可选的用户 `models.custom.json` 的 `models` 数组 (后者缺失视为空数组), 按原生缓存记录在前, 用户自定义记录在后的顺序合并为 `{"models":[...]}`. 实际接入 Strata 驱动 (由 `backgroundAgent.providers` 判定) 时才读取 `../agent-repository-workflow/strata.md` 的 Runtime parameters 节, 读取该安装的 `config/deployment.json`, 按第一个 Strata 提供方 (配置顺序) 的所选档调整可解析的模型条目的窗口; 其他模型条目原样合并. 安装事实无法读取或所配置的档未发布时按目录生成失败处理 (只影响 Codex App Server), 没有 Strata 提供方时不读取任何安装文件. 提供方调整只属于生成目录, 不写回缓存或用户自定义来源, 也不从单个根线程切换共享目录. 该分支的原生压缩设置与私有任务绑定文件按 `../agent-repository-workflow/strata.md` 的 Compaction support 节准备, 其他分支不加载其参数或提示内容. 生成结果只写入实际 ARW 安装目录的用户私有运行状态 `<ARW 安装目录>/background-agent-state/models.json`, 路径随实际 ARW 安装目录解析 (与提供方条目的 `installationDirectory` 字段无关); 不复制原生缓存的身份, 刷新时间等其他字段或配置中的 `providers`, 不修改原生缓存, 也不把 GPT 描述写入用户自定义文件. App Server 启动时通过进程级 `model_catalog_json` 使用该生成文件; 不由单个根线程或单次请求选择目录. 原生缓存缺失, 任一来源文件无法解析, `models` 不是数组, 提供方设置无效, 或生成失败时明确报告并且不启动 App Server; 其中来源文件与生成失败只影响 Codex App Server, Claude 后端只读取 `backgroundAgent.providers`, 不访问 Codex 用户目录. 提供方设置无效或超过全局上限则拒绝新建或恢复任何运行, 包括 Claude 后端, 准入使用读取到的有效配置值, 不静默改用另一来源.
 
 同一个共享 App Server 存活期间不重写生成文件; 来源文件的后续更改只在下一次 App Server 启动时生效. 确认共享进程实际退出后立即删除生成文件. 启动失败而进程退出无法确认, 或旧进程身份仍未知时保留文件且不重写; 确认旧进程已经结束后才可清理旧文件并重新生成. 该文件不进入 Agent 与消息的 SQLite 批量保存, 也不改变独立的进程身份核对.
 
@@ -389,7 +390,7 @@ ARW 安装请求明确来源模式, 已选择的身份, `reinitializeConfig`, `r
 
 Installation 对用户级后台管理进程的内部交接只接受可核实的停止接收新工作, 无执行中或未决事项, 所有受管根线程及单个共享 App Server 已退出和管理进程已退出这一完整结果. 新工作不能在检查与安装写入之间插入. 结果不完整或失败时在 `preflight` 阶段阻断并保持零安装写入, 不把调用方提供的旧状态或进程 ID 当作退出证明. Uninstallation 在删除前也要求这些退出事实, 但可以先按用户的明确关闭授权停止正在执行的后台 Agent. 交接消费 Module 已取得的授权, 不自行推断用户同意, 不增加 Installer 参数或改变现有结果对象形状.
 
-内部共享模型目录 Interface 在安装时只读取遗留 `providers` 供迁移, 在共享 App Server 启动前返回完整合并文件的准确路径, 或以抛出的错误失败, 错误消息为具体原因 (来源缺失或无法解析, 提供方设置无效, 私有生成失败, 已有生成文件的前一进程退出未确认), 在确认进程实际退出后清理生成文件. 遗留文件无法读取时安装不写入; 来源或生成失败不交给原生进程使用, 进程退出未知也不以删除文件表示清理成功. Interface 不接受单根线程提供的目录路径.
+内部共享模型目录 Interface 在安装时只读取遗留 `providers` 供迁移, 在共享 App Server 启动前返回完整合并文件的准确路径, 或以抛出的错误失败, 错误消息为具体原因 (来源缺失或无法解析, 提供方设置无效, Strata 安装事实无法读取或所配置的档未发布, 私有生成失败, 已有生成文件的前一进程退出未确认), 在确认进程实际退出后清理生成文件. 遗留文件无法读取时安装不写入; 来源或生成失败不交给原生进程使用, 进程退出未知也不以删除文件表示清理成功. Interface 不接受单根线程提供的目录路径.
 
 `installed` 只在安装清单最后提交后与 `stage: "complete"` 一起返回. 没有执行写入时返回 `unchanged`; 已知至少一项写入成功后发生失败时返回 `partial`; PATH 或配置文件 Adapter 无法确认外部写入是否发生时返回 `unknown`, 并优先于 `partial`. `partial` 或 `unknown` 不被 CLI 改写为完整成功.
 
@@ -423,7 +424,7 @@ PATH 与配置文件归属通过平台 Adapter 隔离 Windows Registry 和 Linux
 
 Installation 与 Uninstallation 通过后台管理进程的交接 Seam 先取得固定维护端口的互斥, 再取得停止接收新工作, 删除或替换前无活动运行以及管理进程实际退出的完整事实. 安装与更新遇忙碌工作时阻断; 卸载另消费 Module 已确定的后台 Agent 关闭授权, 由管理进程执行关闭. 生产 Adapter 与真实的单一用户级进程通信, 确定性测试 Adapter 提供相同成功或失败结果, 不替 Module 决定关闭授权或写入条件. 该 Seam 不允许调用方用旧 PID 或本次请求字段声明进程已经退出.
 
-共享模型目录的文件系统 Seam 使用原生 Codex 用户目录来源和安装私有运行状态, 区分安装时仅读取的遗留文件与管理进程每次启动共享 App Server 前生成的临时文件. 生产 Adapter 读取真实来源并在已确认的进程退出边界清理生成文件; 确定性 Adapter 提供相同来源失败, 合并顺序和退出事实, 不以线程配置或进程启动参数替代来源读取.
+共享模型目录的文件系统 Seam 使用原生 Codex 用户目录来源, 配置了 Strata 提供方时的安装部署配置和安装私有运行状态, 区分安装时仅读取的遗留文件与管理进程每次启动共享 App Server 前生成的临时文件. 生产 Adapter 读取真实来源并在已确认的进程退出边界清理生成文件; 确定性 Adapter 提供相同来源失败, 合并顺序和退出事实, 不以线程配置或进程启动参数替代来源读取.
 
 ### Dependencies and Data Flow
 
@@ -447,6 +448,7 @@ flowchart TD
   Installed --> BackgroundManager
   NativeCatalog[Codex 原生模型缓存] --> SharedCatalog[共享模型目录准备]
   CustomCatalog[用户自定义模型目录] --> SharedCatalog
+  StrataFacts[Strata 安装 config/deployment.json, 仅配置 Strata 提供方时读取] --> SharedCatalog
   SharedCatalog --> GeneratedCatalog[安装私有运行状态中的 models.json 文件]
   GeneratedCatalog --> BackgroundManager
   BackgroundManager --> Quiet[互斥关闭与实际退出确认]
@@ -473,7 +475,7 @@ flowchart TD
 | 当前 `config.json` 字节和全局配置规则对象 | Installation 拥有规则对象, Configuration Conversion Module 拥有公共转换语义 | Engine Installation Module 生成完整替换字节与用户可见净变更 | 解析, 版本, 验证器或结构冲突时阻断, 未知路径报告给用户; 失败后保留原字节并重新安装; File Transaction Module 是配置替换点 |
 | Background Agent configuration 节 | Installation 拥有字段格式, 默认值和安装配置生命周期; 各入口读取自身配置 | 管理进程消费启动时的容量与保存间隔, 机器入口和用户列表客户端消费自身的请求预算 | 普通读取不写配置, 其他入口连接不改变管理进程设置; 无效格式明确失败 |
 | Background Agent management 节 | Installation 拥有状态目录归属, 后台管理进程拥有实际运行事实 | 控制客户端用私密凭据连接管理进程; Installation 和 Uninstallation 消费互斥退出结果 | 源码未安装不隐式安装; 权限, 凭据或原生退出无法确认时关闭式失败, 更新与卸载在写入前阻断 |
-| `backgroundAgent.providers`, Codex 原生 `models_cache.json`, 用户 `models.custom.json` 与安装私有 `models.json` | ARW 配置拥有提供方设置, Codex 拥有原生缓存, 用户拥有自定义记录, Shared Model Catalog Module 拥有提供方核对, 启动时合并及生成文件生命周期 | Installer 补入默认提供方 (`openai` 与 `anthropic` 上限 `4`), 并把遗留 `models.custom.json.providers` 一次性迁移入尚无 `providers` 的配置, 不创建或改写 Codex 用户目录, 对高于有效全局上限的提供方只警告; 后台管理进程在启动共享 App Server 前校验所有提供方并生成进程级目录 | 需要迁移的遗留文件无法解析或结构无效时在任何安装写入前报错; 来源或生成失败不启动 App Server, 存活或退出未知时不重写, 实际退出后删除生成文件; 用户已设置的模型, 提供方及显式限额和原生缓存保留 |
+| `backgroundAgent.providers`, Codex 原生 `models_cache.json`, 用户 `models.custom.json`, Strata 安装的 `config/deployment.json` (仅配置 Strata 提供方时读取) 与安装私有 `models.json` | ARW 配置拥有提供方设置, Codex 拥有原生缓存, 用户拥有自定义记录, Shared Model Catalog Module 拥有提供方核对, 启动时合并及生成文件生命周期 | Installer 补入默认提供方 (`openai` 与 `anthropic` 上限 `4`), 并把遗留 `models.custom.json.providers` 一次性迁移入尚无 `providers` 的配置, 不创建或改写 Codex 用户目录, 对高于有效全局上限的提供方只警告; 后台管理进程在启动共享 App Server 前校验所有提供方并生成进程级目录 | 需要迁移的遗留文件无法解析或结构无效时在任何安装写入前报错; 来源或生成失败不启动 App Server, 存活或退出未知时不重写, 实际退出后删除生成文件; 用户已设置的模型, 提供方及显式限额和原生缓存保留 |
 | 管理进程的代码来源 (`lib/arw-background-agent-host.mjs` 入口) | Installation 拥有已安装运行时, 控制客户端启动时选择入口 | 已安装入口文件存在时运行它, 否则退回调用方自己的入口 (未安装的源码入口) | 只在安装目录没有该入口文件时退回调用方入口, 已存在但无法加载的入口使启动失败, 不退回, 不隐式安装 |
 | 当前 `config.install.json` 初始文件 | Installation 源码与 Installation Payload | Engine Installation Module 只在配置缺失或明确重新初始化时创建完整配置 | 初始文件无效时在安装写入前阻断; 普通升级不读取它; Installation 事务是创建或替换点 |
 | 当前 Windows Registry `Path` 或 Linux 配置文件状态 | 平台归属 Adapter 和 Installation Contract Module | 归属计划计算变更, 通知和卸载所需证明 | 写入前观察失败时阻断; 部分写入准确返回影响和仍能证明的归属; 平台写入成功后才允许最后提交安装清单, 后续任一失败留下的未证明新登记按准确提示人工清理 |

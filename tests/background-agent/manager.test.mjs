@@ -132,10 +132,13 @@ function strataService(){
   let connectCount=0,statusFailures=0,releaseFailures=0;
   /** @type {(()=>void)|null} */ let afterAcquire=null;
   /** @type {string[]} */ const starts=[];
+  /** @type {string[]} */ const stops=[];
+  /** @type {Record<string,unknown>[]} */ const driverInputs=[];
+  /** @type {{status:string,model:string|null}|null} */ let observed=null;
   /** @type {string[]} */ const statusUrls=[];
   /** @type {string[]} */ const releaseUrls=[];
   const createStrataDriver=/** @type {typeof import('../../lib/background-agent/strata-driver.mjs').createStrataDriver} */ (
-    /** @type {unknown} */ ((/** @type {{installationDirectory:string}} */ {installationDirectory})=>({
+    /** @type {unknown} */ ((/** @type {{installationDirectory:string}} */ {installationDirectory,...input})=>(driverInputs.push({installationDirectory,...input}),{
       async connect(){connectCount++;return{controllerUrl:`http://controller/${installationDirectory.length}`,responsesUrl:'http://responses/v1'};},
       async acquire(){if(heldKey)throw new Error('Strata acquire rejected (HTTP 409): Ownership is held.');
         heldKey=`key-${++acquireCount}`;afterAcquire?.();return{leaseKey:heldKey};},
@@ -143,18 +146,18 @@ function strataService(){
         statusUrls.push(controllerUrl);
         if(statusFailures>0){statusFailures--;throw new Error('Original controller status could not be verified.');}
         if(leaseKey!==heldKey)throw new Error('Strata ownership key changed.');
-        return{status:model?'running':'stopped',model};},
+        return observed??{status:model?'running':'stopped',model};},
       async start(/** @type {{leaseKey:string,modelId:string}} */ {leaseKey,modelId}){if(leaseKey!==heldKey)throw new Error('Strata ownership key changed.');
-        model=modelId;starts.push(modelId);return{status:'running',model:modelId};},
+        observed=null;model=modelId;starts.push(modelId);return{status:'running',model:modelId};},
       async stop(/** @type {{leaseKey:string}} */ {leaseKey}){if(leaseKey!==heldKey)throw new Error('Strata ownership key changed.');
-        model=null;return{status:'stopped',cleanUnload:true};},
+        observed=null;stops.push('stop');model=null;return{status:'stopped',cleanUnload:true};},
       async release(/** @type {{leaseKey:string,controllerUrl:string}} */ {leaseKey,controllerUrl}){
         releaseUrls.push(controllerUrl);
         if(releaseFailures>0){releaseFailures--;throw new Error('Original controller release could not be verified.');}
         if(leaseKey!==heldKey)throw new Error('Strata ownership key changed.');
         heldKey=null;model=null;releaseCount++;return{ownership:'free',previousKeyRevoked:true};},
     })));
-  return{createStrataDriver,starts,statusUrls,releaseUrls,setStatusFailures(/** @type {number} */ value){statusFailures=value;},
+  return{createStrataDriver,starts,stops,driverInputs,setObserved(/** @type {{status:string,model:string|null}|null} */ value){observed=value;},statusUrls,releaseUrls,setStatusFailures(/** @type {number} */ value){statusFailures=value;},
     setReleaseFailures(/** @type {number} */ value){releaseFailures=value;},
     setAfterAcquire(/** @type {(()=>void)|null} */ callback){afterAcquire=callback;},
     get connectCount(){return connectCount;},get acquireCount(){return acquireCount;},get releaseCount(){return releaseCount;}};
@@ -564,7 +567,7 @@ test('App Server initializes before key acquisition, and startup failure acquire
 
 test('rejected key acquisition leaves an empty initialized server for the normal idle timeout',async t=>{
   const service=strataService();
-  const driver=service.createStrataDriver({installationDirectory:'/service'});
+  const driver=service.createStrataDriver({driver:'strata',installationDirectory:'/service'});
   await driver.acquire({controllerUrl:'http://original-controller'});
   const fake=await harness(t,{providers:{strata:{driver:'strata',installationDirectory:'/service'}},
     createStrataDriver:service.createStrataDriver});
@@ -687,7 +690,7 @@ test('cold provider lease is returned only after the old App Server exit is prov
   const service=strataService();
   const providers={strata:{driver:/** @type {const} */('strata'),installationDirectory:'/service',maxInstances:1}};
   const fake=await harness(t,{providers,createStrataDriver:service.createStrataDriver});
-  const driver=service.createStrataDriver({installationDirectory:'/service'});
+  const driver=service.createStrataDriver({driver:'strata',installationDirectory:'/service'});
   const originalControllerUrl='http://original-controller';
   const acquired=await driver.acquire({controllerUrl:originalControllerUrl});
   fake.stateStore.saveProvider({providerId:'strata',controllerUrl:originalControllerUrl,leaseKey:acquired.leaseKey});
@@ -722,7 +725,7 @@ test('cold status and release failures retain the original lease, and a failed d
   const providers={strata:{driver:/** @type {const} */('strata'),installationDirectory:'/service',maxInstances:1}};
   const fake=await harness(t,{providers,createStrataDriver:service.createStrataDriver});
   const originalControllerUrl='http://original-controller';
-  const acquired=await service.createStrataDriver({installationDirectory:'/service'}).acquire({controllerUrl:originalControllerUrl});
+  const acquired=await service.createStrataDriver({driver:'strata',installationDirectory:'/service'}).acquire({controllerUrl:originalControllerUrl});
   fake.stateStore.saveProvider({providerId:'strata',controllerUrl:originalControllerUrl,leaseKey:acquired.leaseKey});
   await fake.manager.close();
   const store=createBackgroundAgentStateStore({runtimeDirectory:fake.directory,clock:fake.clock});
@@ -779,7 +782,7 @@ test('cold provider lease with absent or unverified old process blocks new roots
     const service=strataService();
     const providers={strata:{driver:/** @type {const} */('strata'),installationDirectory:'/service',maxInstances:1}};
     const fake=await harness(t,{providers,createStrataDriver:service.createStrataDriver,maxInstances:4});
-    const driver=service.createStrataDriver({installationDirectory:'/service'});
+    const driver=service.createStrataDriver({driver:'strata',installationDirectory:'/service'});
     const connection=await driver.connect(), acquired=await driver.acquire(connection);
     fake.stateStore.saveProvider({providerId:'strata',controllerUrl:connection.controllerUrl,leaseKey:acquired.leaseKey});
     await fake.manager.close();
@@ -839,6 +842,23 @@ test('concurrent starts for one Strata provider share its one saved key',async t
   assert.equal(fake.native.openCount,2);
   assert.equal(fake.native.openedProviderConnections[0]?.leaseKey,'key-1');
   assert.equal(fake.native.openedProviderConnections[1]?.leaseKey,'key-1');
+});
+
+test('the configured contextWindow reaches the driver, and every newly acquired lease starts once without stopping',async t=>{
+  const providerSettings={...settings,model:'family-alpha',modelProvider:'strata'};
+  const cases=[{status:'stopped',model:null},{status:'unloaded',model:null},{status:'partial',model:null},
+    {status:'running',model:'family-alpha'},{status:'running',model:'family-other'}];
+  for(const observed of cases){
+    const service=strataService();
+    const fake=await harness(t,{maxInstances:2,providers:{strata:{driver:'strata',installationDirectory:'/service',maxInstances:2,contextWindow:2000}},
+      createStrataDriver:service.createStrataDriver});
+    service.setObserved(observed);
+    const first=result(await fake.start('main-a',providerSettings));
+    const second=result(await fake.start('main-b',providerSettings));
+    await Promise.all([waitDelivered(fake.stateStore,first.messageId),waitDelivered(fake.stateStore,second.messageId)]);
+    assert.deepEqual([service.starts,service.stops],[['family-alpha'],[]],JSON.stringify(observed));
+    assert.equal(service.driverInputs[0]?.contextWindow,2000);
+  }
 });
 
 test('separate Strata provider entries at one installation keep independent lease requests',async t=>{

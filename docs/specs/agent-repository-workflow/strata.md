@@ -2,21 +2,47 @@
 
 ## Scope and ownership
 
-本文件是程序运行的治理设计, 不属于 Reviewer 的 Agent 指令. 它只用于实际接入 `driver: "strata"` 的运行分支, 是 Strata 固定参数, 压缩, 工作策略及本地测量时限的单一规则来源. 处理该分支的程序实现, 操作或审核时才读取, 其他提供方不加载这些规则. Reviewer 模型仍使用完整公共 Canonical Role 和 Reviewer 共同规则 (`docs/agents/reviewer.md`), 不把本文件的程序检测, 计数和错误处理细节加入审核提示. 三种量化共用本规则, 不复制模型专属角色或每量化规则.
+本文件是程序运行的治理设计, 不属于 Reviewer 的 Agent 指令. 它只用于实际接入 `driver: "strata"` 的运行分支, 是 Strata 安装事实的使用, 压缩, 工作策略及本地测量时限的单一规则来源. 处理该分支的程序实现, 操作或审核时才读取, 其他提供方不加载这些规则. Reviewer 模型仍使用完整公共 Canonical Role 和 Reviewer 共同规则 (`docs/agents/reviewer.md`), 不把本文件的程序检测, 计数和错误处理细节加入审核提示. 所有 Strata 模型共用本规则, 不复制模型专属角色或每量化规则.
 
 通用后台运行负责准确原生事实, 消息与持久状态, Reviewer 运行层负责角色限制, 绑定报告交付及 `./spec.md` 的 Reviewer task continuation 节, 提供方程序负责消费这些事实执行本文件的专用策略. `./spec.md` 的 Background Agent control 节继续拥有容量, 原身份, 独占 key 与最终收尾; `../agent-repository-workflow-installation/spec.md` 的 Shared model catalog 节继续拥有共享模型目录的来源和生命周期. 本文件不改变这些通用责任, 不建立新的模型管理 Agent 或消息队列.
 
 ## Runtime parameters
 
-Strata 模型 ID `qwen3.8-flash-next-q2_0`, `qwen3.8-flash-next-iq2_xs` 和 `qwen3.8-flash-next-iq3_xxs` 分别映射为 `/ownership/start` 的 `Q2_0`, `IQ2_XS` 和 `IQ3_XXS`. ARW 自动传入 `engine_overrides` 中的 `spec-min-p: 0.7` 和 `max-context: 206584`, 以及 `request_defaults` 中的 `temperature: 0`, `top_p: 1` 和 `top_k: 20`; 未指定的服务参数沿用安装配置. 量化与推理强度沿用 Reviewer 配置解析的结果, 不在此固定, 不增加用户配置字段或额外调用步骤.
+ARW 程序不保存任何 Strata 部署参数. 每台机器的 Strata 配置只来自两处: `backgroundAgent.providers.<id>` 中的 `driver`, `installationDirectory`, `maxInstances` 和可选的 `contextWindow`, 以及该安装目录中由 Strata 安装发布, ARW 只读不写的文件. 引擎参数, 采样默认值, 思考预算和输出上限由 Strata 安装按 "主机 + 量化" 预置, 调用方不能覆盖, ARW 因而不传这些值.
 
-共享模型目录生成时只对已通过提供方配置接入 Strata 的三个模型条目把 `context_window` 和 `max_context_window` 固定为 `206584`, 其他字段保留; 其他模型条目原样合并. 不写回原生缓存或用户自定义来源, 同一共享 App Server 存活期间不重写生成目录. 模型目录和原生上下文采用一致容量, 避免不同来源分别采用不同窗口.
+| 安装文件 (相对 `installationDirectory`) | ARW 读取的内容 | 用途 |
+| --- | --- | --- |
+| `config/frontend.json` | `listen_address` (非空字符串), `port` (正安全整数) | 控制地址 `http://<listen_address>:<port>`; 模型请求地址为控制地址加 `/strata/v1` |
+| `config/deployment.json` | `models`: 本安装对外服务的 Strata 模型名数组; `context_tiers`: 模型名到档位数组的对象, 每档含整数 `context_window` 和 `auto_compact_token_limit`, 且 `0 < auto_compact_token_limit < context_window`; 每个模型的第一档是默认档 | 模型解析与档位选择 |
+| `config/prompts/compact-prompt.txt` | 基础压缩提示 | 压缩支持 |
+
+配置了 `driver: "strata"` 的提供方但安装文件缺失或无效时, 在实际使用的阶段 (目录生成, 连接, 启动, 任务准备) 报告具体原因, 不以猜测值继续. 没有 Strata 提供方时 ARW 不读取任何安装文件. 连接只读取 `config/frontend.json`, 不启动任何进程.
+
+模型解析: Reviewer 配置中的 `model` 是 ARW 模型 ID. 它对应的 Strata 模型名是 `models` 中唯一一个满足 "模型 ID 以 `-` 加该名称的小写形式结尾" 的名称, 无匹配或多匹配都是错误. 这一命名约定来自 Strata 安装目录根下的调用手册 `README.md`, 因此 ARW 不写死系列前缀, 量化列表或模型名, 安装改变服务的模型时 ARW 无需修改.
+
+档位选择: 可选档位就是安装在 `context_tiers.<模型名>` 中为该模型发布的档位. 前端的启动请求和原生任务设置都以 `context_window` 表达档位, 所以提供方的可选字段 `contextWindow` 取所选档的 `context_window` 整数; 设置时所选档是窗口等于它的第一个档, 省略时是第一档 (默认档). 取值只在模型解析中与安装发布的档位精确比较, 没有相等的档 (含非整数) 即为配置错误, 消息包含 `contextWindow`, 配置值, 模型名和已发布的各档窗口, 不改用默认档, 以免任务在使用者没有选择的窗口下运行; 读取 `config.json` 时不核对取值, 因为只有安装文件才能说明哪些值有效. 模型没有档位或所选档不满足整数约束时报告档位缺失或无效. 每次使用时重新读取安装文件, 不缓存.
+
+前端协议只使用下表的公开接口 (出处为 Strata 安装目录根下的 `README.md`), 管理进程拥有的准入, key 即时保存, 归还时机与容量规则不变. 带 key 的请求使用 `Authorization: Bearer <key>`.
+
+| 操作 | 请求 | 成功判定 |
+| --- | --- | --- |
+| 领取 | `POST /lease/acquire`, 正文 `{}`, 不带 key | 返回非空字符串 `key`, 且 `lease` 为 `"held"` |
+| 状态 | `GET /model/status`, 带 key | `status` 为 `stopped`, `starting`, `unloaded` 或 `running`; `starting` 按 `partial` 处理 (模型未完全加载, 切换前须先停止); `running` 时必须有字符串 `model` |
+| 启动 | `POST /model/start`, 正文见下 | 返回 `status` 为 `"running"`, 且 `model` 等于 ARW 模型 ID |
+| 停止 | `POST /model/stop`, 正文 `{}` | 返回 `status` 为 `"stopped"` |
+| 归还 | `POST /lease/release`, 正文 `{}` | 返回 `lease` 为 `"free"`; 成功时前端撤销 key |
+
+启动正文恰好是 `{"model": <Strata 模型名>, "context_window": <所选档窗口>}` 两项. 前端协议事实 (出处均为 Strata 安装目录根下的 `README.md`): `/model/start` 与 `/model/status` 返回的 `model` 是前端模型 ID, 即模型系列前缀加 `-` 和模型名的小写, 没有运行中的模型时为 `null`, 与 ARW 模型 ID 相同, 所以驱动原样返回, 管理进程不做映射, 前缀不同时启动后的确认因 `model` 不等而失败; 启动请求在已加载模型的完整运行配置与请求相同时复用 (`reused: true`), 不同时 (其他模型, 其他档或未完全加载) 前端自行先停再启动. 设计的正确性不依赖这两项: 管理进程只在启动成功且状态确认目标模型 `running` 后才使用模型.
+
+被否决的方案: 在 ARW 配置中为每个模型保存映射, 窗口, 阈值和引擎参数 (复制安装已发布的事实, 两处会漂移, 且前端拒绝调用方覆盖); 只把数值移出程序而保留模型表 (仍写死某台机器可服务的量化); 只使用默认档 (无法使用安装已发布的其他档); 在 ARW 中写死档位或按档位序号选择 (后者在安装调整档位顺序后会让同一配置指向另一档); 继续支持旧的控制脚本与所有权接口 (当前 Strata 安装已删除它们, 保留只会留下无人使用的分支); 新租约时按状态比较档位 (前端公开状态不报告档位, 只有启动请求本身能确认).
+
+共享模型目录生成时, 按配置顺序取第一个 Strata 提供方, 对 `slug` 能按模型解析规则匹配到该安装所服务模型的条目, 把 `context_window` 和 `max_context_window` 设为该提供方所选档的窗口, 其他字段保留; 其他模型条目原样合并. 安装事实无法读取或所配置的档未发布时按目录生成失败处理. 不写回原生缓存或用户自定义来源, 同一共享 App Server 存活期间不重写生成目录, 所以省略 `contextWindow` 而安装在此期间改变第一档时, 目录窗口可以暂时落后于启动请求与任务设置. 启动请求, 目录窗口和任务设置取自同一所选档, 避免不同来源分别采用不同窗口.
 
 ## Compaction support
 
-ARW 对已接入的 Strata 模型自动使用 `model_context_window=206584` 和 `model_auto_compact_token_limit=150000`, 与 Runtime parameters 节中的模型与目录容量保持一致. 固定支持不增加 `backgroundAgent.providers` 中的用户可调字段或新的调用步骤; 其他提供方的模型条目与原生运行设置保持其既有来源. 这些设置为实际模型容量保留固定压缩预算.
+原生任务设置的 `model_context_window` 与 `model_auto_compact_token_limit` 取自模型解析所选档的 `context_window` 与 `auto_compact_token_limit`, 与目录窗口和启动请求一致. 每次准备任务设置 (新任务和恢复) 时按该提供方的 `contextWindow` 和安装当时发布的档位重新解析; 恢复时安装已不再发布所配置的档则以配置错误失败, 不改用其他档. 这些设置不增加新的调用步骤; 其他提供方的模型条目与原生运行设置保持其既有来源.
 
-Strata 历史压缩使用其实际安装目录中的 `config/compact_prompt.txt` 作为基础. 程序读取基础文件, 若调用方已有摘要提示则只追加一次作为补充, 把组合内容写入原任务绑定的私有临时文件, 通过 Codex 的 `experimental_compact_prompt_file` 使用它. 调用方已指向同一基础文件或提供相同基础内容时不重复拼接. 不复制维护 Codex 特定版本的默认摘要快照, 不以自定义摘要要求替代基础指令, 不把压缩提示加入普通审核提示.
+Strata 历史压缩使用其实际安装目录中的 `config/prompts/compact-prompt.txt` 作为基础. 程序以字节读取基础文件 (不经文本解码, 以免改变字节使绑定失效), 若调用方已有摘要提示则只追加一次作为补充, 把组合内容写入原任务绑定的私有临时文件, 通过 Codex 的 `experimental_compact_prompt_file` 使用它. 调用方已指向同一基础文件或提供相同基础内容时不重复拼接. 不复制维护 Codex 特定版本的默认摘要快照, 不以自定义摘要要求替代基础指令, 不把压缩提示加入普通审核提示.
 
 组合文件由运行程序在调用方原任务的 ARW Engine 临时工作区内创建, 保持当前用户私有权限, 不扩大 Reviewer 的报告写入范围. 原任务恢复记录绑定准确文件及内容身份, 续做和恢复使用相同字节, 不因安装基础或调用方补充随后改变而重组该任务. 基础或已有补充不能读取, 组合写入失败, 或恢复时绑定内容不可核实时, 在受影响原生审核继续前报告具体原因; 不静默丢弃基础或补充. 文件在原任务仍可恢复或仍被原生运行使用时保留, 结束后仅按原任务临时工作区已有的管理边界处理, 不增加跨会话自动清理或删除旧工作区的权限. 新审核按当时基础与补充建立自己的绑定.
 

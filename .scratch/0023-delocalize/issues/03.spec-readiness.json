@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0023:03",
+  "request": {
+    "digest": "160b3f16adb9572562db210d18dd0fe40670c6508fd4335b190080ba9c30fd69",
+    "filePath": ".tmp/claude-code/ad35ce58-362f-4db3-a1d5-a5e8444e3975/0023_03/spec-readiness/requests/request-5757a456-e6af-4328-ba74-0a21d65872b3.json",
+    "id": "5757a456-e6af-4328-ba74-0a21d65872b3"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "ba4f23b253fe4bd4d17bde006dd684e3b4ae723ec9443a706c6f32eb66815b7e"
+  },
+  "inputs": [
+    {
+      "filePath": ".scratch/0023-delocalize/spec.md",
+      "role": "governing-spec",
+      "sha256": "3c1d8acea8d0a0b9d82eb8b00f5cf8ef05e0dec2bd69bf608fe48368f7327894"
+    },
+    {
+      "filePath": "CONTEXT.md",
+      "role": "domain-context",
+      "sha256": "6f89aa3efc9e393170b2d9380bacf5b1b11aea0d9c614e9367384d99767bb1fb"
+    },
+    {
+      "filePath": "docs/adr/0030-use-user-wide-background-agent-management.md",
+      "role": "adr",
+      "sha256": "afffe17adcf95c931864009d198408c2d8afb97d867c1ba20cef04fc7385abd1"
+    },
+    {
+      "filePath": "docs/adr/0032-run-claude-reviewers-through-headless-claude.md",
+      "role": "adr",
+      "sha256": "3efc5f1c7c75108ee396f9e91346292e517b9f0f7dd02bfb0bcf33fae3c19ca7"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow-installation/spec.md",
+      "role": "governing-spec",
+      "sha256": "348a6a2280c49dcf1e4c609042e0ee4eac7f22a95e43a131c19060790897b670"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow/spec.md",
+      "role": "governing-spec",
+      "sha256": "9a19efe5c9e5d88c38becda47eb3a722a11ac31d49b285292ac655dbc87bf04d"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow/strata.md",
+      "role": "governing-spec",
+      "sha256": "b8c2395e5661ace7f7933e6be4cecc4a7a3f335fbdaefef51647a9529a1f1269"
+    },
+    {
+      "filePath": "lib/background-agent/manager.mjs",
+      "role": "architecture-evidence",
+      "sha256": "0f45a13113fc32fd5e503480fe97249f929d199547d7034c48a87c914e11e73c"
+    },
+    {
+      "filePath": "lib/background-agent/model-catalog.mjs",
+      "role": "architecture-evidence",
+      "sha256": "72a244c03cca6f6522e7188aaeca93f62f790a284e189529e01204620cf9a342"
+    },
+    {
+      "filePath": "lib/background-agent/strata-driver.mjs",
+      "role": "architecture-evidence",
+      "sha256": "8962039a6ca98ef96c58995c8670332825bc4ad3de98893f62804daa4b9376d9"
+    },
+    {
+      "filePath": "lib/background-agent/strata-models.mjs",
+      "role": "architecture-evidence",
+      "sha256": "c8d0ce278061276dfb406ba7daa52e9c3c958eec8c3504d260bd8f20bd23998d"
+    },
+    {
+      "filePath": "lib/background-agent/strata-work-policy.mjs",
+      "role": "architecture-evidence",
+      "sha256": "b35859d97ed121736c7d0e891668cf6cbacacf21f48d8a426bc1050a77fec9dc"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0023-delocalize/issues/03-strata-installation-facts.md",
+    "sha256": "20b2b838edee9685609889e35be816bf1b98aafececc62606427c0f701734b59"
+  },
+  "result": "satisfied"
+}

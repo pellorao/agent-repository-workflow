@@ -7,6 +7,7 @@ import {PROVIDER_DEFAULTS} from '../../lib/arw-common/config.mjs';
 import {createSharedModelCatalog, readLegacyProviders} from '../../lib/background-agent/model-catalog.mjs';
 import {securePrivateStatePath} from '../../lib/background-agent/private-state.mjs';
 import {createTemporaryDirectory} from '../helpers/cleanup.mjs';
+import {writeStrataInstallation} from '../helpers/strata-installation.mjs';
 
 /** @param {string} home */
 async function createPrivateRuntimeDirectory(home) {
@@ -79,9 +80,9 @@ test('a shared process uses a private merged catalog without changing either sou
   const customPath = join(codexHome, 'models.custom.json');
   const cacheBytes = Buffer.from('{"cacheVersion":12,"models":[{"slug":"gpt","other":{"a":1}}]}');
   const strataDirectory = join(home, 'strata');
-  await mkdir(strataDirectory);
+  await writeStrataInstallation(strataDirectory);
   const providers = JSON.parse(`{
-    "qwen_strata": {"driver": "strata", "installationDirectory": ${JSON.stringify(strataDirectory)}},
+    "qwen_strata": {"driver": "strata", "installationDirectory": ${JSON.stringify(strataDirectory)}, "contextWindow": 2000},
     "another_strata": {"driver": "strata", "installationDirectory": ${JSON.stringify(strataDirectory)}, "maxInstances": 2},
     "deepseek": {"maxInstances": 3},
     "unlimited": {},
@@ -98,7 +99,7 @@ test('a shared process uses a private merged catalog without changing either sou
   const catalog = createSharedModelCatalog({runtimeDirectory, environment: () => ({CODEX_HOME: codexHome}), maxInstances: 3, providers});
   /** @type {Record<string, import('../../lib/background-agent/model-catalog.mjs').ProviderConfiguration>} */
   const expectedProviders = {
-    qwen_strata: {driver: 'strata', installationDirectory: strataDirectory, maxInstances: 1},
+    qwen_strata: {driver: 'strata', installationDirectory: strataDirectory, maxInstances: 1, contextWindow: 2000},
     another_strata: {driver: 'strata', installationDirectory: strataDirectory, maxInstances: 2},
     deepseek: {maxInstances: 3},
     unlimited: {},
@@ -130,6 +131,34 @@ test('a shared process uses a private merged catalog without changing either sou
   assert.deepEqual(await readFile(customPath), Buffer.from('{"models":[{"slug":"new"}]}'));
 });
 
+test('the shared catalog applies the first Strata provider selected tier only to resolvable entries', async t => {
+  const home = await createTemporaryDirectory(t, 'arw-model-strata-tier-');
+  const codexHome = join(home, '.codex');
+  const runtimeDirectory = await createPrivateRuntimeDirectory(home);
+  const strataDirectory = join(home, 'strata');
+  await mkdir(codexHome);
+  await writeStrataInstallation(strataDirectory);
+  const entries = [{slug: 'family-alpha', context_window: 7, other: 1}, {slug: 'family-other', context_window: 7}];
+  await writeFile(join(codexHome, 'models_cache.json'), JSON.stringify({models: entries}));
+  /** @param {unknown} contextWindow */
+  const generate = async contextWindow => {
+    const catalog = createSharedModelCatalog({runtimeDirectory, environment: () => ({CODEX_HOME: codexHome}),
+      providers: {strata: {driver: 'strata', installationDirectory: strataDirectory, ...(contextWindow === undefined ? {} : {contextWindow})}}});
+    try {
+      return JSON.parse(await readFile(await catalog.prepare(), 'utf8')).models;
+    } finally {
+      await catalog.remove();
+    }
+  };
+  assert.deepEqual(await generate(undefined), [{slug: 'family-alpha', context_window: 1000, other: 1, max_context_window: 1000}, entries[1]]);
+  assert.deepEqual(await generate(2000), [{slug: 'family-alpha', context_window: 2000, other: 1, max_context_window: 2000}, entries[1]]);
+  await assert.rejects(generate(1500), /contextWindow 1500 is not published for model Alpha/);
+  await rm(join(strataDirectory, 'config', 'deployment.json'));
+  await assert.rejects(generate(undefined), /deployment\.json is unavailable/);
+  const plain = createSharedModelCatalog({runtimeDirectory, environment: () => ({CODEX_HOME: codexHome}), providers: {other: {maxInstances: 1}}});
+  assert.deepEqual(JSON.parse(await readFile(await plain.prepare(), 'utf8')).models, entries);
+});
+
 test('provider configuration rejects invalid shape, limits, and Strata directories before writing the native catalog', async t => {
   const home = await createTemporaryDirectory(t, 'arw-model-providers-invalid-');
   const codexHome = join(home, '.codex');
@@ -141,6 +170,7 @@ test('provider configuration rejects invalid shape, limits, and Strata directori
     [{providers: {generic: null}}, /object value/],
     [{providers: {generic: {driver: 'other'}}}, /unsupported driver/],
     [{providers: {generic: {installationDirectory: home}}}, /without the Strata driver/],
+    [{providers: {generic: {contextWindow: 2000}}}, /without the Strata driver/],
     [{providers: {generic: {maxInstances: 0}}}, /positive safe integer/],
     [{providers: {generic: {maxInstances: 3}}}, /global limit/],
     [{providers: {generic: {maxInstances: 1.5}}}, /positive safe integer/],

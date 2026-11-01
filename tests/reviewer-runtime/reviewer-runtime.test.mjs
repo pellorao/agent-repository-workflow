@@ -130,7 +130,7 @@ test('a provisional missing report stays live, then a native completion retires 
             getProviderWork:()=>/** @type {Record<string,unknown>} */(/** @type {unknown} */(work)),
             saveProviderWork:/** @param {Record<string,unknown>} state */ state=>{work=/** @type {typeof work} */(/** @type {unknown} */(state));},
             createProviderWorkPolicy:/** @param {Parameters<NonNullable<typeof session.createProviderWorkPolicy>>[0]} callbacks */ callbacks=>
-                createStrataTaskSupport({installationDirectory:'/unused'}).createPolicy({...callbacks,
+                createStrataTaskSupport({driver:'strata',installationDirectory:'/unused'}).createPolicy({...callbacks,
                     readWorkState:()=>/** @type {Record<string,unknown>} */(/** @type {unknown} */(work)),
                     saveWorkState:state=>{work=/** @type {typeof work} */(/** @type {unknown} */(state));}}),
             configureReviewerTask:async()=>({enabled:true,settings:input.settings,compactBinding:null}),
@@ -716,7 +716,7 @@ test('a nonretryable native failure freezes work and releases its local budget a
             getProviderWork:()=>/** @type {Record<string,unknown>} */(/** @type {unknown} */(work)),
             saveProviderWork:/** @param {Record<string,unknown>} state */ state=>{work=/** @type {typeof work} */(/** @type {unknown} */(state));},
             createProviderWorkPolicy:/** @param {Parameters<NonNullable<typeof session.createProviderWorkPolicy>>[0]} callbacks */ callbacks=>
-                createStrataTaskSupport({installationDirectory:'/unused'}).createPolicy({...callbacks,clock:policyClock,
+                createStrataTaskSupport({driver:'strata',installationDirectory:'/unused'}).createPolicy({...callbacks,clock:policyClock,
                     readWorkState:()=>/** @type {Record<string,unknown>} */(/** @type {unknown} */(work)),
                     saveWorkState:state=>{work=/** @type {typeof work} */(/** @type {unknown} */(state));}}),
             configureReviewerTask:async()=>({enabled:true,settings:input.settings,compactBinding:null}),
@@ -1142,7 +1142,7 @@ test('a recoverable bound report read fault receives concrete feedback and resum
         return Object.assign(session,{
             configureReviewerTask:async()=>({enabled:true,settings:input.settings,compactBinding:null}),
             createProviderWorkPolicy:/** @param {Parameters<NonNullable<typeof session.createProviderWorkPolicy>>[0]} callbacks */ callbacks=>
-                createStrataTaskSupport({installationDirectory:'/unused'}).createPolicy({...callbacks,
+                createStrataTaskSupport({driver:'strata',installationDirectory:'/unused'}).createPolicy({...callbacks,
                     readWorkState:()=>/** @type {Record<string,unknown>} */(/** @type {unknown} */(work)),
                     saveWorkState:state=>{work=/** @type {typeof work} */(/** @type {unknown} */(state));}}),
             continueTask:async(/** @type {Parameters<NonNullable<typeof session.continueTask>>[0]} */ request)=>{

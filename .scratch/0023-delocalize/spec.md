@@ -109,15 +109,15 @@ Reviewer 配置中的 `model` 是 ARW 模型 ID. 它对应的 Strata 模型名, 
 
 - Strata 提供方程序 (`lib/background-agent/strata-models.mjs`, `strata-driver.mjs`, `strata-work-policy.mjs`): 拥有安装事实的读取与核对, 模型解析, 档位选择和前端协议, 以及既有的压缩支持与工作策略.
 - Shared Model Catalog Module (`lib/background-agent/model-catalog.mjs`): 责任不变 (提供方设置核对, 来源合并, 生成文件生命周期); 核对时接受只属于 Strata 条目的 `contextWindow`, 不核对其取值; 用已核对的提供方设置调用 Strata 提供方程序调整目录条目.
-- 后台 Agent 管理 Module (`lib/background-agent/manager.mjs`): 责任不变, 把已核对提供方设置中的 `installationDirectory` 和 `contextWindow` 原样交给驱动与任务支持, 不解读档位; 行为只增加 Frontend protocol 节的新租约启动规则.
+- 后台 Agent 管理 Module (`lib/background-agent/manager.mjs`): 责任不变, 把已核对的提供方配置对象原样交给驱动与任务支持, 不解读档位; 行为只增加 Frontend protocol 节的新租约启动规则.
 
 ### Interfaces
 
-- 模型解析 (位于 `strata-models.mjs`, 输入 `installationDirectory`, `modelId`, 可选的 `contextWindow` (提供方配置原值) 和可选的 `readText`): 返回所选档的 `{strataModel, contextWindow, autoCompactTokenLimit}`; 按 Model resolution and tier selection 节的失败结果抛出错误. 每次调用重新读取 `config/deployment.json`, 不缓存.
-- `createStrataDriver({installationDirectory, contextWindow?, readText?, fetchImpl?})`: 操作集合与结果形状不变 (`connect` 返回 `{controllerUrl, responsesUrl}`, `acquire` 返回 `{leaseKey}`, `status` 返回 `{status, model}`, `start` 返回 `{status: 'running', model}`, `stop` 返回 `{status: 'stopped', cleanUnload}`, `release` 返回 `{ownership: 'free', previousKeyRevoked: true}`); 删除 `runCommand` 输入.
+- 模型解析 `resolveStrataModel(provider, modelId, readText?)` (位于 `strata-models.mjs`; `provider` 是已核对的 Strata 提供方配置对象, 函数内读取其 `installationDirectory` 与可选的 `contextWindow` (提供方配置原值)): 返回所选档的 `{strataModel, contextWindow, autoCompactTokenLimit}`; 按 Model resolution and tier selection 节的失败结果抛出错误. 每次调用重新读取 `config/deployment.json`, 不缓存.
+- `createStrataDriver(provider, {readText?, fetchImpl?})` (`provider` 同上, 含绝对的 `installationDirectory`): 操作集合与结果形状不变 (`connect` 返回 `{controllerUrl, responsesUrl}`, `acquire` 返回 `{leaseKey}`, `status` 返回 `{status, model}`, `start` 返回 `{status: 'running', model}`, `stop` 返回 `{status: 'stopped', cleanUnload}`, `release` 返回 `{ownership: 'free', previousKeyRevoked: true}`); 删除 `runCommand` 输入. 提供方配置对象整体传递而不拆出 `installationDirectory` 与 `contextWindow`, 避免同一对字段在各层成对传递, 新增影响模型解析的字段时不必修改各层签名.
 - `readText(path)`: 以 UTF-8 读取绝对路径 `path` 的文件, 返回 `Promise<string>`, 读取失败时拒绝; 省略时使用文件系统读取. 它只用于 `config/frontend.json` 和 `config/deployment.json` 两个 JSON 文件, 模型解析, 驱动的连接和目录调整函数共用这一形状. 基础压缩提示不经由它: 仍按现有方式从文件系统以字节读取, 组合并按字节的 sha256 绑定 (`docs/specs/agent-repository-workflow/strata.md` 的 Compaction support 节), 只改路径, 避免解码改变字节而使绑定失效.
 - `applyStrataCatalogSupport(models, providers, readText?)`: 改为异步. `models` 是合并后的目录条目数组, `providers` 是已核对的 `backgroundAgent.providers` 对象. 没有 Strata 提供方时原样返回 `models`, 不调用 `readText`; 否则由本函数按配置顺序取第一个 Strata 提供方, 读取其安装事实, 对 `slug` 按模型解析的规则恰好匹配一个名称的条目写入所选档窗口, 其他条目原样保留, 返回 `Promise<unknown[]>`. 安装事实读取或核对失败, 或匹配到的模型没有所配置的档时, 以与模型解析相同的错误消息拒绝, 调用方按目录生成失败处理.
-- `createStrataTaskSupport({installationDirectory, contextWindow?})` 与 `prepareStrataSettings`: 增加可选的 `contextWindow` 并原样交给模型解析, 窗口与阈值改由模型解析提供.
+- `createStrataTaskSupport(provider)` 与 `prepareStrataSettings({settings, provider, stateDirectory, binding?})`: 接收同一个提供方配置对象并原样交给模型解析, 窗口与阈值改由模型解析提供.
 
 ### Seams and Adapters
 

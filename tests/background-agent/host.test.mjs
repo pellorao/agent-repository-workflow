@@ -7,9 +7,11 @@ import test from 'node:test';
 
 import {createBackgroundAgentHost, daemonEntryPoint, listBackgroundAgents, runBackgroundAgentMachine} from '../../lib/arw-background-agent-host.mjs';
 import {isJsonObject} from '../../lib/common/json.mjs';
+import {createStrataTaskSupport} from '../../lib/background-agent/strata-work-policy.mjs';
 import {createUsage} from '../../lib/background-agent/usage.mjs';
 import {createScriptedReviewerSessions} from '../helpers/reviewer-runtime-adapter.mjs';
 import {createTemporaryDirectory} from '../helpers/cleanup.mjs';
+import {strataTiers, writeStrataInstallation} from '../helpers/strata-installation.mjs';
 
 /** @typedef {import('../../lib/background-agent/codex-app-server.mjs').NativeSessions} NativeSessions */
 /** @typedef {import('../../lib/background-agent/codex-app-server.mjs').NativeUserMessage} NativeUserMessage */
@@ -750,10 +752,33 @@ test('Reviewer keeps current-turn settings and adopts user configuration only fo
 });
 
 
+test('Strata task settings take the selected tier and compaction prompt from the installation, including on restore', async t => {
+    const directory = await createTemporaryDirectory(t, 'arw-strata-settings-');
+    const stateDirectory = join(directory, 'state');
+    await mkdir(stateDirectory);
+    await writeStrataInstallation(directory);
+    const settings = {model: 'family-alpha', modelProvider: 'strata', reasoningEffort: 'high', serviceTier: null, config: {}};
+    /** @param {number|undefined} contextWindow @param {{restore?: boolean, binding?: Awaited<ReturnType<ReturnType<typeof createStrataTaskSupport>['prepare']>>['compactBinding']}} [extra] */
+    const prepare = (contextWindow, extra = {}) => createStrataTaskSupport({driver: 'strata', installationDirectory: directory, contextWindow}).prepare({
+        settings, stateDirectory, identityKind: 'ordinary', binding: extra.binding ?? null, restore: extra.restore ?? false, workState: null});
+    const first = await prepare(undefined);
+    assert.equal(first.settings.config.model_context_window, 1000);
+    assert.equal(first.settings.config.model_auto_compact_token_limit, 800);
+    assert.equal(await readFile(String(first.compactBinding?.path), 'utf8'), 'Base prompt.');
+    const second = await prepare(2000);
+    assert.equal(second.settings.config.model_context_window, 2000);
+    assert.equal(second.settings.config.model_auto_compact_token_limit, 1500);
+    const restored = await prepare(2000, {restore: true, binding: second.compactBinding});
+    assert.equal(restored.settings.config.model_context_window, 2000);
+    assert.equal(restored.settings.config.model_auto_compact_token_limit, 1500);
+    await writeStrataInstallation(directory, {tiers: [strataTiers[0]]});
+    await assert.rejects(prepare(2000, {restore: true, binding: second.compactBinding}), /contextWindow 2000 is not published/);
+    assert.equal((await prepare(undefined, {restore: true, binding: first.compactBinding})).settings.config.model_context_window, 1000);
+});
+
 test('Strata rejected undeclared tool response receives concrete feedback and completes its original task', async t => {
     const serviceDirectory = await createTemporaryDirectory(t, 'arw-strata-rejected-tool-');
-    await mkdir(join(serviceDirectory, 'config'));
-    await writeFile(join(serviceDirectory, 'config', 'compact_prompt.txt'), 'Summarize the current task without calling tools.');
+    await writeStrataInstallation(serviceDirectory, {prompt: 'Summarize the current task without calling tools.'});
     let model = /** @type {string|null} */ (null);
     const driver = /** @type {NonNullable<Parameters<typeof fixture>[2]>} */ (/** @type {unknown} */ (() => ({
         async connect() {return {controllerUrl:'http://offline-controller',responsesUrl:'http://offline-responses/v1'};},
@@ -764,11 +789,14 @@ test('Strata rejected undeclared tool response receives concrete feedback and co
         async release() {},
     })));
     const f = await fixture(t, {strata:{driver:'strata',installationDirectory:serviceDirectory}}, driver, {
-        reviewers:{'requirements-reviewer':{model:'qwen3.8-flash-next-q2_0',modelProvider:'strata',reasoningEffort:'high',serviceTier:'default'}},
+        reviewers:{'requirements-reviewer':{model:'family-alpha',modelProvider:'strata',reasoningEffort:'high',serviceTier:'default'}},
     });
     const accepted = succeeded(await f.dispatch('spawn_agent',f.handoff));
     await f.host.manager.owned(String(accepted.runId),'main-session','main-session').work;
     const initial = succeeded(await f.dispatch('list_agents',{runId:accepted.runId}));
+    const nativeConfig = f.scripted.sessions[0]?.input.settings.config;
+    assert.equal(nativeConfig?.model_context_window, 1000);
+    assert.equal(nativeConfig?.model_auto_compact_token_limit, 800);
     assert.ok(isJsonObject(initial.measurement));
     const startedAt = initial.measurement.startedAt;
     const root = f.scripted.members.get(String(initial.threadId));assert.ok(root);

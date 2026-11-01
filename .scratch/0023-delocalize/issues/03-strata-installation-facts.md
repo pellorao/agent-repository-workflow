@@ -1,6 +1,6 @@
 # Strata 提供方改用安装发布的事实
 
-Status: ready-for-agent
+Status: completed
 
 ## What to build
 
@@ -32,18 +32,18 @@ Status: ready-for-agent
 
 ## Acceptance criteria
 
-- [ ] `git grep -n -e "qwen3" -e "206584" -e "150000" -e "spec-min-p" -e "IQ3_XXS" -e "Run-Strata" -e "/ownership/" -e "compact_prompt.txt" -- lib docs` 没有输出.
-- [ ] 测试证明启动请求为 `POST /model/start`, 正文恰好是解析出的 Strata 模型名和所选档窗口两项.
-- [ ] 测试证明模型解析的成功, 无匹配, 多匹配, 档位缺失, 档位无效和 `contextWindow` 未发布 (含非整数值) 结果, 未发布的错误消息包含配置值, 模型名和已发布的窗口, 且失败时不发出启动请求; 两档窗口相同时选第一档.
-- [ ] 测试证明安装发布两档并配置 `contextWindow` 为第二档窗口时, 启动正文, 共享模型目录条目和原生任务设置 (新任务和恢复) 都使用第二档的窗口与阈值; 省略时都使用第一档; 恢复时安装已不再发布所配置的档, 任务准备以配置错误失败, 不改用其他档.
-- [ ] 测试证明管理进程把配置的 `contextWindow` 交给驱动.
-- [ ] manager 测试证明新领取租约时状态是 `stopped`, `unloaded`, `partial`, 目标模型 `running` 或其他模型 `running`, 都直接发出一次启动且之前没有停止, 同一提供方另一运行排队启动时也不报切换冲突; 已持有租约且模型相同时不发出启动.
-- [ ] 测试证明连接只读取 `config/frontend.json` 而不启动进程, 前端配置缺失或无效时报告错误, 五个操作使用 Frontend protocol 表的路径和成功判定, `starting` 报告为 `partial`; 启动被前端以 400 拒绝时报告前端的错误消息, 启动返回的 `model` 与 ARW 模型 ID 不等时报告未确认请求的模型, 领取请求无法连接时驱动以错误失败, 领取失败时管理进程不持有 key, 不创建原生根线程.
-- [ ] 测试证明共享模型目录只调整可解析的条目, 其他条目不变; 没有 Strata 提供方时不读取安装文件; 安装部署配置无法读取或所配置的档未发布时目录生成失败并给出原因 (`tests/background-agent/model-catalog.test.mjs`).
-- [ ] 测试证明原生任务设置的窗口, 压缩阈值和基础压缩提示路径取自安装事实 (`tests/background-agent/host.test.mjs`).
-- [ ] 测试证明提供方配置接受 `driver`, `installationDirectory`, `maxInstances` 和 Strata 条目中的可选 `contextWindow`, 拒绝非 Strata 条目中的 `contextWindow`, 其他未知字段仍被拒绝.
-- [ ] 第 6 至 8 项的长期规范已按 effort spec 更新, 与实现一致 (第一条验收的 `git grep` 无输出, 并逐节对照 effort spec 核对).
-- [ ] 预期验证中的命令全部成功 (逐条运行, 退出码均为 0, 记入 `## Validation`).
+- [x] `git grep -n -e "qwen3" -e "206584" -e "150000" -e "spec-min-p" -e "IQ3_XXS" -e "Run-Strata" -e "/ownership/" -e "compact_prompt.txt" -- lib docs` 没有输出.
+- [x] 测试证明启动请求为 `POST /model/start`, 正文恰好是解析出的 Strata 模型名和所选档窗口两项.
+- [x] 测试证明模型解析的成功, 无匹配, 多匹配, 档位缺失, 档位无效和 `contextWindow` 未发布 (含非整数值) 结果, 未发布的错误消息包含配置值, 模型名和已发布的窗口, 且失败时不发出启动请求; 两档窗口相同时选第一档.
+- [x] 测试证明安装发布两档并配置 `contextWindow` 为第二档窗口时, 启动正文, 共享模型目录条目和原生任务设置 (新任务和恢复) 都使用第二档的窗口与阈值; 省略时都使用第一档; 恢复时安装已不再发布所配置的档, 任务准备以配置错误失败, 不改用其他档.
+- [x] 测试证明管理进程把配置的 `contextWindow` 交给驱动.
+- [x] manager 测试证明新领取租约时状态是 `stopped`, `unloaded`, `partial`, 目标模型 `running` 或其他模型 `running`, 都直接发出一次启动且之前没有停止, 同一提供方另一运行排队启动时也不报切换冲突; 已持有租约且模型相同时不发出启动.
+- [x] 测试证明连接只读取 `config/frontend.json` 而不启动进程, 前端配置缺失或无效时报告错误, 五个操作使用 Frontend protocol 表的路径和成功判定, `starting` 报告为 `partial`; 启动被前端以 400 拒绝时报告前端的错误消息, 启动返回的 `model` 与 ARW 模型 ID 不等时报告未确认请求的模型, 领取请求无法连接时驱动以错误失败, 领取失败时管理进程不持有 key, 不创建原生根线程.
+- [x] 测试证明共享模型目录只调整可解析的条目, 其他条目不变; 没有 Strata 提供方时不读取安装文件; 安装部署配置无法读取或所配置的档未发布时目录生成失败并给出原因 (`tests/background-agent/model-catalog.test.mjs`).
+- [x] 测试证明原生任务设置的窗口, 压缩阈值和基础压缩提示路径取自安装事实 (`tests/background-agent/host.test.mjs`).
+- [x] 测试证明提供方配置接受 `driver`, `installationDirectory`, `maxInstances` 和 Strata 条目中的可选 `contextWindow`, 拒绝非 Strata 条目中的 `contextWindow`, 其他未知字段仍被拒绝.
+- [x] 第 6 至 8 项的长期规范已按 effort spec 更新, 与实现一致 (第一条验收的 `git grep` 无输出, 并逐节对照 effort spec 核对).
+- [x] 预期验证中的命令全部成功 (逐条运行, 退出码均为 0, 记入 `## Validation`).
 
 ## Blocked by
 
@@ -54,3 +54,12 @@ Status: ready-for-agent
 - 依赖 01 的原因: 两者都改安装规范的 Shared model catalog 节, 先完成 01 以免冲突.
 
 - 用户决定 (2026-11-02): 采用方案 A, 即本 issue 把驱动迁移到当前 Strata 公开的安装文件和前端协议, 不只是移除写死的参数. 原话要点: Strata 提供了哪些档位, 就可以选择哪些档位; 选择的档位不写死在 ARW 里, 但可以作为配置参数保存在 config 文件里. 据此不再只用默认档, 增加可选提供方字段 `contextWindow`, 省略时用第一档; What to build, 验收条件和 effort spec 已同步, Status 改为 `ready-for-agent`, 下一步按 `spec-readiness` Skill 以 effort spec 为治理 spec 安排就绪审核.
+
+- 体积预算 (实施, 提交审核第 3 轮后): 非测试代码最终净增 +48 行 (`git diff HEAD --numstat -- lib`: 新增 120, 删除 72), 预估 +37, 超出 11 行, 仍在上限 +49 内. 超出主要来自: 所选模型档位的形状核对与 `contextWindow` 未发布错误 (约 +9), 保留的驱动 `installationDirectory` 绝对路径检查 (+3), `ProviderConfiguration` 改为按 `driver` 区分的联合类型 (+1). 已合并重复检查 (`contextWindow` 与 `installationDirectory` 的非 Strata 拒绝合并为一处) 后无可再删的冗余.
+- effort spec 修订 (提交审核第 3 轮, Main 决定): `.scratch/0023-delocalize/spec.md` 的 Interfaces 节把 `installationDirectory` 与 `contextWindow` 分开传递的接口改为整体传提供方配置对象 (`createStrataDriver(provider, {readText?, fetchImpl?})`, `resolveStrataModel(provider, modelId, readText?)`, `createStrataTaskSupport(provider)`, `prepareStrataSettings({settings, provider, stateDirectory, binding?})`), 理由: 避免同一对字段在各层成对传递. 代码与测试同步为新形状, 保留 `isAbsolute` 检查.
+
+## Validation
+
+- `node --test tests/background-agent/strata-driver.test.mjs tests/background-agent/model-catalog.test.mjs tests/background-agent/host.test.mjs tests/background-agent/manager.test.mjs`: 退出码 0.
+- `pnpm test` (818 条通过, 0 失败), `pnpm typecheck`, `node scripts/check-workflow-distribution.mjs`, `node scripts/project-claude-skills.mjs --check`, `node scripts/generate-install-arw.mjs --check`, `node ./arw.mjs text check`: 退出码均为 0.
+- 验收第一条的 `git grep` 在 `lib` 和 `docs` 中无输出.
