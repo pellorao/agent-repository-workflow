@@ -16,7 +16,7 @@ Status: ready-for-agent
 
 长期文档 (受保护文档, 内容以本 issue 和 effort spec 为准):
 
-6. `docs/specs/agent-repository-workflow/strata.md`: Scope and ownership 节中 "三种量化共用本规则" 改为对所有 Strata 模型通用的表述; Runtime parameters 节改写为安装事实, 模型解析, 档位选择 (`contextWindow`, 省略时第一档, 未发布即配置错误, 只在模型解析中核对) 和启动正文 (取自 effort spec), 包含选择理由与被否决方案; Compaction support 节中的窗口与阈值改为所选档, 恢复时重新解析, 基础文件路径改为 `config/prompts/compact-prompt.txt`, 删除 "固定支持" 表述; 该文件 Module Design 中提到固定参数的句子同步.
+6. `docs/specs/agent-repository-workflow/strata.md`: Scope and ownership 节中 "三种量化共用本规则" 改为对所有 Strata 模型通用的表述; Runtime parameters 节改写为安装事实, 模型解析, 档位选择 (`contextWindow`, 省略时第一档, 未发布即配置错误, 只在模型解析中核对) 和启动正文 (取自 effort spec), 包含选择理由与被否决方案, 并记下 effort spec 的 Frontend protocol 节所依赖的前端协议事实 (返回的 `model` 是前端模型 ID; 启动对相同完整配置复用, 不同时自行先停再启动), 注明出处为 Strata 安装目录根下的 `README.md`; Compaction support 节中的窗口与阈值改为所选档, 恢复时重新解析, 基础文件路径改为 `config/prompts/compact-prompt.txt`, 删除 "固定支持" 表述; 该文件 Module Design 中提到固定参数的句子同步.
 7. `docs/specs/agent-repository-workflow/spec.md`: Capacity and recovery 节的 Strata 段落改为从安装 `config/frontend.json` 取得控制地址, 接口改为 `/lease/acquire`, `/model/status`, `/model/start`, `/model/stop`, `/lease/release`, "固定模型映射" 改为 "按 `docs/specs/agent-repository-workflow/strata.md` 的 Runtime parameters 节解析的模型与所选档"; "提供方已无加载的根线程且无待启动工作时, 才可使用同一 key 停止旧模型并启动另一变体" 一句限定为已持有的租约, 并写明 effort spec 的新租约启动规则 (新领取租约后总是启动一次, 不先停止, 不做切换冲突检查), 其前提 (新租约时该提供方没有已加载的工作, 其他运行只在排队) 和理由; Seams and Adapters 节的 Strata 控制服务段落改为生产 Adapter 读取安装文件并使用前端 HTTP 接口; Dependencies and Data Flow 节表格中的 Strata 安装行同步.
 8. `docs/specs/agent-repository-workflow-installation/spec.md`: Shared model catalog 节的提供方字段表增加 `contextWindow` 行 (可省略, 只用于 `driver: "strata"`, 取安装为该模型发布的某一档的 `context_window`, 省略时用第一档, 取值核对见 `../agent-repository-workflow/strata.md` 的 Runtime parameters 节); Background Agent configuration 节和 Shared model catalog 节列举提供方条目内部字段处加入 `contextWindow`; "三个变体" 句改为 "该安装服务的模型共用同一提供方身份和限额"; "只有可变的目录和配额在此设置" 改为也包括档位选择; "模型映射由 ... 拥有" 改为 "模型解析与档位选择由 `../agent-repository-workflow/strata.md` 的 Runtime parameters 节拥有"; 目录生成段落写明调整来自第一个 Strata 提供方的所选档, 安装事实无法读取或所配置的档未发布时按目录生成失败处理 (只影响 Codex App Server), 没有 Strata 提供方时不读取任何安装文件; 该文件 Module Design 中共享模型目录的 Seam 描述, Dependencies and Data Flow 节的数据流图和权威来源表加入 Strata 安装的 `config/deployment.json` (仅配置 Strata 提供方时读取). 各规范测试段落中涉及固定 Strata 参数的观察同步.
 
@@ -37,7 +37,7 @@ Status: ready-for-agent
 - [ ] 测试证明模型解析的成功, 无匹配, 多匹配, 档位缺失, 档位无效和 `contextWindow` 未发布 (含非整数值) 结果, 未发布的错误消息包含配置值, 模型名和已发布的窗口, 且失败时不发出启动请求; 两档窗口相同时选第一档.
 - [ ] 测试证明安装发布两档并配置 `contextWindow` 为第二档窗口时, 启动正文, 共享模型目录条目和原生任务设置 (新任务和恢复) 都使用第二档的窗口与阈值; 省略时都使用第一档; 恢复时安装已不再发布所配置的档, 任务准备以配置错误失败, 不改用其他档.
 - [ ] 测试证明管理进程把配置的 `contextWindow` 交给驱动.
-- [ ] manager 测试证明新领取租约时状态是目标模型或其他模型 `running`, 都直接发出一次启动且之前没有停止, 同一提供方另一运行排队启动时也不报切换冲突; 已持有租约且模型相同时不发出启动.
+- [ ] manager 测试证明新领取租约时状态是 `stopped`, `unloaded`, `partial`, 目标模型 `running` 或其他模型 `running`, 都直接发出一次启动且之前没有停止, 同一提供方另一运行排队启动时也不报切换冲突; 已持有租约且模型相同时不发出启动.
 - [ ] 测试证明连接只读取 `config/frontend.json` 而不启动进程, 前端配置缺失或无效时报告错误, 五个操作使用 Frontend protocol 表的路径和成功判定, `starting` 报告为 `partial`; 启动被前端以 400 拒绝时报告前端的错误消息, 启动返回的 `model` 与 ARW 模型 ID 不等时报告未确认请求的模型, 领取请求无法连接时驱动以错误失败, 领取失败时管理进程不持有 key, 不创建原生根线程.
 - [ ] 测试证明共享模型目录只调整可解析的条目, 其他条目不变; 没有 Strata 提供方时不读取安装文件; 安装部署配置无法读取或所配置的档未发布时目录生成失败并给出原因 (`tests/background-agent/model-catalog.test.mjs`).
 - [ ] 测试证明原生任务设置的窗口, 压缩阈值和基础压缩提示路径取自安装事实 (`tests/background-agent/host.test.mjs`).
