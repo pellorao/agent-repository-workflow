@@ -6,7 +6,7 @@ Status: completed
 
 问题: 仓库被检出成 CRLF (Windows 上 Git 默认 `core.autocrlf=true`) 后, 锁文件规范 JSON 逐字节比较失败, 被当成未初始化 (`workflow-uninitialized`); 即使通过, 受管内容哈希和 update 计划也按原始字节比较, 报漂移或每次重写全部受管文件.
 
-改动 (Main 已定方案 b): 在 Repository Workflow 的两个文件系统读取适配器 (`createNodeRepositoryFilesystem` 与 Code Map 的适配器) 的 `readBytes` 和 `readFrontmatterBytes` 中 (`.toml` 文件除外, 见下), 用 `lib/common/text-policy.mjs` 新增的共享函数 `readManagedBytes(path, bytes)` 在字节层 (不解码) 把 CRLF 和单独的 CR 换成 LF, 无 CR 时原样返回; `.toml` 例外也由该函数统一判定, 三处读取共用. 所有读取方 (状态观察, 计划, 事务预检和重验) 因而共用同一份归一化结果, 写入本来就是 LF. `.toml` 文件 (Codex 配置含用户字节, 现有测试要求原样保留) 读取时不归一化, 因为用户配置不属于受管内容. Main 的产品决定 (提交审核第 1 轮): 比较处处忽略换行, ARW 只写 LF; 因此 (a) init 采用只差换行符的目标; (b) ARW 改写文件时整个文件写成 LF, 含仓库自有文本. 规范 `docs/specs/agent-repository-workflow/spec.md` 的采用, 区域替换, 换行规则三处和 `docs/adr/0002-use-repository-local-managed-distribution.md` 的采用句同步改写. 不写 `.gitattributes`, 不改 `arw text check` 对 CRLF 的报告.
+改动 (Main 已定方案 b): 在 Repository Workflow 的两个文件系统读取适配器 (`createNodeRepositoryFilesystem` 与 Code Map 的适配器) 的 `readBytes` 和 `readFrontmatterBytes` 中 (`.toml` 文件除外, 见下), 用共享函数 `readManagedBytes(path, bytes)` (提交时位于 `lib/repository-workflow/code-map.mjs`, 字节层归一化 `normalizeLineEndingBytes` 在 `lib/common/text-policy.mjs`) 在字节层 (不解码) 把 CRLF 和单独的 CR 换成 LF, 无 CR 时原样返回; `.toml` 例外也由该函数统一判定, 三处读取共用. 所有读取方 (状态观察, 计划, 事务预检和重验) 因而共用同一份归一化结果, 写入本来就是 LF. `.toml` 文件 (Codex 配置含用户字节, 现有测试要求原样保留) 读取时不归一化, 因为用户配置不属于受管内容. Main 的产品决定 (提交审核第 1 轮): 比较处处忽略换行, ARW 只写 LF; 因此 (a) init 采用只差换行符的目标; (b) ARW 改写文件时整个文件写成 LF, 含仓库自有文本. 规范 `docs/specs/agent-repository-workflow/spec.md` 的采用, 区域替换, 换行规则三处和 `docs/adr/0002-use-repository-local-managed-distribution.md` 的采用句同步改写. 不写 `.gitattributes`, 不改 `arw text check` 对 CRLF 的报告.
 
 体积预算 (非测试代码行): 净增约 +8; 上限 +15. 文档预算 (字符): 约 +330.
 
@@ -27,7 +27,7 @@ Status: completed
 - 验收条件 1: `tests/repository-workflow/workflow.test.mjs` 新测试 "a CRLF checkout verifies and updates like the LF original without rewriting files" 通过 (约 67 ms): 初始化后把锁文件, `.arwignore` 和全部受管文件改成 CRLF, `verify` 为 `{diagnostics: [], satisfied: true}`, `update` 的计划操作为空且文件字节不变; 临时让归一化函数失效时该测试失败.
 - 验收条件 2: 其余既有测试不变通过, 含 "Codex configuration lifecycle preserves user bytes ..." (`pnpm test` 831 通过).
 - 验收条件 3: `docs/specs/agent-repository-workflow/spec.md` 的采用, 区域替换, 换行规则三处和 ADR 0002 已按 Main 的产品决定更新.
-- 体积: 非测试代码约 +9 行 (`lib/common/text-policy.mjs` +3, `code-map.mjs` +2 -1, `workflow.mjs` 约 +5), 在上限 +15 内.
+- 体积: 非测试代码 `lib/common/text-policy.mjs` +3, `lib/repository-workflow/code-map.mjs` +5 -1, `lib/repository-workflow/workflow.mjs` +3 -3, 合计净增 +7, 在上限 +15 内 (后文 "体积更新" 是同一结果).
 - 全量: `pnpm typecheck`, `node scripts/check-workflow-distribution.mjs`, `node scripts/project-claude-skills.mjs --check`, `node scripts/generate-install-arw.mjs --check`, `arw text check`, `arw terms check --include .scratch/0032-crlf-checkout-normalize/` 通过.
 
 ## Comments
