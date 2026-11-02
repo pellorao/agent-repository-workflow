@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0044:01",
+  "exception": {
+    "confirmedAt": "2026-11-01T17:02:13Z",
+    "reason": "Single-issue change with no design decision (user confirmed 2026-11-02 in projects AGENTS)."
+  },
+  "subject": {
+    "filePath": ".scratch/0044-piped-answers/issues/01-piped-answers.md",
+    "sha256": "25070795e57cf860abb6db88baa32f287004f5c2222e65a80314aab676843e6f"
+  },
+  "result": "not-applicable"
+}
