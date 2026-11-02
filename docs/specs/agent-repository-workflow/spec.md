@@ -36,15 +36,17 @@ ARW 是本地仓库工作流管理器. 它不自主发起 Agent 编码工作, �
 
 | 工作记录 | 责任 | Spec Readiness |
 | --- | --- | --- |
-| 实施 issue | 通过 issue 门禁, 当前阻断问题和必要设计确认取得实施授权, 在首次修改实现文件前满足独立就绪检查, 此后实施提交只核对 subject 未变. | 每个 issue 都运行, 交付只含非实施分类内容的实施 issue 与满足下文行为保持重构例外的实施 issue 除外. |
+| 实施 issue | 通过 issue 门禁, 当前阻断问题和必要设计确认取得实施授权, 在首次修改实现文件前满足独立就绪检查 (`not-applicable` 例外记录可以补生成, 见 Generate, promote, and verify 节), 此后实施提交只核对 subject 未变. | 每个 issue 都运行, 交付只含非实施分类内容的实施 issue 与满足下文行为保持重构例外的实施 issue 除外. |
 | Application Source Issue | 只镜像关联 Module 实施 issue 的状态, 不执行本地实施. | 不运行. |
 | Wayfinder issue | 记录研究或设计问题, 不替代实施 issue. | 不运行. |
 
-Spec Readiness 使用 `prepare -> independent review -> generate -> promote -> verify`. Engine 冻结完整治理输入, issue 中连续的交付结果, 验收条件, effort 起点 `since`, 以及 `prepare` 固定的草稿路径, 并把 Reviewer Role 身份与哈希独立绑定到请求. 独立 Reviewer 在绑定路径写入语义问题, 完整审核没有问题时写入明确的无问题标记. Engine 从最终草稿推导完整的临时规范结果, Main Agent 只提升准确生成字节. issue 特定的 `verify` 核对当前设计的有效就绪结果. 首次修改本 issue 的实现文件前须取得当前有效就绪结果 (完整 `verify` 退出码为 `0`), 此后的提交检查只核对 subject, 检查时点由 `.agents/skills/spec-readiness/SKILL.md` 的 Authorization timing 节拥有.
+Spec Readiness 使用 `prepare -> independent review -> generate -> promote -> verify`. Engine 冻结完整治理输入, issue 中连续的交付结果, 验收条件, effort 起点 `since`, 以及 `prepare` 固定的草稿路径, 并把 Reviewer Role 身份与哈希独立绑定到请求. 独立 Reviewer 在绑定路径写入语义问题, 完整审核没有问题时写入明确的无问题标记. Engine 从最终草稿推导完整的临时规范结果, Main Agent 只提升准确生成字节. issue 特定的 `verify` 核对当前设计的有效就绪结果. 首次修改本 issue 的实现文件前须取得当前有效就绪结果 (完整 `verify` 退出码为 `0`; `not-applicable` 例外记录的补生成见 Generate, promote, and verify 节), 此后的提交检查只核对 subject, 检查时点由 `.agents/skills/spec-readiness/SKILL.md` 的 Authorization timing 节拥有.
 
 Spec Readiness 的结果生成与验证不判断开放语义, 原生会话控制和线程身份由共享 Reviewer 运行责任管理. 会话延续不等于准备度结果仍然有效: 开始实施前, 任一治理输入, 审核对象, Reviewer Role 或结果绑定变化都会使旧记录失效; 开始实施后只有审核对象变化使记录失效 (见 `verify --subject-only`); 开始实施后只涉及措辞, 重复或一致性的问题不修改审核对象而记入 `## Comments`, 由提交审核的要求符合审核核对, 真实范围变化仍修改审核对象并增量复审. `architecture-evidence` 是 issue 本身会修改的实现事实, 不属于这种绑定, 实施改动它不使记录失效. 审核对象是从 `## What to build` 到 `## Acceptance criteria` 的连续范围. `Status:`, `## Blocked by`, `## Validation` 和 `## Comments` 不进入审核对象. 完整 issue 格式与阻断问题图由 ARW Artifact 清单和 Issue Gate 独立验证.
 
 行为保持重构例外: 交付只是行为保持重构的实施 issue 不运行 Spec Readiness. 条件是同时满足: 只删除死代码或不可达分支, 或合并完全相同的重复实现; 命令输出, 公开 Interface, 错误结果和持久状态不变; 不改变 Module 责任, Interface, Seam, 依赖方向, 权威来源或数据流; 不改动长期规范. issue 的 `## What to build` 含一个以 `行为保持重构例外:` 开头的段落, 复述上述四项条件, 使其受 Gate 1 核对. Commit Audit 照常运行, 是这类 issue 唯一的独立审核, 实施提交因没有就绪记录而不运行 `verify --subject-only`, 其 `completed` 转换只发生在该实施提交中 (经 Gate 1), 不走非实施提交流程. 不满足条件的改动不放入该 issue, 另建 issue 并运行 Spec Readiness.
+
+紧急修复例外: 阻断进行中的发布验证的缺陷, 或用户明确要求立即修复的缺陷, 在用户已确认不需要治理设计且该修复单独成为单 issue effort 时, 可以在建立 issue 前修改实现; 实施提交前补建该 issue 和 `not-applicable` 例外记录, 在 issue 的 `## Comments` 用一行写明属于哪种情形, Commit Audit 照常运行. 只限这两种情形, 因为先建 issue 的等待只在其中有实际代价; 其他工作仍先建 issue, 使验收条件先于实现写出.
 
 Commit Audit 的准确调用条件只由通用提交工作流拥有. Commit Audit 适用时, Gate 1 和 Gate 2 由独立 `requirements-reviewer` (要求符合审核) 逐项审核冻结的完整已暂存候选内容, `code-standards-reviewer` 同时并行审核实施质量; 一次提交最多这两个并行 Reviewer. 每个提交只包含一个 effort, Main Agent 只暂存该 effort 的内容. `authorizingIssueIds` 可以包含该 effort 的多个 issue, 表示完整实施授权范围; Request 中的 Gate 1 范围只包含实际适用的终态转换子集. 每次实施提交另做差异回归检查; Gate 2 只审核 `git diff <since> <tree>` 中治理文档的改动. Reviewer 把发现的问题逐条写入 `prepare` 创建的 txt 报告, 没有问题时写 `No problems.`, 并返回状态; ARW 不生成或提升审核记录, 详见 Commit Audit 节.
 
@@ -510,7 +512,7 @@ Reviewer 在完成全部适用检查和绑定文件写入后单独返回完成�
 
 审核后的结果按生成, 提升, 验证的顺序交接. 生成临时结果不等于把它写入工作记录, 写入工作记录也不等于已经取得实施授权.
 
-`generate --issue --input <draft-path>` 要求路径与活动请求完全相同. 普通审核中, 零字节或仅含空白的草稿失败 (错误提示重新 `prepare` 并重发 Reviewer), 不生成规范结果文件; 去除首尾空白后精确为 `No problems.` 时结果为 `satisfied`, 否则为 `gap`. Engine 不解析问题条目, 问题的有效性由 Main Agent 独立核对, Main Agent 每轮自选一两处 Reviewer 应当检查的要求或代码位置抽查. 正式结果使用模式版本 7, 不含检查项. 例外只在应用治理设计和 ADR 触发条件后用户明确确认不需要治理设计, 且 effort 的 `issues/` 目录只含待审的这一个 issue 文件时可用, 失败的普通审核不得转为例外; 此时 `--input` 是 Main Agent 写在该 issue 当前 Agent 临时工作区内的绝对 `.json` 路径 (不经 Reviewer), 例外草稿必须包含明确理由和用户确认时间 (`exception.reason`, `exception.confirmedAt`), 且用户确认不能推断, 结果为 `not-applicable`. 普通结果与例外结果都绑定当前审核对象的规范化身份. 有效结果只在 Engine 管理的临时工作区生成规范结果文件并返回路径. `generate` 不写 `.scratch` 或基线.
+`generate --issue --input <draft-path>` 要求路径与活动请求完全相同. 普通审核中, 零字节或仅含空白的草稿失败 (错误提示重新 `prepare` 并重发 Reviewer), 不生成规范结果文件; 去除首尾空白后精确为 `No problems.` 时结果为 `satisfied`, 否则为 `gap`. Engine 不解析问题条目, 问题的有效性由 Main Agent 独立核对, Main Agent 每轮自选一两处 Reviewer 应当检查的要求或代码位置抽查. 正式结果使用模式版本 7, 不含检查项. 例外只在应用治理设计和 ADR 触发条件后用户明确确认不需要治理设计, 且 effort 的 `issues/` 目录只含待审的这一个 issue 文件时可用, 失败的普通审核不得转为例外; 此时 `--input` 是 Main Agent 写在该 issue 当前 Agent 临时工作区内的绝对 `.json` 路径 (不经 Reviewer), 例外草稿必须包含明确理由和用户确认时间 (`exception.reason`, `exception.confirmedAt`), 且用户确认不能推断, 结果为 `not-applicable`. 用户确认须早于首次修改本 issue 的实现文件, `exception.confirmedAt` 是用户作出确认的时间, 不是生成时间. 满足这一条件时, 例外记录可以在实施开始后补生成, 在实施提交前完成 `generate -> promote -> verify`: 例外不经 Reviewer, 记录内容不随生成时机变化, 是否适用在用户确认时已经决定, 先生成记录不增加任何审核. 普通结果与例外结果都绑定当前审核对象的规范化身份. 有效结果只在 Engine 管理的临时工作区生成规范结果文件并返回路径. `generate` 不写 `.scratch` 或基线.
 
 `promote --input <generated-path>` 在任何写入前重验 issue, 请求, 当前治理输入字节 (`architecture-evidence` 除外, `verify` 同此), 当前审核对象内容身份, 当前 Reviewer Role 字节, 结构, 路径归属和派生结果. 它是写 `.scratch/<NNNN>-<effort-slug>/issues/<NN>.spec-readiness.json` 和更新已完成基线的唯一边界. 有效的 `gap` 可以保存, 但不能满足最终就绪授权. 旧结构不能授权.
 

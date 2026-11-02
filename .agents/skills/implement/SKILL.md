@@ -11,7 +11,7 @@ name: implement
 
 ## Entry
 
-1. 找到授权本次工作的 issue. 先使用对话中已识别的路径或 ID, 解析为 `.scratch/<NNNN>-<effort-slug>/issues/<NN>-<issue-slug>.md`, 并核对它仍与所请求的工作匹配; 否则搜索当前仓库的全部 issue. 没有匹配或存在多个合理匹配时请用户指定, 不代替用户选择或创建实施范围. 例外: 只改 Agent 规则和文档 (范围见 `commit` Skill 的非实施工作流) 的改动可以不建 issue, 由用户请求或仓库工作流授权, 按该工作流的无 issue 规则提交.
+1. 找到授权本次工作的 issue. 先使用对话中已识别的路径或 ID, 解析为 `.scratch/<NNNN>-<effort-slug>/issues/<NN>-<issue-slug>.md`, 并核对它仍与所请求的工作匹配; 否则搜索当前仓库的全部 issue. 没有匹配或存在多个合理匹配时请用户指定, 不代替用户选择或创建实施范围. 例外: 只改 Agent 规则和文档 (范围见 `commit` Skill 的非实施工作流) 的改动可以不建 issue, 由用户请求或仓库工作流授权, 按该工作流的无 issue 规则提交. 紧急修复 (阻断进行中的发布验证, 或用户明确要求立即修复) 在用户已确认不需要治理设计且单独成为单 issue effort 时, 可以先修改实现, 实施提交前补建 issue 和例外记录, 并在 `## Comments` 用一行写明属于哪种情形.
 2. 按 `issue-tracking` Skill 确认文件结构与记录类型, 再按类型判断授权:
    - 实施 issue 只有直接覆盖所请求范围, 使用 `Status: ready-for-agent`, 且每个阻断项都已达到适用终态时, 才授权更改已跟踪文件. `Status: ready-for-human` 不授权 Agent 实施.
    - Application Source Issue 永远不授权本地实施; 关联和同步内容只由 Application 和 JIRA 工作流修改.
@@ -19,7 +19,7 @@ name: implement
    - 初始规划记录授权只允许创建或更新其治理 Skill 授权的规划产物, 不授权生产代码, 测试或无关文档.
 3. 完成 issue 所必需, 且不增加行为, 规则, 公开合同或架构决定的机械性配套修改可以留在本 issue 内. 其他新要求先通过 issue 工作流记录并取得授权, 不默默扩大 issue.
 4. 完整读取 issue 及其 effort spec (如存在). 新 Agent 接手, 中断后恢复, 或 spec 任何字节变化时, 重新完整读取.
-5. 只改 Agent 规则和文档 (范围见 `commit` Skill 的非实施工作流) 的 issue 不安排就绪审核, 其终态也按该工作流提交. 交付只是行为保持重构的 issue 同样不安排就绪审核, 条件与 `## What to build` 中 `行为保持重构例外:` 声明段落的写法见长期规范的行为保持重构例外. 提交审核照常运行并兜底, 终态只经实施提交, 提交时没有就绪记录, 不运行 `arw spec-readiness verify --subject-only`. 不满足条件的改动不放入该 issue, 另建 issue 并按 `spec-readiness` Skill 安排就绪审核. 其余实施 issue 按 `spec-readiness` Skill 安排就绪审核; 首次修改本 issue 的实现文件前运行 `arw spec-readiness verify --issue issue:<NNNN>:<NN>` 并取得 `0`, 否则不开始实施; 过期时按 `spec-readiness` Skill 增量复审. 实现文件的范围与 "已开始实施" 的界定见 `spec-readiness` Skill 的 Authorization timing, 已开始实施后不再重跑完整核对.
+5. 只改 Agent 规则和文档 (范围见 `commit` Skill 的非实施工作流) 的 issue 不安排就绪审核, 其终态也按该工作流提交. 交付只是行为保持重构的 issue 同样不安排就绪审核, 条件与 `## What to build` 中 `行为保持重构例外:` 声明段落的写法见长期规范的行为保持重构例外. 提交审核照常运行并兜底, 终态只经实施提交, 提交时没有就绪记录, 不运行 `arw spec-readiness verify --subject-only`. 不满足条件的改动不放入该 issue, 另建 issue 并按 `spec-readiness` Skill 安排就绪审核. 其余实施 issue 按 `spec-readiness` Skill 安排就绪审核; 首次修改本 issue 的实现文件前运行 `arw spec-readiness verify --issue issue:<NNNN>:<NN>` 并取得 `0`, 否则不开始实施 (按 `spec-readiness` Skill 的 Exception workflow 节补生成例外记录的 issue 除外); 过期时按 `spec-readiness` Skill 增量复审. 实现文件的范围与 "已开始实施" 的界定见 `spec-readiness` Skill 的 Authorization timing, 已开始实施后不再重跑完整核对.
 
 ## Preparation
 
