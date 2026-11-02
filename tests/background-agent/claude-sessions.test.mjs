@@ -151,6 +151,15 @@ test('a Claude turn whose process identity cannot be recorded ends its process a
     assert.equal((await session.idleFacts({rootThreadId: threadId})).safe, true);
 });
 
+test('a Claude turn whose executable cannot be launched reports how to fix it', async t => {
+    const f = await fixture(t);
+    const sessions = createClaudeSessions({executable: 'arw-missing-claude-executable', runtimeDirectory: f.runtimeDirectory, environment: {...process.env}});
+    const session = await sessions.open({settings: {...settings, programDirectory: f.directory}, role: 'generic', cwd: f.directory, readPaths: [], writePaths: [],
+        runId: 'run-1', onNotification: () => {}});
+    const {threadId} = await session.start({instructions: 'General rules.'});
+    await assert.rejects(session.startTurn({threadId, handoff: 'Do it.'}), /identity is unavailable\. If arw-missing-claude-executable could not be launched/);
+});
+
 test('a recorded Claude process stays unresolved until it has ended', async t => {
     const f = await fixture(t);
     await writeFile(claudeProcessIdentityPath(f.runtimeDirectory, 'ended-thread'), '999999,1', {mode: 0o600});

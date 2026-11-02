@@ -5,6 +5,7 @@ import test from 'node:test';
 
 import {createMockChild, createRepository, run, writeConfig} from '../helpers/arw-cli.mjs';
 import {createTemporaryDirectory} from '../helpers/cleanup.mjs';
+import {spawnFailureHint} from '../../lib/arw-common/agent-cli-launch.mjs';
 import {parseCommand, UsageError} from '../../lib/arw.mjs';
 
 /** @typedef {NonNullable<NonNullable<Parameters<typeof import('../../arw.mjs').runArw>[1]>['spawnProcess']>} ArwSpawn */
@@ -92,13 +93,13 @@ test('agent start maps process failures without starting a shell', async t => {
     /** @type {Array<{expected: string, spawn: ArwSpawn}>} */
     const variants = [
         {
-            expected: 'Agent CLI command could not be started.',
+            expected: `Agent CLI command could not be started. ${spawnFailureHint('agent-cli')}`,
             spawn: () => {
                 throw new Error('missing executable');
             },
         },
         {
-            expected: 'Agent CLI command could not be started.',
+            expected: `Agent CLI command could not be started. ${spawnFailureHint('agent-cli')}`,
             spawn: () => {
                 const child = createMockChild();
                 queueMicrotask(() => child.emit('error', new Error('missing executable')));

@@ -587,6 +587,20 @@ test('catalog preparation or synchronous spawn failure leaves no unmanaged gener
   assert.deepEqual(events,['prepare','spawn','remove']);
 });
 
+test('a Codex executable that cannot be launched reports how to fix it',async()=>{
+  const factory=createCodexAppServerSessions({
+    codexExecutable:'arw-missing-codex-executable',
+    processIdentity:{
+      async read(){return {state:'absent',identity:null};},
+      async record(){throw new Error('A process that never started must not be recorded.');},
+      async remove(){},
+      async creationTime(){throw new Error('A process that never started has no creation time.');},
+    },
+    modelCatalog:{async prepare(){return '/private/models.json';},async remove(){}},
+  });
+  await assert.rejects(factory.open({settings,cwd,readPaths:[],writePaths:[],onNotification(){}}),/PID is unavailable\. If arw-missing-codex-executable could not be launched/);
+});
+
 test('confirmed exit attempts both cleanups, reports a failed component and completes on retry',async()=>{
   for(const failed of ['process identity','shared model catalog']){
     const fake=harness();

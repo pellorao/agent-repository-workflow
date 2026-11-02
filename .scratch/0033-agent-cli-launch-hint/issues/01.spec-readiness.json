@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0033:01",
+  "exception": {
+    "confirmedAt": "2026-11-02T04:53:42Z",
+    "reason": "Single-issue bug fix with no design decision (user confirmed 2026-11-02 in projects AGENTS)."
+  },
+  "subject": {
+    "filePath": ".scratch/0033-agent-cli-launch-hint/issues/01-agent-cli-launch-hint.md",
+    "sha256": "8312bc6a4223617e058242e0a0e7d49d85155ddb148379842dda480db4e24827"
+  },
+  "result": "not-applicable"
+}
