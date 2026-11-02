@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0051:01",
+  "exception": {
+    "confirmedAt": "2026-11-02T12:00:00Z",
+    "reason": "Single documentation-alignment issue with no design decision; the user confirmed on 2026-11-02 that issues of this kind need no governance design."
+  },
+  "subject": {
+    "filePath": ".scratch/0051-remove-choices-spec/issues/01-remove-choices-spec.md",
+    "sha256": "27025d1a0dd4541e097be52afda73c93a4093427373362677664e4a1946a38ce"
+  },
+  "result": "not-applicable"
+}
