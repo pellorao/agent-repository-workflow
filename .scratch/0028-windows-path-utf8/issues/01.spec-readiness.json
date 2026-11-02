@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0028:01",
+  "exception": {
+    "confirmedAt": "2026-11-02T04:52:31Z",
+    "reason": "Single-issue bug fix with no design decision (user confirmed 2026-11-02 in projects AGENTS)."
+  },
+  "subject": {
+    "filePath": ".scratch/0028-windows-path-utf8/issues/01-windows-path-read-utf8.md",
+    "sha256": "017c21369da844fe48627e8ff29fd5aa75c1ffb254fa9be6bdb816df5e906ee3"
+  },
+  "result": "not-applicable"
+}

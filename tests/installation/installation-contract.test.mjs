@@ -176,3 +176,37 @@ test('PATH plans are opaque, revalidate state, and report write effect', async t
         status: 'failed',
     });
 });
+
+test('Windows PATH registration keeps non-ASCII user PATH entries', async t => {
+    const root = await createTemporaryDirectory(t, 'installation-contract-powershell-');
+    const installationDirectory = join(root, 'installation');
+    const written = join(root, 'written');
+    const userPath = 'C:\\\u6d4b\u8bd5\\bin';
+    // Fake powershell.exe: read emits UTF-8 only when the script switches the console output encoding, every other call appends its environment (where a write receives the new value) and emits legacy-codepage bytes.
+    await writeFile(join(root, 'utf8.json'), `{"exists":true,"kind":"ExpandString","value":${JSON.stringify(userPath)}}`);
+    await writeFile(join(root, 'legacy.json'), Buffer.concat([Buffer.from('{"exists":true,"kind":"ExpandString","value":"C:\\\\'), Buffer.from([0xb2, 0xe2, 0xca, 0xd4]), Buffer.from('\\\\bin"}')]));
+    await mkdir(join(root, 'bin'));
+    await writeFile(join(root, 'bin', 'powershell.exe'), [
+        '#!/bin/sh',
+        'case "$3" in',
+        `*'[Console]::OutputEncoding = [Text.UTF8Encoding]::new($false);'*) cat '${join(root, 'utf8.json')}' ;;`,
+        `*) env >> '${written}'; cat '${join(root, 'legacy.json')}' ;;`,
+        'esac',
+        '',
+    ].join('\n'), {mode: 0o755});
+    const previousPath = process.env.PATH;
+    process.env.PATH = `${join(root, 'bin')}:${previousPath}`;
+    t.after(() => {
+        process.env.PATH = previousPath;
+    });
+
+    const planned = await planPathRegistration({
+        installation: {directory: installationDirectory, exists: true, managed: false, manifest: null, pathKind: /** @type {'windows-user-path'} */ ('windows-user-path')},
+        registerPath: true,
+    });
+    if (planned.status !== 'succeeded') assert.fail('PATH plan must succeed.');
+    const applied = await applyPathOwnershipPlan(planned.preparedPathOwnership);
+
+    assert.equal(applied.status, 'succeeded');
+    assert.ok((await readFile(written, 'utf8')).includes(`=${userPath};${installationDirectory}\n`));
+});

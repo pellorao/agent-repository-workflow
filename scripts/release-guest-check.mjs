@@ -41,7 +41,7 @@ const step = (label, result, expectOk = true) => {
 const fresh = (command, cwd = homedir()) => {
     if (!WINDOWS) return run('bash', ['-lc', `PATH='${NODE_DIRECTORY}':"$PATH"; ${command}`], {cwd});
     const path = run('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command',
-        "[Environment]::ExpandEnvironmentVariables([Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [Environment]::GetEnvironmentVariable('Path','User'))"]);
+        "[Console]::OutputEncoding = [Text.UTF8Encoding]::new($false); [Environment]::ExpandEnvironmentVariables([Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [Environment]::GetEnvironmentVariable('Path','User'))"]);
     if (!path.ok) return path;
     const env = Object.fromEntries(Object.entries(process.env).filter(([key]) => key.toUpperCase() !== 'PATH'));
     return run('cmd.exe', ['/d', '/c', command], {cwd, env: {...env, Path: `${NODE_DIRECTORY}${delimiter}${path.stdout}`, NoDefaultCurrentDirectoryInExePath: '1'}, windowsVerbatimArguments: true});
