@@ -12,7 +12,7 @@ disable-model-invocation: true
 
 ## 1. 确定目标提交
 
-1. 维护者没有指定提交时, 用 `git ls-remote <url> HEAD` 取得上游当前提交, 向维护者确认这个完整 40 位提交 ID.
+1. 维护者没有指定提交时, 取上游最新发布版 (最新 GitHub Release 或版本标签) 指向的提交, 向维护者确认这个完整 40 位提交 ID; 不同步默认分支上尚未发布的提交.
 2. 确认工作树中 `.agents/skills/`, `.claude/skills/` 和 `docs/licenses/arw/` 没有未提交的改动, 以免混入同步结果.
 
 ## 2. 生成三方视图
@@ -35,6 +35,7 @@ disable-model-invocation: true
 
 采用的 Markdown 内容按 ARW 统一来源格式改写:
 
+- 采用的内容 (许可证除外) 一律译成简体中文: 新 Skill 和新文件进入仓库时就是中文, 不保留英文原文.
 - Skill 引用写成 Codex 形式 `$name`. 上游的 `/name` 和 "Call the Skill tool with ..." 等 Claude Code 写法都要转换; 引用的不是 Skill (路径, URL, 命令) 时保持原样.
 - 保留本地定制的含义和措辞 (中文内容, ARW 术语, 已删除的段落不复活), 除非维护者决定采用上游写法.
 - 许可证文件只能逐字节采用 Theirs, 不可合并. 许可证有变化时单独提交维护者处理.

@@ -95,4 +95,8 @@ ARW 必须在 Codex 和 Claude Code 中都完整可用, 包括 `arw background-a
 - 进行定向 Reviewer 优化或修改 `tests/fixtures/reviewer-capability/**` 前, 读取 `docs/agents/source-checkout-exceptions.md`.
 - Upstream Sync (采用上游 Skill 新版本) 只在维护者显式调用 `$upstream-sync` Skill 时进行.
 - 研究或修改受支持的 Agent 平台标准, Projection 配置, Skill 引用规则或目标路径前, 读取 `.agents/skills/platform-standards/SKILL.md`.
+
+# Source Checkout Baseline 例外
+
+- `rule-and-design-changes` Skill 的 User confirmation: 本仓库中, 与用户沟通的 Main Agent 对 Agent 指令和设计文档改动的确认等同于用户确认. Main Agent 可以自行拟定并确认这类改动, subagent 以 Main Agent 分配的改动内容为确认; 维护者按实施 issue 复核整体 diff. 确认依据写入授权 issue 的 `## Comments` 或提交说明.
 <!-- arw:repository-owned:end -->

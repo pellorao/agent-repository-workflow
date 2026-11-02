@@ -26,3 +26,7 @@ name: rule-and-design-changes
 
 - 长期规范写成当前的持久设计: 陈述最终行为, 责任, 公开或架构边界, 以及维持这些选择所需的理由. 实施步骤, 单个 issue 的迁移工作和已被取代的实施历史放入 issue, 验证证据或其他工作记录. 替换原有行为时陈述最终合同及其长期理由, 不叙述旧机制.
 - ADR 写成当前有效的决定, 维持该选择所需的理由, 以及仍有意义的被否决方案. 只有紧邻的前一次决定有助于解释当前取舍时才简要标明; 不累积多轮旧决定, 日期日志或实施细节. 完全被取代的 ADR 保留原编号和路径, 只说明取代关系并链接现行决定.
+
+## Installed workflow
+
+在安装了 ARW 的仓库中, 不修改 `arw:managed` 区域和 ARW 安装的 Skill, 它们由 `arw workflow update` 维护. 要增加, 收紧或放宽其中的规则, 按 `docs/agents/writing.md` 的 Baseline exceptions 节写入所属文档的 Repository-owned 区域. 对所有仓库都适用的改进, 作为对 ARW 的反馈交给用户.
