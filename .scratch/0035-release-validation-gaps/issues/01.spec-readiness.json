@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0035:01",
+  "exception": {
+    "confirmedAt": "2026-11-02T05:40:29Z",
+    "reason": "Single-issue bug fix with no design decision (user confirmed 2026-11-02 in projects AGENTS)."
+  },
+  "subject": {
+    "filePath": ".scratch/0035-release-validation-gaps/issues/01-release-validation-gaps.md",
+    "sha256": "0b588fe6aaecca6a7a182121e61b9046c93d20d5d0c5fb5acfdd1806437b0387"
+  },
+  "result": "not-applicable"
+}

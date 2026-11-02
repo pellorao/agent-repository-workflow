@@ -12,7 +12,7 @@ const SSH_WAIT_INTERVAL_MS = 5000;
 const GUEST_BUNDLE = 'arw-candidate.bundle';
 const GUEST_CHECKOUT = 'arw-candidate';
 const USAGE = `Usage:
-  node scripts/release-vm.mjs check <config.json> <machine> <candidate.bundle> [--keep]
+  node scripts/release-vm.mjs check <config.json> <machine> <candidate.bundle> [--previous <commit>] [--keep]
   node scripts/release-vm.mjs ssh <config.json> <machine> <command>
   node scripts/release-vm.mjs down <config.json> <machine>`;
 
@@ -21,6 +21,11 @@ const USAGE = `Usage:
 const [operation, configPath, machineKey, argument, ...rest] = process.argv.slice(2);
 if (!['check', 'ssh', 'down'].includes(operation) || !configPath || !machineKey || (operation !== 'down' && !argument)) {
     process.stderr.write(`${USAGE}\n`);
+    process.exit(2);
+}
+// --previous 的值是 commit (7-40 位十六进制), 在拼进远程命令前校验.
+if (operation === 'check' && rest.includes('--previous') && !/^[0-9a-f]{7,40}$/u.test(rest[rest.indexOf('--previous') + 1] ?? '')) {
+    process.stderr.write(`${USAGE}\n--previous expects a commit (7-40 hex digits).\n`);
     process.exit(2);
 }
 /** @type {Machine | undefined} */
@@ -81,7 +86,9 @@ const check = async (/** @type {string} */ bundle) => {
     must('scp bundle', run('scp', [...sshOptions, '-P', String(machine.ssh.port), GUEST_BUNDLE, `${machine.ssh.user}@${host}:${GUEST_BUNDLE}`], {cwd: workspace}));
     must('guest clone', ssh(host, `git -c advice.detachedHead=false clone --quiet -c core.autocrlf=false -c core.longpaths=true ${GUEST_BUNDLE} ${GUEST_CHECKOUT}`));
     // 每个 Node.js (recommended, minimum) 各跑一次, 首个失败即停. 路径不得含空格.
-    return Object.values(machine.nodeExecutables).every(node => ssh(host, `${node} ${GUEST_CHECKOUT}/scripts/release-guest-check.mjs`).ok);
+    // --previous <commit> 转交 guest 检查, 让它先安装上一发布版再升级到候选.
+    const previous = rest.includes('--previous') ? ` --previous ${rest[rest.indexOf('--previous') + 1]}` : '';
+    return Object.values(machine.nodeExecutables).every(node => ssh(host, `${node} ${GUEST_CHECKOUT}/scripts/release-guest-check.mjs${previous}`).ok);
 };
 
 let exitCode = 1;

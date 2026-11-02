@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // 在可丢弃的受验系统里证明候选的安装, PATH 登记, `arw workflow init` 和卸载真实可用.
-// 从候选 checkout 运行: node scripts/release-guest-check.mjs. 每步输出一行 ok/FAIL, 首个失败时退出码 1.
+// 从候选 checkout 运行: node scripts/release-guest-check.mjs [--previous <commit>] (先安装该上一发布版再升级到候选). 每步输出一行 ok/FAIL, 首个失败时退出码 1.
 // 它修改当前用户的 HOME 和 PATH 登记, 只能在测试后会还原快照的系统中运行.
 
 import {spawnSync} from 'node:child_process';
@@ -48,8 +48,27 @@ const fresh = (command, cwd = homedir()) => {
 };
 
 const locate = WINDOWS ? 'where arw' : 'command -v arw';
+const previousIndex = process.argv.indexOf('--previous');
+const previous = previousIndex === -1 ? undefined : process.argv[previousIndex + 1];
+if (previousIndex !== -1) step('--previous 是 commit', {ok: /^[0-9a-f]{7,40}$/u.test(previous ?? ''), output: String(previous)});
 
+// Windows 用户 PATH 的非 ASCII 项 (全程在 PowerShell 内构造和比较, 避免命令行编码影响).
+const PATH_ENTRY = "'C:\\arw-' + [char]0x8DEF + [char]0x5F84";
+/** @param {string} body */
+const userPath = body => run('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', `$e = ${PATH_ENTRY}; ${body}`]);
+/** @param {string} label */
+const checkEntry = label => {
+    const result = userPath("if (([Environment]::GetEnvironmentVariable('Path','User') -split ';') -contains $e) { 'present' } else { 'missing' }");
+    step(label, {ok: result.stdout === 'present', output: result.output});
+};
+
+const minimumNode = Number(/\d+/u.exec(JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8')).engines.node)?.[0]);
+step(`Node.js 满足 engines (>=${minimumNode})`, {ok: Number(process.versions.node.split('.')[0]) >= minimumNode, output: process.versions.node});
 step('arw 安装前不可解析', fresh(locate), false);
+if (WINDOWS) {
+    step('PowerShell 在新终端可解析', fresh('where powershell.exe'));
+    step('写入含非 ASCII 的用户 PATH 项', userPath("[Environment]::SetEnvironmentVariable('Path', [Environment]::GetEnvironmentVariable('Path','User') + ';' + $e, 'User')"));
+}
 const commit = step('读取候选 commit', run('git', ['rev-parse', 'HEAD'], {cwd: ROOT}));
 const staging = mkdtempSync(join(tmpdir(), 'arw-release-archive-'));
 const archive = join(staging, 'arw.tar.gz');
@@ -57,10 +76,24 @@ const extracted = join(staging, 'extracted');
 mkdirSync(extracted);
 step('打包安装压缩包', run(process.execPath, [join(ROOT, 'scripts', 'pack-release.mjs'), archive]));
 step('解压安装压缩包', run('tar', ['-xzf', archive, '-C', extracted]));
+if (previous !== undefined) {
+    // 上一发布版: 用 git archive 从候选 checkout 的历史取出该 commit (不注册 worktree), 打包安装; 随后的候选安装就是升级.
+    const previousSource = join(staging, 'previous');
+    const previousExtracted = join(staging, 'previous-extracted');
+    mkdirSync(previousExtracted);
+    mkdirSync(previousSource);
+    step('取出上一发布版', run('git', ['archive', '--format=tar', `--output=${join(staging, 'previous.tar')}`, previous], {cwd: ROOT}));
+    step('解开上一发布版源码', run('tar', ['-xf', join(staging, 'previous.tar'), '-C', previousSource]));
+    step('打包上一发布版', run(process.execPath, [join(previousSource, 'scripts', 'pack-release.mjs'), join(staging, 'previous.tar.gz')]));
+    step('解压上一发布版', run('tar', ['-xzf', join(staging, 'previous.tar.gz'), '-C', previousExtracted]));
+    const previousVersion = JSON.parse(readFileSync(join(previousSource, 'package.json'), 'utf8')).version;
+    step('安装上一发布版', run(process.execPath, ['install.mjs', '--release-tag', previousVersion, '--non-interactive', '--register-path', 'true'], {cwd: previousExtracted}));
+}
 step('从压缩包安装', run(process.execPath, [
     'install.mjs', '--release-tag', VERSION, '--non-interactive', '--register-path', 'true',
 ], {cwd: extracted}));
 
+if (WINDOWS) checkEntry('安装后非 ASCII 用户 PATH 项仍在');
 const resolved = step('新终端解析 arw', fresh(locate));
 if (!resolved.split(/\r?\n/u).every(line => line.startsWith(INSTALLATION))) step('arw 指向 Installation 目录', {ok: false, output: resolved});
 const reported = step('arw --version', fresh('arw --version'));
@@ -71,8 +104,16 @@ step('创建目标 Git 仓库', run('git', ['init', '--quiet'], {cwd: target}));
 step('arw workflow init', fresh(`arw ${INIT_ARGUMENTS}`, target));
 step('arw workflow verify', fresh('arw workflow verify', target));
 
+// 受管仓库经 CRLF 检出后 verify 仍应通过.
+step('暂存受管仓库', run('git', ['add', '-A'], {cwd: target}));
+step('提交受管仓库', run('git', ['-c', 'user.name=release', '-c', 'user.email=release@example.invalid', 'commit', '--quiet', '-m', 'managed'], {cwd: target}));
+const crlfTarget = join(staging, 'crlf-target');
+step('CRLF 重新克隆', run('git', ['clone', '--quiet', '-c', 'core.autocrlf=true', '-c', 'core.longpaths=true', target, crlfTarget]));
+step('CRLF 克隆 arw workflow verify', fresh('arw workflow verify', crlfTarget));
+
 step('卸载', run(process.execPath, [join(INSTALLATION, 'uninstall.mjs'), '--non-interactive', '--remove-config', 'true'], {cwd: target}));
 step('卸载后新终端不再解析 arw', fresh(locate), false);
+if (WINDOWS) checkEntry('卸载后非 ASCII 用户 PATH 项仍在');
 // 卸载后不应剩任何文件.
 const leftovers = existsSync(INSTALLATION)
     ? readdirSync(INSTALLATION, {recursive: true, withFileTypes: true}).filter(entry => !entry.isDirectory())

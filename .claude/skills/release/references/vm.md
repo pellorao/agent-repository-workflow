@@ -8,6 +8,7 @@
 {
   "schemaVersion": 2,
   "maxParallelMachines": 3,
+  "fixturesDirectory": "<absolute path of the maintainer's fixture archives>",
   "machines": {
     "Windows 11": {
       "machineType": "VMware",
@@ -24,6 +25,7 @@
 }
 ```
 
+- `fixturesDirectory` 是维护者保存 fixture 压缩包的仓库外目录, 只由 `./fixtures.md` 的步骤读取; 真实路径不写入仓库.
 - 机器键可以自由命名. 当前环境是 Windows 11, Ubuntu 和 Alpine, 至少要覆盖一台 Windows 和一台 Linux. 同时运行的机器数不超过 `maxParallelMachines`.
 - `location` 是 VMX 路径. 脚本不读取 `machineType` (只支持 VMware) 和 `guestPasswords` (只供维护者在控制台登录).
 - `nodeExecutables` 是客户机中 Node.js 的绝对路径, 不含空格. `check` 对 `recommended` 和可选的 `minimum` 各运行一次客户机检查, 首个失败即停. 客户机检查把该 node 所在目录排在 `PATH` 最前, 所以已安装的 `arw` 启动器也使用它.
