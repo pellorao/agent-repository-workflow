@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0040:01",
+  "exception": {
+    "confirmedAt": "2026-11-01T17:02:13Z",
+    "reason": "Single-issue bug fix with no design decision (user confirmed 2026-11-02 in projects AGENTS)."
+  },
+  "subject": {
+    "filePath": ".scratch/0040-vm-guest-update/issues/01-guest-check-runs-update.md",
+    "sha256": "00cd6b4fc66e713ad52b6aaa2c784678347bc815994fb5e1c0c14aa698066e63"
+  },
+  "result": "not-applicable"
+}

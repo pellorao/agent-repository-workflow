@@ -10,6 +10,7 @@ import {join} from 'node:path';
 const SSH_WAIT_ATTEMPTS = 60;
 const SSH_WAIT_INTERVAL_MS = 5000;
 const GUEST_BUNDLE = 'arw-candidate.bundle';
+const GUEST_FIXTURE = 'arw-fixture.tgz';
 const GUEST_CHECKOUT = 'arw-candidate';
 const USAGE = `Usage:
   node scripts/release-vm.mjs check <config.json> <machine> <candidate.bundle> [--previous <commit>] [--keep]
@@ -28,10 +29,15 @@ if (operation === 'check' && rest.includes('--previous') && !/^[0-9a-f]{7,40}$/u
     process.stderr.write(`${USAGE}\n--previous expects a commit (7-40 hex digits).\n`);
     process.exit(2);
 }
+const config = JSON.parse(readFileSync(configPath, 'utf8'));
 /** @type {Machine | undefined} */
-const machine = JSON.parse(readFileSync(configPath, 'utf8')).machines?.[machineKey];
+const machine = config.machines?.[machineKey];
 if (machine === undefined) {
     process.stderr.write(`Machine not found in config: ${machineKey}\n`);
+    process.exit(2);
+}
+if (operation === 'check' && typeof config.fixturesDirectory !== 'string') {
+    process.stderr.write('fixturesDirectory is missing from the config.\n');
     process.exit(2);
 }
 
@@ -82,13 +88,15 @@ const check = async (/** @type {string} */ bundle) => {
         await new Promise(resolve => setTimeout(resolve, SSH_WAIT_INTERVAL_MS));
         host = address();
     }
+    // 两个文件先复制到本地临时目录再传: Windows 路径里的 `C:` 会被 scp 当作主机名.
     copyFileSync(bundle, join(workspace, GUEST_BUNDLE));
-    must('scp bundle', run('scp', [...sshOptions, '-P', String(machine.ssh.port), GUEST_BUNDLE, `${machine.ssh.user}@${host}:${GUEST_BUNDLE}`], {cwd: workspace}));
+    copyFileSync(join(config.fixturesDirectory, 'agent-assisted.tgz'), join(workspace, GUEST_FIXTURE));
+    must('scp bundle and fixture', run('scp', [...sshOptions, '-P', String(machine.ssh.port), GUEST_BUNDLE, GUEST_FIXTURE, `${machine.ssh.user}@${host}:`], {cwd: workspace}));
     must('guest clone', ssh(host, `git -c advice.detachedHead=false clone --quiet -c core.autocrlf=false -c core.longpaths=true ${GUEST_BUNDLE} ${GUEST_CHECKOUT}`));
     // 每个 Node.js (recommended, minimum) 各跑一次, 首个失败即停. 路径不得含空格.
-    // --previous <commit> 转交 guest 检查, 让它先安装上一发布版再升级到候选.
+    // --previous <commit> 转交 guest 检查, 让它先安装上一发布版再升级到候选; --fixture 是传入的 agent-assisted fixture.
     const previous = rest.includes('--previous') ? ` --previous ${rest[rest.indexOf('--previous') + 1]}` : '';
-    return Object.values(machine.nodeExecutables).every(node => ssh(host, `${node} ${GUEST_CHECKOUT}/scripts/release-guest-check.mjs${previous}`).ok);
+    return Object.values(machine.nodeExecutables).every(node => ssh(host, `${node} ${GUEST_CHECKOUT}/scripts/release-guest-check.mjs --fixture ${GUEST_FIXTURE}${previous}`).ok);
 };
 
 let exitCode = 1;

@@ -1,6 +1,6 @@
 ---
 name: release
-description: 仅在维护者显式调用时, 在 ARW 源码仓库中验证并发布一个稳定版本, 包括本地检查, 在 Windows 与 Linux VM 中验证安装, PATH 登记和 `arw workflow init`, 以及推送 tag 和 GitHub Release.
+description: 仅在维护者显式调用时, 在 ARW 源码仓库中验证并发布一个稳定版本, 包括本地检查, 在 Windows 与 Linux VM 中验证安装, PATH 登记, `arw workflow init` 和 `arw workflow update`, 以及推送 tag 和 GitHub Release.
 disable-model-invocation: true
 ---
 
@@ -31,11 +31,11 @@ disable-model-invocation: true
 
 1. 向维护者索取本次 VM 配置 JSON 的绝对路径. 配置格式和受验系统要求见 `./references/vm.md`. 配置内容, VM 身份和凭据不写入仓库, issue 或报告.
 2. `<tmp>` 是会话工作区 (见 `docs/agents/environment.md`) 下的 `release` 目录, 本 Skill 与各参考文件都用该占位符. `mkdir -p <tmp>`, 然后 `git bundle create <tmp>/candidate.bundle HEAD`.
-3. 对配置中的每台机器运行 `node scripts/release-vm.mjs check <config> <machine> <bundle>`. 脚本依次还原快照, 启动 VM, 传入 bundle, 运行 `scripts/release-guest-check.mjs`, 最后硬关机并还原快照. 不同机器之间互不依赖, 可以并行, 但不超过配置的 `maxParallelMachines`. 从 WSL 操作 Windows 宿主上的 VM 时, 按 `./references/vm.md` 的 WSL and Windows host 节使用 Windows 的 `node.exe` 运行.
+3. 对配置中的每台机器运行 `node scripts/release-vm.mjs check <config> <machine> <bundle>`. 脚本依次还原快照, 启动 VM, 传入 bundle 和配置 `fixturesDirectory` 中的 `agent-assisted.tgz`, 运行 `scripts/release-guest-check.mjs`, 最后硬关机并还原快照. 不同机器之间互不依赖, 可以并行, 但不超过配置的 `maxParallelMachines`. 从 WSL 操作 Windows 宿主上的 VM 时, 按 `./references/vm.md` 的 WSL and Windows host 节使用 Windows 的 `node.exe` 运行.
 4. 只有每台机器的最后一行都是 `<machine>: PASS` 才算通过. 记录 guest 为每个 Node.js 输出的 `PASS <platform> node <node-version> <version> <commit>` 行.
-5. 配置的 `nodeExecutables.minimum` 必须是 `package.json` 的 `engines.node` 声明的最低版本本身 (例如 `>=24` 对应 24.0.0), 其 PASS 行的 node 版本要与之相符; 不是时修正 VM 配置后重跑.
-6. 从上一发布版升级: 给 `check` 追加 `--previous <commit>`, `<commit>` 是 `git tag --merged HEAD` 中最高稳定版 tag 指向的 commit. guest 检查先安装该版本, 再安装候选. 首次发布没有上一版时省略.
-7. fixture 验证, 步骤见 `./references/fixtures.md`. 通过后才算本节完成.
+5. 每个 PASS 行的 node 版本都要满足 `./references/vm.md` 的 Guest requirements 节对 Node.js 的要求; 不满足时修正 VM 配置后重跑.
+6. 从上一发布版升级: 给 `check` 追加 `--previous <commit>`, `<commit>` 是 `git tag --merged HEAD` 中最高稳定版 tag 指向的 commit. guest 检查先安装该版本, 再安装候选, 然后在检出 `arw-<该版本>` 标签的 agent-assisted fixture 上运行 `arw workflow update` 与 `arw workflow verify` (覆盖范围见发布 spec 的 VM 验证段). 首次发布没有上一版时省略, fixture 检出默认分支的最新状态后再 update.
+7. plain fixture 验证, 步骤见 `./references/fixtures.md`; agent-assisted fixture 由 guest 检查覆盖. 通过后才算本节完成.
 
 guest 检查自动覆盖的范围见 `docs/specs/agent-repository-workflow-release/spec.md` 的 VM 验证段.
 

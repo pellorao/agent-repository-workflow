@@ -1,12 +1,12 @@
 #!/usr/bin/env node
-// 在可丢弃的受验系统里证明候选的安装, PATH 登记, `arw workflow init` 和卸载真实可用.
-// 从候选 checkout 运行: node scripts/release-guest-check.mjs [--previous <commit>] (先安装该上一发布版再升级到候选). 每步输出一行 ok/FAIL, 首个失败时退出码 1.
+// 在可丢弃的受验系统里证明候选的安装, PATH 登记, `arw workflow init`, 对受管仓库的 `arw workflow update` 和卸载真实可用.
+// 从候选 checkout 运行: node scripts/release-guest-check.mjs --fixture <agent-assisted.tgz> [--previous <commit>] (先安装该上一发布版再升级到候选, 并让 fixture 检出上一发布版的标签). 每步输出一行 ok/FAIL, 首个失败时退出码 1.
 // 它修改当前用户的 HOME 和 PATH 登记, 只能在测试后会还原快照的系统中运行.
 
 import {spawnSync} from 'node:child_process';
-import {existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync} from 'node:fs';
+import {existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, statSync} from 'node:fs';
 import {homedir, tmpdir} from 'node:os';
-import {delimiter, dirname, join} from 'node:path';
+import {delimiter, dirname, join, resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -51,6 +51,9 @@ const locate = WINDOWS ? 'where arw' : 'command -v arw';
 const previousIndex = process.argv.indexOf('--previous');
 const previous = previousIndex === -1 ? undefined : process.argv[previousIndex + 1];
 if (previousIndex !== -1) step('--previous 是 commit', {ok: /^[0-9a-f]{7,40}$/u.test(previous ?? ''), output: String(previous)});
+const fixtureIndex = process.argv.indexOf('--fixture');
+const fixture = fixtureIndex === -1 ? '' : resolve(process.argv[fixtureIndex + 1] ?? '');
+step('--fixture 是文件', {ok: fixture !== '' && existsSync(fixture) && statSync(fixture).isFile(), output: fixture});
 
 // Windows 用户 PATH 的非 ASCII 项 (全程在 PowerShell 内构造和比较, 避免命令行编码影响).
 const PATH_ENTRY = "'C:\\arw-' + [char]0x8DEF + [char]0x5F84";
@@ -75,6 +78,7 @@ const extracted = join(staging, 'extracted');
 mkdirSync(extracted);
 step('打包安装压缩包', run(process.execPath, [join(ROOT, 'scripts', 'pack-release.mjs'), archive]));
 step('解压安装压缩包', run('tar', ['-xzf', archive, '-C', extracted]));
+let previousVersion;
 if (previous !== undefined) {
     // 上一发布版: 用 git archive 从候选 checkout 的历史取出该 commit (不注册 worktree), 打包安装; 随后的候选安装就是升级.
     const previousSource = join(staging, 'previous');
@@ -85,7 +89,7 @@ if (previous !== undefined) {
     step('解开上一发布版源码', run('tar', ['-xf', join(staging, 'previous.tar'), '-C', previousSource]));
     step('打包上一发布版', run(process.execPath, [join(previousSource, 'scripts', 'pack-release.mjs'), join(staging, 'previous.tar.gz')]));
     step('解压上一发布版', run('tar', ['-xzf', join(staging, 'previous.tar.gz'), '-C', previousExtracted]));
-    const previousVersion = JSON.parse(readFileSync(join(previousSource, 'package.json'), 'utf8')).version;
+    previousVersion = JSON.parse(readFileSync(join(previousSource, 'package.json'), 'utf8')).version;
     step('安装上一发布版', run(process.execPath, ['install.mjs', '--release-tag', previousVersion, '--non-interactive', '--register-path', 'true'], {cwd: previousExtracted}));
 }
 // 上一发布版可能还不会正确读写非 ASCII 的 PATH 项, 所以在其安装之后, 候选安装之前写入.
@@ -111,6 +115,18 @@ step('提交受管仓库', run('git', ['-c', 'user.name=release', '-c', 'user.em
 const crlfTarget = join(staging, 'crlf-target');
 step('CRLF 重新克隆', run('git', ['clone', '--quiet', '-c', 'core.autocrlf=true', '-c', 'core.longpaths=true', target, crlfTarget]));
 step('CRLF 克隆 arw workflow verify', fresh('arw workflow verify', crlfTarget));
+
+// 上一发布版管理的 fixture 仓库: 检出 `arw-<上一版>` 标签 (fixture 可能已更新到更新的版本, 在其最新状态上 update 什么也不做), Windows 上用 CRLF 检出, 再用候选更新.
+const fixtureSource = join(staging, 'fixture-source');
+const fixtureTarget = join(staging, 'fixture-target');
+mkdirSync(fixtureSource);
+step('解压 fixture', run('tar', ['-xzf', fixture, '-C', fixtureSource]));
+step('检出受管 fixture 仓库', run('git', [
+    '-c', 'advice.detachedHead=false', 'clone', '--quiet', '-c', `core.autocrlf=${WINDOWS}`, '-c', 'core.longpaths=true',
+    ...(previousVersion === undefined ? [] : ['--branch', `arw-${previousVersion}`]), join(fixtureSource, 'agent-assisted'), fixtureTarget,
+]));
+step('fixture arw workflow update', fresh('arw workflow update --non-interactive', fixtureTarget));
+step('fixture arw workflow verify', fresh('arw workflow verify', fixtureTarget));
 
 step('卸载', run(process.execPath, [join(INSTALLATION, 'uninstall.mjs'), '--non-interactive', '--remove-config', 'true'], {cwd: target}));
 step('卸载后新终端不再解析 arw', fresh(locate), false);
