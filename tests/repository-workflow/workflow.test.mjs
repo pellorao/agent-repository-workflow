@@ -178,6 +178,29 @@ test('init writes one v2 transaction and verify ignores repository-owned changes
     assert.deepEqual(verified, {diagnostics: [], satisfied: true});
 });
 
+test('a CRLF checkout verifies and updates like the LF original without rewriting files', async t => {
+    const distribution = await createDistribution(t);
+    const root = await createRepository(t);
+    const initialized = await initWorkflow({distribution, repositoryRoot: root});
+    assert.equal(initialized.applied, true, JSON.stringify(initialized.diagnostics));
+    await git(root, ['add', '-A']);
+    await git(root, ['commit', '-m', 'init']);
+    const lock = parseWorkflowLock(await readFile(join(root, 'arw-lock.json'), 'utf8'));
+    const crlfPaths = ['arw-lock.json', '.arwignore', ...lock.managedTargets.map(record => record.path)];
+    for (const path of crlfPaths) {
+        await writeFile(join(root, path), (await readFile(join(root, path), 'utf8')).replaceAll('\n', '\r\n'), 'utf8');
+    }
+    await git(root, ['commit', '-a', '-m', 'crlf checkout']);
+    const before = await Promise.all(crlfPaths.map(path => readFile(join(root, path))));
+
+    const verified = await runRepositoryWorkflow({distribution, operation: 'verify', repositoryRoot: root});
+    assert.deepEqual(verified, {diagnostics: [], satisfied: true});
+    const updated = await runRepositoryWorkflow({distribution, operation: 'update', repositoryRoot: root});
+    assert.equal(updated.applied, true, JSON.stringify(updated.diagnostics));
+    assert.deepEqual(updated.plan?.operations, []);
+    assert.deepEqual(await Promise.all(crlfPaths.map(path => readFile(join(root, path)))), before);
+});
+
 test('verify checks configured Code Map coverage', async t => {
     const distribution = await createDistribution(t);
     const root = await createRepository(t);

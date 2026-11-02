@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import {inspectTextBytes} from '../../lib/common/text-policy.mjs';
+import {inspectTextBytes, normalizeLineEndingBytes} from '../../lib/common/text-policy.mjs';
 
 test('Text Policy Module 检查并规范化 UTF-8 BOM 和换行', () => {
     assert.deepEqual(inspectTextBytes(Buffer.from('line one\nline two\n', 'utf8')), {
@@ -43,4 +43,11 @@ test('Text Policy Module 稳定区分 binary 与 invalid UTF-8', () => {
 
     const nulAfterSample = Buffer.concat([Buffer.alloc(8192, 0x61), Buffer.from([0x00])]);
     assert.equal(inspectTextBytes(nulAfterSample).kind, 'text');
+});
+
+test('line-ending byte normalization does not decode, so invalid UTF-8 stays invalid', () => {
+    assert.deepEqual(normalizeLineEndingBytes(Buffer.from('a\r\nb\rc\n')), Buffer.from('a\nb\nc\n'));
+    const invalid = normalizeLineEndingBytes(Buffer.from([0x61, 0xff, 0x0d, 0x0a]));
+    assert.deepEqual(invalid, Buffer.from([0x61, 0xff, 0x0a]));
+    assert.throws(() => new TextDecoder('utf-8', {fatal: true}).decode(invalid));
 });

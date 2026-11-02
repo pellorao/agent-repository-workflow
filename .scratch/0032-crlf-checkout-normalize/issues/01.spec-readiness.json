@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0032:01",
+  "exception": {
+    "confirmedAt": "2026-11-02T05:28:08Z",
+    "reason": "Single-issue bug fix with no design decision (user confirmed 2026-11-02 in projects AGENTS)."
+  },
+  "subject": {
+    "filePath": ".scratch/0032-crlf-checkout-normalize/issues/01-crlf-checkout-normalize.md",
+    "sha256": "f31bba80e0911ac9a531471164e406573019a5cf890a254fcf87c3574bc6f33c"
+  },
+  "result": "not-applicable"
+}
