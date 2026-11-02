@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0031:01",
+  "exception": {
+    "confirmedAt": "2026-11-02T05:10:54Z",
+    "reason": "Single-issue bug fix with no design decision (user confirmed 2026-11-02 in projects AGENTS)."
+  },
+  "subject": {
+    "filePath": ".scratch/0031-update-dropped-role-seeds/issues/01-update-dropped-role-seeds.md",
+    "sha256": "ef983201f6ae3372100796a234f05c8c1e6fb150c2a157a02610b2e79fb3fded"
+  },
+  "result": "not-applicable"
+}

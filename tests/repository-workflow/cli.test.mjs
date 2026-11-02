@@ -172,6 +172,23 @@ test('workflow update reports removed deprecated config fields and is then a no-
     assert.deepEqual(again.events.map(event => event.message), ['No changes.']);
 });
 
+test('workflow update lists agent role seed files that the new lock no longer records', async t => {
+    const {repository, workflowDependencies} = await createInitializedWorkflowRepository(t, ORIGINAL_MANAGED_AGENTS);
+    const lockPath = join(repository.root, 'arw-lock.json');
+    const lock = JSON.parse(await readFile(lockPath, 'utf8'));
+    lock.repositoryOwnedSeeds.push({identity: 'reviewer', kind: 'agent-role', ownership: 'repository-owned-seed', path: '.codex/agents/reviewer.toml', platform: lock.profile.platforms[0], strategy: 'declared-role-identity'});
+    await writeFile(lockPath, `${JSON.stringify(lock, null, 2)}\n`);
+    await commitAll(repository.root, 'old role seed');
+
+    const updated = await run(['workflow', 'update', '--non-interactive'], repository, {workflowDependencies});
+    assert.deepEqual(updated.events.map(event => event.message), [
+        'Workflow update completed.',
+        '',
+        'These agent role files are no longer used by the workflow and can be deleted:',
+        '- .codex/agents/reviewer.toml',
+    ]);
+});
+
 test('interactive workflow update preserves cancellation after showing the concise plan', async t => {
     const {repository} = await createInitializedWorkflowRepository(t, ORIGINAL_MANAGED_AGENTS);
 
