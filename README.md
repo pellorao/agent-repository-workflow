@@ -30,15 +30,13 @@ First install the ARW program for the current user, then initialize the target G
 
 During initialization, ARW asks whether to configure a Code Map. A Code Map is an Agent-maintained description of source directories. It helps later Agents understand each directory's responsibility through its README files, and lets validation detect missing descriptions for configured source areas. You can leave it unconfigured if the project does not need this navigation and coverage check.
 
-1. Prepare Node.js 24 or later and Git. GitHub has no stable release yet, so clone the public `main` branch and install from source:
+1. Prepare Node.js 24 or later. Download the single-file [`scripts/install-arw.mjs`](scripts/install-arw.mjs) (Bootstrap) from GitHub, inspect it, and install the highest stable version:
 
    ```text
-   git clone -c core.autocrlf=false --branch main https://github.com/pellorao/agent-repository-workflow.git
-   cd agent-repository-workflow
-   node install.mjs
+   node install-arw.mjs
    ```
 
-2. The installer can register `arw` on Windows or Linux. The current terminal may retain its old PATH, so open a new terminal and verify with `arw --version`. Experimental macOS does not register PATH automatically. The current source installation has an identity of `<version>-pre`.
+2. The installer can register `arw` on Windows or Linux. The current terminal may retain its old PATH, so open a new terminal and verify with `arw --version`. Experimental macOS does not register PATH automatically.
 3. Enter the target Git repository where you want to use ARW and run `arw workflow init`. This writes repository workflow content based on your platform, domain-document layout, and optional Code Map configuration. It does not install an Agent CLI.
 4. Give the complete `Agent Post-init Handoff` from the command to the Main Agent in the current session. The Agent reviews rule, documentation, and validation gaps that mechanical checks cannot judge. It creates no issue when there are no gaps; otherwise it creates exactly one summary issue to complete the repository workflow, and completes it before ordinary implementation.
 5. Run `arw workflow verify` and the applicable checks requested by the handoff review. Then use `arw list issues` to see work that can proceed. If the repository has no work records yet, a missing `.scratch` directory and an empty list are both normal; neither indicates failed initialization.
@@ -51,17 +49,9 @@ Installation and initialization solve different problems. Installation places th
 
 ### Install the ARW program
 
-GitHub currently has no stable release tag. The available public installation path is to clone `main` and install from the source checkout. It requires Node.js 24 or later and Git; it does not require GitLab access or an SSH key:
+The main installation route is the single-file [`scripts/install-arw.mjs`](scripts/install-arw.mjs) (Bootstrap) obtained from GitHub, which installs a stable release. It requires Node.js 24 or later; it does not require GitLab access, an SSH key, or Git. Do not pipe a remote response directly to Node.js; inspect the downloaded file first. Bootstrap does not accept a remote override or save credentials. It downloads `arw.tar.gz` (about 0.5 MB, installation payload only) from the GitHub release and unpacks it with the system `tar`.
 
-```text
-git clone -c core.autocrlf=false --branch main https://github.com/pellorao/agent-repository-workflow.git
-cd agent-repository-workflow
-node install.mjs
-```
-
-This uses local-source mode and has an identity of `<version>-pre`. Running `node install.mjs` does not access a remote. Do not use the Bootstrap stable-release installation commands below yet: with no stable tag, Bootstrap fails and does not fall back to `main`. After a formal stable tag exists, you can use the single-file [`scripts/install-arw.mjs`](scripts/install-arw.mjs) obtained from GitHub. Do not pipe a remote response directly to Node.js; inspect the downloaded file first. Bootstrap does not accept a remote override or save credentials.
-
-When installing from source, ARW checks source bytes exactly. Git must not convert repository text line endings to Windows form while obtaining the source, or installation can fail because the source bytes do not match. The Bootstrap downloads `arw.tar.gz` (about 0.5 MB, installation payload only) from the GitHub release and unpacks it with the system `tar`; it does not need Git.
+Source maintainers and developers can instead clone `main` and install from the source checkout (see below). That route uses local-source mode and has an identity of `<version>-pre`; running `node install.mjs` does not access a remote. When installing from source, ARW checks source bytes exactly. Git must not convert repository text line endings to Windows form while obtaining the source, or installation can fail because the source bytes do not match.
 
 Check the runtime first:
 
@@ -71,25 +61,25 @@ node --version
 
 The version must be 24 or later. Before obtaining source or writing installation content, the installer rejects a runtime below that minimum.
 
-After a formal stable tag exists, Bootstrap's interactive installation selects the highest stable SemVer release by default. These Bootstrap commands are not available while the repository has no stable tag.
+Bootstrap's interactive installation selects the highest stable SemVer release by default.
 
 ```text
 node install-arw.mjs
 ```
 
-After a stable tag exists, to install the highest stable version without interaction and register PATH, use:
+To install the highest stable version without interaction and register PATH, use:
 
 ```text
 node install-arw.mjs --non-interactive --register-path true
 ```
 
-After a stable tag exists, choose an exact stable version present on the remote only when you explicitly want a historical version for a first installation. ARW does not downgrade: if the installed version is higher than the target, installation fails and writes nothing, so uninstall first if you need an older version.
+Choose an exact stable version present on the remote only when you explicitly want a historical version for a first installation. ARW does not downgrade: if the installed version is higher than the target, installation fails and writes nothing, so uninstall first if you need an older version.
 
 ```text
 node install-arw.mjs --version MAJOR.MINOR.PATCH
 ```
 
-Source maintainers and current installers use the following command to clone the complete public repository. The clone's own `-c` option disables line-ending conversion before the first checkout and stores the setting only in this Repository:
+Source maintainers and developers use the following command to clone the complete public repository. The clone's own `-c` option disables line-ending conversion before the first checkout and stores the setting only in this Repository:
 
 ```text
 git clone -c core.autocrlf=false --branch main https://github.com/pellorao/agent-repository-workflow.git

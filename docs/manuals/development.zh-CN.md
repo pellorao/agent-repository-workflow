@@ -112,7 +112,7 @@ node scripts/generate-install-arw.mjs --check
 
 从克隆的源码仓库运行安装入口使用 `node install.mjs`. ARW 安装目录中的卸载入口使用 `node uninstall.mjs`.
 
-公开 GitHub 仓库为 [pellorao/agent-repository-workflow](https://github.com/pellorao/agent-repository-workflow). 初始发布时没有稳定 tag. 当前源码安装路线是克隆 `main` 分支, 然后在检出根目录运行 `node install.mjs`; 这条路线要求外部 Node.js 和 Git, 使用本地来源模式和 `<version>-pre` 身份. 单独下载的 Bootstrap 从稳定 release 下载 `arw.tar.gz`, 没有稳定 release 时会失败, 不会回退到 `main`. 在出现稳定版本前, 不要把 Bootstrap 安装描述为当前可用路线.
+公开 GitHub 仓库为 [pellorao/agent-repository-workflow](https://github.com/pellorao/agent-repository-workflow). 用户通过单独下载的 Bootstrap 安装稳定版本, 它从 GitHub release 下载 `arw.tar.gz`, 不会回退到 `main`. 维护者和开发者也可以克隆 `main` 分支, 然后在检出根目录运行 `node install.mjs`; 这条路线要求外部 Node.js 和 Git, 使用本地来源模式和 `<version>-pre` 身份.
 
 ### Workflow Distribution 和 Platform Projection
 

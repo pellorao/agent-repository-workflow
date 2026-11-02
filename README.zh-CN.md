@@ -30,13 +30,11 @@ ARW 目前尚未完全解决的问题:
 
 初始化时会询问是否配置 Code Map. Code Map 是由 Agent 维护的源码目录说明, 让后续 Agent 能从目录 README 理解各部分责任, 也让验证能够发现配置的源码范围是否缺少说明. 如果项目不需要这类导航和覆盖检查, 可以不配置.
 
-1. 准备 Node.js 24 或更高版本和 Git. 当前 GitHub 仓库尚无稳定版本, 所以从公开 GitHub 克隆 `main` 并从源码安装:
+1. 准备 Node.js 24 或更高版本. 从 GitHub 下载单文件 [`scripts/install-arw.mjs`](scripts/install-arw.mjs) (Bootstrap), 检查后安装最高稳定版本:
    ```text
-   git clone -c core.autocrlf=false --branch main https://github.com/pellorao/agent-repository-workflow.git
-   cd agent-repository-workflow
-   node install.mjs
+   node install-arw.mjs
    ```
-2. 安装程序可以为 Windows 或 Linux 注册 `arw`, 但当前终端仍可能保留旧 PATH, 所以安装后使用新终端验证 `arw --version`. 实验性 macOS 不自动注册 PATH. 当前源码安装身份为 `<version>-pre`.
+2. 安装程序可以为 Windows 或 Linux 注册 `arw`, 但当前终端仍可能保留旧 PATH, 所以安装后使用新终端验证 `arw --version`. 实验性 macOS 不自动注册 PATH.
 3. 进入准备使用 ARW 的目标 Git 仓库, 运行 `arw workflow init`. 这一步根据选择的平台, 领域文档布局和可选 Code Map 配置写入仓库工作流内容, 不会安装 Agent CLI.
 4. 把命令输出的完整 `Agent Post-init Handoff` 交给当前会话的 Main Agent. 这个 Agent 会审核机械检查无法判断的规则, 文档和验证缺口. 没有缺口时不创建 issue; 有缺口时恰好建立一张汇总的仓库工作流补全 issue, 并在普通实施前完成它.
 5. 运行 `arw workflow verify`, 再运行交接审核要求的适用检查. 然后用 `arw list issues` 查看可以推进的工作. 如果仓库还没有工作记录, `.scratch` 不存在和列表为空都是正常状态, 不表示初始化失败.
@@ -49,17 +47,9 @@ ARW 目前尚未完全解决的问题:
 
 ### 安装 ARW 程序
 
-当前没有稳定版本 tag, 因此公开安装主路线是克隆 `main` 后从源码安装. 这条路线需要 Node.js 24 或更高版本和 Git, 不需要 GitLab 访问权限或 SSH 密钥:
+安装主路线是从 GitHub 获取的单文件 [`scripts/install-arw.mjs`](scripts/install-arw.mjs) (Bootstrap), 它安装稳定版本. 这条路线需要 Node.js 24 或更高版本, 不需要 GitLab 访问权限, SSH 密钥或 Git. 不要把远程响应直接通过管道交给 Node.js; 先检查下载内容. 引导脚本不接受远端覆盖值, 也不保存凭据. 它从 GitHub release 下载只含安装载荷的压缩包 `arw.tar.gz` (约 0.5 MB), 用系统自带的 `tar` 解压.
 
-```text
-git clone -c core.autocrlf=false --branch main https://github.com/pellorao/agent-repository-workflow.git
-cd agent-repository-workflow
-node install.mjs
-```
-
-该安装使用本地来源模式, 身份为 `<version>-pre`. 执行 `node install.mjs` 不会访问远端. 目前不要使用 Bootstrap 稳定版安装命令: 没有稳定 tag 时 Bootstrap 会失败, 也不会自动回退到 `main`. 未来创建正式稳定 tag 后, 才可使用从 GitHub 获取的单文件 [`scripts/install-arw.mjs`](scripts/install-arw.mjs). 不要把远程响应直接通过管道交给 Node.js; 先检查下载内容. 引导脚本不接受远端覆盖值, 也不保存凭据.
-
-从源码安装时, ARW 会校验来源数据的准确字节. Git 不得在取得数据时把仓库文本的换行符转换为 Windows 形式, 否则安装会因为来源字节不一致而失败. 引导脚本从 GitHub release 下载只含安装载荷的压缩包 `arw.tar.gz` (约 0.5 MB), 用系统自带的 `tar` 解压, 不需要 Git.
+源码维护者和开发者也可以克隆 `main` 后从源码安装 (见下文). 该路线使用本地来源模式, 身份为 `<version>-pre`, 执行 `node install.mjs` 不会访问远端. 从源码安装时, ARW 会校验来源数据的准确字节. Git 不得在取得数据时把仓库文本的换行符转换为 Windows 形式, 否则安装会因为来源字节不一致而失败.
 
 先确认运行时:
 
@@ -69,25 +59,25 @@ node --version
 
 版本必须是 24 或更高. 安装程序会在取得来源或写入安装内容前拒绝低于最低版本的运行时.
 
-有正式稳定 tag 后, Bootstrap 交互式安装默认选择最高稳定 SemVer 发布. 当前仓库尚无这种 tag, 所以下列 Bootstrap 命令现在不可用:
+Bootstrap 交互式安装默认选择最高稳定 SemVer 发布:
 
 ```text
 node install-arw.mjs
 ```
 
-有稳定 tag 后, 如果需要无人值守地安装最高稳定版本并注册 PATH, 使用:
+如果需要无人值守地安装最高稳定版本并注册 PATH, 使用:
 
 ```text
 node install-arw.mjs --non-interactive --register-path true
 ```
 
-有稳定 tag 后, 只有明确要首次安装历史版本时, 才选择远端存在的准确稳定版本. ARW 不提供降级: 已安装版本高于目标版本时安装报错且不写入任何文件, 需要旧版本请先卸载:
+只有明确要首次安装历史版本时, 才选择远端存在的准确稳定版本. ARW 不提供降级: 已安装版本高于目标版本时安装报错且不写入任何文件, 需要旧版本请先卸载:
 
 ```text
 node install-arw.mjs --version MAJOR.MINOR.PATCH
 ```
 
-源码维护者及当前安装者使用以下命令克隆完整公开仓库. 克隆操作自身的 `-c` 选项会在首次签出前关闭换行转换, 并只把设置保存在这个 Repository 中:
+源码维护者和开发者使用以下命令克隆完整公开仓库. 克隆操作自身的 `-c` 选项会在首次签出前关闭换行转换, 并只把设置保存在这个 Repository 中:
 
 ```text
 git clone -c core.autocrlf=false --branch main https://github.com/pellorao/agent-repository-workflow.git

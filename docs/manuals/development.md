@@ -112,7 +112,7 @@ node scripts/generate-install-arw.mjs --check
 
 Run the installation entry point from a cloned Source Checkout with `node install.mjs`. Run `node uninstall.mjs` from the ARW installation directory to uninstall.
 
-The public GitHub repository is [pellorao/agent-repository-workflow](https://github.com/pellorao/agent-repository-workflow). The current source-installation route is to clone its `main` branch and run `node install.mjs` from the checkout root. This route requires external Node.js and Git and uses local-source mode with a `<version>-pre` identity. There is no stable tag at the initial publication state. The separately downloaded Bootstrap downloads `arw.tar.gz` from a stable release and fails when none is available; it does not fall back to `main`. Do not describe a Bootstrap installation as currently available until a stable release exists.
+The public GitHub repository is [pellorao/agent-repository-workflow](https://github.com/pellorao/agent-repository-workflow). Users install a stable release with the separately downloaded Bootstrap, which downloads `arw.tar.gz` from the GitHub release and does not fall back to `main`. Maintainers and developers can instead clone the `main` branch and run `node install.mjs` from the checkout root. That route requires external Node.js and Git and uses local-source mode with a `<version>-pre` identity.
 
 ### Workflow Distribution and Platform Projection
 
