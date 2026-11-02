@@ -92,10 +92,9 @@ const download = async url => {
 
 /** @param {Buffer} bytes @param {string} directory */
 const extractArchive = async (bytes, directory) => {
-    const archive = join(directory, ASSET_NAME);
-    await writeFile(archive, bytes);
+    await writeFile(join(directory, ASSET_NAME), bytes);
     try {
-        await execFile('tar', ['-xzf', archive, '-C', directory], {windowsHide: true});
+        await execFile('tar', ['-xzf', ASSET_NAME], {cwd: directory, windowsHide: true});
     } catch (error) {
         const {message, stderr} = /** @type {{message: string, stderr?: string}} */ (error);
         throw new Error(`Archive extraction failed: ${(String(stderr ?? '').trim() || message).split(/\r?\n/u)[0]}`);

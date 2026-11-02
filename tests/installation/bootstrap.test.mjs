@@ -6,7 +6,7 @@ import {fileURLToPath} from 'node:url';
 import test, {after} from 'node:test';
 
 import {moduleSpecifiers, resolveSourceImport} from '../helpers/module-imports.mjs';
-import {runExitedProcess, runSuccessfulProcess} from '../helpers/process.mjs';
+import {installFakeCommand, runExitedProcess, runSuccessfulProcess} from '../helpers/process.mjs';
 import {createTemporaryDirectory} from '../helpers/cleanup.mjs';
 import {generateBootstrapArtifact} from '../../lib/installation/bootstrap-artifact.mjs';
 import {BootstrapUsageError, runBootstrap} from '../../lib/installation/bootstrap.mjs';
@@ -185,6 +185,23 @@ test('bootstrap extracts the real release archive without Git and the Installer 
 
     assert.equal(result, 0);
     await assert.rejects(access(directories[0]));
+});
+
+test('bootstrap runs tar inside the download directory with a relative archive name', async t => {
+    const root = await createTemporaryDirectory(t, 'arw-bootstrap-tar-');
+    const directory = join(root, 'download');
+    await mkdir(directory);
+    await installFakeCommand(t, root, 'tar', `printf '%s\\n' "$PWD" "$*" > '${join(root, 'record')}'\n`);
+
+    await runBootstrap(['--version', '0.2.0'], {
+        createTemporaryDirectory: async () => directory,
+        download: async () => Buffer.from('archive'),
+        launchInstaller: async () => 0,
+        loadReleaseConfiguration: async () => RELEASE_CONFIGURATION,
+        runtimeVersion: '24.0.0',
+    });
+
+    assert.equal(await readFile(join(root, 'record'), 'utf8'), `${directory}\n-xzf arw.tar.gz\n`);
 });
 
 test('Bootstrap artifact projects the canonical remote from Release configuration', async t => {

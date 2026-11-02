@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0029:01",
+  "exception": {
+    "confirmedAt": "2026-11-02T04:58:02Z",
+    "reason": "Single-issue bug fix with no design decision (user confirmed 2026-11-02 in projects AGENTS)."
+  },
+  "subject": {
+    "filePath": ".scratch/0029-bootstrap-tar-relative/issues/01-bootstrap-tar-relative-archive.md",
+    "sha256": "fd974f583dec05fa2f449e1d5b8f6f7e490230e94f16eab6285ee872d141984d"
+  },
+  "result": "not-applicable"
+}

@@ -1,5 +1,6 @@
 import {spawn} from 'node:child_process';
-import {basename} from 'node:path';
+import {mkdir, writeFile} from 'node:fs/promises';
+import {basename, join} from 'node:path';
 
 const nodeProcessStdioBootstrap = new URL('./node-process-stdio.mjs', import.meta.url).href;
 const nodeExecutable = (/** @type {string} */ file) => file === process.execPath
@@ -123,4 +124,19 @@ export const runSuccessfulProcess = async (file, args, options = {}) => {
         throw new Error(`Test process ${file} failed with exit code ${result.exitCode}: ${result.stderr || result.stdout}`);
     }
     return result;
+};
+
+/**
+ * Put an executable shell script named `name` first on PATH for the rest of the test.
+ * @param {import('node:test').TestContext} t @param {string} directory @param {string} name @param {string} script
+ */
+export const installFakeCommand = async (t, directory, name, script) => {
+    const bin = join(directory, 'bin');
+    await mkdir(bin, {recursive: true});
+    await writeFile(join(bin, name), `#!/bin/sh\n${script}`, {mode: 0o755});
+    const previousPath = process.env.PATH;
+    process.env.PATH = `${bin}:${previousPath}`;
+    t.after(() => {
+        process.env.PATH = previousPath;
+    });
 };
