@@ -179,3 +179,22 @@ test('生产 Repository State Inspector 收集真实 Git 与 .arwignore 事实',
     assert.equal(state.files['ignored.txt'].observed.kind, 'file');
     assert.deepEqual(state.files['ignored.txt'].bytes, Buffer.from('ignored\n', 'utf8'));
 });
+
+test('Repository State Inspector rejects unavailable ordinary blobs but retains gitlinks', async () => {
+    const id = 'a'.repeat(40);
+    for (const mode of ['100644', '120000', '160000']) {
+        for (const source of ['index', 'HEAD']) {
+            const entry = `${mode} ${id} 0\tentry\0`;
+            const git = {run: async (/** @type {GitInput} */ {argv}) => {
+                if (argv[0] === 'ls-files') return gitResult({stdout: source === 'index' ? entry : ''});
+                if (argv[0] === 'rev-parse') return gitResult({stdout: 'head\n'});
+                if (argv[0] === 'ls-tree') return gitResult({stdout: source === 'HEAD' ? `${mode} ${mode === '160000' ? 'commit' : 'blob'} ${id}\tentry\0` : ''});
+                return gitResult({stdout: `${id} missing\n`});
+            }};
+            if (mode === '160000') {
+                const candidate = await readStagedCandidate({git});
+                assert.equal((source === 'index' ? candidate.files : candidate.headFiles).get('entry')?.bytes, null);
+            } else await assert.rejects(readStagedCandidate({git}), /Git candidate blob is unavailable: entry/u);
+        }
+    }
+});

@@ -1,11 +1,13 @@
 import assert from 'node:assert/strict';
 import * as nodeFileSystem from 'node:fs/promises';
-import {access, readFile, writeFile} from 'node:fs/promises';
+import {access, mkdir, readFile, writeFile} from 'node:fs/promises';
 import {join} from 'node:path';
 import test from 'node:test';
 
 import {createRepository, run, writeArtifact, writeIssue} from '../helpers/arw-cli.mjs';
 import {commitAll, runGit} from '../helpers/git.mjs';
+import {runArtifactMigration} from '../../lib/artifact-migration/artifact-migration.mjs';
+import {createTemporaryDirectory} from '../helpers/cleanup.mjs';
 import {createScopedFilesystem} from '../../lib/common/filesystem.mjs';
 
 test('update migrates the complete scratch tree and is idempotent', async t => {
@@ -440,4 +442,19 @@ test('artifact migration rejects shallow history before every write', async t =>
     assert.equal(result.result, 1);
     assert.match(result.events.map(event => event.message).join('\n'), /Shallow Repository history cannot assign persistent effort numbers/);
     await access(join(repository.root, '.scratch', 'work'));
+});
+
+test('migration recognizes Module Design with LF, CRLF and CR in legacy specs', async t => {
+    const root = await createTemporaryDirectory(t, 'arw-migration-lines-');
+    await mkdir(join(root, '.scratch/0001-lines/issues'), {recursive: true});
+    await writeFile(join(root, '.scratch/0001-lines/issues/01-task.md'), '# Task\n\nStatus: ready-for-agent\n\n## What to build\n\nKeep the module.\n\n## Acceptance criteria\n\n- [ ] Keep it.\n\n## Blocked by\n\n- None - can start immediately\n');
+    for (const newline of ['\n', '\r\n', '\r']) {
+        await writeFile(join(root, '.scratch/0001-lines/PRD.md'), ['# Spec', '', '## Module Design', '', 'Keep the module.'].join(newline));
+        /** @type {string[]} */
+        const errors = [];
+        const exitCode = await runArtifactMigration({root, scratchDirectory: join(root, '.scratch')}, () => assert.fail('Blocked migration must not write.'), message => errors.push(message));
+        assert.equal(exitCode, 1);
+        assert.ok(errors.some(message => message.includes('Spec Readiness')), errors.join('\n'));
+        assert.ok(errors.every(message => !message.includes('manual ## Module Design')));
+    }
 });

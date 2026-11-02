@@ -5,7 +5,7 @@ import test from 'node:test';
 
 import {sha256} from '../../lib/common/json.mjs';
 import {pool} from '../../lib/reviewer-capability/operations.mjs';
-import {candidateFingerprint, itemFingerprint} from '../../lib/reviewer-capability/pool.mjs';
+import {candidateFingerprint, itemFingerprint, PoolError, splitPool} from '../../lib/reviewer-capability/pool.mjs';
 import {createTemporaryDirectory} from '../helpers/cleanup.mjs';
 import {control, item} from '../helpers/reviewer-capability-items.mjs';
 
@@ -69,4 +69,14 @@ test('pool build splits by expectation group into pools and skips decided candid
     assert.deepEqual([result.pools.map((/** @type {any} */ entry) => entry.real), result.alreadyDecidedSkipped], [[2, 1], 1]);
     assert.equal((await read(pools, 'p-2', 'adj', 'pool-p-2.json')).filter((/** @type {any} */ entry) => entry.expectation === 'g2').length, 1);
     assert.equal((await build(t, {candidates, decisions: [join(root, 'nowhere.json')]})).result.status, 'blocked');
+});
+
+test('pool split rejects tampered bytes before attempting to parse them', async t => {
+    const {root, scenario, result} = await build(t, {});
+    assert.equal(result.status, 'succeeded');
+    const keyPath = join(root, 'p', 'key.json');
+    const key = await read(root, 'p', 'key.json');
+    await writeFile(keyPath, JSON.stringify({...key, briefSha256: sha256(await readFile(join(scenario, 'brief.md')))}));
+    await writeFile(join(root, 'p', 'adj', 'pool-p.json'), '{invalid JSON');
+    await assert.rejects(splitPool({decisions: {}, name: 'p', root}), error => error instanceof PoolError && error.message === 'The pool file differs from the one the key was written for.');
 });

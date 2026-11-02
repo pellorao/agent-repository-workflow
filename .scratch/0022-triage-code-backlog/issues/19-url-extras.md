@@ -1,20 +1,19 @@
 # URL 附加部分校验共享
 
-Status: needs-triage
+Status: wontfix
 
 ## What to build
 
-从 issue:0022:06 拆出 `.tmp/triage.md` 的 H32: 筛查 lib/release/release-validation-config.mjs 和 lib/arw-common/repository-configuration.mjs 中拒绝 userinfo, query 和 fragment 的重复实现. 新增共享导出涉及 Interface 和依赖边界, 按既有用户授权独立设计并运行 Spec Readiness. 当前仅记录规划, 不授权生产修改.
-
-体积预算: 非测试源码净增不超过 10 行. 保留协议, .git 以及诊断限制. 命令输出, 公开行为, 错误结果和持久状态保持不变; 需要类型收窄级联, 新诊断码或规范变更的发现跳过并记录. 不修改 lib/background-agent/**, 不安装, 不 push.
-
-预期验证: 实施前选择实际配置与发布测试, 完成完整 Source Checkout 验证, 包括 text check, 当前 effort 的 terms check 和 git diff --check. 相关边界: HTTP/HTTPS, 无效 URL, userinfo, query, fragment 和 .git 后缀.
+原发现 H32 已全部转入 issue:0022:13, 由该 issue 统一筛查, 设计, 实施和验证. 本 issue 保留编号身份, 不再独立实施.
 
 ## Acceptance criteria
 
-- [ ] 设计和 Spec Readiness 完成, 已确认范围交付, 现有配置诊断和 URL 接受范围不变.
-- [ ] 必要定向及完整仓库验证通过.
+- [x] 原发现已归入 issue:0022:13, 合并去向可由本记录核对.
 
 ## Blocked by
 
 无.
+
+## Comments
+
+- 2026-11-02: 按用户确认的约 1000 变更行实验合并到 issue:0022:13. wontfix 只表示取消单独实施, 不表示放弃原发现.

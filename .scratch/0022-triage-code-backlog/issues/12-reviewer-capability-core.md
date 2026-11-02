@@ -38,3 +38,5 @@ Status: completed
 
 - H65 跳过: 保留 format-penalty.mjs 的现有 sha256 导出. 下一轮从 issue:0022:13 继续, 本轮不实施下一 issue.
 - 提交审核第 1 轮: requirements-reviewer 报告 No problems.; code-standards-reviewer 误判规则副本缺失而返回 incomplete. 已核实副本路径和 SHA256SUMS 正确. 第 2 轮保持相同暂存树并沿原线程完成审核, 返回单次调用 keyOf 应内联的问题, 已修正. 第 3 轮两个 Reviewer 均 ready 且报告 No problems.; 抽查模板候选顺序和分组键计算, 未发现回归或漏检. 审核记录位于 `.tmp/codex/01a19991-f0ab-7991-9bf3-af6148b3d6f5/_commit-audit/3/`.
+
+- 2026-11-02: 本 issue 的实现与提交早于本轮约 1000 变更行的重分组, 保留原提交. 后续记录以本轮重分组为准.

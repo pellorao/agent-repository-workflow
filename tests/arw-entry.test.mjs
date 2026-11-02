@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
-import {cp, copyFile} from 'node:fs/promises';
+import {cp, copyFile, symlink} from 'node:fs/promises';
 import {EventEmitter} from 'node:events';
 import {Readable, Writable} from 'node:stream';
 import {dirname, join} from 'node:path';
-import {fileURLToPath} from 'node:url';
+import {fileURLToPath, pathToFileURL} from 'node:url';
 import test from 'node:test';
 
 import {createRepository, run, writeConfig, writeIssue} from './helpers/arw-cli.mjs';
@@ -210,4 +210,28 @@ test('background-agent routes its exact machine form through persistent streams 
     assert.deepEqual(received, [{operation: 'list_agents', input: {runId: 'run'}}]);
     assert.deepEqual(JSON.parse(output), {id: 'one', ok: true, result: {state: 'running'}});
     assert.equal(closes, 1);
+});
+
+test('root arw entry recognizes invocation through a directory symlink', async t => {
+    const root = await createTemporaryDirectory(t, 'arw-entry-link-');
+    const linked = join(root, 'source');
+    await symlink(SOURCE_DIRECTORY, linked, 'junction');
+    const argv = process.argv;
+    const exitCode = process.exitCode;
+    let output = '';
+    const write = t.mock.method(process.stdout, 'write', (/** @type {string | Uint8Array} */ chunk) => { output += String(chunk); return true; });
+    try {
+        process.argv = [process.execPath, join(root, 'missing.mjs'), '--version'];
+        await import(`${pathToFileURL(join(linked, 'arw.mjs')).href}?unrelated-import`);
+        assert.equal(output, '');
+        assert.equal(process.exitCode, exitCode);
+        process.argv = [process.execPath, join(linked, 'arw.mjs'), '--version'];
+        await import(`${pathToFileURL(join(linked, 'arw.mjs')).href}?linked-entry`);
+        assert.equal(process.exitCode, 0);
+        assert.match(output, /\d+\.\d+\.\d+/u);
+    } finally {
+        process.argv = argv;
+        process.exitCode = exitCode;
+        write.mock.restore();
+    }
 });

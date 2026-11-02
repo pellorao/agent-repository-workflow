@@ -1,0 +1,241 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0022:13",
+  "request": {
+    "digest": "2a3da80c40ea0502606f4f78dedec9870b125fc9b34e54946a94c31e0d612102",
+    "filePath": ".tmp/codex/01a1999f-7526-71c2-b307-07d942804a22/0022_13/spec-readiness/requests/request-41583765-7fd0-4588-ba5a-78d812390749.json",
+    "id": "41583765-7fd0-4588-ba5a-78d812390749"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "ba4f23b253fe4bd4d17bde006dd684e3b4ae723ec9443a706c6f32eb66815b7e"
+  },
+  "inputs": [
+    {
+      "filePath": "CONTEXT.md",
+      "role": "domain-context",
+      "sha256": "6f89aa3efc9e393170b2d9380bacf5b1b11aea0d9c614e9367384d99767bb1fb"
+    },
+    {
+      "filePath": "arw.mjs",
+      "role": "architecture-evidence",
+      "sha256": "cc64aeed5d2ae679380bcf7b47b6fe9768d36e063ab9492a9fdf7140baa554df"
+    },
+    {
+      "filePath": "docs/adr/0003-use-explicit-platform-adapters.md",
+      "role": "adr",
+      "sha256": "51dc59bcd611f6bd90e7c3da2bca0df4616cfaf6575fea4c9ae22a4e713af992"
+    },
+    {
+      "filePath": "docs/adr/0018-use-bounded-mechanical-trust-for-initial-arw-security.md",
+      "role": "adr",
+      "sha256": "4dec1ced821eea7532d10974ad1cd4a8de5b05f12ea207ec3514805fafa4d5cb"
+    },
+    {
+      "filePath": "docs/adr/0020-use-external-nodejs-source-delivery.md",
+      "role": "adr",
+      "sha256": "4be67f9afdcf29191f05cc34279d1435c7046acaf8b9906c823468bc1397d537"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow-application-jira/spec.md",
+      "role": "governing-spec",
+      "sha256": "3103fef9e2096ba69840cd0ba01b01d691c3d35e4af06c69b6de2d6e207b26be"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow-development/spec.md",
+      "role": "governing-spec",
+      "sha256": "bf869a58722d949495d110f9daeb0e2af758b1fd87b7ccff3b88278dec3b7a38"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow-installation/spec.md",
+      "role": "governing-spec",
+      "sha256": "370d2ec49f3669d22992a617e5352485d7893ebd339b8fa5c688cd2a6b20567d"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow-release/spec.md",
+      "role": "governing-spec",
+      "sha256": "38f478338970caf34d29478bac94339594a6c860f8a74c3b4e5209b7616c5782"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow/spec.md",
+      "role": "governing-spec",
+      "sha256": "07acb05d63d473f8b68ce3ce6f0bf2f99f70c941854ea8cd7cc98cb24e9457fc"
+    },
+    {
+      "filePath": "lib/application-jira/application-completion.mjs",
+      "role": "architecture-evidence",
+      "sha256": "7e915588d7261df2a74f59edf481009e6f9f1cd8e239a0427f650153005d8f34"
+    },
+    {
+      "filePath": "lib/application-jira/git-upstream-proof.mjs",
+      "role": "architecture-evidence",
+      "sha256": "f00e34c4676a9dfb5546f818c038399683de350d4027d933cd94dbe70f45410c"
+    },
+    {
+      "filePath": "lib/application-jira/jira-client.mjs",
+      "role": "architecture-evidence",
+      "sha256": "760fb971843202720cabfe545740800467af08f30baf2bd53bb3515f46f9a1d0"
+    },
+    {
+      "filePath": "lib/application-jira/jira-convergence-adapter.mjs",
+      "role": "architecture-evidence",
+      "sha256": "3e886d37ea0c940baf002b15212668d3f1b5afeb6625b1f15572dfa38800905f"
+    },
+    {
+      "filePath": "lib/artifact-migration/artifact-migration.mjs",
+      "role": "architecture-evidence",
+      "sha256": "a6ed65102a1a4f5aca7c33e4b18b0483d1237a8c5a84ab54b400c40f5db3175f"
+    },
+    {
+      "filePath": "lib/arw-common/artifacts.mjs",
+      "role": "architecture-evidence",
+      "sha256": "149509add4105abb7dd700770d694b763dd76be405477b92eeeceffb7f91d260"
+    },
+    {
+      "filePath": "lib/arw-common/codex-configuration.mjs",
+      "role": "architecture-evidence",
+      "sha256": "95a8f829b3490b03e21c214f293392f15de6537ee142e7c98fa151be1d28d7c9"
+    },
+    {
+      "filePath": "lib/arw-common/document-language-inspection.mjs",
+      "role": "architecture-evidence",
+      "sha256": "ae653689687ddbf66ca512e341a3cb1b96a046c0482ca10aec6d8c8ae6a6f18e"
+    },
+    {
+      "filePath": "lib/arw-common/effort-start.mjs",
+      "role": "architecture-evidence",
+      "sha256": "7a315c19e9a5c0c957bc8ee385a04c3e06e6ea548da864d691df3b2f4edfcceb"
+    },
+    {
+      "filePath": "lib/arw-common/issue-documents.mjs",
+      "role": "architecture-evidence",
+      "sha256": "3033432229853dab9d9ca2382543130820092144f2615ae4ea7999b3474e2a98"
+    },
+    {
+      "filePath": "lib/arw-common/repository-configuration.mjs",
+      "role": "architecture-evidence",
+      "sha256": "d53281963bebaeea67abb6a12fd34a1f7162d880e5a5146d38f3e6f4008aae98"
+    },
+    {
+      "filePath": "lib/arw-common/repository-state-inspector.mjs",
+      "role": "architecture-evidence",
+      "sha256": "444dde3ad30300385b2b6718373705950e00feb6e754293445b18b5fcdb5ec11"
+    },
+    {
+      "filePath": "lib/commit-audit/commit-audit.mjs",
+      "role": "architecture-evidence",
+      "sha256": "a61e91d67aacc33ecb075174def41a278c3c9cfdc61c971008f488b5ade5d68c"
+    },
+    {
+      "filePath": "lib/common/document-language.mjs",
+      "role": "architecture-evidence",
+      "sha256": "efc4295abc4feb53281ec01e73b983ab710ae07bbea323b82722a024b692fa4e"
+    },
+    {
+      "filePath": "lib/common/file-transaction.mjs",
+      "role": "architecture-evidence",
+      "sha256": "f90e215a0973d227e68a503a9b669bfe9c1bd54fb743ecca09e2d00bf9b911cd"
+    },
+    {
+      "filePath": "lib/common/filesystem.mjs",
+      "role": "architecture-evidence",
+      "sha256": "b93eb2cbb7c1469f87a6899cb934654264bc47afe0eca189e7c586aa17ba4150"
+    },
+    {
+      "filePath": "lib/common/git-process.mjs",
+      "role": "architecture-evidence",
+      "sha256": "5207873b1dd0b28ee7e2c3a50760ec88acbba010e995a2890a16098e9ed0251a"
+    },
+    {
+      "filePath": "lib/common/repository.mjs",
+      "role": "architecture-evidence",
+      "sha256": "a3807338d8d3a220f3dfb501f8845dc66a26c75c3ed0d2eddb3404935093d420"
+    },
+    {
+      "filePath": "lib/common/text-policy.mjs",
+      "role": "architecture-evidence",
+      "sha256": "7fee8a93fd637595639f6491919a9195ebfe5f064c554fb9d29b539806867957"
+    },
+    {
+      "filePath": "lib/installation/bootstrap-artifact.mjs",
+      "role": "architecture-evidence",
+      "sha256": "1b3d8d22672c860c084fae6dacdd4cdbdf544ab23ceda817e1bd3876cd365c83"
+    },
+    {
+      "filePath": "lib/installation/installation-payload.mjs",
+      "role": "architecture-evidence",
+      "sha256": "c16cfdee5f9635e49508988e3194f6e32f30c5e37f545028e9628ad80299d03c"
+    },
+    {
+      "filePath": "lib/installation/installation.mjs",
+      "role": "architecture-evidence",
+      "sha256": "2e1563691d7afb4994bd37c91a65c4a3fc14cdac58d228b5574f6044a4fc2b7e"
+    },
+    {
+      "filePath": "lib/installation/release.mjs",
+      "role": "architecture-evidence",
+      "sha256": "8c79e59971adaaa611ec6517e63113ff010ea2146a291b1dcb678e22261f3096"
+    },
+    {
+      "filePath": "lib/release/release-validation-config.mjs",
+      "role": "architecture-evidence",
+      "sha256": "e354941c1de994a2128493b2561766612894f385112674549f21f0e1aa9c99f4"
+    },
+    {
+      "filePath": "lib/repository-workflow/workflow.mjs",
+      "role": "architecture-evidence",
+      "sha256": "0dd0939f3482a895f32686dc641e68662cb73825d6d3aaac51f205a95566a578"
+    },
+    {
+      "filePath": "lib/reviewer-capability-setup.mjs",
+      "role": "architecture-evidence",
+      "sha256": "b2827c591930f6017a8f30cd4d677e655a3d2027f7bb8d02617cd5990bce0dcb"
+    },
+    {
+      "filePath": "lib/reviewer-capability-view.mjs",
+      "role": "architecture-evidence",
+      "sha256": "547a37083c97bb1327398b93a0e4c3578db22a9ba4321a5a6acf75983d14f2a5"
+    },
+    {
+      "filePath": "lib/reviewer-capability/operations.mjs",
+      "role": "architecture-evidence",
+      "sha256": "2bb5c733872c2ad6d871367b488ded7d5d5c893da83d7cf86e3a21c2838ac506"
+    },
+    {
+      "filePath": "lib/reviewer-capability/pool.mjs",
+      "role": "architecture-evidence",
+      "sha256": "bacb6be787ac7c6b05c480d7e85f3d949f08ee7fac83bf59f897f7078bf06c51"
+    },
+    {
+      "filePath": "lib/reviewer-runtime/reviewer-measurement.mjs",
+      "role": "architecture-evidence",
+      "sha256": "568024ed74db4e94c8a8ed1a46b38b36bf3142eba0f1d139b5968080c7a6c05a"
+    },
+    {
+      "filePath": "lib/reviewer-runtime/reviewer-runtime.mjs",
+      "role": "architecture-evidence",
+      "sha256": "505152653a0aaad993367c821fb4f88f66b4d8d4516d0c09321d5c1b06d50d7c"
+    },
+    {
+      "filePath": "lib/reviewer-runtime/reviewer-session-record.mjs",
+      "role": "architecture-evidence",
+      "sha256": "7045aed8e63c413c5015a48a5670455549ebc60f86968d1ea4e70bf0f1a45ef1"
+    },
+    {
+      "filePath": "lib/workflow-distribution/workflow-distribution-sync.mjs",
+      "role": "architecture-evidence",
+      "sha256": "4f97add66fbf9d90818604342bf3b572febe2d930671ad8747fe6f18a298b575"
+    },
+    {
+      "filePath": "uninstall.mjs",
+      "role": "architecture-evidence",
+      "sha256": "fee6f5c43865ac77069c73bae609aea21a7635d86bea56a124505bba5be13261"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0022-triage-code-backlog/issues/13-reviewer-capability-io.md",
+    "sha256": "857432f7b6c1a8c85cfcc6781bc2d1a68f66eb47f3ee2fc594944cb7abccb89c"
+  },
+  "result": "satisfied"
+}

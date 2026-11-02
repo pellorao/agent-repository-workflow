@@ -217,3 +217,19 @@ test('Filesystem Module joins logical paths and makes lossy UTF-8 decoding expli
     if (lossy.status !== 'succeeded') assert.fail('Lossy decoding must succeed when explicitly allowed.');
     assert.equal(lossy.text, 'f\ufffd');
 });
+
+test('Filesystem enumeration reports unrepresentable root and nested names as failures', {skip: process.platform === 'win32'}, async t => {
+    const root = await createTemporaryDirectory(t, 'arw-enumeration-');
+    await mkdir(join(root, 'nested'));
+    const opened = await createScopedFilesystem({root});
+    if (opened.status !== 'succeeded') assert.fail('Filesystem must open.');
+    for (const path of ['bad\\name', 'nested/bad\\name']) {
+        await writeFile(join(root, path), 'content');
+        const result = await opened.scopedFilesystem.list({path: '.', recursive: true});
+        assert.equal(result.status, 'failed');
+        if (result.status !== 'failed') assert.fail('Enumeration must fail.');
+        assert.equal(result.stage, 'enumerate');
+        assert.equal(result.diagnostics[0].code, 'filesystem-io-failed');
+        await rm(join(root, path));
+    }
+});

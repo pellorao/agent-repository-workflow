@@ -94,7 +94,10 @@ test('a pause notice cuts the final score once per message, and no format error 
 test('repair fixes a short path and a preamble on a copy, and the format penalty follows from the repair record', async t => {
     const {directory, root, run} = await demo(t);
     const original = await write(join(root, 'original.md'), 'Findings:\n- `a.mjs:3` default export.\n');
-    const repaired = await repair({out: join(root, 'repaired.md'), report: original, scenario: directory});
+    const spill = await write(join(root, 'spill.txt'), 'Unrelated spill\r\n');
+    const repaired = await repair({out: join(root, 'repaired.md'), report: original, scenario: directory, spills: [spill]});
+    const record = JSON.parse(await readFile(repaired.record, 'utf8'));
+    assert.deepEqual(record.spills, [{path: spill, sha256: sha256(await readFile(spill))}]);
     assert.deepEqual([repaired.status, Object.keys(repaired.changes).sort()], ['succeeded', ['markdown-preamble', 'short-evidence-path']]);
     assert.equal(await readFile(join(root, 'repaired.md'), 'utf8'), '- `src/a.mjs:3` default export.\n');
     assert.equal((await repair({out: join(root, 'repaired.md'), report: original, scenario: directory})).status, 'blocked');

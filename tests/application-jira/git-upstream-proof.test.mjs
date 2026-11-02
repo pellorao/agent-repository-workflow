@@ -125,3 +125,18 @@ test('Committed Application effort rejects symbolic links and malformed UTF-8', 
         assert.equal(loaded.status, 'blocked', entry.label);
     }
 });
+
+test('Committed Application effort reports missing spec or issue blobs as read failures', async () => {
+    const spec = {bytes: Buffer.from('# Spec\n'), objectId: 'a'.repeat(40), path: '.scratch/0001-payment-retry/spec.md'};
+    const issue = {bytes: Buffer.from('# Issue\n'), objectId: 'b'.repeat(40), path: '.scratch/0001-payment-retry/issues/01-task.md'};
+    for (const missing of [spec, issue]) {
+        const loaded = await loadCommittedApplicationEffort({
+            effortNumber: '0001', repositoryRoot: '/repository',
+            git: {run: async ({argv}) => argv[0] === 'ls-tree'
+                ? result([spec, issue].map(entry => `100644 blob ${entry.objectId}\t${entry.path}\0`).join(''))
+                : result(Buffer.concat([spec, issue].map(entry => entry === missing
+                    ? Buffer.from(`${entry.objectId} missing\n`) : batchResult([entry]).stdout)))},
+        });
+        assert.deepEqual(loaded, {diagnostics: [{code: 'committed-effort-read-failed', message: 'Committed Application effort could not be read.'}], stage: 'tree-read', status: 'failed'});
+    }
+});
