@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0036:01",
+  "exception": {
+    "confirmedAt": "2026-11-02T05:46:04Z",
+    "reason": "Single-issue bug fix with no design decision (user confirmed 2026-11-02 in projects AGENTS)."
+  },
+  "subject": {
+    "filePath": ".scratch/0036-version-0-5-1/issues/01-version-0-5-1.md",
+    "sha256": "6ebd90168eb084bf72a2ade05e9eb18bc64d01c40e3e0fb8bdb849e306013f42"
+  },
+  "result": "not-applicable"
+}
