@@ -88,9 +88,9 @@ const createHome = async (/** @type {test.TestContext} */ t) => {
     return home;
 };
 
-const copyLocalCheckout = async (/** @type {Parameters<typeof createTemporaryDirectory>[0]} */ t) => {
+const copyLocalCheckout = async (/** @type {Parameters<typeof createTemporaryDirectory>[0]} */ t, paths = LOCAL_SOURCE_PATHS) => {
     const checkout = await createTemporaryDirectory(t, 'agent-repository-workflow-local-checkout-');
-    await Promise.all(LOCAL_SOURCE_PATHS.map(async path => {
+    await Promise.all(paths.map(async path => {
         await cp(join(SOURCE_DIRECTORY, path), join(checkout, path), {recursive: true});
     }));
     return checkout;
@@ -173,8 +173,7 @@ test('Installer arguments select local only when every Release identity option i
 });
 
 test('root Installer rejects invalid arguments before runtime identity observation', async t => {
-    const checkout = await copyLocalCheckout(t);
-    await rm(join(checkout, 'package.json'));
+    const checkout = await copyLocalCheckout(t, ['install.mjs', 'lib']);
 
     const result = await runExitedProcess('node', [join(checkout, 'install.mjs'), '--release-tag', `${ARW_VERSION}-pre`]);
     assert.equal(result.exitCode, 2);
@@ -344,11 +343,7 @@ test('Installation consumes a closed source failure without entering the common 
 
 test('Installation Payload applies ordinary unsafe-source failure to LICENSE.txt before reading it', async t => {
     const checkout = await createTemporaryDirectory(t, 'arw-unsafe-license-payload-');
-    const distributionEntries = completeInstallationFixture.payload.payload.filter(entry => entry.path.startsWith('distribution/'));
-    await Promise.all([...new Set(distributionEntries.map(entry => dirname(join(checkout, entry.path))))]
-        .map(directory => mkdir(directory, {recursive: true})));
     await Promise.all([
-        ...distributionEntries.map(entry => writeFile(join(checkout, entry.path), entry.bytes)),
         mkdir(join(checkout, 'LICENSE.txt')),
         writeFile(join(checkout, 'arw'), 'launcher\n'),
         writeFile(join(checkout, 'config.install.json'), '{}\n'),
@@ -725,7 +720,10 @@ test('installation rejects linked runtime directories before writing outside the
     await mkdir(outside);
     await symlink(outside, join(installation, 'lib'), process.platform === 'win32' ? 'junction' : 'dir');
 
-    const attempted = await runNonInteractive(home, {loadInstallationPayload});
+    const attempted = await runNonInteractive(home, {loadInstallationPayload: async () => ({
+        ...TEST_INSTALLATION_PAYLOAD,
+        payload: [...TEST_INSTALLATION_PAYLOAD.payload, {bytes: Buffer.from('runtime\n'), path: 'lib/runtime.mjs'}],
+    })});
 
     assert.equal(attempted.result, 1);
     assert.match(attempted.messages.map(event => event.message).join('\n'), /linked|symbolic|runtime directory/i);

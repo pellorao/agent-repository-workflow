@@ -4,6 +4,8 @@ import {dirname, join} from 'node:path';
 
 import {runArw} from '../../arw.mjs';
 import {createTemporaryDirectory} from './cleanup.mjs';
+import {createRealGitHandle} from './git.mjs';
+import {createMockGitHandle, installGitDiscovery} from './mock-git.mjs';
 import {createRepository as createGitRepository} from './repository-fixture.mjs';
 
 /** @typedef {{programDirectory: string, root: string}} TestRepository */
@@ -20,13 +22,28 @@ export const createMockChild = (/** @type {boolean} */ withUnref = false) => {
     return withUnref ? Object.assign(child, {unref() {}}) : child;
 };
 
-export const createRepository = async (/** @type {import('node:test').TestContext} */ t) => {
-    const root = await createGitRepository(t, {prefix: 'arw-repository-'});
+const createCliRepository = async (/** @type {import('node:test').TestContext} */ t, /** @type {string} */ root) => {
     const programDirectory = await createTemporaryDirectory(t, 'arw-program-');
     await mkdir(join(root, '.scratch'), {recursive: true});
     await writeConfig(programDirectory);
-
     return {root, programDirectory};
+};
+
+/** A repository with a real Git process behind it; `git` is its real Git handle. */
+export const createRepository = async (/** @type {import('node:test').TestContext} */ t) => {
+    const root = await createGitRepository(t, {prefix: 'arw-repository-'});
+    return {...await createCliRepository(t, root), git: createRealGitHandle(root)};
+};
+
+/**
+ * A repository with no Git process: `git` is an in-process Git double, and a fake `git` on PATH answers only
+ * Repository discovery, so the entry under test finds the root. Pass `repository.git.runner` as the Workflow `git`.
+ */
+export const createRepositoryWithMockGit = async (/** @type {import('node:test').TestContext} */ t) => {
+    const root = await createTemporaryDirectory(t, 'arw-repository-');
+    const repository = await createCliRepository(t, root);
+    await installGitDiscovery(t, repository.programDirectory);
+    return {...repository, git: await createMockGitHandle(root)};
 };
 
 export const writeIssue = async (/** @type {string} */ root, /** @type {string} */ effort, /** @type {string} */ filename, /** @type {string | NodeJS.ArrayBufferView<ArrayBufferLike> | Iterable<string | NodeJS.ArrayBufferView<ArrayBufferLike>> | AsyncIterable<string | NodeJS.ArrayBufferView<ArrayBufferLike>>} */ body) => {

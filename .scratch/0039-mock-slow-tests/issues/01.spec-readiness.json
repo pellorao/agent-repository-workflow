@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0039:01",
+  "exception": {
+    "confirmedAt": "2026-11-01T17:02:13Z",
+    "reason": "Single-issue bug fix with no design decision (user confirmed 2026-11-02 in projects AGENTS)."
+  },
+  "subject": {
+    "filePath": ".scratch/0039-mock-slow-tests/issues/01-mock-slow-tests.md",
+    "sha256": "a6370a7644a91de04f2b99730346c266040d6236a1336fcf661498ea91dfc8bc"
+  },
+  "result": "not-applicable"
+}

@@ -4,6 +4,7 @@ import {mkdir, readFile, readdir, writeFile} from 'node:fs/promises';
 import {dirname, join} from 'node:path';
 import test from 'node:test';
 
+import {createTemporaryDirectory} from '../helpers/cleanup.mjs';
 import {createRepository as createGitRepository} from '../helpers/repository-fixture.mjs';
 import {
     generateSpecReadiness,
@@ -49,8 +50,9 @@ ${readinessSubject()}## Validation
 - No comments.
 `;
 
-const createRepository = async (/** @type {test.TestContext} */ t) => {
-    const root = await createGitRepository(t, {prefix: 'arw-readiness-json-'});
+/** `git: false` for cases that never reach the Git-reading `prepare` path: the fixture then needs no `git init`. */
+const createRepository = async (/** @type {test.TestContext} */ t, {git = true} = {}) => {
+    const root = git ? await createGitRepository(t, {prefix: 'arw-readiness-json-'}) : await createTemporaryDirectory(t, 'arw-readiness-json-');
     await mkdir(join(root, '.scratch', '0001-workflow', 'issues'), {recursive: true});
     await mkdir(join(root, 'docs', 'agents', 'roles'), {recursive: true});
     await writeFile(join(root, '.scratch', '0001-workflow', 'spec.md'), fullSpec, 'utf8');
@@ -160,7 +162,7 @@ test('each implementation issue owns an independent Spec Readiness sidecar', asy
 });
 
 test('verify ignores an effort-root historical readiness file', async t => {
-    const repositoryRoot = await createRepository(t);
+    const repositoryRoot = await createRepository(t, {git: false});
     await writeFile(
         join(repositoryRoot, '.scratch', '0001-workflow', 'spec-readiness.json'),
         `${JSON.stringify({schemaVersion: 5, result: 'satisfied'}, null, 2)}\n`,
@@ -231,7 +233,7 @@ test('prepare activation failure removes the new request and preserves the prior
 });
 
 test('prepare rejects a Main-chosen draft path', async t => {
-    const repositoryRoot = await createRepository(t);
+    const repositoryRoot = await createRepository(t, {git: false});
     await assert.rejects(prepareSpecReadiness({input: {draftPath: join(repositoryRoot, '.tmp', 'draft.txt'), inputs: normalInputs}, issueId: 'issue:0001:01',
         platformAdapter: adapter, repositoryRoot}), /unknown or missing fields/u);
 });
@@ -546,7 +548,7 @@ test('subjectOnly verify skips stale Inputs but still checks the record and the 
 });
 
 test('exception uses the same generate promote verify boundary', async t => {
-    const repositoryRoot = await createRepository(t);
+    const repositoryRoot = await createRepository(t, {git: false});
     await writeFile(join(repositoryRoot, '.scratch', '0001-workflow', 'issues', '01-implement.md'), issue(), 'utf8');
     const draft = {exception: {confirmedAt: '2026-08-04T12:34:56Z', reason: 'No governing design is required.'}};
     const generated = await generateException(repositoryRoot, draft);
@@ -568,7 +570,7 @@ test('exception uses the same generate promote verify boundary', async t => {
 });
 
 test('exception applicability counts only canonical issue file names', async t => {
-    const repositoryRoot = await createRepository(t);
+    const repositoryRoot = await createRepository(t, {git: false});
     const issues = join(repositoryRoot, '.scratch', '0001-workflow', 'issues');
     await writeFile(join(issues, '01-implement.md'), issue(), 'utf8');
     const draft = {exception: {confirmedAt: '2026-08-04T12:34:56Z', reason: 'No governing design is required.'}};
@@ -579,7 +581,7 @@ test('exception applicability counts only canonical issue file names', async t =
 });
 
 test('exception promotion and verification bind the current issue subject', async t => {
-    const repositoryRoot = await createRepository(t);
+    const repositoryRoot = await createRepository(t, {git: false});
     const issuePath = join(repositoryRoot, '.scratch', '0001-workflow', 'issues', '01-implement.md');
     const initial = issue();
     await writeFile(issuePath, initial, 'utf8');
@@ -636,7 +638,7 @@ test('exception is invalidated when the effort gains a second implementation iss
 });
 
 test('exception generation requires exact Human confirmation data', async t => {
-    const repositoryRoot = await createRepository(t);
+    const repositoryRoot = await createRepository(t, {git: false});
     await writeFile(join(repositoryRoot, '.scratch', '0001-workflow', 'issues', '01-implement.md'), issue(), 'utf8');
     for (const input of [
         {exception: {confirmedAt: '2026-02-31T12:34:56Z', reason: 'No governing design is required.'}},
@@ -651,7 +653,7 @@ test('exception generation requires exact Human confirmation data', async t => {
 });
 
 test('verify recognizes every earlier schema as stale at the issue sidecar', async t => {
-    const repositoryRoot = await createRepository(t);
+    const repositoryRoot = await createRepository(t, {git: false});
     for (const schemaVersion of [1, 2, 3, 4, 5, 6]) {
         await writeFile(readinessPath(repositoryRoot), `${JSON.stringify({schemaVersion, inputs: [], checks: [], result: 'satisfied'}, null, 2)}\n`, 'utf8');
         assert.deepEqual(await verifySpecReadiness({issueId: 'issue:0001:01', repositoryRoot}), {
@@ -719,7 +721,7 @@ test('implementing the issue does not stale its architecture evidence', async t 
 });
 
 test('prepare rejects conflicting roles, issue Inputs and unknown roles', async t => {
-    const repositoryRoot = await createRepository(t);
+    const repositoryRoot = await createRepository(t, {git: false});
     await assert.rejects(prepare(repositoryRoot, {inputs: [
         {filePath: '.scratch/0001-workflow/spec.md', role: 'governing-spec'},
         {filePath: '.scratch/0001-workflow/spec.md', role: 'adr'},
@@ -735,7 +737,7 @@ test('prepare rejects conflicting roles, issue Inputs and unknown roles', async 
 });
 
 test('prepare rejects Agent instructions and platform Agent configurations under allowed Input roles', async t => {
-    const repositoryRoot = await createRepository(t);
+    const repositoryRoot = await createRepository(t, {git: false});
     const paths = [
         'AGENTS.md',
         'nested/AGENTS.md',

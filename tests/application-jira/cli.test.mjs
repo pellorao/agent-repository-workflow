@@ -6,8 +6,19 @@ import test from 'node:test';
 import {parseCommand} from '../../lib/arw.mjs';
 import {evaluateModuleCorrectionCheckCommand} from '../../lib/application-jira/application-jira-cli.mjs';
 import {createScopedFilesystem} from '../../lib/common/filesystem.mjs';
-import {createRepository, run, writeConfig, writeIssue, writeJsonRecord} from '../helpers/arw-cli.mjs';
+import {createRepository, createRepositoryWithMockGit, run as runArwCli, writeConfig, writeIssue, writeJsonRecord} from '../helpers/arw-cli.mjs';
 import {runGit} from '../helpers/git.mjs';
+
+/** Every case hands the repository's own Git runner (real or mock) to the commands that accept one. */
+const run = (/** @type {string[]} */ args, /** @type {Parameters<typeof runArwCli>[1] & {git: {runner: import('../../lib/common/git-process.mjs').GitRunner}}} */ repository, /** @type {Parameters<typeof runArwCli>[2]} */ options = {}) => runArwCli(args, repository, {
+    workflowDependencies: {git: repository.git.runner},
+    ...options,
+    // Copy descriptors so a test's getter (e.g. a token that must not be read) stays unread.
+    applicationJiraDependencies: Object.defineProperties({}, {
+        ...Object.getOwnPropertyDescriptors(options.applicationJiraDependencies ?? {}),
+        git: {enumerable: true, value: options.applicationJiraDependencies?.git ?? repository.git.runner},
+    }),
+});
 
 /** @typedef {{baseUrl: string, body?: unknown, method: 'GET' | 'POST', query?: Record<string, string>, relativeEndpoint: string}} JiraRequestInput */
 
@@ -79,13 +90,13 @@ const correctionIssueText = ({
 
 /** @param {test.TestContext} t @param {{specText?: string}} [options] */
 const preparePublishedCorrection = async (t, {specText} = {}) => {
-    const repository = await createRepository(t);
+    const repository = await createRepositoryWithMockGit(t);
     const issuePath = join(repository.root, '.scratch', '0007-work', 'issues', '01-build.md');
     const specPath = join(repository.root, '.scratch', '0007-work', 'spec.md');
     await writeIssue(repository.root, '0007-work', '01-build.md', correctionIssueText());
     if (specText !== undefined) await writeFile(specPath, specText, 'utf8');
-    await runGit(repository.root, ['add', '.scratch']);
-    await runGit(repository.root, ['-c', 'user.name=ARW Tests', '-c', 'user.email=tests@example.invalid', 'commit', '--quiet', '-m', 'base']);
+    await repository.git.git(['add', '.scratch']);
+    await repository.git.git(['-c', 'user.name=ARW Tests', '-c', 'user.email=tests@example.invalid', 'commit', '--quiet', '-m', 'base']);
     return {issuePath, repository, specPath};
 };
 
@@ -132,10 +143,10 @@ test('Module correction check reads HEAD and current files without Application c
         '',
     ].join('\n');
     await writeIssue(repository.root, '0007-work', '01-build.md', render({downstream: '- Existing.', validation: '- Not run.', what: 'Build it.'}));
-    await runGit(repository.root, ['add', '.scratch/0007-work/issues/01-build.md']);
-    await runGit(repository.root, ['-c', 'user.name=ARW Tests', '-c', 'user.email=tests@example.invalid', 'commit', '--quiet', '-m', 'base']);
+    await repository.git.git(['add', '.scratch/0007-work/issues/01-build.md']);
+    await repository.git.git(['-c', 'user.name=ARW Tests', '-c', 'user.email=tests@example.invalid', 'commit', '--quiet', '-m', 'base']);
     await writeFile(issuePath, render({downstream: '- Corrected the target.', validation: '- Staged evidence.', what: 'Build the corrected behavior.'}), 'utf8');
-    await runGit(repository.root, ['add', '.scratch/0007-work/issues/01-build.md']);
+    await repository.git.git(['add', '.scratch/0007-work/issues/01-build.md']);
     await writeFile(issuePath, render({downstream: '- Corrected the target.', validation: '- Unstaged evidence.', what: 'Build the corrected behavior.'}), 'utf8');
     const before = await readFile(issuePath);
 
@@ -232,7 +243,7 @@ test('JIRA list commands block Application Members before external requests', as
     assert.deepEqual(parseCommand(['jira', 'list']), {kind: 'jira-list', limit: null, full: false});
     assert.deepEqual(parseCommand(['jl']), {kind: 'jira-list', limit: null, full: false});
 
-    const repository = await createRepository(t);
+    const repository = await createRepositoryWithMockGit(t);
     for (const args of [['jira', 'list'], ['jl']]) {
         assert.deepEqual(await run(args, repository), {
             events: [{
@@ -245,7 +256,7 @@ test('JIRA list commands block Application Members before external requests', as
 });
 
 test('JIRA list uses Application and global configuration and renders one complete page', async t => {
-    const repository = await createRepository(t);
+    const repository = await createRepositoryWithMockGit(t);
     await writeConfig(repository.programDirectory, globalConfiguration);
     await writeJsonRecord(repository.root, 'arw.config.json', applicationConfiguration);
     /** @type {JiraRequestInput[]} */
@@ -290,7 +301,7 @@ test('JIRA list uses Application and global configuration and renders one comple
 test('JIRA open encodes an opaque key and uses only the Browser Adapter', async t => {
     assert.deepEqual(parseCommand(['jira', 'open', 'PAY/1?#']), {issueKey: 'PAY/1?#', kind: 'jira-open'});
     assert.deepEqual(parseCommand(['jo', 'PAY/1?#']), {issueKey: 'PAY/1?#', kind: 'jira-open'});
-    const repository = await createRepository(t);
+    const repository = await createRepositoryWithMockGit(t);
     await writeConfig(repository.programDirectory, globalConfiguration);
     await writeJsonRecord(repository.root, 'arw.config.json', applicationConfiguration);
     /** @type {string[]} */
@@ -315,7 +326,7 @@ test('JIRA open encodes an opaque key and uses only the Browser Adapter', async 
 
 test('JIRA print routes an encoded opaque key and emits one complete pretty JSON value', async t => {
     assert.deepEqual(parseCommand(['jira', 'print', 'PAY/1']), {issueKey: 'PAY/1', kind: 'jira-print'});
-    const repository = await createRepository(t);
+    const repository = await createRepositoryWithMockGit(t);
     await writeConfig(repository.programDirectory, globalConfiguration);
     await writeJsonRecord(repository.root, 'arw.config.json', applicationConfiguration);
     /** @type {JiraRequestInput[]} */
@@ -364,7 +375,7 @@ test('JIRA print routes an encoded opaque key and emits one complete pretty JSON
 test('Submodule switch-branch and ssb route every configured Module through the coordination boundary', async t => {
     assert.deepEqual(parseCommand(['submodule', 'switch-branch', 'release']), {kind: 'submodule-switch-branch', targetBranch: 'release'});
     assert.deepEqual(parseCommand(['ssb', 'release']), {kind: 'submodule-switch-branch', targetBranch: 'release'});
-    const repository = await createRepository(t);
+    const repository = await createRepositoryWithMockGit(t);
     await writeConfig(repository.programDirectory, globalConfiguration);
     const configuration = {
         ...applicationConfiguration,
@@ -396,7 +407,7 @@ test('Submodule switch-branch and ssb route every configured Module through the 
 });
 
 test('Submodule switch-branch succeeds explicitly when Application configuration has no Modules', async t => {
-    const repository = await createRepository(t);
+    const repository = await createRepositoryWithMockGit(t);
     await writeConfig(repository.programDirectory, globalConfiguration);
     await writeJsonRecord(repository.root, 'arw.config.json', applicationConfiguration);
     assert.deepEqual(await run(['ssb', 'dev'], repository), {
@@ -406,7 +417,7 @@ test('Submodule switch-branch succeeds explicitly when Application configuration
 });
 
 test('Submodule switch-branch succeeds in an Application Member without Git operations', async t => {
-    const repository = await createRepository(t);
+    const repository = await createRepositoryWithMockGit(t);
     const submoduleGit = {
         inspectSwitch: async () => assert.fail('No Git operation expected.'),
         restore: async () => assert.fail('No Git operation expected.'),
@@ -603,7 +614,7 @@ test('Application sync blocks deleted or de-associated index records before Modu
 });
 
 test('Workflow init, update, and verify validate Repository Application configuration before their ordinary plans', async t => {
-    const repository = await createRepository(t);
+    const repository = await createRepositoryWithMockGit(t);
     await writeJsonRecord(repository.root, 'arw.config.json', {
         ...applicationConfiguration,
         application: {...applicationConfiguration.application, name: 'Invalid Name'},
@@ -764,7 +775,7 @@ test('Application associate reports recovery for the failed and previously writt
 
 test('JIRA accept uses committed Application configuration and effort bytes while ignoring working-tree replacements', async t => {
     assert.deepEqual(parseCommand(['jira', 'accept', 'spec:0001']), {kind: 'jira-sync', phase: 'accepted', specId: 'spec:0001'});
-    const repository = await createRepository(t);
+    const repository = await createRepositoryWithMockGit(t);
     await writeConfig(repository.programDirectory, globalConfiguration);
     await writeJsonRecord(repository.root, 'arw.config.json', {configVersion: 2, application: {name: 'invalid working tree'}});
     const specText = '# Payment retry\n\nJIRA issue: [`PAY-17`](https://jira.example.test/team/browse/PAY-17)\n';
@@ -828,7 +839,7 @@ test('JIRA accept uses committed Application configuration and effort bytes whil
 
 test('JIRA complete reads the complete committed effort and converges an existing final JIRA pair', async t => {
     assert.deepEqual(parseCommand(['jira', 'complete', 'spec:0001']), {kind: 'jira-sync', phase: 'completed', specId: 'spec:0001'});
-    const repository = await createRepository(t);
+    const repository = await createRepositoryWithMockGit(t);
     await writeConfig(repository.programDirectory, globalConfiguration);
     const specText = '# Payment retry\n\nJIRA issue: [`PAY-17`](https://jira.example.test/team/browse/PAY-17)\n\nApplication validation issue: 05\n';
     const issueText = '# Validate\n\nStatus: completed\n\n## Blocked by\n\n- None\n';

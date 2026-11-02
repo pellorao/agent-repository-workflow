@@ -46,14 +46,17 @@ test('setup blocks an existing target or a missing fixture', async t => {
 
 test('the entry maps results to exit codes', async () => {
     const run = async (/** @type {string[]} */ ...args) => /** @type {any} */ (await runProcess(process.execPath, [ENTRY, ...args]));
-    assert.equal((await run('bogus')).exitCode, 2);
-    const blocked = await run('score', join(FIXTURES, 'nowhere', 'none'), 'report.md', '--no-repair', '--agent', 'agent.json');
+    const [unknown, blocked] = await Promise.all([
+        run('bogus'),
+        run('score', join(FIXTURES, 'nowhere', 'none'), 'report.md', '--no-repair', '--agent', 'agent.json'),
+    ]);
+    assert.equal(unknown.exitCode, 2);
     assert.deepEqual([blocked.exitCode, JSON.parse(blocked.stdout).status], [1, 'blocked']);
 });
 
 test('the entry parses the repeatable options and the cell lists', async () => {
     const run = async (/** @type {string[]} */ ...args) => /** @type {any} */ (await runProcess(process.execPath, [ENTRY, ...args]));
-    const noCells = await run('summary', '--markdown');
+    const [noCells, missingCell] = await Promise.all([run('summary', '--markdown'), run('summary', '--cell')]);
     assert.deepEqual([noCells.exitCode, JSON.parse(noCells.stdout).status], [1, 'blocked']);
-    assert.equal((await run('summary', '--cell')).exitCode, 2);
+    assert.equal(missingCell.exitCode, 2);
 });

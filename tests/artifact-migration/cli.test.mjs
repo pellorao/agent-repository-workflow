@@ -4,11 +4,13 @@ import {access, mkdir, readFile, writeFile} from 'node:fs/promises';
 import {join} from 'node:path';
 import test from 'node:test';
 
-import {createRepository, run, writeArtifact, writeIssue} from '../helpers/arw-cli.mjs';
-import {commitAll, runGit} from '../helpers/git.mjs';
+import {createRepository, createRepositoryWithMockGit, run, writeArtifact, writeIssue} from '../helpers/arw-cli.mjs';
 import {runArtifactMigration} from '../../lib/artifact-migration/artifact-migration.mjs';
 import {createTemporaryDirectory} from '../helpers/cleanup.mjs';
 import {createScopedFilesystem} from '../../lib/common/filesystem.mjs';
+
+/** Every case hands the repository's own Git runner (real or mock) to the migration. */
+const runMigration = (/** @type {string[]} */ args, /** @type {Parameters<typeof run>[1] & {git: {runner: import('../../lib/common/git-process.mjs').GitRunner}}} */ repository, /** @type {Parameters<typeof run>[2]} */ options = {}) => run(args, repository, {artifactMigrationGit: repository.git.runner, ...options});
 
 test('update migrates the complete scratch tree and is idempotent', async t => {
     const repository = await createRepository(t);
@@ -43,10 +45,10 @@ test('update migrates the complete scratch tree and is idempotent', async t => {
     await writeArtifact(repository.root, 'upgrade-effort', 'PRD.md', '# Legacy spec\n\nKeep this spec.\n');
     await writeArtifact(repository.root, 'upgrade-effort', 'map.md', '## Missing map H1\n');
     await writeArtifact(repository.root, 'upgrade-effort', 'notes.md', '# Irrelevant notes\n');
-    await commitAll(repository.root, 'add upgrade effort');
+    await repository.git.commitAll('add upgrade effort');
 
-    const first = await run(['migrate', 'artifacts'], repository);
-    const second = await run(['migrate', 'artifacts'], repository);
+    const first = await runMigration(['migrate', 'artifacts'], repository);
+    const second = await runMigration(['migrate', 'artifacts'], repository);
     const issue = await readFile(join(repository.root, '.scratch', '0001-upgrade-effort', 'issues', '01-legacy.md'), 'utf8');
     const ticket = await readFile(join(repository.root, '.scratch', '0001-upgrade-effort', 'issues', '02-dependency.md'), 'utf8');
     const spec = await readFile(join(repository.root, '.scratch', '0001-upgrade-effort', 'spec.md'), 'utf8');
@@ -89,11 +91,11 @@ test('update migrates the complete scratch tree and is idempotent', async t => {
 });
 
 test('artifact migration preserves a numeric-leading legacy effort slug', async t => {
-    const repository = await createRepository(t);
+    const repository = await createRepositoryWithMockGit(t);
     await writeArtifact(repository.root, '123-foo', 'notes.md', '# Legacy numeric-leading slug\n');
-    await commitAll(repository.root, 'add numeric-leading legacy effort');
+    await repository.git.commitAll('add numeric-leading legacy effort');
 
-    const result = await run(['migrate', 'artifacts'], repository);
+    const result = await runMigration(['migrate', 'artifacts'], repository);
 
     assert.equal(result.result, 0);
     assert.match(result.events.map(event => event.message).join('\n'), /Renamed \.scratch\/123-foo -> \.scratch\/0001-123-foo/);
@@ -101,14 +103,14 @@ test('artifact migration preserves a numeric-leading legacy effort slug', async 
 });
 
 test('artifact migration reports active spec readiness gaps without writing', async t => {
-    const repository = await createRepository(t);
+    const repository = await createRepositoryWithMockGit(t);
     const issue = '# Active legacy issue\n\n**Status:** ready-for-agent\n\n```text\nType: task\n```\n\n## What to build\n\nImplement behavior.\n\n## Acceptance criteria\n\n- [ ] Complete.\n\nBlocked by: None\n';
     const prd = '# Active legacy spec\n\n## Implementation Decisions\n\nDecision.\n\n## Testing Decisions\n\nTest.\n';
     await writeIssue(repository.root, 'active-legacy', '01-implement.md', issue);
     await writeArtifact(repository.root, 'active-legacy', 'PRD.md', prd);
-    await commitAll(repository.root, 'add active legacy effort');
+    await repository.git.commitAll('add active legacy effort');
 
-    const result = await run(['migrate', 'artifacts'], repository);
+    const result = await runMigration(['migrate', 'artifacts'], repository);
 
     assert.equal(result.result, 1);
     assert.doesNotMatch(result.events.map(event => event.message).join('\n'), /\.\/\.scratch/);
@@ -120,7 +122,7 @@ test('artifact migration reports active spec readiness gaps without writing', as
 });
 
 test('artifact migration accepts a numeric readiness sidecar for an active numbered issue', async t => {
-    const repository = await createRepository(t);
+    const repository = await createRepositoryWithMockGit(t);
     await writeIssue(
         repository.root,
         '0001-ready-effort',
@@ -132,15 +134,15 @@ test('artifact migration accepts a numeric readiness sidecar for an active numbe
         '{"historical":false}\n',
         'utf8',
     );
-    await runGit(repository.root, ['add', '-A']);
+    await repository.git.git(['add', '-A']);
 
-    const result = await run(['migrate', 'artifacts'], repository);
+    const result = await runMigration(['migrate', 'artifacts'], repository);
 
     assert.deepEqual(result, {events: [{channel: 'stdout', message: 'No updates needed.'}], result: 0});
 });
 
 test('update isolates blocker title migration by effort', async t => {
-    const repository = await createRepository(t);
+    const repository = await createRepositoryWithMockGit(t);
     await writeIssue(
         repository.root,
         'alpha',
@@ -159,9 +161,9 @@ test('update isolates blocker title migration by effort', async t => {
         '01-dependency.md',
         '# Beta dependency\n\nStatus: completed\n\n## Blocked by\n\n- None - can start immediately\n',
     );
-    await commitAll(repository.root, 'add alpha and beta efforts');
+    await repository.git.commitAll('add alpha and beta efforts');
 
-    const {events, result} = await run(['migrate', 'artifacts'], repository);
+    const {events, result} = await runMigration(['migrate', 'artifacts'], repository);
     const dependent = await readFile(join(repository.root, '.scratch', '0001-alpha', 'issues', '02-dependent.md'), 'utf8');
 
     assert.equal(result, 0);
@@ -176,7 +178,7 @@ test('update isolates blocker title migration by effort', async t => {
 });
 
 test('update preflight aggregates deterministic errors without writing', async t => {
-    const repository = await createRepository(t);
+    const repository = await createRepositoryWithMockGit(t);
     await writeIssue(repository.root, 'broken', '01-missing-status.md', '# Missing status\n');
     await writeIssue(repository.root, 'broken', 'bad-name.md', '# Bad name\n\nStatus: completed\n');
     await writeIssue(repository.root, 'broken', '00-zero.md', '# Zero\n\nStatus: completed\n');
@@ -191,7 +193,7 @@ test('update preflight aggregates deterministic errors without writing', async t
     );
     await writeArtifact(repository.root, 'broken', 'PRD.md', '# Legacy spec\n');
     await writeArtifact(repository.root, 'broken', 'spec.md', '# Existing spec\n');
-    await commitAll(repository.root, 'add broken effort');
+    await repository.git.commitAll('add broken effort');
     const before = await Promise.all([
         readFile(join(repository.root, '.scratch', 'broken', 'issues', '01-missing-status.md'), 'utf8'),
         readFile(join(repository.root, '.scratch', 'broken', 'issues', '02-mixed-blockers.md'), 'utf8'),
@@ -199,7 +201,7 @@ test('update preflight aggregates deterministic errors without writing', async t
         readFile(join(repository.root, '.scratch', 'broken', 'spec.md'), 'utf8'),
     ]);
 
-    const {events, result} = await run(['migrate', 'artifacts'], repository);
+    const {events, result} = await runMigration(['migrate', 'artifacts'], repository);
     const after = await Promise.all([
         readFile(join(repository.root, '.scratch', 'broken', 'issues', '01-missing-status.md'), 'utf8'),
         readFile(join(repository.root, '.scratch', 'broken', 'issues', '02-mixed-blockers.md'), 'utf8'),
@@ -222,14 +224,14 @@ test('update preflight aggregates deterministic errors without writing', async t
 });
 
 test('update inventory preflight aggregates path and input failures before every write', async t => {
-    const repository = await createRepository(t);
+    const repository = await createRepositoryWithMockGit(t);
     await writeIssue(repository.root, 'Bad', '01-invalid-effort.md', '# Invalid effort\n\n**Status:** completed\n');
     await writeArtifact(repository.root, 'Bad', 'PRD.md', '# Invalid effort spec\n');
     await writeArtifact(repository.root, 'missing-heading', 'PRD.md', '## Not an H1\n');
     await writeIssue(repository.root, 'unreadable', '01-hidden.md', '# Hidden\n\n**Status:** completed\n');
     await writeArtifact(repository.root, 'unlistable', 'notes.md', '# Hidden directory\n');
     await writeIssue(repository.root, 'valid', '01-convertible.md', '# Convertible\n\n**Status:** completed\n');
-    await commitAll(repository.root, 'add migration fixtures');
+    await repository.git.commitAll('add migration fixtures');
     let renameCount = 0;
     let writeCount = 0;
     const guardedFileSystem = {
@@ -255,7 +257,7 @@ test('update inventory preflight aggregates path and input failures before every
             : created.scopedFilesystem.readText(input),
     };
 
-    const {events, result} = await run(['migrate', 'artifacts'], repository, {artifactInventoryFilesystem: inventoryFilesystem, updateFileSystem: guardedFileSystem});
+    const {events, result} = await runMigration(['migrate', 'artifacts'], repository, {artifactInventoryFilesystem: inventoryFilesystem, updateFileSystem: guardedFileSystem});
     const diagnostics = events.map(event => event.message).join('\n');
 
     assert.equal(result, 1);
@@ -273,7 +275,7 @@ test('update inventory preflight aggregates path and input failures before every
 });
 
 test('update preflight rejects linked issue directories and mixed canonical boundaries', async t => {
-    const repository = await createRepository(t);
+    const repository = await createRepositoryWithMockGit(t);
     await writeIssue(repository.root, 'linked', '01-outside.md', '# Outside\n\n**Status:** completed\n');
     await writeIssue(repository.root, 'boundaries', '01-tab-heading.md', '#\tTab heading\n\n**Status:** completed\n');
     await writeIssue(
@@ -282,7 +284,7 @@ test('update preflight rejects linked issue directories and mixed canonical boun
         '02-mixed-format.md',
         '# Mixed format\n\n**Status:** completed\n\nBlocked by: 01\n\n## Blocked by\n\n- 01\n',
     );
-    await commitAll(repository.root, 'add path boundary fixtures');
+    await repository.git.commitAll('add path boundary fixtures');
     const created = await createScopedFilesystem({root: repository.root});
     if (created.status !== 'succeeded') assert.fail('Artifact inventory test filesystem must open.');
     const inventoryFilesystem = {
@@ -297,7 +299,7 @@ test('update preflight rejects linked issue directories and mixed canonical boun
         },
     };
 
-    const {events, result} = await run(['migrate', 'artifacts'], repository, {artifactInventoryFilesystem: inventoryFilesystem});
+    const {events, result} = await runMigration(['migrate', 'artifacts'], repository, {artifactInventoryFilesystem: inventoryFilesystem});
     const diagnostics = events.map(event => event.message).join('\n');
 
     assert.equal(result, 1);
@@ -311,11 +313,11 @@ test('update preflight rejects linked issue directories and mixed canonical boun
 });
 
 test('update reports partial I/O failure and can continue on retry', async t => {
-    const repository = await createRepository(t);
+    const repository = await createRepositoryWithMockGit(t);
     await writeIssue(repository.root, 'partial', '01-first.md', '# First\n\n**Status:** completed\n');
     await writeIssue(repository.root, 'partial', '02-second.md', '# Second\n\n**Status:** completed\n');
     await writeArtifact(repository.root, 'partial', 'PRD.md', '# Legacy spec\n');
-    await commitAll(repository.root, 'add partial effort');
+    await repository.git.commitAll('add partial effort');
     let replacementCount = 0;
     const failingFileSystem = {
         ...nodeFileSystem,
@@ -332,10 +334,10 @@ test('update reports partial I/O failure and can continue on retry', async t => 
         },
     };
 
-    const failed = await run(['migrate', 'artifacts'], repository, {updateFileSystem: failingFileSystem});
+    const failed = await runMigration(['migrate', 'artifacts'], repository, {updateFileSystem: failingFileSystem});
     const first = await readFile(join(repository.root, '.scratch', 'partial', 'issues', '01-first.md'), 'utf8');
     const second = await readFile(join(repository.root, '.scratch', 'partial', 'issues', '02-second.md'), 'utf8');
-    const retried = await run(['migrate', 'artifacts'], repository);
+    const retried = await runMigration(['migrate', 'artifacts'], repository);
 
     assert.equal(failed.result, 1);
     assert.match(first, /Status: completed/);
@@ -361,15 +363,15 @@ test('artifact migration orders effort numbers by reachable commit history and U
     const repository = await createRepository(t);
     const date = (/** @type {string} */ value) => ({GIT_AUTHOR_DATE: value, GIT_COMMITTER_DATE: value});
     await writeArtifact(repository.root, 'late', 'notes.md', '# Late\n');
-    await commitAll(repository.root, 'add late effort', {environment: date('2026-08-07T00:03:00Z')});
+    await repository.git.commitAll('add late effort', {environment: date('2026-08-07T00:03:00Z')});
     await writeArtifact(repository.root, 'beta', 'notes.md', '# Beta\n');
-    await commitAll(repository.root, 'add beta effort', {environment: date('2026-08-07T00:01:00Z')});
+    await repository.git.commitAll('add beta effort', {environment: date('2026-08-07T00:01:00Z')});
     await writeArtifact(repository.root, 'gamma', 'notes.md', '# Gamma\n');
     await writeArtifact(repository.root, 'alpha', 'notes.md', '# Alpha\n');
     await writeArtifact(repository.root, 'delta', 'notes.md', '# Delta\n');
-    await commitAll(repository.root, 'add same-commit efforts', {environment: date('2026-08-07T00:01:00Z')});
+    await repository.git.commitAll('add same-commit efforts', {environment: date('2026-08-07T00:01:00Z')});
 
-    const migrated = await run(['migrate', 'artifacts'], repository);
+    const migrated = await runMigration(['migrate', 'artifacts'], repository);
 
     assert.equal(migrated.result, 0, migrated.events.map(event => event.message).join('\n'));
     for (const directory of ['0001-beta', '0002-alpha', '0003-delta', '0004-gamma', '0005-late']) {
@@ -378,37 +380,37 @@ test('artifact migration orders effort numbers by reachable commit history and U
 });
 
 test('artifact migration preserves mixed numbered state and blocks duplicate or uncommitted inputs before writing', async t => {
-    const mixed = await createRepository(t);
+    const mixed = await createRepositoryWithMockGit(t);
     await writeArtifact(mixed.root, '0004-kept', 'notes.md', '# Kept\n');
     await writeArtifact(mixed.root, 'alpha', 'notes.md', '# Alpha\n');
-    await commitAll(mixed.root, 'add mixed efforts');
-    const migrated = await run(['migrate', 'artifacts'], mixed);
+    await mixed.git.commitAll('add mixed efforts');
+    const migrated = await runMigration(['migrate', 'artifacts'], mixed);
     assert.equal(migrated.result, 0);
     await access(join(mixed.root, '.scratch', '0001-alpha'));
     await access(join(mixed.root, '.scratch', '0004-kept'));
 
-    const duplicate = await createRepository(t);
+    const duplicate = await createRepositoryWithMockGit(t);
     await writeArtifact(duplicate.root, '0001-alpha', 'notes.md', '# Alpha\n');
     await writeArtifact(duplicate.root, '0001-beta', 'notes.md', '# Beta\n');
     await writeArtifact(duplicate.root, 'gamma', 'notes.md', '# Gamma\n');
-    await commitAll(duplicate.root, 'add duplicate efforts');
-    const rejectedDuplicate = await run(['migrate', 'artifacts'], duplicate);
+    await duplicate.git.commitAll('add duplicate efforts');
+    const rejectedDuplicate = await runMigration(['migrate', 'artifacts'], duplicate);
     assert.equal(rejectedDuplicate.result, 1);
     assert.match(rejectedDuplicate.events.map(event => event.message).join('\n'), /Duplicate effort number 0001/);
     await access(join(duplicate.root, '.scratch', 'gamma'));
 
-    const uncommitted = await createRepository(t);
+    const uncommitted = await createRepositoryWithMockGit(t);
     await writeArtifact(uncommitted.root, 'alpha', 'notes.md', '# Alpha\n');
-    await commitAll(uncommitted.root, 'add committed effort');
+    await uncommitted.git.commitAll('add committed effort');
     await writeArtifact(uncommitted.root, 'beta', 'notes.md', '# Beta\n');
-    const rejectedUncommitted = await run(['migrate', 'artifacts'], uncommitted);
+    const rejectedUncommitted = await runMigration(['migrate', 'artifacts'], uncommitted);
     assert.equal(rejectedUncommitted.result, 1);
     assert.match(rejectedUncommitted.events.map(event => event.message).join('\n'), /Effort is not committed in current HEAD/);
     await access(join(uncommitted.root, '.scratch', 'alpha'));
 });
 
 test('artifact migration rewrites only structured issue references while preserving status and historical JSON bytes', async t => {
-    const repository = await createRepository(t);
+    const repository = await createRepositoryWithMockGit(t);
     const issue = '# Work\n\nStatus: completed\n\n## What to build\n\nKeep `.scratch/work/spec.md` in ordinary prose.\n\n## Acceptance criteria\n\n- [x] Complete.\n\n## Blocked by\n\n- External dependency: `issue:ledger:0009:03` - Wait for the ledger contract.\n';
     const readiness = '{"historical":"readiness","issueId":"work:01-work"}\n';
     const audit = '{"historical":"audit"}\n';
@@ -416,9 +418,9 @@ test('artifact migration rewrites only structured issue references while preserv
     await writeIssue(repository.root, 'work', '01-work.md', issue);
     await writeFile(join(repository.root, '.scratch', 'work', 'issues', '01-work.spec-readiness.json'), readiness, 'utf8');
     await writeFile(join(repository.root, '.scratch', 'work', 'issues', '01-work.audit.json'), audit, 'utf8');
-    await commitAll(repository.root, 'add work effort');
+    await repository.git.commitAll('add work effort');
 
-    const migrated = await run(['migrate', 'artifacts'], repository);
+    const migrated = await runMigration(['migrate', 'artifacts'], repository);
     const directory = join(repository.root, '.scratch', '0001-work');
     const migratedIssue = await readFile(join(directory, 'issues', '01-work.md'), 'utf8');
 
@@ -431,10 +433,10 @@ test('artifact migration rewrites only structured issue references while preserv
 });
 
 test('artifact migration rejects shallow history before every write', async t => {
-    const repository = await createRepository(t);
+    const repository = await createRepositoryWithMockGit(t);
     await writeArtifact(repository.root, 'work', 'notes.md', '# Work\n');
-    await commitAll(repository.root, 'add work effort');
-    const result = await run(['migrate', 'artifacts'], repository, {
+    await repository.git.commitAll('add work effort');
+    const result = await runMigration(['migrate', 'artifacts'], repository, {
         artifactMigrationGit: {
             run: async () => ({code: 0, failure: null, stderr: '', stdout: Buffer.from('true\n')}),
         },

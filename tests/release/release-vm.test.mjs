@@ -31,8 +31,9 @@ test('release-vm check forwards --previous to the guest check on every Node.js e
 });
 
 test('release-vm check rejects a missing or malformed --previous value with a usage error', async () => {
-    for (const args of [['--previous'], ['--previous', 'v0.5.0'], ['--previous', 'abc12']]) {
-        const result = await runProcess(process.execPath, ['scripts/release-vm.mjs', 'check', 'none.json', 'M', 'none.bundle', ...args], {env: process.env});
-        assert.ok(result.status === 'exited' && result.exitCode === 2 && result.stderr.includes('--previous expects a commit'), args.join(' '));
+    const cases = [['--previous'], ['--previous', 'v0.5.0'], ['--previous', 'abc12']];
+    const results = await Promise.all(cases.map(args => runProcess(process.execPath, ['scripts/release-vm.mjs', 'check', 'none.json', 'M', 'none.bundle', ...args], {env: process.env})));
+    for (const [index, result] of results.entries()) {
+        assert.ok(result.status === 'exited' && result.exitCode === 2 && result.stderr.includes('--previous expects a commit'), cases[index].join(' '));
     }
 });

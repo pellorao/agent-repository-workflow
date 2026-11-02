@@ -4,7 +4,8 @@ import {dirname, join} from 'node:path';
 import test from 'node:test';
 
 import {createTemporaryDirectory} from '../helpers/cleanup.mjs';
-import {runGit as git} from '../helpers/git.mjs';
+import {createRealGitHandle} from '../helpers/git.mjs';
+import {createMockGitHandle} from '../helpers/mock-git.mjs';
 import {createRepository as createGitRepository} from '../helpers/repository-fixture.mjs';
 import {composePlatformResults, createNodeRepositoryFilesystem, runRepositoryWorkflow as runRepositoryWorkflowImplementation} from '../../lib/repository-workflow/workflow.mjs';
 import {parseWorkflowLock} from '../../lib/repository-workflow/workflow-lock.mjs';
@@ -15,8 +16,17 @@ import {serializeCanonicalJson} from '../../lib/common/canonical-contract.mjs';
 /** @typedef {Extract<Awaited<ReturnType<typeof buildWorkflowDistribution>>, {status: 'succeeded'}>} BuiltDistribution */
 /** @typedef {{applied?: boolean, authorized?: boolean, cancelled?: boolean, diagnostics: Array<{blocking?: boolean, code?: string, message?: string, path?: string, phase?: number}>, dryRun?: boolean, handoff?: {auditRequired: boolean, checklist: string[], completionIssue: null | {kind: string, paths: string[]}, gaps: string[]}, plan?: {operations: Array<{action: string, path: string}>} | null, satisfied?: boolean, verified?: boolean}} WorkflowResult */
 
+// Each fixture repository decides once whether its Git is the in-process double or a real process; `git` and
+// `runRepositoryWorkflow` read that handle by root.
+/** @type {Map<string, {git: (argv: string[]) => Promise<{stdout: string}>, runner: import('../../lib/common/git-process.mjs').GitRunner}>} */
+const gitHandles = new Map();
+const git = (/** @type {string} */ root, /** @type {string[]} */ args) => (gitHandles.get(root) ?? assert.fail('Unknown fixture repository.')).git(args);
+
 /** @returns {Promise<WorkflowResult>} */
-const runRepositoryWorkflow = async (/** @type {WorkflowOptions} */ options) => runRepositoryWorkflowImplementation(options);
+const runRepositoryWorkflow = async (/** @type {WorkflowOptions} */ options) => runRepositoryWorkflowImplementation({
+    git: (gitHandles.get(options.repositoryRoot) ?? assert.fail('Unknown fixture repository.')).runner,
+    ...options,
+});
 
 const write = async (/** @type {string} */ root, /** @type {string} */ path, /** @type {string | NodeJS.ArrayBufferView<ArrayBufferLike> | Iterable<string | NodeJS.ArrayBufferView<ArrayBufferLike>> | AsyncIterable<string | NodeJS.ArrayBufferView<ArrayBufferLike>>} */ contents) => {
     const target = join(root, ...path.split('/'));
@@ -82,14 +92,19 @@ const createDistribution = async (/** @type {test.TestContext} */ t, /** @type {
     return distribution;
 };
 
-const createRepository = async (/** @type {test.TestContext} */ t, {localLicenseNote = false} = {}) => {
-    const root = await createGitRepository(t, {prefix: 'arw-workflow-repository-'});
+const createWorkflowRepository = async (/** @type {test.TestContext} */ t, /** @type {boolean} */ real, /** @type {{localLicenseNote?: boolean}} */ {localLicenseNote = false} = {}) => {
+    const root = real
+        ? await createGitRepository(t, {prefix: 'arw-workflow-repository-'})
+        : await createTemporaryDirectory(t, 'arw-workflow-repository-');
+    gitHandles.set(root, real ? createRealGitHandle(root) : await createMockGitHandle(root));
     await write(root, '.scratch/.keep', '');
     if (localLicenseNote) await write(root, 'docs/licenses/arw/local-notes.txt', 'Repository notes.\n');
     await git(root, ['add', '.scratch/.keep', ...(localLicenseNote ? ['docs/licenses/arw/local-notes.txt'] : [])]);
     await git(root, ['commit', '--quiet', '-m', 'fixture']);
     return root;
 };
+const createRepositoryWithMockGit = (/** @type {test.TestContext} */ t, /** @type {{localLicenseNote?: boolean}} */ options = {}) => createWorkflowRepository(t, false, options);
+const createRepositoryWithRealGit = (/** @type {test.TestContext} */ t) => createWorkflowRepository(t, true);
 
 const profile = (/** @type {string[]} */ platforms) => ({
     codeMaps: {excludes: [], includes: [], roots: []},
@@ -112,7 +127,7 @@ const initWorkflow = (/** @type {Omit<WorkflowOptions, 'operation'> & {platforms
 test('init blocks configured targets excluded by the unified Repository write scope', async t => {
     await t.test('tracked target later excluded by .gitignore', async t => {
         const distribution = await createDistribution(t);
-        const root = await createRepository(t);
+        const root = await createRepositoryWithRealGit(t);
         await write(root, '.codex/config.toml', 'include_collaboration_mode_instructions = false\n');
         await git(root, ['add', '.codex/config.toml']);
         await git(root, ['commit', '--quiet', '-m', 'tracked configuration']);
@@ -128,7 +143,7 @@ test('init blocks configured targets excluded by the unified Repository write sc
 
     await t.test('target excluded by .arwignore', async t => {
         const distribution = await createDistribution(t);
-        const root = await createRepository(t);
+        const root = await createRepositoryWithMockGit(t);
         await write(root, '.arwignore', '.codex/\n');
         await git(root, ['add', '.arwignore']);
         await git(root, ['commit', '--quiet', '-m', 'exclude configuration target']);
@@ -153,7 +168,7 @@ test('init blocks configured targets excluded by the unified Repository write sc
             },
         };
         const distribution = await createDistribution(t, {projection});
-        const root = await createRepository(t);
+        const root = await createRepositoryWithMockGit(t);
         const result = await initWorkflow({distribution, repositoryRoot: root});
         assert.ok(result.diagnostics.some(entry => entry.code === 'excluded-planned-target'
             && entry.path === '.git/skills/review/SKILL.md'));
@@ -162,7 +177,7 @@ test('init blocks configured targets excluded by the unified Repository write sc
 
 test('init writes one v2 transaction and verify ignores repository-owned changes', async t => {
     const distribution = await createDistribution(t);
-    const root = await createRepository(t);
+    const root = await createRepositoryWithMockGit(t);
     const initialized = await initWorkflow({distribution, repositoryRoot: root});
     assert.equal(initialized.applied, true, JSON.stringify(initialized.diagnostics));
     assert.equal(initialized.verified, true, JSON.stringify(initialized.diagnostics));
@@ -180,7 +195,7 @@ test('init writes one v2 transaction and verify ignores repository-owned changes
 
 test('a CRLF checkout verifies and updates like the LF original without rewriting files', async t => {
     const distribution = await createDistribution(t);
-    const root = await createRepository(t);
+    const root = await createRepositoryWithMockGit(t);
     const initialized = await initWorkflow({distribution, repositoryRoot: root});
     assert.equal(initialized.applied, true, JSON.stringify(initialized.diagnostics));
     await git(root, ['add', '-A']);
@@ -203,7 +218,7 @@ test('a CRLF checkout verifies and updates like the LF original without rewritin
 
 test('verify checks configured Code Map coverage', async t => {
     const distribution = await createDistribution(t);
-    const root = await createRepository(t);
+    const root = await createRepositoryWithMockGit(t);
     await write(root, 'src/index.js', 'export {};\n');
     await git(root, ['add', 'src/index.js']);
     await git(root, ['commit', '--quiet', '-m', 'source without code map']);
@@ -225,7 +240,7 @@ test('verify checks configured Code Map coverage', async t => {
 
 test('dual-platform init migrates meaningful CLAUDE.md content into AGENTS.md in the same plan', async t => {
     const distribution = await createDistribution(t);
-    const root = await createRepository(t);
+    const root = await createRepositoryWithMockGit(t);
     await writeFile(join(root, 'CLAUDE.md'), 'Local Claude instructions.\n', 'utf8');
     await git(root, ['add', 'CLAUDE.md']);
     await git(root, ['commit', '--quiet', '-m', 'local claude instructions']);
@@ -241,7 +256,7 @@ test('dual-platform init migrates meaningful CLAUDE.md content into AGENTS.md in
 
 test('exact file seeds are created once, enter the lock, and survive remove', async t => {
     const distribution = await createDistribution(t, {exactFileSeed: true});
-    const root = await createRepository(t);
+    const root = await createRepositoryWithMockGit(t);
     const created = await initWorkflow({
         distribution,
         platforms: ['codex', 'claude-code'],
@@ -277,7 +292,7 @@ test('exact file seeds are created once, enter the lock, and survive remove', as
 
 test('a directory declaration seeds only projected baseline files and leaves other files alone', async t => {
     const distribution = await createDistribution(t, {directorySeed: true});
-    const root = await createRepository(t, {localLicenseNote: true});
+    const root = await createRepositoryWithMockGit(t, {localLicenseNote: true});
     const created = await initWorkflow({distribution, repositoryRoot: root});
     assert.equal(created.applied, true, JSON.stringify(created.diagnostics));
     assert.equal(await readFile(join(root, 'docs/licenses/arw/LICENSE.example-source'), 'utf8'), 'License.\n');
@@ -293,7 +308,7 @@ test('a directory declaration seeds only projected baseline files and leaves oth
 
 test('update is byte-stable, blocks managed drift, and returns zero-write on post-authorization change', async t => {
     const distribution = await createDistribution(t);
-    const root = await createRepository(t);
+    const root = await createRepositoryWithMockGit(t);
     const initialized = await initWorkflow({distribution, repositoryRoot: root});
     assert.equal(initialized.applied, true, JSON.stringify(initialized.diagnostics));
     await git(root, ['add', '.']);
@@ -327,7 +342,7 @@ test('update inserts one LF before retained repository-major text', async t => {
             ? {...entry, bytes: Buffer.from('<!-- arw:managed:start -->\nInitial.\n<!-- arw:managed:end -->')}
             : entry),
     };
-    const root = await createRepository(t);
+    const root = await createRepositoryWithMockGit(t);
     const initialized = await initWorkflow({distribution: repositoryMajorDistribution, repositoryRoot: root});
     assert.equal(initialized.applied, true, JSON.stringify(initialized.diagnostics));
     await git(root, ['add', '.']);
@@ -361,7 +376,7 @@ test('update moves repository-owned content of a removed rule document into AGEN
     const distribution = await createDistribution(t);
     const oldRules = Buffer.from('<!-- arw:managed:start -->\n# Old rules\n<!-- arw:managed:end -->\n<!-- arw:repository-owned:start -->\nNone.\n<!-- arw:repository-owned:end -->\n');
     const oldDistribution = {...distribution, payload: [...distribution.payload, {bytes: oldRules, path: 'baseline/docs/agents/old.md'}]};
-    const root = await createRepository(t);
+    const root = await createRepositoryWithMockGit(t);
     const initialized = await initWorkflow({distribution: oldDistribution, repositoryRoot: root});
     assert.equal(initialized.applied, true, JSON.stringify(initialized.diagnostics));
     const oldPath = join(root, 'docs/agents/old.md');
@@ -378,7 +393,7 @@ test('update moves repository-owned content of a removed rule document into AGEN
 
 test('update removes deprecated arw.config.json fields and reports them', async t => {
     const distribution = await createDistribution(t);
-    const root = await createRepository(t);
+    const root = await createRepositoryWithMockGit(t);
     const initialized = await initWorkflow({distribution, repositoryRoot: root});
     assert.equal(initialized.applied, true, JSON.stringify(initialized.diagnostics));
     await writeFile(join(root, 'arw.config.json'), '{\n  "configVersion": 2,\n  "languageChecks": {"docs": {"language": "chinese"}}\n}\n', 'utf8');
@@ -401,7 +416,7 @@ test('update safely migrates a verified v1 repository-major document to baseline
             ? {...entry, bytes: Buffer.from('<!-- arw:managed:start -->\nOld managed rules.\n<!-- arw:managed:end -->\n')}
             : entry),
     };
-    const root = await createRepository(t);
+    const root = await createRepositoryWithMockGit(t);
     const initialized = await initWorkflow({distribution: oldDistribution, repositoryRoot: root});
     assert.equal(initialized.applied, true, JSON.stringify(initialized.diagnostics));
     const currentLock = parseWorkflowLock(await readFile(join(root, 'arw-lock.json'), 'utf8'));
@@ -466,7 +481,7 @@ test('update blocks invalid UTF-8 in repository-owned document bytes without rew
             ? {...entry, bytes: Buffer.from('<!-- arw:managed:start -->\nInitial.\n<!-- arw:managed:end -->')}
             : entry),
     };
-    const root = await createRepository(t);
+    const root = await createRepositoryWithMockGit(t);
     const initialized = await initWorkflow({distribution: repositoryMajorDistribution, repositoryRoot: root});
     assert.equal(initialized.applied, true, JSON.stringify(initialized.diagnostics));
     await git(root, ['add', '.']);
@@ -499,7 +514,7 @@ test('update blocks invalid UTF-8 in repository-owned document bytes without rew
 
 test('remove deletes managed state last while explicitly retaining repository-owned seeds', async t => {
     const distribution = await createDistribution(t);
-    const root = await createRepository(t);
+    const root = await createRepositoryWithMockGit(t);
     const initialized = await initWorkflow({distribution, repositoryRoot: root});
     assert.equal(initialized.applied, true, JSON.stringify(initialized.diagnostics));
     await git(root, ['add', '.']);
@@ -529,7 +544,7 @@ test('remove deletes managed state last while explicitly retaining repository-ow
 
 test('interactive init asks for one Profile and final authorization before writing', async t => {
     const distribution = await createDistribution(t);
-    const root = await createRepository(t);
+    const root = await createRepositoryWithMockGit(t);
     const beforeEntries = (await readdir(root)).sort();
     const answers = new Map([
         ['platforms', 'codex'],
@@ -563,7 +578,7 @@ test('interactive init asks for one Profile and final authorization before writi
 
 test('non-interactive init normalizes one trailing Code Map root slash and rejects other unsafe forms', async t => {
     const distribution = await createDistribution(t);
-    const root = await createRepository(t);
+    const root = await createRepositoryWithMockGit(t);
     await mkdir(join(root, 'src'));
     await writeFile(join(root, 'src', 'index.js'), 'export {};\n', 'utf8');
     await git(root, ['add', 'src/index.js']);
@@ -586,7 +601,7 @@ test('non-interactive init normalizes one trailing Code Map root slash and rejec
     assert.equal(initialized.applied, true, JSON.stringify(initialized.diagnostics));
     assert.deepEqual(parseWorkflowLock(await readFile(join(root, 'arw-lock.json'), 'utf8')).profile.codeMaps.roots, ['src']);
 
-    const invalidRoot = await createRepository(t);
+    const invalidRoot = await createRepositoryWithMockGit(t);
     const rejected = await runRepositoryWorkflow({
         choices: {
             mode: 'non-interactive',
@@ -608,7 +623,7 @@ test('non-interactive init normalizes one trailing Code Map root slash and rejec
 
 test('File Transaction rolls back earlier Workflow files when the lock write fails', async t => {
     const distribution = await createDistribution(t);
-    const root = await createRepository(t);
+    const root = await createRepositoryWithMockGit(t);
     const baseFilesystem = createNodeRepositoryFilesystem(root);
     const result = await initWorkflow({
         distribution,
@@ -643,7 +658,7 @@ test('init rejects malformed marker-bearing existing AGENTS.md before transforma
         await t.test(scenario.name, async t => {
             const distribution = await createDistribution(t);
             for (const transformExistingAgentDocs of [undefined, true]) {
-                const root = await createRepository(t);
+                const root = await createRepositoryWithMockGit(t);
                 await writeFile(join(root, 'AGENTS.md'), scenario.text, 'utf8');
                 await git(root, ['add', 'AGENTS.md']);
                 await git(root, ['commit', '--quiet', '-m', 'malformed markers']);
@@ -666,7 +681,7 @@ test('init rejects malformed marker-bearing existing AGENTS.md before transforma
 
 test('init resolves existing Agent text and orphan Code Maps only after explicit choices', async t => {
     const distribution = await createDistribution(t);
-    const root = await createRepository(t);
+    const root = await createRepositoryWithMockGit(t);
     await write(root, 'AGENTS.md', '# Local instructions\n');
     await write(root, 'src/module/index.js', 'export const value = 1;\n');
     await write(
@@ -718,7 +733,7 @@ test('init resolves existing Agent text and orphan Code Maps only after explicit
 
 test('update blocks dirty state and invalid Reviewer settings without changing the lock', async t => {
     const distribution = await createDistribution(t);
-    const root = await createRepository(t);
+    const root = await createRepositoryWithRealGit(t);
     const initialized = await initWorkflow({distribution, repositoryRoot: root});
     assert.equal(initialized.applied, true, JSON.stringify(initialized.diagnostics));
     await git(root, ['add', '.']);
@@ -746,7 +761,7 @@ test('update blocks dirty state and invalid Reviewer settings without changing t
 
 test('remove requires explicit repository-owned seed choices and can delete them', async t => {
     const distribution = await createDistribution(t);
-    const root = await createRepository(t);
+    const root = await createRepositoryWithMockGit(t);
     const initialized = await initWorkflow({distribution, repositoryRoot: root});
     assert.equal(initialized.applied, true, JSON.stringify(initialized.diagnostics));
     await git(root, ['add', '.']);
@@ -800,7 +815,7 @@ test('platform composition rejects configuration collisions across target kinds 
 
 test('init final verification detects Codex settings lost after transaction writes', async t => {
     const distribution = await createDistribution(t);
-    const root = await createRepository(t);
+    const root = await createRepositoryWithMockGit(t);
     const filesystem = createNodeRepositoryFilesystem(root);
     const initialized = await initWorkflow({
         distribution,
@@ -820,7 +835,7 @@ test('init final verification detects Codex settings lost after transaction writ
 
 test('Codex configuration lifecycle preserves user bytes and stays outside managed lock targets', async t => {
     const distribution = await createDistribution(t);
-    const root = await createRepository(t);
+    const root = await createRepositoryWithMockGit(t);
     const original = 'model = "example"\r\n[features]\r\nfast = true\r\n';
     await write(root, '.codex/config.toml', original);
     await git(root, ['add', '.']); await git(root, ['commit', '--quiet', '-m', 'user config']);
@@ -843,7 +858,7 @@ test('Codex configuration lifecycle preserves user bytes and stays outside manag
 
 test('Codex invalid configuration blocks all writes while Claude-only ignores it', async t => {
     const distribution = await createDistribution(t);
-    const root = await createRepository(t);
+    const root = await createRepositoryWithMockGit(t);
     await write(root, '.codex/config.toml', 'include_collaboration_mode_instructions = "false"\n');
     await git(root, ['add', '.']); await git(root, ['commit', '--quiet', '-m', 'invalid codex config']);
     const index = await git(root, ['write-tree']);

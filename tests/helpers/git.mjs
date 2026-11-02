@@ -1,3 +1,4 @@
+import {createNodeGitRunner} from '../../lib/common/git-process.mjs';
 import {runProcess} from './process.mjs';
 
 /**
@@ -49,3 +50,13 @@ export const commitAll = async (repositoryRoot, message, options = {}) => {
         message,
     ], {environment: options.environment});
 };
+
+/**
+ * The real-Git counterpart of `createMockGitHandle` in `mock-git.mjs`.
+ * @param {string} root
+ */
+export const createRealGitHandle = root => ({
+    commitAll: (/** @type {string} */ message, /** @type {{environment?: NodeJS.ProcessEnv}} */ options = {}) => commitAll(root, message, options),
+    git: (/** @type {string[]} */ argv, /** @type {{environment?: NodeJS.ProcessEnv}} */ options = {}) => runGit(root, argv, options),
+    runner: createNodeGitRunner(root),
+});

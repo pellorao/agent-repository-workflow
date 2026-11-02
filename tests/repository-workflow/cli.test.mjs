@@ -3,8 +3,7 @@ import {readFile, writeFile} from 'node:fs/promises';
 import {join} from 'node:path';
 import test from 'node:test';
 
-import {createRepository, run} from '../helpers/arw-cli.mjs';
-import {commitAll} from '../helpers/git.mjs';
+import {createRepository, createRepositoryWithMockGit, run} from '../helpers/arw-cli.mjs';
 import {runArw} from '../../arw.mjs';
 import {parseCommand, UsageError} from '../../lib/arw.mjs';
 import {createNodeRepositoryFilesystem} from '../../lib/repository-workflow/workflow.mjs';
@@ -34,7 +33,7 @@ const WORKFLOW_INIT_ARGS = [
     '--code-map-exclude',
 ];
 
-const createUpdateDependencies = (/** @type {Buffer} */ managedAgents) => {
+const createUpdateDependencies = (/** @type {Buffer} */ managedAgents, /** @type {{git: {runner: import('../../lib/common/git-process.mjs').GitRunner}}} */ repository) => {
     const policyBytes = Buffer.from('.tmp/\n');
     /** @type {NonNullable<NonNullable<Parameters<typeof runArw>[1]>['workflowDependencies']>['distribution']} */
     const distribution = {
@@ -69,16 +68,17 @@ const createUpdateDependencies = (/** @type {Buffer} */ managedAgents) => {
             },
         },
         distribution,
+        git: repository.git.runner,
     };
     return workflowDependencies;
 };
 
-const createInitializedWorkflowRepository = async (/** @type {import('node:test').TestContext} */ t, /** @type {Buffer} */ managedAgents) => {
-    const repository = await createRepository(t);
-    const workflowDependencies = createUpdateDependencies(managedAgents);
+const createInitializedWorkflowRepository = async (/** @type {import('node:test').TestContext} */ t, /** @type {Buffer} */ managedAgents, createFixture = createRepositoryWithMockGit) => {
+    const repository = await createFixture(t);
+    const workflowDependencies = createUpdateDependencies(managedAgents, repository);
     const initialized = await run(WORKFLOW_INIT_ARGS, repository, {workflowDependencies});
     assert.equal(initialized.result, 0, JSON.stringify(initialized.events));
-    await commitAll(repository.root, 'workflow initialized');
+    await repository.git.commitAll('workflow initialized');
     return {repository, workflowDependencies};
 };
 
@@ -96,8 +96,8 @@ const createWriteRejectingRepositoryFilesystem = (/** @type {string} */ reposito
 };
 
 test('workflow CLI reports an uninitialized Repository through the public Workflow Module', async t => {
-    const repository = await createRepository(t);
-    const result = await run(['workflow', 'verify'], repository);
+    const repository = await createRepositoryWithMockGit(t);
+    const result = await run(['workflow', 'verify'], repository, {workflowDependencies: {git: repository.git.runner}});
 
     assert.equal(result.result, 1);
     assert.deepEqual(result.events.map(event => event.channel), ['stderr', 'stderr']);
@@ -108,7 +108,7 @@ test('workflow CLI reports an uninitialized Repository through the public Workfl
 test('workflow update dry-run reports only operation actions and Repository-relative paths without writing', async t => {
     const {repository} = await createInitializedWorkflowRepository(t, ORIGINAL_MANAGED_AGENTS);
     const workflowDependencies = {
-        ...createUpdateDependencies(UPDATED_MANAGED_AGENTS),
+        ...createUpdateDependencies(UPDATED_MANAGED_AGENTS, repository),
         filesystem: createWriteRejectingRepositoryFilesystem(repository.root),
     };
 
@@ -143,7 +143,7 @@ test('interactive workflow update shows the concise plan before confirmation and
             events.push({channel: 'stdout', message});
             if (message === 'write-lock arw-lock.json') summaryComplete = true;
         },
-        workflowDependencies: createUpdateDependencies(UPDATED_MANAGED_AGENTS),
+        workflowDependencies: createUpdateDependencies(UPDATED_MANAGED_AGENTS, repository),
     });
 
     assert.deepEqual({events, result}, {
@@ -160,14 +160,14 @@ test('interactive workflow update shows the concise plan before confirmation and
 test('workflow update reports removed deprecated config fields and is then a no-op', async t => {
     const {repository, workflowDependencies} = await createInitializedWorkflowRepository(t, ORIGINAL_MANAGED_AGENTS);
     await writeFile(join(repository.root, 'arw.config.json'), '{"configVersion":2,"languageChecks":{"a":{}}}\n');
-    await commitAll(repository.root, 'old config');
+    await repository.git.commitAll('old config');
 
     const updated = await run(['workflow', 'update', '--non-interactive'], repository, {workflowDependencies});
     assert.deepEqual(updated.events.map(event => event.message), [
         'Workflow update completed.',
         'Removed deprecated fields from arw.config.json: languageChecks.',
     ]);
-    await commitAll(repository.root, 'updated');
+    await repository.git.commitAll('updated');
     const again = await run(['workflow', 'update', '--non-interactive'], repository, {workflowDependencies});
     assert.deepEqual(again.events.map(event => event.message), ['No changes.']);
 });
@@ -178,7 +178,7 @@ test('workflow update lists agent role seed files that the new lock no longer re
     const lock = JSON.parse(await readFile(lockPath, 'utf8'));
     lock.repositoryOwnedSeeds.push({identity: 'reviewer', kind: 'agent-role', ownership: 'repository-owned-seed', path: '.codex/agents/reviewer.toml', platform: lock.profile.platforms[0], strategy: 'declared-role-identity'});
     await writeFile(lockPath, `${JSON.stringify(lock, null, 2)}\n`);
-    await commitAll(repository.root, 'old role seed');
+    await repository.git.commitAll('old role seed');
 
     const updated = await run(['workflow', 'update', '--non-interactive'], repository, {workflowDependencies});
     assert.deepEqual(updated.events.map(event => event.message), [
@@ -197,7 +197,7 @@ test('interactive workflow update preserves cancellation after showing the conci
             assert.equal(question.id, 'confirm-plan');
             return 'cancel';
         },
-        workflowDependencies: createUpdateDependencies(UPDATED_MANAGED_AGENTS),
+        workflowDependencies: createUpdateDependencies(UPDATED_MANAGED_AGENTS, repository),
     });
 
     assert.deepEqual(cancelled, {
@@ -214,7 +214,7 @@ test('interactive workflow update preserves cancellation after showing the conci
 test('interactive workflow update reports a safe plan when diagnostics stop before confirmation', async t => {
     const {repository} = await createInitializedWorkflowRepository(t, ORIGINAL_MANAGED_AGENTS);
     await writeFile(join(repository.root, '.arwignore'), Buffer.from([0]));
-    await commitAll(repository.root, 'malformed workflow policy');
+    await repository.git.commitAll('malformed workflow policy');
     let prompted = false;
 
     const result = await run(['workflow', 'update'], repository, {
@@ -222,7 +222,7 @@ test('interactive workflow update reports a safe plan when diagnostics stop befo
             prompted = true;
             return 'yes';
         },
-        workflowDependencies: createUpdateDependencies(UPDATED_MANAGED_AGENTS),
+        workflowDependencies: createUpdateDependencies(UPDATED_MANAGED_AGENTS, repository),
     });
 
     assert.equal(result.result, 1);
@@ -245,7 +245,7 @@ test('interactive workflow update does not repeat a plan already shown before an
             assert.equal(question.id, 'confirm-plan');
             return 'invalid';
         },
-        workflowDependencies: createUpdateDependencies(UPDATED_MANAGED_AGENTS),
+        workflowDependencies: createUpdateDependencies(UPDATED_MANAGED_AGENTS, repository),
     });
 
     assert.equal(result.result, 2);
@@ -259,7 +259,7 @@ test('interactive workflow update does not repeat a plan already shown before an
 });
 
 test('workflow update dry-run reports diagnostics without serializing its internal plan', async t => {
-    const {repository, workflowDependencies} = await createInitializedWorkflowRepository(t, ORIGINAL_MANAGED_AGENTS);
+    const {repository, workflowDependencies} = await createInitializedWorkflowRepository(t, ORIGINAL_MANAGED_AGENTS, createRepository);
     await writeFile(join(repository.root, 'untracked.txt'), 'untracked\n', 'utf8');
 
     const result = await run(['workflow', 'update', '--dry-run'], repository, {workflowDependencies});
@@ -273,7 +273,7 @@ test('workflow update dry-run reports diagnostics without serializing its intern
 });
 
 test('Code Map CLI 只公开有命名空间的只读验证操作', async t => {
-    const repository = await createRepository(t);
+    const repository = await createRepositoryWithMockGit(t);
     const lock = createWorkflowLock({
         managedTargets: [],
         profile: {
@@ -291,7 +291,7 @@ test('Code Map CLI 只公开有命名空间的只读验证操作', async t => {
         result: 0,
     });
 
-    const uninitialized = await createRepository(t);
+    const uninitialized = await createRepositoryWithMockGit(t);
     const finding = await run(['code-map', 'verify'], uninitialized);
     assert.equal(finding.result, 1);
     assert.deepEqual(finding.events.map(event => event.channel), ['stderr']);
