@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0037:01",
+  "exception": {
+    "confirmedAt": "2026-11-02T05:50:34Z",
+    "reason": "Single-issue bug fix with no design decision (user confirmed 2026-11-02 in projects AGENTS)."
+  },
+  "subject": {
+    "filePath": ".scratch/0037-guest-check-path-order/issues/01-guest-check-path-order.md",
+    "sha256": "9814bbc89b4e8d882429c76d35ad45de5ec9a5b7589d7926abd56e30a0775631"
+  },
+  "result": "not-applicable"
+}

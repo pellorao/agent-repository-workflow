@@ -67,7 +67,6 @@ step(`Node.js 满足 engines (>=${minimumNode})`, {ok: Number(process.versions.n
 step('arw 安装前不可解析', fresh(locate), false);
 if (WINDOWS) {
     step('PowerShell 在新终端可解析', fresh('where powershell.exe'));
-    step('写入含非 ASCII 的用户 PATH 项', userPath("[Environment]::SetEnvironmentVariable('Path', [Environment]::GetEnvironmentVariable('Path','User') + ';' + $e, 'User')"));
 }
 const commit = step('读取候选 commit', run('git', ['rev-parse', 'HEAD'], {cwd: ROOT}));
 const staging = mkdtempSync(join(tmpdir(), 'arw-release-archive-'));
@@ -89,6 +88,8 @@ if (previous !== undefined) {
     const previousVersion = JSON.parse(readFileSync(join(previousSource, 'package.json'), 'utf8')).version;
     step('安装上一发布版', run(process.execPath, ['install.mjs', '--release-tag', previousVersion, '--non-interactive', '--register-path', 'true'], {cwd: previousExtracted}));
 }
+// 上一发布版可能还不会正确读写非 ASCII 的 PATH 项, 所以在其安装之后, 候选安装之前写入.
+if (WINDOWS) step('写入含非 ASCII 的用户 PATH 项', userPath("[Environment]::SetEnvironmentVariable('Path', [Environment]::GetEnvironmentVariable('Path','User') + ';' + $e, 'User')"));
 step('从压缩包安装', run(process.execPath, [
     'install.mjs', '--release-tag', VERSION, '--non-interactive', '--register-path', 'true',
 ], {cwd: extracted}));
