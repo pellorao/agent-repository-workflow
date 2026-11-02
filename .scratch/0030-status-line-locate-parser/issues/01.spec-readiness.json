@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0030:01",
+  "exception": {
+    "confirmedAt": "2026-11-02T05:14:24Z",
+    "reason": "Single-issue bug fix with no design decision (user confirmed 2026-11-02 in projects AGENTS)."
+  },
+  "subject": {
+    "filePath": ".scratch/0030-status-line-locate-parser/issues/01-status-line-locate-parser.md",
+    "sha256": "4e3f49607ec75c2dee6d84de74bdafaf2428e5bdbdaa728459b8502863a85ed0"
+  },
+  "result": "not-applicable"
+}

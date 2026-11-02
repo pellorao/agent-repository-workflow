@@ -218,3 +218,49 @@ test('Application Sync replaces only the Status line outside fenced code', () =>
         '# Update API\n\nStatus: completed\nModule implementation issue: `issue:billing:0007:07`\n\n```text\nStatus: ready-for-agent\n```\n\n## Comments\n\n### Downstream changes\n\n- None.\n',
     );
 });
+
+test('Application Sync rewrites a non-canonical plain Status line to the canonical form and ignores a bold Status line', () => {
+    const sync = (/** @type {string} */ applicationText) => synchronizeApplicationIssues({
+        moduleIssues: {
+            billing: [{
+                path: 'module.md',
+                record: {association: {coordinate: 'issue:payments:0001:02', kind: 'application-source'}, id: 'issue:0007:07', kind: 'implementation', status: 'completed'},
+                text: '# Work\n\nStatus: completed\nApplication source issue: `issue:payments:0001:02`\n',
+            }],
+        },
+        applicationIssues: [{
+            path: 'application.md',
+            record: {association: {coordinate: 'issue:billing:0007:07', kind: 'module-implementation'}, id: 'issue:0001:02', kind: 'application-source', status: 'ready-for-agent'},
+            text: applicationText,
+        }],
+        applicationName: 'payments',
+    });
+    const tail = '\n## Comments\n\n### Downstream changes\n\n- None.\n';
+
+    const spaced = sync('# Update API\n\nStatus:   ready-for-agent  \nModule implementation issue: `issue:billing:0007:07`\n');
+    assert.equal(spaced.status, 'succeeded');
+    assert.equal(spaced.replacements[0].bytes.toString(), `# Update API\n\nStatus: completed\nModule implementation issue: \`issue:billing:0007:07\`\n${tail}`);
+
+    const mixed = sync('# Update API\n\nStatus: ready-for-agent\n**Status:** ready-for-agent\nModule implementation issue: `issue:billing:0007:07`\n');
+    assert.equal(mixed.status, 'succeeded');
+    assert.equal(mixed.replacements[0].bytes.toString(), `# Update API\n\nStatus: completed\n**Status:** ready-for-agent\nModule implementation issue: \`issue:billing:0007:07\`\n${tail}`);
+});
+
+test('Application Sync reports an invalid Status line for text containing a lone CR instead of rewriting another line', () => {
+    const result = synchronizeApplicationIssues({
+        moduleIssues: {
+            billing: [{
+                path: 'module.md',
+                record: {association: {coordinate: 'issue:payments:0001:02', kind: 'application-source'}, id: 'issue:0007:07', kind: 'implementation', status: 'completed'},
+                text: '# Work\n\nStatus: completed\nApplication source issue: `issue:payments:0001:02`\n',
+            }],
+        },
+        applicationIssues: [{
+            path: 'application.md',
+            record: {association: {coordinate: 'issue:billing:0007:07', kind: 'module-implementation'}, id: 'issue:0001:02', kind: 'application-source', status: 'ready-for-agent'},
+            text: '# T\rStatus: ready-for-agent\n## Blocked by\n\n- None\n',
+        }],
+        applicationName: 'payments',
+    });
+    assert.deepEqual(result.diagnostics.map(diagnostic => diagnostic.code), ['application-status-replacement-invalid']);
+});

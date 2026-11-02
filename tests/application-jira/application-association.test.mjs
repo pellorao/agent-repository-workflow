@@ -168,3 +168,44 @@ test('Application Association rewrites External dependency lines only inside Blo
     assert.equal(result.status, 'succeeded');
     assert.equal(result.replacements[0].bytes.toString(), `# E\n\n## What to build\n\n${dependency}\n\n## Blocked by\n\n- 07 - Wait.\n`);
 });
+
+test('Application Association accepts non-canonical Status and Blocked by whitespace and keeps a bold Status line', () => {
+    const record = {association: undefined, blockerRecords: [], id: 'issue:0007:07', kind: 'implementation', number: '07', status: 'ready-for-agent', title: 'Add idempotency'};
+    const applicationRecord = {...record, id: 'issue:0001:02', number: '02'};
+    const associate = (/** @type {string} */ moduleText) => associateApplicationIssue({
+        moduleIssueId: record.id,
+        moduleIssues: {billing: [{path: 'module.md', record, text: moduleText}]},
+        moduleName: 'billing',
+        applicationIssueId: applicationRecord.id,
+        applicationIssues: [{path: 'application.md', record: applicationRecord, text: '# Update API\n\nStatus:ready-for-agent \n\n## Blocked by\n\n- None\n'}],
+        applicationName: 'payments',
+    });
+
+    const spaced = associate('# Add idempotency\n\nStatus:  ready-for-agent \n\n## Blocked by  \n\n- None\n');
+    assert.deepEqual(spaced.diagnostics, []);
+    assert.equal(spaced.status, 'succeeded');
+    assert.equal(
+        spaced.replacements[0].bytes.toString(),
+        '# Add idempotency\n\nStatus: ready-for-agent\nApplication source issue: `issue:payments:0001:02`\n\n## Blocked by  \n\n- None - can start immediately\n',
+    );
+    assert.equal(spaced.replacements[1].bytes.toString(), '# Update API\n\nStatus: ready-for-agent\nModule implementation issue: `issue:billing:0007:07`\n\n## Blocked by\n\n- None\n');
+
+    const mixed = associate('# Add idempotency\n\nStatus: ready-for-agent\n**Status:** ready-for-agent\n\n## Blocked by\n\n- None\n');
+    assert.equal(mixed.status, 'succeeded');
+    assert.equal(mixed.replacements[0].bytes.toString().includes('**Status:** ready-for-agent\n\n## Blocked by'), true);
+});
+
+test('Application Association blocks text containing a lone CR instead of misplacing the Status rewrite', () => {
+    const record = {association: undefined, blockerRecords: [], id: 'issue:0007:07', kind: 'implementation', number: '07', status: 'ready-for-agent', title: 'Add idempotency'};
+    const applicationRecord = {...record, id: 'issue:0001:02', number: '02'};
+    const result = associateApplicationIssue({
+        moduleIssueId: record.id,
+        moduleIssues: {billing: [{path: 'module.md', record, text: '# T\rStatus: ready-for-agent\n## Blocked by\n\n- None\n'}]},
+        moduleName: 'billing',
+        applicationIssueId: applicationRecord.id,
+        applicationIssues: [{path: 'application.md', record: applicationRecord, text: '# Update API\n\nStatus: ready-for-agent\n\n## Blocked by\n\n- None\n'}],
+        applicationName: 'payments',
+    });
+    assert.equal(result.status, 'blocked');
+    assert.deepEqual(result.diagnostics.map(diagnostic => diagnostic.code), ['association-document-invalid']);
+});
