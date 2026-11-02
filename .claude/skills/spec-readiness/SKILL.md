@@ -30,7 +30,7 @@ issue 不列治理要求引用: Reviewer 根据 `## What to build` 在 `docs/spe
 ## Prepare and review
 
 1. 准备 Input 对象: 非空的 `inputs` 数组, 每项是 `role` 和仓库相对的 `filePath`. 至少包含一个 `governing-spec` 或 `governing-prd`, 以及每个适用的 `adr`, `domain-context` (每个适用的上下文文档) 和 `architecture-evidence` (已有的必要实现事实). 每个 Input 准备时必须已经存在, 并且是本轮权威设计或必要证据, 不用尚未创建的内容代替. Agent 指令, Reviewer Role, 平台 Agent 配置和本地跟踪器 issue 永远不是 Input; 不推断省略的 Input, 也不加入无关的术语表或决定.
-2. `prepare` 前自检 (多数重复复审问题都能由此提前发现): `What to build` 与验收标准中的命令, 字段和行为名称都能 grep 到 (`path:line` 越界, 不存在的路径和缺观察方式的验收项由 `prepare` 的 stderr `warning:` 行报告, 逐条处理); subject 与 spec 对同一命令, 字段, 规则的表述一致 (改过一处就 grep 另一处旧写法); 声明的每项责任或规则都有 Interface 条目 (输入, 输出, 错误和重复, 缺失分支的结果); 设计依赖的外部事实 (运行时输出形状, 冻结补丁, 他处规格) 已在 Input 中.
+2. `prepare` 前自检 (多数重复复审问题都能由此提前发现): `What to build` 与验收标准中的命令, 字段和行为名称都能 grep 到 (`path:line` 越界, 不存在的路径和缺观察方式的验收项由 `prepare` 的 stderr `warning:` 行报告, 逐条处理); subject 与 spec 对同一命令, 字段, 规则的表述一致 (改过一处就 grep 另一处旧写法); 声明的每项责任或规则都有 Interface 条目 (输入, 输出, 错误和重复, 缺失分支的结果); 设计依赖的外部事实 (运行时输出形状, 冻结补丁, 他处规格) 已在 Input 中; spec 与 issue 写明的每个失败, 拒绝和边界结果, 测试段都有对应观察; `ADR Evaluation` 逐项列出本次改变的权威来源, 持久状态和恢复合同.
 3. 运行 `arw spec-readiness prepare --issue issue:<NNNN>:<NN>`, Input 对象从标准输入传入, 或用 `--input <temp-json-path>`. 它冻结 subject, 创建不可变的 Reviewer Request, 在 issue 工作区写出审核轮目录 `rounds/<requestId>/` (空草稿 `report/draft.txt`, subject 与 Input 快照, 规则副本和 `.jsonl` 请求; 复审时另有两轮快照差异 `changes.diff`), 只打印轮目录. 后续 `prepare` 使较早的请求失去生成和提升资格.
 4. 按 `../reviewer-launch/SKILL.md` 的 Review rounds 节运行本轮 Reviewer. 运行中的 Request 及其快照保持不变, 修正后的版本重新 `prepare`. 只有 Reviewer 返回最终 `ready` 后才把草稿当作完整结果; 草稿格式由 `docs/agents/roles/spec-readiness-reviewer.md` 的 Output 节定义.
 
