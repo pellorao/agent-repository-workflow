@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0055:01",
+  "request": {
+    "digest": "c3771aa9f32323bfb1ac51be2f766945af1e37507d67f937ead06fed8ab07eae",
+    "filePath": ".tmp/claude-code/ad35ce58-362f-4db3-a1d5-a5e8444e3975/0055_01/spec-readiness/requests/request-f94ae7f9-d472-4e01-b379-10d2d081fa7b.json",
+    "id": "f94ae7f9-d472-4e01-b379-10d2d081fa7b"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "ba4f23b253fe4bd4d17bde006dd684e3b4ae723ec9443a706c6f32eb66815b7e"
+  },
+  "inputs": [
+    {
+      "filePath": ".scratch/0055-skill-distribution-list/spec.md",
+      "role": "governing-spec",
+      "sha256": "70e251d2b15094d9ae421094eb46497821e365473948d135f52b6be6bfdfb01d"
+    },
+    {
+      "filePath": "CONTEXT.md",
+      "role": "domain-context",
+      "sha256": "6f89aa3efc9e393170b2d9380bacf5b1b11aea0d9c614e9367384d99767bb1fb"
+    },
+    {
+      "filePath": "distribution/config.json",
+      "role": "architecture-evidence",
+      "sha256": "317d7e5f9e132d5b57e20adb6fa5313c03e1db2a6cc8b87134b6a38c3f1ad4f6"
+    },
+    {
+      "filePath": "docs/adr/0026-use-source-checkout-workflow-files-as-distribution-authority.md",
+      "role": "adr",
+      "sha256": "a5a43c840f77160401d5e52b05fa2a2b386e5a13e6ea18e0d8bcc6d6df72a38d"
+    },
+    {
+      "filePath": "lib/workflow-distribution/workflow-distribution-sync.mjs",
+      "role": "architecture-evidence",
+      "sha256": "3cf979ea05576daaa8b0b768bb5614fcc8416f0f4541298faccfe501254ec22f"
+    },
+    {
+      "filePath": "lib/workflow-distribution/workflow-distribution.mjs",
+      "role": "architecture-evidence",
+      "sha256": "269ab32939d733c5479d32f942b9b3dd9a367811e54d2db8b97ca12941155002"
+    },
+    {
+      "filePath": "scripts/check-workflow-distribution.mjs",
+      "role": "architecture-evidence",
+      "sha256": "af81a52dedb6d8e2dd6faafc41e11635b73c3d645ab6cc76a40fa449764a3702"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0055-skill-distribution-list/issues/01-skill-distribution-list.md",
+    "sha256": "2f34b876c8b064926522aa54e92b2f7be1eaeb734de060c49ffcd25328b9cdfe"
+  },
+  "result": "satisfied"
+}

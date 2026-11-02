@@ -35,7 +35,9 @@ const write = async (/** @type {string} */ root, /** @type {string} */ path, /**
 };
 
 const distributionConfig = {
+    distributedSkills: ['review'],
     repositoryOwnedSeeds: ['.arwignore'],
+    sourceOnlySkills: [],
 };
 
 const projectionConfig = {

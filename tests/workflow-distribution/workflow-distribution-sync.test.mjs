@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {mkdir, readFile, writeFile} from 'node:fs/promises';
+import {mkdir, readFile, rm, symlink, writeFile} from 'node:fs/promises';
 import {createServer} from 'node:net';
 import {dirname, join} from 'node:path';
 import test from 'node:test';
@@ -33,7 +33,9 @@ const createSuccessfulFilesystem = async (/** @type {Parameters<typeof createSco
 };
 
 const distributionConfig = {
+    distributedSkills: ['review'],
     repositoryOwnedSeeds: ['.arwignore'],
+    sourceOnlySkills: [],
 };
 
 const projectionConfig = {
@@ -372,6 +374,10 @@ test('sync directly rebuilds the fixed generated range and leaves source-only Sk
     await write(root, '.agents/skills/reviewer-capability/references/strata.md', 'Source-only model operations.\n');
     await write(root, '.agents/skills/release/SKILL.md', 'Source-only release operations.\n');
     await write(root, '.agents/skills/unattended-run/SKILL.md', 'Source-only unattended operations.\n');
+    await write(root, 'distribution/config.json', `${JSON.stringify({
+        ...distributionConfig,
+        sourceOnlySkills: ['release', 'reviewer-capability', 'unattended-run'],
+    }, null, 2)}\n`);
     await write(root, 'distribution/rogue/nested.txt', 'obsolete\n');
     const configurationBefore = await readFile(join(root, 'distribution', 'config.json'));
     await requireSync({repositoryRoot: root, stateAdapter: cleanState([])});
@@ -396,6 +402,42 @@ test('sync directly rebuilds the fixed generated range and leaves source-only Sk
         assert.ok(projected.managedTargets.some(file => file.path.endsWith('/review/SKILL.md')));
         assert.ok(projected.managedTargets.some(file => file.path === 'docs/agents/roles/reviewer.md'));
     }
+});
+
+test('sync blocks before deleting anything when Skill registration is wrong', async t => {
+    const cases = /** @type {Array<[string, (root: string) => Promise<void>, string]>} */ ([
+        ['unregistered Skill', root => write(root, '.agents/skills/extra/SKILL.md', 'extra\n'), 'skill-unregistered'],
+        ['stale name', root => write(root, 'distribution/config.json', `${JSON.stringify({...distributionConfig, sourceOnlySkills: ['gone']})}\n`), 'skill-registration-stale'],
+        ['invalid list', root => write(root, 'distribution/config.json', `${JSON.stringify({...distributionConfig, distributedSkills: []})}\n`), 'skill-lists-invalid'],
+        ['stray file', root => write(root, '.agents/skills/notes.md', 'notes\n'), 'skill-source-path-invalid'],
+        ['symbolic link', root => symlink(root, join(root, '.agents', 'skills', 'linked'), 'dir'), 'filesystem-link-unsupported'],
+    ]);
+    for (const [name, arrange, code] of cases) {
+        const root = await createSourceCheckout(t);
+        try {
+            await arrange(root);
+        } catch (error) {
+            if (name === 'symbolic link') continue;
+            throw error;
+        }
+        const result = await syncWorkflowDistribution({repositoryRoot: root, stateAdapter: cleanState([])});
+        assert.equal(result.status, 'blocked', name);
+        assert.ok(result.diagnostics.some(entry => entry.code === code), name);
+        assert.equal(await readFile(obsoletePath(root), 'utf8'), '# Obsolete\n', name);
+    }
+});
+
+test('sync ignores empty Skill directories and fails when .agents/skills is missing', async t => {
+    const root = await createSourceCheckout(t);
+    await mkdir(join(root, '.agents', 'skills', 'empty'));
+    const result = await syncWorkflowDistribution({repositoryRoot: root, stateAdapter: cleanState([])});
+    assert.equal(result.status, 'succeeded', JSON.stringify(result.diagnostics));
+    const bare = await createSourceCheckout(t);
+    await rm(join(bare, '.agents'), {recursive: true});
+    const missing = await syncWorkflowDistribution({repositoryRoot: bare, stateAdapter: cleanState([])});
+    assert.notEqual(missing.status, 'succeeded');
+    assert.ok(missing.diagnostics.length > 0);
+    assert.equal(await readFile(obsoletePath(bare), 'utf8'), '# Obsolete\n');
 });
 
 test('sync blocks symbolic links in source trees', async t => {

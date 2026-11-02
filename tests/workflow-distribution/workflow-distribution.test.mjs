@@ -58,7 +58,9 @@ const projectionConfig = ({configured = true} = {}) => ({
 });
 
 const distributionConfig = {
+    distributedSkills: ['review'],
     repositoryOwnedSeeds: ['.arwignore'],
+    sourceOnlySkills: [],
 };
 
 const write = async (/** @type {string} */ root, /** @type {string} */ path, /** @type {string | NodeJS.ArrayBufferView<ArrayBufferLike> | Buffer<ArrayBuffer> | Iterable<string | NodeJS.ArrayBufferView<ArrayBufferLike>> | AsyncIterable<string | NodeJS.ArrayBufferView<ArrayBufferLike>>} */ contents) => {
@@ -208,6 +210,62 @@ test('Workflow Distribution blocks malformed repository-owned seed types without
     assert.equal(result.status, 'blocked');
     assert.deepEqual(result.diagnostics.map(entry => entry.code), ['repository-owned-seeds-invalid']);
     assert.equal('payload' in result, false);
+});
+
+test('Workflow Distribution configuration rejects missing and malformed Skill lists', () => {
+    const codes = (/** @type {unknown} */ value) => validateDistributionConfig(value).map(entry => entry.code);
+    assert.deepEqual(codes(distributionConfig), []);
+    assert.deepEqual(codes({repositoryOwnedSeeds: ['.arwignore'], sourceOnlySkills: []}), ['distribution-config-invalid']);
+    assert.deepEqual(codes({distributedSkills: ['review'], repositoryOwnedSeeds: ['.arwignore']}), ['distribution-config-invalid']);
+    for (const bad of [
+        {distributedSkills: 'review'},
+        {distributedSkills: ['Review']},
+        {distributedSkills: ['review', 'review']},
+        {distributedSkills: []},
+        {sourceOnlySkills: ['review']},
+        {sourceOnlySkills: ['release', 'release']},
+    ]) {
+        assert.deepEqual(codes({...distributionConfig, ...bad}), ['skill-lists-invalid']);
+    }
+});
+
+/** @param {Record<string, string>} files */
+const createSourceRoot = async (/** @type {test.TestContext} */ t, files) => {
+    const root = await createTemporaryDirectory(t, 'arw-skill-registration-');
+    for (const [path, text] of Object.entries(files)) await write(root, path, text);
+    return root;
+};
+
+const noPlatformAdapter = {evaluate: () => ({diagnostics: [], managedTargets: [], repositoryOwnedSeeds: [], status: 'succeeded'})};
+const adapters = {'claude-code': noPlatformAdapter, codex: noPlatformAdapter};
+
+test('production check reports unregistered, stale and misplaced Skill sources, and a source root without .agents/skills', async t => {
+    const root = await createDistribution(t);
+    const check = async (/** @type {string} */ sourceRoot) => checkWorkflowDistributionProduction({adapters, distributionDirectory: root, sourceRoot});
+    const registered = await createSourceRoot(t, {'.agents/skills/review/SKILL.md': 'review\n'});
+    assert.deepEqual(await check(registered), {diagnostics: [], status: 'passed'});
+
+    const drifted = await createSourceRoot(t, {
+        '.agents/skills/Bad_Name/SKILL.md': 'bad\n',
+        '.agents/skills/extra/SKILL.md': 'extra\n',
+        '.agents/skills/notes.md': 'notes\n',
+    });
+    const result = await check(drifted);
+    assert.equal(result.status, 'failed');
+    assert.deepEqual(result.diagnostics.map(entry => [entry.code, entry.path]), [
+        ['skill-unregistered', '.agents/skills/Bad_Name'],
+        ['skill-unregistered', '.agents/skills/extra'],
+        ['skill-source-path-invalid', '.agents/skills/notes.md'],
+        ['skill-registration-stale', 'distribution/config.json'],
+    ]);
+
+    const emptyOnly = await createSourceRoot(t, {'.agents/skills/review/SKILL.md': 'review\n'});
+    await mkdir(join(emptyOnly, '.agents', 'skills', 'empty'));
+    assert.deepEqual(await check(emptyOnly), {diagnostics: [], status: 'passed'});
+
+    const missing = await check(await createSourceRoot(t, {'README.md': 'none\n'}));
+    assert.equal(missing.status, 'failed');
+    assert.ok(missing.diagnostics.length > 0);
 });
 
 test('Workflow Distribution rejects a retired native Reviewer seed path', async t => {
@@ -488,6 +546,7 @@ test('Platform Adapter blocks invalid UTF-8 before transforming baseline AGENTS 
 
 test('production check rejects conflicting targets produced across configured platforms', async t => {
     const root = await createDistribution(t);
+    const sourceRoot = await createSourceRoot(t, {'.agents/skills/review/SKILL.md': 'review\n'});
     const adapter = (/** @type {string} */ bytes) => ({
         evaluate: (/** @type {{platform: string}} */ {platform}) => ({
             diagnostics: [],
@@ -503,6 +562,7 @@ test('production check rejects conflicting targets produced across configured pl
             codex: adapter('codex\n'),
         },
         distributionDirectory: root,
+        sourceRoot,
     }), {
         diagnostics: [{
             code: 'managed-target-conflict',
@@ -515,6 +575,7 @@ test('production check rejects conflicting targets produced across configured pl
 
 test('production check rejects a managed target that collides with a seed from another platform', async t => {
     const root = await createDistribution(t);
+    const sourceRoot = await createSourceRoot(t, {'.agents/skills/review/SKILL.md': 'review\n'});
     const result = await checkWorkflowDistributionProduction({
         adapters: {
             'claude-code': {
@@ -541,6 +602,7 @@ test('production check rejects a managed target that collides with a seed from a
             },
         },
         distributionDirectory: root,
+        sourceRoot,
     });
 
     assert.deepEqual(result, {

@@ -8,6 +8,8 @@ import {syncWorkflowDistribution} from '../../lib/workflow-distribution/workflow
 import {buildWorkflowDistribution, repositoryOwnedSeedPaths} from '../../lib/workflow-distribution/workflow-distribution.mjs';
 
 const distributionConfig = {
+    distributedSkills: ['review'],
+    sourceOnlySkills: [],
     repositoryOwnedSeeds: ['.arwignore', '.custom', 'docs/licenses/arw/', 'docs/licenses/arw/LOCAL.txt'],
 };
 
@@ -90,7 +92,7 @@ test('sync preserves every configured exact file seed and deletes only obsolete 
 
 test('a directory seed without a projected baseline file fails before sync deletes anything', async t => {
     const repositoryRoot = await createSourceCheckout(t);
-    await write(repositoryRoot, 'distribution/config.json', `${JSON.stringify({repositoryOwnedSeeds: ['.arwignore', 'missing/']})}\n`);
+    await write(repositoryRoot, 'distribution/config.json', `${JSON.stringify({...distributionConfig, repositoryOwnedSeeds: ['.arwignore', 'missing/']})}\n`);
     const result = await syncWorkflowDistribution({repositoryRoot, stateAdapter: cleanState});
     assert.equal(result.status, 'blocked');
     assert.deepEqual(result.diagnostics, [{

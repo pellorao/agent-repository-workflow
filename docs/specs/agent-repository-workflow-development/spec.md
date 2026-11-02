@@ -39,7 +39,7 @@ ARW 源码仓库不作为自身 Workflow Distribution 的目标仓库. Repositor
 
 普通开发直接修改这些位置. `distribution/` 是发布前同步派生并经提交审核的安装载荷, 不是日常编写来源. `docs/licenses/arw/` 中不匹配 `LICENSE.<source-id>` 的其他直接文件不是 Workflow Distribution 的实际许可证来源, 也不因位于该目录而自动进入载荷. Upstream Sync 只更新 `.agents/skills/`, 映射的许可证目标和自己的来源配置与采用记录. 安装, 仓库工作流和源码仓库发布都不反向修改实际来源.
 
-仅供 Source Checkout 使用的 `$reviewer-capability`, `$release`, `$upstream-sync`, `$platform-standards` 和 `$unattended-run` Skill 不属于共享工作流载荷, 发布前同步不把它写入 Workflow Distribution, 安装和平台投射不把它带入目标仓库. 它们的操作规则由各自的 Skill 单独拥有, 本文只拥有源码限定的分发边界, 不复制这些流程.
+只有 `distribution/config.json` 的 `distributedSkills` 登记的 Skill 属于共享工作流载荷. 登记在 `sourceOnlySkills` 的 Skill 仅供 Source Checkout 使用, 发布前同步不把它写入 Workflow Distribution, 安装和平台投射不把它带入目标仓库. 它们的操作规则由各自的 Skill 单独拥有, 本文只拥有源码限定的分发边界, 不复制这些流程. 每个 Skill 是否分发由维护者判断, 程序强制其登记, 见 Workflow Distribution configuration 节.
 
 Code Map 是否适用于目标仓库由 Repository Profile 决定, 不通过是否分发 `code-maps` Skill 来表达.
 
@@ -66,17 +66,25 @@ Workflow Distribution Module 递归枚举固定安全树. 每个安全普通文�
 
 ### Workflow Distribution configuration
 
-`distribution/config.json` 使用以下封闭结构:
+`distribution/config.json` 使用以下封闭结构 (示例为节选):
 
 ```json
 {
+  "distributedSkills": [
+    "implement"
+  ],
   "repositoryOwnedSeeds": [
     ".arwignore"
+  ],
+  "sourceOnlySkills": [
+    "release"
   ]
 }
 ```
 
 `repositoryOwnedSeeds` 只接受精确文件或目标目录根, 不接受 `glob`. 目录只约束 ARW 投影的目标, 不取得目录中其他文件的归属.
+
+`distributedSkills` 与 `sourceOnlySkills` 是合法 Skill 身份的无重复列表, 两者不相交, `distributedSkills` 不得为空, 违反时诊断码为 `skill-lists-invalid` (键集合错误仍是 `distribution-config-invalid`). 只有 `distributedSkills` 中的 Skill 进入 Workflow Distribution. `.agents/skills/` 下每个 Skill (至少含一个文件的直接子目录) 必须恰好出现在两个列表之一: 未登记的 Skill 得到 `skill-unregistered`, 名单中已不存在的名字得到 `skill-registration-stale`, 直接位于 `.agents/skills/` 下的非目录条目得到 `skill-source-path-invalid`, 符号链接得到 `filesystem-link-unsupported`. 发布前同步在读取与验证阶段和 `scripts/check-workflow-distribution.mjs` 的生产检查调用同一个 Sync Module 的 `checkSkillRegistration`, 因而新 Skill 在登记前使两者都失败, 失败发生在删除之前, 提示须先由维护者判断是否分发. 阻断而不是警告, 使没有判断过的 Skill 不会被默认分发或遗漏.
 
 规范 Role 文件保留扁平身份布局, 同名子目录只保存该 Role 按需引用的安全普通 Markdown 文档, 不建立另一份 Role 身份. Claude Code 的静态 Skill 与 `CLAUDE.md` 投射继续按安装和更新生命周期处理, Claude Reviewer 经 Claude 后端执行. 运行支持范围与共享入口的实际上下文核对由 `../agent-repository-workflow/spec.md` 的 Reviewer workflow 节拥有, 不能用静态投射代替运行证据或豁免审核关卡.
 
@@ -139,7 +147,7 @@ node scripts/sync-workflow-distribution.mjs
 合法调用在一个进程内依次执行:
 
 1. 状态检查: `.agents/skills`, `AGENTS.md`, `docs/agents`, `docs/licenses/arw` 和 `distribution` 不得有未暂存, 未跟踪或被忽略的内容, 因而 Git 暂存区是写入失败时的完整恢复基线.
-2. 读取与验证: 读取实际来源的全部字节, 两个配置 (`distribution/projections/config.json` 按原样读取, 同步不写它) 和单独维护的仓库自有初始文件, 检查受管理区域, Role, 许可证, 受保护路径冲突和初始文件.
+2. 读取与验证: 读取实际来源的全部字节, 两个配置 (`distribution/projections/config.json` 按原样读取, 同步不写它) 和单独维护的仓库自有初始文件, 检查受管理区域, Role, 许可证, Skill 登记, 受保护路径冲突和初始文件.
 3. 引用检查: 见 Reference check 节. 终止符错误使同步 `blocked`, 未知身份只收集为提示.
 4. 重建: 删除固定重建范围, 再把第 2 阶段读到并转换好的字节写入生成目标. 删除后不重新读取来源, 写入的正是已检查的字节.
 5. 最终验证: 对重建后的 Workflow Distribution 分别执行 Codex 与 Claude Code 投影验证.
@@ -148,7 +156,7 @@ node scripts/sync-workflow-distribution.mjs
 
 发布前同步只更新自己拥有的 Workflow Distribution 路径. 它从实际位置复制完整 Skill Package, 规范 Role 及其同名子目录中的按需读取文档, 每个 `LICENSE.<source-id>` 固定许可证和受管理区域, 并根据固定布局生成 `baseline` 与 `skills`. 它不枚举 `docs/licenses/arw/` 中的其他直接文件作为载荷, 也不从源码仓库当前 `.arwignore` 复制仓库自有初始文件. 该初始文件在 Workflow Distribution 中单独维护.
 
-受管理区域提取必须精确, 唯一且边界完整. 目标基线文件由固定模板和提取内容构造. 发布前同步不把目标文件中旧的未受管字节反向合并到实际来源. 同步在删除前关闭式处理无法完整枚举的来源, 缺失的必需实际文件, Skill 身份冲突以及无效配置或仓库自有初始文件. 受管理区域提取和文件转换在读取与验证阶段完成, 写入阶段只写入已检查的字节.
+受管理区域提取必须精确, 唯一且边界完整. 目标基线文件由固定模板和提取内容构造. 发布前同步不把目标文件中旧的未受管字节反向合并到实际来源. 同步在删除前关闭式处理无法完整枚举的来源, 缺失的必需实际文件, Skill 身份冲突, 未登记或过期的 Skill 以及无效配置或仓库自有初始文件. 受管理区域提取和文件转换在读取与验证阶段完成, 写入阶段只写入已检查的字节.
 
 重建在复制前删除发布前同步拥有的生成范围中的全部现有文件与目录, 因而不把该范围中的旧布局或额外内容作为需要逐项验证的输入. 两个配置和独立维护的仓库自有初始文件不属于删除范围. 状态检查与写入之间修改 `distribution/` 属于调用方失误, 可由暂存区恢复, 同步不再核对输入摘要.
 
@@ -260,9 +268,9 @@ Skill 身份保持小写 ASCII 字母与单个连字符的统一范围, 优先�
 
 ### Modules
 
-`Workflow Distribution Module` 只读构建和验证当前 Workflow Distribution. 它拥有固定布局, 安全枚举, `distribution/config.json` 解释, 稳定载荷和载荷 Markdown 的自包含检查. 它不写源码仓库, 不投影目标仓库, 不执行安装.
+`Workflow Distribution Module` 只读构建和验证当前 Workflow Distribution. 它拥有固定布局, 安全枚举, `distribution/config.json` 解释 (含 Skill 分发名单的验证与登记比较), 稳定载荷和载荷 Markdown 的自包含检查. 它不写源码仓库, 不投影目标仓库, 不执行安装.
 
-`Workflow Distribution Sync Module` 拥有发布前同步的实际来源读取, 受管理区域提取, Skill 引用检查, 生成范围替换和最终双平台验证. 它只读 Projection 配置, 通过只读状态 Adapter 核对同步所需的 Git 状态, 不执行 Git 写入或恢复, 也不取得源码仓库发布责任.
+`Workflow Distribution Sync Module` 拥有发布前同步的实际来源读取, 受管理区域提取, Skill 登记检查 (`checkSkillRegistration`, 同时供生产检查使用), Skill 引用检查, 生成范围替换和最终双平台验证. 它只读 Projection 配置, 通过只读状态 Adapter 核对同步所需的 Git 状态, 不执行 Git 写入或恢复, 也不取得源码仓库发布责任.
 
 `Platform Adapter` 解释 `distribution/projections/config.json`, Skill 引用语法和来源到目标的转换. 它计算投影并提供独立的配置默认载荷, 不写目标仓库, 不扫描运行环境. `lib/arw-common/` 的 Codex 配置模块只处理字节与 TOML 语义; Repository Workflow 负责文件观察, 写入计划与事务. 同步保留单独维护的默认文件, 构建验证并携带该文件. 这些责任复用平台映射和事务, 避免另建分发入口或字段归属历史.
 
@@ -439,7 +447,7 @@ flowchart TD
 
 | 权威来源或状态 | 责任方 | 转换和使用方 | 失败, 恢复和最终写入点 |
 | --- | --- | --- | --- |
-| 源码仓库实际工作流文件 | 普通源码仓库开发流程 | Workflow Distribution Sync Module 在读取与验证阶段读取字节, 检查引用, 转换后写入生成范围 | 来源无法完整枚举, 必需文件缺失或终止符错误时在删除前阻断; 写入失败后外部 Agent 恢复已暂存基线并完整重跑; 普通 Git 提交保存实际文件 |
+| 源码仓库实际工作流文件 | 普通源码仓库开发流程 | Workflow Distribution Sync Module 在读取与验证阶段读取字节, 检查引用, 转换后写入生成范围 | 来源无法完整枚举, 必需文件缺失, Skill 未登记或登记过期, 或终止符错误时在删除前阻断; 写入失败后外部 Agent 恢复已暂存基线并完整重跑; 普通 Git 提交保存实际文件 |
 | `distribution/config.json`, `distribution/projections/config.json` 和单独维护的仓库自有初始文件 | Workflow Distribution Module 验证布局和配置, Platform Adapter 解释平台规则; Main Agent 把判断为真实 Skill 的未知身份作为普通源码修改写入 `additionalSkillReferences` | 发布前同步在删除前只读验证这些输入, 并在生成范围之外保留它们 | 配置或初始文件不完整时零写入; 修复来源后重跑; 删除开始后的失败恢复整个 Git 暂存区基线 |
 | `../agent-repository-workflow-installation/spec.md` 的 Global Engine configuration 节 | 安装长期规格定义结构和安装目录配置生命周期, 用户拥有每个配置文件 | 发布前同步不读取该配置 | 同步不修改配置; 用户直接保存源码仓库配置, Installation 事务创建或升级安装目录配置 |
 | 完整 Workflow Distribution 字节 | Workflow Distribution Sync Module 在引用检查后直接形成 | 源码仓库发布, Installation Payload Module 和目标仓库工作流只读消费 | 最终验证成功是内容写入完成点, 普通 Git 提交保存源码仓库候选; 失败时不从中间目录摘取状态, 恢复后完整重跑 |

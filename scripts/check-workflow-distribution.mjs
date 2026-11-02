@@ -7,15 +7,17 @@ import {
     createClaudeCodePlatformAdapter,
     createCodexPlatformAdapter,
 } from '../lib/arw-common/platform-adapter.mjs';
+import {createScopedFilesystem} from '../lib/common/filesystem.mjs';
 import {composePlatformResults} from '../lib/repository-workflow/workflow.mjs';
 import {buildWorkflowDistribution, checkDistributionSelfContained} from '../lib/workflow-distribution/workflow-distribution.mjs';
+import {checkSkillRegistration} from '../lib/workflow-distribution/workflow-distribution-sync.mjs';
 
 const SOURCE_ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 /** @typedef {'claude-code' | 'codex'} CliPlatform */
 /** @typedef {{code: string, message: string, path?: string, platform?: string}} WorkflowDiagnostic */
 /** @typedef {{payload: unknown, platform: string, profile: unknown, projectionConfig: unknown, seedTargets: unknown}} WorkflowEvaluationInput */
 /** @typedef {{evaluate: (input: WorkflowEvaluationInput) => {diagnostics?: WorkflowDiagnostic[], status: string}}} WorkflowPlatformAdapter */
-/** @typedef {{adapters?: Record<CliPlatform, WorkflowPlatformAdapter>, distributionDirectory?: string}} CheckWorkflowDistributionOptions */
+/** @typedef {{adapters?: Record<CliPlatform, WorkflowPlatformAdapter>, distributionDirectory?: string, sourceRoot?: string}} CheckWorkflowDistributionOptions */
 
 /** @param {string} left @param {string} right */
 const compareText = (left, right) => left < right ? -1 : left > right ? 1 : 0;
@@ -35,6 +37,7 @@ export const checkWorkflowDistributionProduction = async ({
         codex: createCodexPlatformAdapter(),
     },
     distributionDirectory = join(SOURCE_ROOT, 'distribution'),
+    sourceRoot = SOURCE_ROOT,
 } = {}) => {
     const distribution = await buildWorkflowDistribution({distributionDirectory});
     if (distribution.status !== 'succeeded') {
@@ -50,6 +53,14 @@ export const checkWorkflowDistributionProduction = async ({
     const selfContained = checkDistributionSelfContained(distribution.payload);
     if (selfContained.length > 0) {
         return {diagnostics: selfContained, status: 'failed'};
+    }
+
+    const created = await createScopedFilesystem({root: sourceRoot});
+    const registration = created.status === 'succeeded'
+        ? await checkSkillRegistration({distributionConfig: distribution.distributionConfig, filesystem: created.scopedFilesystem})
+        : created;
+    if (registration.status !== 'succeeded') {
+        return {diagnostics: registration.diagnostics.map(entry => normalizeDiagnostic(entry)), status: 'failed'};
     }
 
     /** @type {CliPlatform[]} */

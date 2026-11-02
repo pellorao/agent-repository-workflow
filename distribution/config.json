@@ -1,5 +1,45 @@
 {
+  "distributedSkills": [
+    "application-workflow",
+    "arw-commands",
+    "code-maps",
+    "code-review",
+    "codebase-design",
+    "commit",
+    "diagnosing-bugs",
+    "domain-modeling",
+    "grill-me",
+    "grill-with-docs",
+    "grilling",
+    "implement",
+    "improve-codebase-architecture",
+    "issue-tracking",
+    "prototype",
+    "research",
+    "reviewer-launch",
+    "rule-and-design-changes",
+    "spec-readiness",
+    "tdd",
+    "teach",
+    "test-performance-optimization",
+    "test-value-cleanup",
+    "to-questionnaire",
+    "to-spec",
+    "to-tickets",
+    "validation",
+    "wait-what",
+    "wayfinder",
+    "wizard",
+    "writing-for-agents"
+  ],
   "repositoryOwnedSeeds": [
     ".arwignore"
+  ],
+  "sourceOnlySkills": [
+    "platform-standards",
+    "release",
+    "reviewer-capability",
+    "unattended-run",
+    "upstream-sync"
   ]
 }

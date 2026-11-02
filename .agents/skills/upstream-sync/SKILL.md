@@ -27,7 +27,7 @@ disable-model-invocation: true
 - `ours=theirs`: 已一致, 不处理.
 - `ours-changed`: 本地有定制. 以 `merged/` 为起点, 逐个解决冲突块; 没有冲突的合并也要检查语义. 改名 (`R`) 时候选写到新路径并删除旧路径. 上游删除了本地定制过的文件时, 和维护者确认是否删除.
 - `A` 而状态不是 `ours-missing`: 上游新文件与 ARW 自有文件重名 (如上游新 Skill 与 `release`, `commit` 同名). 不要合并, 先问维护者, 通常把该上游路径加入 `exclude`.
-- `ours-missing`: 本地删除过或是上游新文件. 新 Skill 或新文件询问维护者是否采用; 不采用的路径加入 `exclude`.
+- `ours-missing`: 本地删除过或是上游新文件. 新 Skill 或新文件询问维护者是否采用, 采用新 Skill 时一并询问是否分发, 并把结果登记到 `distribution/config.json` 的 `distributedSkills` 或 `sourceOnlySkills`; 不采用的路径加入 `exclude`.
 
 `agents/openai.yaml` 是本地 Codex 元数据, 上游也可能提供. 合并时保留本地的 `policy`, 采纳上游对显示文字的修改.
 

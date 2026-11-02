@@ -1,5 +1,7 @@
 # 使用源码仓库实际工作流文件作为 Workflow Distribution 权威来源
 
+`./0040-register-skill-distribution-in-config.md` 取代本决定中 "发布前同步在源码选择阶段排除该 Skill, 使它不进入 Workflow Distribution." 一句, 以及 "精简的 Workflow Distribution 配置只记录两类内容" 一段对配置内容的限定; 本决定的其余部分保持不变.
+
 ## Context
 
 ARW 源码仓库同时保存实际使用的工作流文件和 `distribution/` 中的安装载荷.
