@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0045:01",
+  "exception": {
+    "confirmedAt": "2026-11-01T17:02:13Z",
+    "reason": "Single-issue change with no design decision (user confirmed 2026-11-02 in projects AGENTS)."
+  },
+  "subject": {
+    "filePath": ".scratch/0045-sqlite-warning/issues/01-sqlite-warning.md",
+    "sha256": "44dd492a388aaf24dd3e51c19dabf8af3b1662acf950d43a2daecb04b37d01a6"
+  },
+  "result": "not-applicable"
+}

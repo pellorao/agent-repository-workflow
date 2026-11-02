@@ -913,9 +913,11 @@ test('installed uninstall command executes through the real CLI entry point', as
             'lib/background-agent/private-state.mjs',
             'lib/background-agent/process-identity.mjs',
             'lib/background-agent/recovery-state.mjs',
+            'lib/background-agent/sqlite.mjs',
             'lib/background-agent/state-store.mjs',
             'lib/common/filesystem.mjs',
             'lib/common/json.mjs',
+            'lib/common/process-warnings.mjs',
             'lib/common/text-policy.mjs',
             'lib/common/text-table.mjs',
             'lib/common/windows-command-line.mjs',
@@ -938,10 +940,12 @@ test('installed uninstall command executes through the real CLI entry point', as
     await copyFile(join(SOURCE_DIRECTORY, 'lib', 'background-agent', 'private-state.mjs'), join(installationDirectory, 'lib', 'background-agent', 'private-state.mjs'));
     await copyFile(join(SOURCE_DIRECTORY, 'lib', 'background-agent', 'process-identity.mjs'), join(installationDirectory, 'lib', 'background-agent', 'process-identity.mjs'));
     await copyFile(join(SOURCE_DIRECTORY, 'lib', 'background-agent', 'recovery-state.mjs'), join(installationDirectory, 'lib', 'background-agent', 'recovery-state.mjs'));
+    await copyFile(join(SOURCE_DIRECTORY, 'lib', 'background-agent', 'sqlite.mjs'), join(installationDirectory, 'lib', 'background-agent', 'sqlite.mjs'));
     await copyFile(join(SOURCE_DIRECTORY, 'lib', 'background-agent', 'state-store.mjs'), join(installationDirectory, 'lib', 'background-agent', 'state-store.mjs'));
     await mkdir(join(installationDirectory, 'lib', 'common'), {recursive: true});
     await copyFile(join(SOURCE_DIRECTORY, 'lib', 'common', 'filesystem.mjs'), join(installationDirectory, 'lib', 'common', 'filesystem.mjs'));
     await copyFile(join(SOURCE_DIRECTORY, 'lib', 'common', 'json.mjs'), join(installationDirectory, 'lib', 'common', 'json.mjs'));
+    await copyFile(join(SOURCE_DIRECTORY, 'lib', 'common', 'process-warnings.mjs'), join(installationDirectory, 'lib', 'common', 'process-warnings.mjs'));
     await copyFile(join(SOURCE_DIRECTORY, 'lib', 'common', 'text-policy.mjs'), join(installationDirectory, 'lib', 'common', 'text-policy.mjs'));
     await copyFile(join(SOURCE_DIRECTORY, 'lib', 'common', 'text-table.mjs'), join(installationDirectory, 'lib', 'common', 'text-table.mjs'));
     await copyFile(join(SOURCE_DIRECTORY, 'lib', 'common', 'windows-command-line.mjs'), join(installationDirectory, 'lib', 'common', 'windows-command-line.mjs'));
