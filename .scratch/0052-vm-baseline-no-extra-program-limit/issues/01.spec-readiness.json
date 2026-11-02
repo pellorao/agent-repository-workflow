@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0052:01",
+  "exception": {
+    "confirmedAt": "2026-11-02T12:00:00Z",
+    "reason": "Single documentation wording issue with no design decision; the user confirmed on 2026-11-02 that issues of this kind need no governance design."
+  },
+  "subject": {
+    "filePath": ".scratch/0052-vm-baseline-no-extra-program-limit/issues/01-vm-baseline-no-extra-program-limit.md",
+    "sha256": "f3eb690e082eb87fa83f1be7a6539fe81ef3465b3920f9d878a3417f50215693"
+  },
+  "result": "not-applicable"
+}

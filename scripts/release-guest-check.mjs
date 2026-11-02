@@ -182,7 +182,7 @@ const expectManager = async (label, expected) => {
     const state = await observeBackgroundAgentManagerProcess({runtimeDirectory: join(INSTALLATION, 'background-agent-state')});
     step(label, {ok: state === expected, output: state});
 };
-// 受验系统没有 Agent CLI, `arw background-agent` 需要的会话身份由这里代为提供.
+// guest 检查不调用 Agent CLI, `arw background-agent` 需要的会话身份由这里代为提供.
 process.env.CODEX_THREAD_ID = 'release-guest-check';
 const startManager = async () => {
     const started = fresh(`arw background-agent < "${request}"`, target);

@@ -37,7 +37,7 @@ disable-model-invocation: true
 6. 从上一发布版升级: 给 `check` 追加 `--previous <commit>`, `<commit>` 是 `git tag --merged HEAD` 中最高稳定版 tag 指向的 commit. guest 检查先安装该版本, 再安装候选, 然后在检出 `arw-<该版本>` 标签的 agent-assisted fixture 上运行 `arw workflow update` 与 `arw workflow verify` (覆盖范围见发布 spec 的 `Validation coverage` 节). 首次发布没有上一版时省略, fixture 检出默认分支的最新状态后再 update.
 7. plain fixture 验证, 步骤见 `./references/fixtures.md`; agent-assisted fixture 由 guest 检查覆盖. 通过后才算本节完成.
 
-8. Agent CLI 检查 (宿主一次, 在全部 VM 通过之后; 受验系统不安装 Agent CLI): 解压 `<tmp>/arw.tar.gz` 到 `<tmp>/agent/extracted`; 以 `HOME=<tmp>/agent/home` 运行其中的 `node install.mjs --release-tag <version> --non-interactive --register-path false`; 在 `<tmp>/agent/repo` 里 `git init`, 用隔离 home 里安装的 `arw` 运行与 `scripts/release-guest-check.mjs` 中 `INIT_ARGUMENTS` 相同参数的 `workflow init`; 在该仓库内用正常 HOME 运行 `claude -p "列出本仓库可用的 Skill 名称, 并给出 AGENTS.md 的一级标题"` 和 `codex exec "<同一问题>"` (登录凭据在正常 HOME, 每次消耗一个问题的额度). 两个回答都必须含 `implement` 与 `Agent Repository Workflow`, 否则不通过. 不使用真实 TTY.
+8. Agent CLI 检查 (宿主一次, 在全部 VM 通过之后): 解压 `<tmp>/arw.tar.gz` 到 `<tmp>/agent/extracted`; 以 `HOME=<tmp>/agent/home` 运行其中的 `node install.mjs --release-tag <version> --non-interactive --register-path false`; 在 `<tmp>/agent/repo` 里 `git init`, 用隔离 home 里安装的 `arw` 运行与 `scripts/release-guest-check.mjs` 中 `INIT_ARGUMENTS` 相同参数的 `workflow init`; 在该仓库内用正常 HOME 运行 `claude -p "列出本仓库可用的 Skill 名称, 并给出 AGENTS.md 的一级标题"` 和 `codex exec "<同一问题>"` (登录凭据在正常 HOME, 每次消耗一个问题的额度). 两个回答都必须含 `implement` 与 `Agent Repository Workflow`, 否则不通过. 不使用真实 TTY.
 
 失败时先保存原始输出. 需要现场诊断时, 加 `--keep` 重跑, 用 `node scripts/release-vm.mjs ssh <machine> <command>` 检查 VM, 诊断完运行 `down` 还原快照. 判断失败原因:
 

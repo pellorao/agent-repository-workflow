@@ -12,7 +12,7 @@
 
 1. Main Agent 读取 `package.json.version`, 取得维护者对该准确版本进行发布验证的确认. 确认不授权任何外部写入. 版本必须高于候选可达的全部稳定 tag, 且该 tag 在本地和规范远端都不存在.
 2. 候选是一个已提交, 工作树干净的 commit. 在候选上运行 pnpm frozen install, `pnpm typecheck`, `pnpm test`, Workflow Distribution 检查, Bootstrap 生成物检查, 文本检查, 严格术语检查和分发副本语言检查 (`arw language inspect distribution`, 只报告, 由 Agent 按 `docs/agents/writing.md` 判断).
-3. 在每台受支持的 Windows 和 Linux 受验系统上从基线快照开始, 只通过宿主传入的候选 Git bundle 与宿主用 `scripts/pack-release.mjs` 为候选打成的安装压缩包取得候选, 按 Validation coverage 节运行 guest 检查, 并在宿主上完成该节的 "宿主一次" 情形. 结束后硬关机并还原快照. 受验系统不安装或启动 Agent CLI, 也不安装源码仓库开发依赖.
+3. 在每台受支持的 Windows 和 Linux 受验系统上从基线快照开始, 只通过宿主传入的候选 Git bundle 与宿主用 `scripts/pack-release.mjs` 为候选打成的安装压缩包取得候选, 按 Validation coverage 节运行 guest 检查, 并在宿主上完成该节的 "宿主一次" 情形. 结束后硬关机并还原快照.
 4. 任一检查发现候选缺陷时, 修复并形成新候选, 从第 2 步重新开始. 环境问题修复后只重跑受影响的检查. 临时补偿后的结果只用于诊断.
 5. 全部通过且维护者授权准确项目, `origin`, 分支和版本后, 推送分支, 创建并推送无前缀的版本 tag. 规范远端第一次看到的 tag 就必须指向已验证 commit, 回滚后重建的 tag 同样如此. 随后在已验证 commit 的干净检出上用 `scripts/pack-release.mjs` 生成安装压缩包 `arw.tar.gz`, 其内容由该 commit 的 `release-manifest.json` 决定.
 6. 创建 GitHub 托管发布对象并上传 `arw.tar.gz` 为资产. 之后从公开 HTTPS 地址取得该 tag 的 `scripts/install-arw.mjs`, 在隔离 home 中带 `--version` 与不带 `--version` 各安装一次并确认版本 (Validation coverage 节的 "宿主一次" 情形).
@@ -97,7 +97,7 @@ Reviewer 能力测试不是发布门禁. 维护者需要时显式调用源码专
 | 本地检查: 类型, 测试, 分发与 Bootstrap 生成物检查, 文本, 术语和语言检查 | 与系统无关, `$release` Skill 第 2 节 |
 | plain fixture 的 `workflow init` | 与系统无关, Skill 引用的 fixtures 参考 |
 | 公开 Bootstrap 带 `--version` 与不带 `--version` 各安装一次并核对版本 | 下载与版本选择与系统无关, Release 创建后运行 |
-| 候选在隔离 home 安装并初始化临时仓库后, 用 `claude -p` 和 `codex exec` 各问一句, 回答必须说出投影的 Skill 名与 `AGENTS.md` 标题 | 受验系统不安装 Agent CLI, 加载投影的行为与系统无关 |
+| 候选在隔离 home 安装并初始化临时仓库后, 用 `claude -p` 和 `codex exec` 各问一句, 回答必须说出投影的 Skill 名与 `AGENTS.md` 标题 | 加载投影的行为与系统无关 |
 
 ### Fixed tests
 
