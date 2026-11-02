@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {readFile, writeFile} from 'node:fs/promises';
+import {access, readFile, writeFile} from 'node:fs/promises';
 import {join} from 'node:path';
 import test from 'node:test';
 
@@ -318,4 +318,60 @@ test('workflow init and remove reject dry-run as an inapplicable option', async 
         assert.equal(result, 2);
         assert.match(diagnostics.join('\n'), new RegExp(`workflow ${operation} received an inapplicable option`));
     }
+});
+
+const createNestedTargetRepository = async (/** @type {import('node:test').TestContext} */ t) => {
+    const repository = await createRepositoryWithMockGit(t);
+    const base = createUpdateDependencies(ORIGINAL_MANAGED_AGENTS, repository);
+    const adapter = /** @type {Record<string, {evaluate: (input: any) => any}>} */ (base.adapters).codex;
+    const workflowDependencies = {
+        ...base,
+        adapters: {
+            codex: {
+                evaluate: (/** @type {unknown} */ input) => {
+                    /** @type {{managedTargets: Array<{bytes: Buffer, path: string, source: string}>, status: 'succeeded', diagnostics: []}} */
+                    const result = adapter.evaluate(input);
+                    return {...result, managedTargets: [...result.managedTargets, {bytes: Buffer.from('Nested.\n'), path: 'docs/agents/nested.md', source: 'baseline/docs/agents/nested.md'}]};
+                },
+            },
+        },
+    };
+    const initialized = await run(WORKFLOW_INIT_ARGS, repository, {workflowDependencies});
+    assert.equal(initialized.result, 0, JSON.stringify(initialized.events));
+    await repository.git.commitAll('workflow initialized');
+    return {repository, workflowDependencies};
+};
+
+const REMOVE_ARGS = ['workflow', 'remove', '--non-interactive', '--arwignore', 'retain'];
+
+test('workflow remove deletes directories it emptied and prints nothing extra', async t => {
+    const {repository, workflowDependencies} = await createNestedTargetRepository(t);
+
+    const removed = await run(REMOVE_ARGS, repository, {workflowDependencies});
+
+    assert.equal(removed.result, 0, JSON.stringify(removed.events));
+    assert.equal(removed.events.at(-1)?.message, 'Workflow remove completed.');
+    await assert.rejects(access(join(repository.root, 'docs')));
+});
+
+test('workflow remove lists directories it could not remove on stdout after all other output and still succeeds', async t => {
+    const {repository, workflowDependencies} = await createNestedTargetRepository(t);
+    const filesystem = createNodeRepositoryFilesystem(repository.root);
+
+    const removed = await run(REMOVE_ARGS, repository, {workflowDependencies: {
+        ...workflowDependencies,
+        filesystem: {...filesystem, removeEmptyDirectory: async input => {
+            if (input.path === 'docs/agents') return {diagnostics: [{code: 'filesystem-operation-failed', message: 'refused'}], status: 'failed'};
+            return filesystem.removeEmptyDirectory(input);
+        }},
+    }});
+
+    assert.equal(removed.result, 0, JSON.stringify(removed.events));
+    assert.deepEqual(removed.events.slice(-4), [
+        {channel: 'stdout', message: 'Workflow remove completed.'},
+        {channel: 'stdout', message: ''},
+        {channel: 'stdout', message: 'These directories could not be removed and were left in place:'},
+        {channel: 'stdout', message: '- docs/agents'},
+    ]);
+    assert.ok(removed.events.every(event => event.channel === 'stdout'));
 });

@@ -175,6 +175,9 @@ test('Filesystem Module rejects target and ancestor links and revalidates after 
         (await created.scopedFilesystem.read({path: 'linked/outside.txt'})).diagnostics.map(entry => entry.code),
         ['filesystem-link-unsupported'],
     );
+    const removed = await created.scopedFilesystem.remove({path: 'linked', recursive: false});
+    assert.deepEqual(removed.diagnostics.map(entry => entry.code), ['filesystem-link-unsupported']);
+    assert.equal(await readFile(join(outside, 'outside.txt'), 'utf8'), 'outside\n');
     assert.deepEqual(await created.scopedFilesystem.list({path: '.', recursive: true}), {
         diagnostics: [],
         entries: [{kind: 'link', path: 'linked'}],

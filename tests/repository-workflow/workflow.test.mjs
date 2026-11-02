@@ -542,6 +542,88 @@ test('remove deletes managed state last while explicitly retaining repository-ow
     await assert.rejects(readFile(join(root, 'AGENTS.md')));
 });
 
+test('remove deletes only directories emptied by its own deletions', async t => {
+    const distribution = await createDistribution(t);
+    const root = await createRepositoryWithMockGit(t);
+    const initialized = await initWorkflow({distribution, repositoryRoot: root});
+    assert.equal(initialized.applied, true, JSON.stringify(initialized.diagnostics));
+    await write(root, 'docs/agents/roles/notes.txt', 'Repository notes.\n');
+    await mkdir(join(root, 'empty-before'));
+    await git(root, ['add', '.']);
+    await git(root, ['commit', '--quiet', '-m', 'initialized']);
+
+    const configuration = await readFile(join(root, 'arw.config.json'));
+    const filesystem = createNodeRepositoryFilesystem(root);
+    /** @type {string[]} */
+    const attempts = [];
+
+    const removed = await runRepositoryWorkflow({
+        choices: {mode: 'non-interactive', removal: {arwignore: 'retain'}},
+        filesystem: {
+            ...filesystem,
+            removeEmptyDirectory: async input => {
+                attempts.push(input.path);
+                return filesystem.removeEmptyDirectory(input);
+            },
+        },
+        operation: 'remove',
+        repositoryRoot: root,
+    });
+
+    assert.equal(removed.applied, true, JSON.stringify(removed.diagnostics));
+    assert.equal('leftoverDirectories' in removed, false);
+    assert.deepEqual(await readFile(join(root, 'arw.config.json')), configuration);
+    assert.equal(attempts.length, new Set(attempts).size);
+    assert.equal(attempts.filter(path => path === '.agents/skills/review/agents').length, 1);
+    const entries = (/** @type {string} */ path) => readdir(join(root, path)).catch(() => null);
+    assert.equal(await entries('.agents'), null);
+    assert.deepEqual(await entries('docs/agents/roles'), ['notes.txt']);
+    assert.deepEqual(await entries('empty-before'), []);
+    assert.deepEqual((await entries('.codex'))?.sort(), ['config.toml']);
+});
+
+test('remove reports directories it refuses to clean without failing the removal', async t => {
+    const distribution = await createDistribution(t);
+    const root = await createRepositoryWithMockGit(t);
+    const initialized = await initWorkflow({distribution, repositoryRoot: root});
+    assert.equal(initialized.applied, true, JSON.stringify(initialized.diagnostics));
+    await git(root, ['add', '.']);
+    await git(root, ['commit', '--quiet', '-m', 'initialized']);
+    const filesystem = createNodeRepositoryFilesystem(root);
+
+    const removed = /** @type {WorkflowResult & {leftoverDirectories?: string[]}} */ (await runRepositoryWorkflow({
+        choices: {mode: 'non-interactive', removal: {arwignore: 'retain'}},
+        filesystem: {
+            ...filesystem,
+            removeEmptyDirectory: async input => {
+                if (input.path === 'docs/agents/roles') return {diagnostics: [{code: 'filesystem-link-unsupported', message: 'link'}], status: 'blocked'};
+                if (input.path === '.agents/skills/review/agents') return {diagnostics: [{code: 'filesystem-operation-failed', message: 'refused'}], status: 'failed'};
+                return filesystem.removeEmptyDirectory(input);
+            },
+        },
+        operation: 'remove',
+        repositoryRoot: root,
+    }));
+
+    assert.equal(removed.applied, true, JSON.stringify(removed.diagnostics));
+    assert.equal(removed.verified, true);
+    assert.deepEqual(removed.leftoverDirectories, ['.agents/skills/review/agents', 'docs/agents/roles']);
+    assert.deepEqual(await readdir(join(root, '.agents/skills/review')), ['agents']);
+    assert.deepEqual(await readdir(join(root, 'docs/agents/roles')), []);
+});
+
+test('the empty-directory cleanup Adapter refuses a regular file and keeps a non-empty directory', async t => {
+    const root = await createTemporaryDirectory(t, 'arw-workflow-cleanup-');
+    await write(root, 'file', 'content\n');
+    await write(root, 'full/inner.txt', 'content\n');
+    const filesystem = createNodeRepositoryFilesystem(root);
+
+    assert.equal((await filesystem.removeEmptyDirectory({path: 'file'})).status, 'blocked');
+    assert.equal((await filesystem.removeEmptyDirectory({path: 'full'})).status, 'blocked');
+    assert.equal(await readFile(join(root, 'file'), 'utf8'), 'content\n');
+    assert.deepEqual(await readdir(join(root, 'full')), ['inner.txt']);
+});
+
 test('interactive init asks for one Profile and final authorization before writing', async t => {
     const distribution = await createDistribution(t);
     const root = await createRepositoryWithMockGit(t);

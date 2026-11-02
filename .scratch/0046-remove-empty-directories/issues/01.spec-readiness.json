@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0046:01",
+  "request": {
+    "digest": "6231275bf1609a43507638945e2048b849766200fcd9f5f04986335a4556837c",
+    "filePath": ".tmp/claude-code/ad35ce58-362f-4db3-a1d5-a5e8444e3975/0046_01/spec-readiness/requests/request-6cb8e5b0-9d38-4874-940f-8e250e7f55e5.json",
+    "id": "6cb8e5b0-9d38-4874-940f-8e250e7f55e5"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "ba4f23b253fe4bd4d17bde006dd684e3b4ae723ec9443a706c6f32eb66815b7e"
+  },
+  "inputs": [
+    {
+      "filePath": ".scratch/0046-remove-empty-directories/spec.md",
+      "role": "governing-spec",
+      "sha256": "7e9481ce3ef20bdbdf8ab584480ef9fd54b90fc66a2ec4cd00a614107a13f594"
+    },
+    {
+      "filePath": "docs/adr/0017-use-operation-specific-recovery-baselines.md",
+      "role": "adr",
+      "sha256": "c3820c3adc0b1ffaf8cc3c8df883905fef69fb3df5d8afec5b9dfcb70c24e82f"
+    },
+    {
+      "filePath": "docs/adr/0038-report-remove-directory-cleanup-refusals-as-leftovers.md",
+      "role": "adr",
+      "sha256": "7318e70dcf93c445dcb387b45d4f4814a247d243ac4d482948bd59da3df13022"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow/spec.md",
+      "role": "governing-spec",
+      "sha256": "1cbdbe0044b9c89c86b0e4751bef900cd7275a25695ab4ba842eafcf0d4ebb29"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0046-remove-empty-directories/issues/01-remove-empty-directories.md",
+    "sha256": "987b54d14d8ebff951f24750ee687b0a6e6329f79c37495fac7b4bd2aca84d15"
+  },
+  "result": "satisfied"
+}
