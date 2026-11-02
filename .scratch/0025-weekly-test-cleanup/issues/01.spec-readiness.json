@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0025:01",
+  "exception": {
+    "confirmedAt": "2026-11-02T04:02:25Z",
+    "reason": "Test-only cleanup and speedup; no design decision (user confirmed 2026-11-02 in projects AGENTS)."
+  },
+  "subject": {
+    "filePath": ".scratch/0025-weekly-test-cleanup/issues/01-weekly-test-value-cleanup.md",
+    "sha256": "3273954da68aa7973165bd32522d9aeeff27db69ee21d17d5efa4b7c8003a4f6"
+  },
+  "result": "not-applicable"
+}

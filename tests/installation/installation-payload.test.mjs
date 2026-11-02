@@ -90,9 +90,12 @@ test('Installation Payload preserves manifest failure classifications without fu
 
 test('Installation Payload normalizes a trailing Distribution separator through Filesystem join', async t => {
     const source = await createTemporaryDirectory(t, 'installation-payload-trailing-root-');
-    await cp(join(SOURCE_DIRECTORY, 'distribution'), join(source, 'distribution'), {recursive: true});
-    for (const file of ['arw', 'arw.mjs', 'config.install.json']) {
+    await mkdir(join(source, 'distribution', 'skills'), {recursive: true});
+    for (const file of ['LICENSE.txt', 'arw', 'arw.mjs', 'config.install.json']) {
         await cp(join(SOURCE_DIRECTORY, file), join(source, file));
+    }
+    for (const entry of ['baseline', 'config.json', 'projections']) {
+        await cp(join(SOURCE_DIRECTORY, 'distribution', entry), join(source, 'distribution', entry), {recursive: true});
     }
     await writeFile(join(source, 'release-manifest.json'), `${JSON.stringify({
         configSeed: 'config.install.json',

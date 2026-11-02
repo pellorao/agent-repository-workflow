@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {cp, copyFile, symlink} from 'node:fs/promises';
+import {copyFile, symlink} from 'node:fs/promises';
 import {EventEmitter} from 'node:events';
 import {Readable, Writable} from 'node:stream';
 import {dirname, join} from 'node:path';
@@ -53,7 +53,7 @@ test('root arw entry executes while the internal arw module has no direct behavi
     const repository = await createRepository(t);
     await writeIssue(repository.root, '0001-entry-layout', '01-ready.md', '# Entry layout\n\nStatus: ready-for-agent\n\n## Blocked by\n\n- None - can start immediately\n');
     await Promise.all([
-        cp(join(SOURCE_DIRECTORY, 'lib'), join(repository.programDirectory, 'lib'), {recursive: true}),
+        symlink(join(SOURCE_DIRECTORY, 'lib'), join(repository.programDirectory, 'lib'), 'junction'),
         copyFile(join(SOURCE_DIRECTORY, 'package.json'), join(repository.programDirectory, 'package.json')),
         copyFile(join(SOURCE_DIRECTORY, 'arw.mjs'), join(repository.programDirectory, 'arw.mjs')),
     ]);
