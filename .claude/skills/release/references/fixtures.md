@@ -1,6 +1,6 @@
 # Fixture 参考
 
-维护者在 VM 配置 JSON 的 `fixturesDirectory` 目录中保存两个 Git 跟踪的 fixture 压缩包, 不在仓库内:
+维护者在 ARW 发布配置的 `fixturesDirectory` 目录中保存两个 Git 跟踪的 fixture 压缩包, 不在仓库内:
 
 - `agent-assisted.tgz`: 由上一发布版 ARW 管理的仓库.
 - `plain.tgz`: 从未初始化 ARW 的仓库.

@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0050:01",
+  "exception": {
+    "confirmedAt": "2026-11-02T12:00:00Z",
+    "reason": "Single wording-update issue with no design decision; the user confirmed on 2026-11-02 that issues of this kind need no governance design."
+  },
+  "subject": {
+    "filePath": ".scratch/0050-adr-fixture-wording/issues/01-adr-fixture-wording.md",
+    "sha256": "bca1d4423dc78e9d404c05d49a069ed7a95dab207726674ee467f81b1c70b4d5"
+  },
+  "result": "not-applicable"
+}
