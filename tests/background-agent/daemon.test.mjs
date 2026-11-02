@@ -2,11 +2,12 @@ import assert from 'node:assert/strict';
 import {spawn} from 'node:child_process';
 import {once} from 'node:events';
 import {DatabaseSync} from 'node:sqlite';
-import {mkdtemp, readFile, readdir, rm, unlink, writeFile} from 'node:fs/promises';
+import fsPromises, {mkdtemp, readFile, readdir, rm, unlink, writeFile} from 'node:fs/promises';
+import {syncBuiltinESMExports} from 'node:module';
 import {createConnection, createServer} from 'node:net';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
-import test from 'node:test';
+import test, {mock} from 'node:test';
 import {createBackgroundAgentDaemon} from '../../lib/background-agent/daemon.mjs';
 import {acquireBackgroundAgentMaintenance,acquireBackgroundAgentStartupLease,controlProof,createBackgroundAgentClient,sendBackgroundAgentRequest} from '../../lib/background-agent/client.mjs';
 import {backgroundAgentMessageDatabasePaths} from '../../lib/background-agent/message-store.mjs';
@@ -397,4 +398,66 @@ test('offline maintenance preserves exit evidence after a failed recovery save a
     database.exec('DROP TRIGGER reject_recovery');
     assert.deepEqual(await acquireBackgroundAgentMaintenance(input),{status:'acquired',stoppedAgents:[]});
   }finally{database.close();}
+});
+
+/** @param {string} runtimeDirectory */
+const startCredentialDaemon=async runtimeDirectory=>createBackgroundAgentDaemon({runtimeDirectory,port:0,maintenancePort:await freePort(),
+  dispatch:async()=>({}),list:()=>[],prepareMaintenance:async()=>({status:'ready',stoppedAgents:[]})});
+
+/** @param {import('node:test').TestContext} t @param {(...args:Parameters<typeof fsPromises.link>)=>Promise<void>} replacement */
+const mockLink=(t,replacement)=>{
+  const original=fsPromises.link;
+  mock.method(fsPromises,'link',replacement);
+  syncBuiltinESMExports();
+  t.after(()=>{mock.restoreAll();syncBuiltinESMExports();});
+  return original;
+};
+
+test('credential never appears empty or partial while the daemon publishes it',async t=>{
+  const runtimeDirectory=await createTemporaryDirectory(t,'arw-credential-atomic-');
+  /** @type {{names:string[],content:string}[]} */
+  const seen=[];
+  const original=mockLink(t,async(existing,target)=>{
+    const names=await readdir(runtimeDirectory);
+    seen.push({names,content:await readFile(existing,'utf8')});
+    return original(existing,target);
+  });
+  const daemon=await startCredentialDaemon(runtimeDirectory);
+  try{
+    assert.equal(seen.length,1);
+    const observed=seen[0];
+    assert.equal(observed.names.includes('credential'),false);
+    assert.match(observed.content,/^[a-f0-9]{64}\n$/);
+    assert.match(await readFile(join(runtimeDirectory,'credential'),'utf8'),/^[a-f0-9]{64}\n$/);
+    assert.deepEqual((await readdir(runtimeDirectory)).filter(name=>name.includes('.arw-tmp-')),[]);
+  }finally{await daemon.close();}
+});
+
+test('a failed credential publish leaves no temporary file',async t=>{
+  const runtimeDirectory=await createTemporaryDirectory(t,'arw-credential-fail-');
+  mockLink(t,async()=>{throw Object.assign(new Error('link failed'),{code:'EIO'});});
+  await assert.rejects(startCredentialDaemon(runtimeDirectory),/link failed/);
+  assert.deepEqual((await readdir(runtimeDirectory)).filter(name=>name.includes('.arw-tmp-')||name==='credential'),[]);
+});
+
+test('an existing credential is kept and an invalid one is still rejected',async t=>{
+  const runtimeDirectory=await createTemporaryDirectory(t,'arw-credential-existing-');
+  await writeFile(join(runtimeDirectory,'credential'),'not a credential\n',{mode:0o600});
+  await assert.rejects(startCredentialDaemon(runtimeDirectory),/Background Agent credential is invalid\./);
+  assert.equal(await readFile(join(runtimeDirectory,'credential'),'utf8'),'not a credential\n');
+  assert.deepEqual((await readdir(runtimeDirectory)).filter(name=>name.includes('.arw-tmp-')),[]);
+});
+
+test('a credential published by another process after the pre-check is kept',async t=>{
+  const runtimeDirectory=await createTemporaryDirectory(t,'arw-credential-race-');
+  const published=`${'a'.repeat(64)}\n`;
+  const original=mockLink(t,async(existing,target)=>{
+    await writeFile(target,published,{mode:0o600});
+    return original(existing,target);
+  });
+  const daemon=await startCredentialDaemon(runtimeDirectory);
+  try{
+    assert.equal(await readFile(join(runtimeDirectory,'credential'),'utf8'),published);
+    assert.deepEqual((await readdir(runtimeDirectory)).filter(name=>name.includes('.arw-tmp-')),[]);
+  }finally{await daemon.close();}
 });

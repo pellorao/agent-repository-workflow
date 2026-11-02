@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0053:01",
+  "exception": {
+    "confirmedAt": "2026-11-02T12:00:00Z",
+    "reason": "Single bug-fix issue with no design decision; the user confirmed on 2026-11-02 that issues of this kind need no governance design."
+  },
+  "subject": {
+    "filePath": ".scratch/0053-credential-atomic-write/issues/01-credential-atomic-write.md",
+    "sha256": "acf5677d4fde089c99460528116a8c2bf0f4f66f5890f0daaab76144ec9d4fc7"
+  },
+  "result": "not-applicable"
+}
