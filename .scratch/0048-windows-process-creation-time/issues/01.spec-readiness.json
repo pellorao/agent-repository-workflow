@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0048:01",
+  "exception": {
+    "confirmedAt": "2026-11-02T04:55:03Z",
+    "reason": "Single-issue bug fix with no design decision (user confirmed 2026-11-02 in projects AGENTS)."
+  },
+  "subject": {
+    "filePath": ".scratch/0048-windows-process-creation-time/issues/01-windows-process-creation-time.md",
+    "sha256": "5e2bf11b83345d215efa779c6ceb4a1ff017704187d67675e63316e583063fc1"
+  },
+  "result": "not-applicable"
+}

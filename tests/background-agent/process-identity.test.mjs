@@ -3,6 +3,8 @@ import {mkdtemp, readFile, rm, stat, writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import test from 'node:test';
+import {createTemporaryDirectory} from '../helpers/cleanup.mjs';
+import {installFakeCommand} from '../helpers/process.mjs';
 import {appServerProcessIdentityPath, parseDarwinProcessStartSecond, readProcessIdentity, readOperatingSystemProcessCreationTime, recordProcessIdentity, removeEndedProcessIdentity} from '../../lib/background-agent/process-identity.mjs';
 
 
@@ -32,4 +34,13 @@ test('operating system creation time is read from the running process identity',
   const observed=await readOperatingSystemProcessCreationTime(process.pid);
   assert.match(observed??'',/^\d+$/);
   assert.equal(await readOperatingSystemProcessCreationTime(process.pid),observed);
+});
+
+test('Windows creation time read silences PowerShell progress output and tolerates stderr noise',async t=>{
+  const directory=await createTemporaryDirectory(t,'arw-process-identity-');
+  await installFakeCommand(t,directory,'powershell.exe','head -c 4096 /dev/zero | tr "\\0" x >&2\nprintf %s "$4" | base64 -d | tr -d "\\0" | grep -q "^.ProgressPreference=.SilentlyContinue.;" || exit 1\necho 12345\n');
+  const platform=/** @type {PropertyDescriptor} */ (Object.getOwnPropertyDescriptor(process,'platform'));
+  Object.defineProperty(process,'platform',{value:'win32'});
+  t.after(()=>Object.defineProperty(process,'platform',platform));
+  assert.equal(await readOperatingSystemProcessCreationTime(1234),'12345');
 });
