@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict';
 import {chmod, mkdir, readFile, readdir, rm, stat, symlink, writeFile} from 'node:fs/promises';
+import fsPromises from 'node:fs/promises';
+import {syncBuiltinESMExports} from 'node:module';
+import timersPromises from 'node:timers/promises';
 import {join, resolve} from 'node:path';
 import test from 'node:test';
 
@@ -231,5 +234,66 @@ test('Filesystem enumeration reports unrepresentable root and nested names as fa
         assert.equal(result.stage, 'enumerate');
         assert.equal(result.diagnostics[0].code, 'filesystem-io-failed');
         await rm(join(root, path));
+    }
+});
+
+/** 以 `platform` 运行替换写入; rename 依次抛出 `codes` 中的错误码 (空串表示成功), 超出则成功; 退避等待不真正等待. */
+const replaceWithRenameFailures = async (/** @type {import('node:test').TestContext} */ t, /** @type {string} */ platform, /** @type {string[]} */ codes) => {
+    const root = await createTemporaryDirectory(t, 'arw-filesystem-rename-retry-');
+    await writeFile(join(root, 'manifest.json'), 'original\n');
+    const created = await createScopedFilesystem({root});
+    if (created.status !== 'succeeded') assert.fail('Filesystem creation must succeed.');
+    const platformDescriptor = Object.getOwnPropertyDescriptor(process, 'platform');
+    const realRename = fsPromises.rename;
+    /** @type {number[]} */
+    const delays = [];
+    let calls = 0;
+    t.mock.method(fsPromises, 'rename', async (/** @type {string} */ from, /** @type {string} */ to) => {
+        const code = codes[calls];
+        calls += 1;
+        if (code) throw Object.assign(new Error(`${code}: simulated, rename`), {code});
+        return realRename(from, to);
+    });
+    t.mock.method(timersPromises, 'setTimeout', async (/** @type {number} */ delay) => { delays.push(delay); });
+    syncBuiltinESMExports();
+    Object.defineProperty(process, 'platform', {value: platform});
+    try {
+        const result = await created.scopedFilesystem.write({bytes: Buffer.from('replacement\n'), mode: 'replace', path: 'manifest.json'});
+        const content = await readFile(join(root, 'manifest.json'), 'utf8');
+        return {calls, content, delays, files: await readdir(root), result};
+    } finally {
+        Object.defineProperty(process, 'platform', /** @type {PropertyDescriptor} */ (platformDescriptor));
+        t.mock.restoreAll();
+        syncBuiltinESMExports();
+    }
+};
+
+test('Filesystem replacement retries a Windows rename that reports EPERM, EACCES or EBUSY and then succeeds', async t => {
+    const {calls, content, delays, files, result} = await replaceWithRenameFailures(t, 'win32', ['EPERM', 'EACCES', 'EBUSY']);
+    assert.equal(result.status, 'succeeded');
+    assert.equal(calls, 4);
+    assert.deepEqual(delays, [50, 100, 200]);
+    assert.equal(content, 'replacement\n');
+    assert.deepEqual(files, ['manifest.json']);
+});
+
+test('Filesystem replacement returns the original Windows rename error once the bounded retries are exhausted', async t => {
+    const {calls, content, delays, files, result} = await replaceWithRenameFailures(t, 'win32', Array(20).fill('EPERM'));
+    assert.equal(result.status, 'failed');
+    if (result.status !== 'failed') assert.fail('Persistent rename failure must fail the replacement.');
+    assert.equal(result.stage, 'file-replace');
+    assert.match(result.diagnostics[0].message, /^EPERM: simulated, rename/u);
+    assert.equal(calls, delays.length + 1);
+    assert.ok(delays.reduce((total, delay) => total + delay, 0) <= 5000);
+    assert.equal(content, 'original\n');
+    assert.deepEqual(files, ['manifest.json']);
+});
+
+test('Filesystem replacement does not retry on other platforms or for other error codes', async t => {
+    for (const [platform, code] of [['linux', 'EPERM'], ['darwin', 'EBUSY'], ['win32', 'ENOENT']]) {
+        const {calls, delays, result} = await replaceWithRenameFailures(t, platform, [code]);
+        assert.equal(result.status, 'failed', `${platform} ${code}`);
+        assert.equal(calls, 1, `${platform} ${code}`);
+        assert.deepEqual(delays, [], `${platform} ${code}`);
     }
 });

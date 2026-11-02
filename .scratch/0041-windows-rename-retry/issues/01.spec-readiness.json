@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0041:01",
+  "exception": {
+    "confirmedAt": "2026-11-01T17:02:13Z",
+    "reason": "Single-issue bug fix with no design decision (user confirmed 2026-11-02 in projects AGENTS)."
+  },
+  "subject": {
+    "filePath": ".scratch/0041-windows-rename-retry/issues/01-replace-rename-retry.md",
+    "sha256": "41f8d4eada73b4455cf237fe38f078b84e4a021a6859d3242ec72287e4527e9c"
+  },
+  "result": "not-applicable"
+}
