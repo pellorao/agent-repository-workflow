@@ -1,6 +1,6 @@
 # 评估用 `mock.module` 替换 commit-audit 与 spec-readiness 测试的真实 Git
 
-Status: needs-triage
+Status: wontfix
 
 ## What to build
 
@@ -12,7 +12,7 @@ issue 0039:01 之后, `commit-audit` (`lib/commit-audit/commit-audit.mjs:141`, `
 
 ## Acceptance criteria
 
-- [ ] 测量数据和做或不做的建议记录在 `## Comments`.
+- [x] 测量数据和做或不做的建议记录在 `## Comments`.
 
 ## Blocked by
 
