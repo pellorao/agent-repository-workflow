@@ -115,7 +115,7 @@ These 11 Skills are written for ARW and implement its workflow: records under `.
 - Leaves behind: measurements and before-and-after comparison in the issue.
 - Related: `validation`, `test-value-cleanup`.
 
-#### `test-value-cleanup` (automatic, but only on your request)
+#### `test-value-cleanup` (name it explicitly)
 
 - When: you ask to clean up low-value tests. It has no schedule and ordinary new tests never trigger it.
 - What it does: confirms the authorizing issue, fixes the baseline count and target, deletes low-value tests by relative value (by default at least 20 percent), states every loss honestly, keeps core guarantees such as permissions, identity and data safety, then checks the full test command against the time target (median under 5 seconds over three runs, unless you set another).

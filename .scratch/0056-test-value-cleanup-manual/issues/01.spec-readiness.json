@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0056:01",
+  "exception": {
+    "confirmedAt": "2026-11-02T12:00:00Z",
+    "reason": "Single issue (make test-value-cleanup user-invoked only) with no design decision; the user confirmed on 2026-11-02 that issues of this kind need no governance design."
+  },
+  "subject": {
+    "filePath": ".scratch/0056-test-value-cleanup-manual/issues/01-test-value-cleanup-manual.md",
+    "sha256": "4c502898e5128534f72620b8429c628fec211c860a0cb3ba2a892b4df30138a9"
+  },
+  "result": "not-applicable"
+}

@@ -1,6 +1,7 @@
 ---
-description: 用户主动要求清理低价值测试时使用: 固定范围和基数, 按相对价值删除测试, 记录损失并完成完整命令耗时验收. 普通新增测试不触发.
+description: 清理低价值测试: 固定范围和基数, 按相对价值删除测试, 记录损失并完成完整命令耗时验收.
 name: test-value-cleanup
+disable-model-invocation: true
 ---
 
 # 低价值测试清理
