@@ -8,39 +8,40 @@ This manual is for people who have already enabled ARW in a repository (see the 
 
 ## Skills from the upstream repository
 
-These 20 Skills come from [mattpocock/skills](https://github.com/mattpocock/skills) (`skills/engineering/` and `skills/productivity/`). ARW keeps an adapted fork pinned to one upstream commit, translated and adjusted for ARW issues, records and platforms, so behavior can differ from the upstream text. Each entry links to the upstream description at the pinned commit; read it for the original idea.
+These 21 Skills come from [mattpocock/skills](https://github.com/mattpocock/skills) (`skills/engineering/` and `skills/productivity/`). ARW keeps an adapted fork pinned to one upstream commit, translated and adjusted for ARW issues, records and platforms, so behavior can differ from the upstream text. Each entry links to the upstream description at the pinned commit; read it for the original idea.
 
 ### Discussion and clarification
 
-- `grilling` (automatic): Interviews you relentlessly about a plan or decision until every branch is resolved; other Skills reuse it. [Upstream](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/productivity/grilling/SKILL.md)
-- `grill-me` (name it explicitly): The same interview, started by you, for plans that do not involve code. [Upstream](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/productivity/grill-me/SKILL.md)
-- `grill-with-docs` (name it explicitly): The interview plus recording agreed terms and architecture decisions in `CONTEXT.md` and ADRs as you go. [Upstream](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/engineering/grill-with-docs/SKILL.md)
-- `wait-what` (name it explicitly): Use when the last message did not land: the Agent re-pitches it in plain words. [Upstream](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/productivity/wait-what/SKILL.md)
-- `to-questionnaire` (name it explicitly): Turns a decision you cannot make alone into a questionnaire for the person who can. [Upstream](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/productivity/to-questionnaire/SKILL.md)
+- `grilling` (automatic): Interviews you relentlessly about a plan or decision until every branch is resolved; other Skills reuse it. [Upstream](https://github.com/mattpocock/skills/blob/d1478fcb140db0b93c0c8df17bcfd311844749d0/skills/productivity/grilling/SKILL.md)
+- `grill-me` (name it explicitly): The same interview, started by you, for plans that do not involve code. [Upstream](https://github.com/mattpocock/skills/blob/d1478fcb140db0b93c0c8df17bcfd311844749d0/skills/productivity/grill-me/SKILL.md)
+- `grill-with-docs` (name it explicitly): The interview plus recording agreed terms and architecture decisions in `CONTEXT.md` and ADRs as you go. [Upstream](https://github.com/mattpocock/skills/blob/d1478fcb140db0b93c0c8df17bcfd311844749d0/skills/engineering/grill-with-docs/SKILL.md)
+- `wait-what` (name it explicitly): Use when the last message did not land: the Agent re-pitches it in plain words. [Upstream](https://github.com/mattpocock/skills/blob/d1478fcb140db0b93c0c8df17bcfd311844749d0/skills/productivity/wait-what/SKILL.md)
+- `to-questionnaire` (name it explicitly): Turns a decision you cannot make alone into a questionnaire for the person who can. [Upstream](https://github.com/mattpocock/skills/blob/d1478fcb140db0b93c0c8df17bcfd311844749d0/skills/productivity/to-questionnaire/SKILL.md)
 
 ### Investigation and design
 
-- `wayfinder` (name it explicitly): Plans work too large for one session as a map of decision issues and resolves them one at a time. [Upstream](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/engineering/wayfinder/SKILL.md)
-- `research` (automatic): Investigates a question against primary sources and saves cited findings as a Markdown file. [Upstream](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/engineering/research/SKILL.md)
-- `prototype` (automatic): Builds a throwaway prototype to answer a design question. [Upstream](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/engineering/prototype/SKILL.md)
-- `domain-modeling` (automatic): Reads and updates the domain glossary and ADRs before naming concepts or deciding boundaries. [Upstream](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/engineering/domain-modeling/SKILL.md)
-- `codebase-design` (automatic): Shared vocabulary for deep modules, seams and testable interfaces. [Upstream](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/engineering/codebase-design/SKILL.md)
-- `improve-codebase-architecture` (name it explicitly): Scans a codebase for deepening opportunities, shows them as an HTML report, then grills through the one you pick. [Upstream](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/engineering/improve-codebase-architecture/SKILL.md)
+- `wayfinder` (name it explicitly): Plans work too large for one session as a map of decision issues and resolves them one at a time. [Upstream](https://github.com/mattpocock/skills/blob/d1478fcb140db0b93c0c8df17bcfd311844749d0/skills/engineering/wayfinder/SKILL.md)
+- `research` (automatic): Investigates a question against primary sources and saves cited findings as a Markdown file. [Upstream](https://github.com/mattpocock/skills/blob/d1478fcb140db0b93c0c8df17bcfd311844749d0/skills/engineering/research/SKILL.md)
+- `prototype` (automatic): Builds a throwaway prototype to answer a design question. [Upstream](https://github.com/mattpocock/skills/blob/d1478fcb140db0b93c0c8df17bcfd311844749d0/skills/engineering/prototype/SKILL.md)
+- `domain-modeling` (automatic): Reads and updates the domain glossary and ADRs before naming concepts or deciding boundaries. [Upstream](https://github.com/mattpocock/skills/blob/d1478fcb140db0b93c0c8df17bcfd311844749d0/skills/engineering/domain-modeling/SKILL.md)
+- `codebase-design` (automatic): Shared vocabulary for deep modules, seams and testable interfaces. [Upstream](https://github.com/mattpocock/skills/blob/d1478fcb140db0b93c0c8df17bcfd311844749d0/skills/engineering/codebase-design/SKILL.md)
+- `improve-codebase-architecture` (name it explicitly): Scans a codebase for deepening opportunities, shows them as an HTML report, then grills through the one you pick. [Upstream](https://github.com/mattpocock/skills/blob/d1478fcb140db0b93c0c8df17bcfd311844749d0/skills/engineering/improve-codebase-architecture/SKILL.md)
 
 ### Planning and implementation
 
-- `to-spec` (name it explicitly): Turns the current conversation into a specification without a new interview. [Upstream](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/engineering/to-spec/SKILL.md)
-- `to-tickets` (name it explicitly): Splits a plan or specification into vertical-slice issues that declare their blockers. [Upstream](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/engineering/to-tickets/SKILL.md)
-- `implement` (automatic): Builds what an implementation issue asks for, validates it, and records the result. [Upstream](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/engineering/implement/SKILL.md)
-- `tdd` (automatic): Test-first development with a red-green-refactor loop. [Upstream](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/engineering/tdd/SKILL.md)
-- `diagnosing-bugs` (automatic): A disciplined loop for hard bugs and performance regressions. [Upstream](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/engineering/diagnosing-bugs/SKILL.md)
-- `code-review` (automatic): Reviews a Git comparison on two independent axes: implementation standards and requirement conformance. [Upstream](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/engineering/code-review/SKILL.md)
+- `to-spec` (name it explicitly): Turns the current conversation into a specification without a new interview. [Upstream](https://github.com/mattpocock/skills/blob/d1478fcb140db0b93c0c8df17bcfd311844749d0/skills/engineering/to-spec/SKILL.md)
+- `to-tickets` (name it explicitly): Splits a plan or specification into vertical-slice issues that declare their blockers. [Upstream](https://github.com/mattpocock/skills/blob/d1478fcb140db0b93c0c8df17bcfd311844749d0/skills/engineering/to-tickets/SKILL.md)
+- `implement` (automatic): Builds what an implementation issue asks for, validates it, and records the result. [Upstream](https://github.com/mattpocock/skills/blob/d1478fcb140db0b93c0c8df17bcfd311844749d0/skills/engineering/implement/SKILL.md)
+- `tdd` (automatic): Test-first development with a red-green-refactor loop. [Upstream](https://github.com/mattpocock/skills/blob/d1478fcb140db0b93c0c8df17bcfd311844749d0/skills/engineering/tdd/SKILL.md)
+- `diagnosing-bugs` (automatic): A disciplined loop for hard bugs and performance regressions. After the fix, run `$retro` to find how to prevent similar problems. [Upstream](https://github.com/mattpocock/skills/blob/d1478fcb140db0b93c0c8df17bcfd311844749d0/skills/engineering/diagnosing-bugs/SKILL.md)
+- `code-review` (automatic): Reviews a Git comparison on two independent axes: implementation standards and requirement conformance. [Upstream](https://github.com/mattpocock/skills/blob/d1478fcb140db0b93c0c8df17bcfd311844749d0/skills/engineering/code-review/SKILL.md)
 
 ### Setup and learning
 
-- `wizard` (automatic): Generates an interactive shell script that walks you through steps only a human can do. [Upstream](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/engineering/wizard/SKILL.md)
-- `teach` (name it explicitly): Teaches you a new skill or concept over several sessions in the current directory. [Upstream](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/productivity/teach/SKILL.md)
-- `writing-for-agents` (automatic): Guidance for writing Skills, `AGENTS.md`, `CLAUDE.md` and other documents agents read. [Upstream](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/productivity/writing-for-agents/SKILL.md)
+- `wizard` (automatic): Generates an interactive shell script that walks you through steps only a human can do. [Upstream](https://github.com/mattpocock/skills/blob/d1478fcb140db0b93c0c8df17bcfd311844749d0/skills/engineering/wizard/SKILL.md)
+- `teach` (name it explicitly): Teaches you a new skill or concept over several sessions in the current directory. [Upstream](https://github.com/mattpocock/skills/blob/d1478fcb140db0b93c0c8df17bcfd311844749d0/skills/productivity/teach/SKILL.md)
+- `retro` (name it explicitly): Reviews a coding session and suggests improvements to the Agent's working environment (navigation, automated checks, coding standards, instruction files). Run `$retro` often: after every finished issue or long session. [Upstream](https://github.com/mattpocock/skills/blob/d1478fcb140db0b93c0c8df17bcfd311844749d0/skills/engineering/retro/SKILL.md)
+- `writing-for-agents` (automatic): Guidance for writing Skills, `AGENTS.md`, `CLAUDE.md` and other documents agents read. [Upstream](https://github.com/mattpocock/skills/blob/d1478fcb140db0b93c0c8df17bcfd311844749d0/skills/productivity/writing-for-agents/SKILL.md)
 
 ## ARW custom Skills
 

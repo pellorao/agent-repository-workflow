@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0057:01",
+  "exception": {
+    "confirmedAt": "2026-11-02T12:00:00Z",
+    "reason": "用户 2026-11-02 常设确认: 不含设计决定的单 issue effort 不需要治理设计; 本次采用范围由维护者 2026-11-03 逐项审定."
+  },
+  "subject": {
+    "filePath": ".scratch/0057-upstream-sync-v1-3-2/issues/01-upstream-sync-v1-3-2.md",
+    "sha256": "c2a64b9d94e8194033f528bc993403727b3a1084086c41d445d386fec2220df1"
+  },
+  "result": "not-applicable"
+}

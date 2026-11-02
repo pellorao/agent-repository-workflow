@@ -8,39 +8,40 @@
 
 ## 上游 Skill
 
-这 20 个 Skill 来自 [mattpocock/skills](https://github.com/mattpocock/skills) (`skills/engineering/` 与 `skills/productivity/`). ARW 维护一个固定在某个上游提交的改编分支, 为适配 ARW 的 issue, 记录和平台做过翻译与调整, 所以行为可能与上游原文不同. 每一项链接到固定提交下的上游说明, 想了解原始思路可以去读.
+这 21 个 Skill 来自 [mattpocock/skills](https://github.com/mattpocock/skills) (`skills/engineering/` 与 `skills/productivity/`). ARW 维护一个固定在某个上游提交的改编分支, 为适配 ARW 的 issue, 记录和平台做过翻译与调整, 所以行为可能与上游原文不同. 每一项链接到固定提交下的上游说明, 想了解原始思路可以去读.
 
 ### 讨论与澄清
 
-- `grilling` (自动使用): 对计划或决定持续追问, 直到每个分支都清楚; 其他 Skill 会复用它. [上游说明](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/productivity/grilling/SKILL.md)
-- `grill-me` (需显式点名): 由你主动发起的同类追问, 适合与代码无关的计划. [上游说明](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/productivity/grill-me/SKILL.md)
-- `grill-with-docs` (需显式点名): 追问的同时, 把确认的术语和架构决定记入 `CONTEXT.md` 与 ADR. [上游说明](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/engineering/grill-with-docs/SKILL.md)
-- `wait-what` (需显式点名): 上一条消息没有讲明白时使用, Agent 会用平实的话重新说明. [上游说明](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/productivity/wait-what/SKILL.md)
-- `to-questionnaire` (需显式点名): 把自己无法单独决定的事项整理成问卷, 交给能回答的人. [上游说明](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/productivity/to-questionnaire/SKILL.md)
+- `grilling` (自动使用): 对计划或决定持续追问, 直到每个分支都清楚; 其他 Skill 会复用它. [上游说明](https://github.com/mattpocock/skills/blob/d1478fcb140db0b93c0c8df17bcfd311844749d0/skills/productivity/grilling/SKILL.md)
+- `grill-me` (需显式点名): 由你主动发起的同类追问, 适合与代码无关的计划. [上游说明](https://github.com/mattpocock/skills/blob/d1478fcb140db0b93c0c8df17bcfd311844749d0/skills/productivity/grill-me/SKILL.md)
+- `grill-with-docs` (需显式点名): 追问的同时, 把确认的术语和架构决定记入 `CONTEXT.md` 与 ADR. [上游说明](https://github.com/mattpocock/skills/blob/d1478fcb140db0b93c0c8df17bcfd311844749d0/skills/engineering/grill-with-docs/SKILL.md)
+- `wait-what` (需显式点名): 上一条消息没有讲明白时使用, Agent 会用平实的话重新说明. [上游说明](https://github.com/mattpocock/skills/blob/d1478fcb140db0b93c0c8df17bcfd311844749d0/skills/productivity/wait-what/SKILL.md)
+- `to-questionnaire` (需显式点名): 把自己无法单独决定的事项整理成问卷, 交给能回答的人. [上游说明](https://github.com/mattpocock/skills/blob/d1478fcb140db0b93c0c8df17bcfd311844749d0/skills/productivity/to-questionnaire/SKILL.md)
 
 ### 调查与设计
 
-- `wayfinder` (需显式点名): 把一个会话装不下的大工作整理成决定 issue 的地图, 并逐个解决. [上游说明](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/engineering/wayfinder/SKILL.md)
-- `research` (自动使用): 依据一手资料调查问题, 并把带引用的结论保存为 Markdown 文件. [上游说明](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/engineering/research/SKILL.md)
-- `prototype` (自动使用): 构建可丢弃的原型来回答设计问题. [上游说明](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/engineering/prototype/SKILL.md)
-- `domain-modeling` (自动使用): 命名概念或决定边界前读取并更新领域术语表和 ADR. [上游说明](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/engineering/domain-modeling/SKILL.md)
-- `codebase-design` (自动使用): 设计深模块, 接缝和可测试接口时共用的词汇. [上游说明](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/engineering/codebase-design/SKILL.md)
-- `improve-codebase-architecture` (需显式点名): 扫描代码库中可加深的模块, 以 HTML 报告呈现, 再对你选中的一项继续追问. [上游说明](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/engineering/improve-codebase-architecture/SKILL.md)
+- `wayfinder` (需显式点名): 把一个会话装不下的大工作整理成决定 issue 的地图, 并逐个解决. [上游说明](https://github.com/mattpocock/skills/blob/d1478fcb140db0b93c0c8df17bcfd311844749d0/skills/engineering/wayfinder/SKILL.md)
+- `research` (自动使用): 依据一手资料调查问题, 并把带引用的结论保存为 Markdown 文件. [上游说明](https://github.com/mattpocock/skills/blob/d1478fcb140db0b93c0c8df17bcfd311844749d0/skills/engineering/research/SKILL.md)
+- `prototype` (自动使用): 构建可丢弃的原型来回答设计问题. [上游说明](https://github.com/mattpocock/skills/blob/d1478fcb140db0b93c0c8df17bcfd311844749d0/skills/engineering/prototype/SKILL.md)
+- `domain-modeling` (自动使用): 命名概念或决定边界前读取并更新领域术语表和 ADR. [上游说明](https://github.com/mattpocock/skills/blob/d1478fcb140db0b93c0c8df17bcfd311844749d0/skills/engineering/domain-modeling/SKILL.md)
+- `codebase-design` (自动使用): 设计深模块, 接缝和可测试接口时共用的词汇. [上游说明](https://github.com/mattpocock/skills/blob/d1478fcb140db0b93c0c8df17bcfd311844749d0/skills/engineering/codebase-design/SKILL.md)
+- `improve-codebase-architecture` (需显式点名): 扫描代码库中可加深的模块, 以 HTML 报告呈现, 再对你选中的一项继续追问. [上游说明](https://github.com/mattpocock/skills/blob/d1478fcb140db0b93c0c8df17bcfd311844749d0/skills/engineering/improve-codebase-architecture/SKILL.md)
 
 ### 规划与实施
 
-- `to-spec` (需显式点名): 把当前对话整理成规范, 不再重新访谈. [上游说明](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/engineering/to-spec/SKILL.md)
-- `to-tickets` (需显式点名): 把计划或规范拆成声明阻断关系的纵向切片 issue. [上游说明](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/engineering/to-tickets/SKILL.md)
-- `implement` (自动使用): 按实施 issue 构建交付内容, 验证并记录结果. [上游说明](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/engineering/implement/SKILL.md)
-- `tdd` (自动使用): 先写测试的开发方式, 遵循红-绿-重构循环. [上游说明](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/engineering/tdd/SKILL.md)
-- `diagnosing-bugs` (自动使用): 针对难复现的缺陷和性能退化的有纪律的诊断循环. [上游说明](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/engineering/diagnosing-bugs/SKILL.md)
-- `code-review` (自动使用): 沿实施标准和要求符合两个独立维度审核一个 Git 比较. [上游说明](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/engineering/code-review/SKILL.md)
+- `to-spec` (需显式点名): 把当前对话整理成规范, 不再重新访谈. [上游说明](https://github.com/mattpocock/skills/blob/d1478fcb140db0b93c0c8df17bcfd311844749d0/skills/engineering/to-spec/SKILL.md)
+- `to-tickets` (需显式点名): 把计划或规范拆成声明阻断关系的纵向切片 issue. [上游说明](https://github.com/mattpocock/skills/blob/d1478fcb140db0b93c0c8df17bcfd311844749d0/skills/engineering/to-tickets/SKILL.md)
+- `implement` (自动使用): 按实施 issue 构建交付内容, 验证并记录结果. [上游说明](https://github.com/mattpocock/skills/blob/d1478fcb140db0b93c0c8df17bcfd311844749d0/skills/engineering/implement/SKILL.md)
+- `tdd` (自动使用): 先写测试的开发方式, 遵循红-绿-重构循环. [上游说明](https://github.com/mattpocock/skills/blob/d1478fcb140db0b93c0c8df17bcfd311844749d0/skills/engineering/tdd/SKILL.md)
+- `diagnosing-bugs` (自动使用): 针对难复现的缺陷和性能退化的有纪律的诊断循环. 修复后想找出怎样预防同类问题时, 运行 `$retro`. [上游说明](https://github.com/mattpocock/skills/blob/d1478fcb140db0b93c0c8df17bcfd311844749d0/skills/engineering/diagnosing-bugs/SKILL.md)
+- `code-review` (自动使用): 沿实施标准和要求符合两个独立维度审核一个 Git 比较. [上游说明](https://github.com/mattpocock/skills/blob/d1478fcb140db0b93c0c8df17bcfd311844749d0/skills/engineering/code-review/SKILL.md)
 
 ### 设置与学习
 
-- `wizard` (自动使用): 生成交互式 shell 脚本, 带你完成只有人能做的步骤. [上游说明](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/engineering/wizard/SKILL.md)
-- `teach` (需显式点名): 在当前目录中分多个会话教你一项新技能或概念. [上游说明](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/productivity/teach/SKILL.md)
-- `writing-for-agents` (自动使用): 编写 Skill, `AGENTS.md`, `CLAUDE.md` 等供 Agent 阅读的文档时的指引. [上游说明](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/productivity/writing-for-agents/SKILL.md)
+- `wizard` (自动使用): 生成交互式 shell 脚本, 带你完成只有人能做的步骤. [上游说明](https://github.com/mattpocock/skills/blob/d1478fcb140db0b93c0c8df17bcfd311844749d0/skills/engineering/wizard/SKILL.md)
+- `teach` (需显式点名): 在当前目录中分多个会话教你一项新技能或概念. [上游说明](https://github.com/mattpocock/skills/blob/d1478fcb140db0b93c0c8df17bcfd311844749d0/skills/productivity/teach/SKILL.md)
+- `retro` (需显式点名): 复盘一次编码会话, 为 Agent 的工作环境 (导航, 自动检查, 编码规范, 指令文件) 提出改进建议. 要经常执行 `$retro`: 建议每完成一个 issue 或一段较长会话后运行一次. [上游说明](https://github.com/mattpocock/skills/blob/d1478fcb140db0b93c0c8df17bcfd311844749d0/skills/engineering/retro/SKILL.md)
+- `writing-for-agents` (自动使用): 编写 Skill, `AGENTS.md`, `CLAUDE.md` 等供 Agent 阅读的文档时的指引. [上游说明](https://github.com/mattpocock/skills/blob/d1478fcb140db0b93c0c8df17bcfd311844749d0/skills/productivity/writing-for-agents/SKILL.md)
 
 ## ARW 自定义 Skill
 

@@ -21,7 +21,7 @@ TDD 就是红 → 绿循环. 这个 Skill 是让该循环产出值得保留的�
 
 **只在事先约定的 Seam 上测试.** 编写任何测试之前, 写下被测的 Seam 并与用户确认. 不在未确认的 Seam 上写测试. 不可能什么都测, 事先约定 Seam 才能让测试投入落在关键路径和复杂逻辑上, 而不是每个边缘情况.
 
-问: "公开 Interface 是什么, 应当测试哪些 Seam?"
+问: "公开 Interface 是什么, 应当测试哪些 Seam?" 为每个提出的候选 Seam 附一行说明: 它能抓到什么, 抓不到什么.
 
 当 Interface 的形状本身存疑 (Module 有多深, Seam 该放哪里, Interface 该暴露什么) 时, 使用 `$codebase-design` Skill 获取词汇. 它是 module, interface, depth, seam, adapter, leverage 和 locality 这些术语的共同来源, 是用来查阅的参考, 不是要运行的会话.
 

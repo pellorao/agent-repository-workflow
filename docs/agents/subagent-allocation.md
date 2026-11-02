@@ -23,6 +23,8 @@
 - 现有实例的上下文已经混杂或过长.
 - 工作确实需要并行执行.
 
+新建的实例从全新上下文启动, 不 fork 创建者的上下文, 以免沿用其未经检验的假设.
+
 独立 Reviewer 的身份, 初始上下文隔离和原线程复用遵循 `reviewer-launch` Skill, 结论有效性遵循 `./reviewer.md` 的 Review handoff 节.
 
 subagent 可以向所属运行环境的 Main Agent 申请协作者, 不自行创建下级实例. 该 Main Agent 提供获分配实例的标识和任务关系, 使双方可以直接沟通.

@@ -11,7 +11,7 @@ name: implement
 
 ## Entry
 
-1. 找到授权本次工作的 issue. 先使用对话中已识别的路径或 ID, 解析为 `.scratch/<NNNN>-<effort-slug>/issues/<NN>-<issue-slug>.md`, 并核对它仍与所请求的工作匹配; 否则搜索当前仓库的全部 issue. 没有匹配或存在多个合理匹配时请用户指定, 不代替用户选择或创建实施范围. 例外: 只改 Agent 规则和文档 (范围见 `commit` Skill 的非实施工作流) 的改动可以不建 issue, 由用户请求或仓库工作流授权, 按该工作流的无 issue 规则提交. 紧急修复 (阻断进行中的发布验证, 或用户明确要求立即修复) 在用户已确认不需要治理设计且单独成为单 issue effort 时, 可以先修改实现, 实施提交前补建 issue 和例外记录, 并在 `## Comments` 用一行写明属于哪种情形.
+1. 找到授权本次工作的 issue. 先使用对话中已识别的路径或 ID, 解析为 `.scratch/<NNNN>-<effort-slug>/issues/<NN>-<issue-slug>.md`, 并核对它仍与所请求的工作匹配, 开工前先说出该 issue 的标题; 否则搜索当前仓库的全部 issue. 没有匹配或存在多个合理匹配时请用户指定, 不代替用户选择或创建实施范围. 例外: 只改 Agent 规则和文档 (范围见 `commit` Skill 的非实施工作流) 的改动可以不建 issue, 由用户请求或仓库工作流授权, 按该工作流的无 issue 规则提交. 紧急修复 (阻断进行中的发布验证, 或用户明确要求立即修复) 在用户已确认不需要治理设计且单独成为单 issue effort 时, 可以先修改实现, 实施提交前补建 issue 和例外记录, 并在 `## Comments` 用一行写明属于哪种情形.
 2. 按 `issue-tracking` Skill 确认文件结构与记录类型, 再按类型判断授权:
    - 实施 issue 只有直接覆盖所请求范围, 使用 `Status: ready-for-agent`, 且每个阻断项都已达到适用终态时, 才授权更改已跟踪文件. `Status: ready-for-human` 不授权 Agent 实施.
    - Application Source Issue 永远不授权本地实施; 关联和同步内容只由 Application 和 JIRA 工作流修改.
