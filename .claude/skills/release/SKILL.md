@@ -37,7 +37,7 @@ disable-model-invocation: true
 6. 从上一发布版升级: 给 `check` 追加 `--previous <commit>`, `<commit>` 是 `git tag --merged HEAD` 中最高稳定版 tag 指向的 commit. guest 检查先安装该版本, 再安装候选. 首次发布没有上一版时省略.
 7. fixture 验证, 步骤见 `./references/fixtures.md`. 通过后才算本节完成.
 
-guest 检查自动覆盖: Windows 用户 PATH 的非 ASCII 项在安装和卸载后保留, `powershell.exe` 在新终端可解析, 受管仓库经 `core.autocrlf=true` 重新克隆后 `arw workflow verify` 通过, Node.js 满足 `engines`.
+guest 检查自动覆盖的范围见 `docs/specs/agent-repository-workflow-release/spec.md` 的 VM 验证段.
 
 失败时先保存原始输出. 需要现场诊断时, 加 `--keep` 重跑, 用 `node scripts/release-vm.mjs ssh <config> <machine> <command>` 检查 VM, 诊断完运行 `down` 还原快照. 判断失败原因:
 
