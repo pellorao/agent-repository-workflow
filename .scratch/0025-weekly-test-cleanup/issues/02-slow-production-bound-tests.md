@@ -1,6 +1,6 @@
 # 生产代码造成的慢测试是否改生产代码
 
-Status: needs-triage
+Status: completed
 
 ## What to build
 
@@ -12,8 +12,18 @@ Status: needs-triage
 
 ## Acceptance criteria
 
-- [ ] 维护者的决定记录在本 issue 的 `## Comments`, 并据此更新 Status.
+- [x] 维护者的决定记录在本 issue 的 `## Comments`, 并据此更新 Status.
 
 ## Blocked by
 
 - None - can start immediately
+
+## Comments
+
+维护者 2026-11-02 的决定 (原文):
+
+> 大幅度利用 mock 来优化测试时间. 比如上千个测试用例, 可能就只需要实际运行一次 git, 其他全部用 mock 替代
+
+> 绝对不要因为测试耗时问题而改生产. 如果实在做不到 100ms 以下, 那么就让它超过算了.
+
+结论: 不授权为测试耗时改生产代码, 也不为测试加注入点; 用 mock 降耗时, 做不到 100 毫秒以下的案例保留原样并记录. 实施见 issue 0039 (`.scratch/0039-mock-slow-tests/issues/01-mock-slow-tests.md`).
