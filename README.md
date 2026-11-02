@@ -97,7 +97,7 @@ The installation directory is fixed:
 PATH behavior depends on the platform:
 
 - Windows manages only `Path` in the current user's Registry. Even if the environment-change notification succeeds, the current PowerShell, CMD, or Git Bash session may retain its old environment. Open a new terminal, sign out and back in, or refresh the current command interpreter manually.
-- Linux manages only the exact PATH block marked by ARW in `~/.profile`; it does not guess other shell configuration files.
+- Linux manages only the exact PATH block marked by ARW in `~/.profile`; it does not guess other shell configuration files. A new login shell reads it, so sign out and back in, or run `. ~/.profile` in the current shell. If `~/.bash_profile` exists (bash then skips `~/.profile`) or you use zsh, load `~/.profile` from your own shell configuration yourself.
 - Experimental macOS does not register PATH automatically. Configure it yourself or use the launcher in the installation directory.
 - `--register-path false` does not change PATH or configuration files, and does not release ownership previously established by ARW.
 
@@ -121,9 +121,19 @@ arw workflow init
 
 ARW searches upward from the current directory for the nearest Git working-tree root, and observes and modifies only that root. A nested Git repository does not fall back to an outer repository. Initialize each repository that needs ARW separately, from its root or a subdirectory.
 
+For scripts and Agents, run it without prompts. Non-interactive initialization takes either `--reuse-profile` or a complete Profile replacement, where `--platform`, `--domain-layout`, and all three `--code-map-*` options must be given together; an option with no value means an empty list:
+
+```text
+arw workflow init --non-interactive --platform codex --platform claude-code --domain-layout single-context --code-map-root --code-map-include --code-map-exclude
+```
+
 Initialization collects or reuses a Repository Profile. This configuration records the selected platforms, domain-document layout, and optional Code Map root, include, and exclude rules. The platforms selected by the user are the sole basis for which platform content is installed. ARW does not scan user-level or platform-built-in Skills, and does not download or validate an Agent CLI.
 
 After writing, the command prints the complete `Agent Post-init Handoff`. Give the entire handoff block to the Main Agent: gaps observed by the Engine are review input and cannot prove there are no other semantic gaps. The review checks repository workflow, domain documents and long-term terms, managed areas and duplicate rules, repository-owned validation, writing and filename rules, `.arwignore`, Agent management scope, and preparation to migrate old ARW Artifacts.
+
+On Windows, Git may check files out with CRLF line endings. ARW ignores line-ending differences when it reads repository files, so a CRLF checkout does not cause false drift. To keep the working tree consistent for the whole team, commit a `.gitattributes` yourself, or set `core.autocrlf=false`; ARW does not create or change either.
+
+On Windows, ARW supports only the officially installed native `codex` and `claude` executables: Codex through its official PowerShell install script, and Claude Code through its native installer or WinGet. npm-installed `.cmd` wrappers are not supported.
 
 `workflow init` does not create root `CONTEXT.md`, `CONTEXT-MAP.md`, or `.scratch`. If domain documents are missing or another review item has a gap, the Main Agent combines all gaps into exactly one repository workflow completion issue. It uses `Status: needs-info` while user choices remain, and changes to `Status: ready-for-agent` only after choices and blockers are resolved. If the complete review finds no gaps, no issue is created; a missing `.scratch` is then normal.
 
@@ -363,7 +373,7 @@ For ordinary commands, exit code `0` means success or an accepted no-op, `1` mea
 - `Not inside a Git working tree`: enter the target Git repository root or a subdirectory and try again.
 - `.scratch` is absent: this is an allowed normal state for `list`, `migrate artifacts`, and repository workflows. When opening or printing a specific identity, check whether the record has actually been created.
 - `arw` is missing after installation on Windows: open a new terminal. If environment refresh still has not taken effect, sign out and back in or refresh the current command interpreter manually.
-- `arw` is missing after installation on Linux: check that PATH registration was allowed and that the current shell reads `~/.profile`; ARW does not change other shell configuration.
+- `arw` is missing after installation on Linux: check that PATH registration was allowed, then sign out and back in or run `. ~/.profile`. If `~/.bash_profile` exists or you use zsh, the shell does not read `~/.profile` by itself; load it yourself. ARW does not change other shell configuration.
 - `arw` is missing on experimental macOS: installation does not register PATH automatically. Use the installation-directory launcher or configure PATH yourself.
 - `open` cannot start the editor: check the editor setting in the global `config.json`; the [Agent CLI Guide](docs/manuals/agent-cli.md) has the full structure.
 - `arw agent start` fails: check its named configuration, arguments, and launch boundary in the [Agent CLI Guide](docs/manuals/agent-cli.md).

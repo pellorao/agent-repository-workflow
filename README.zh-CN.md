@@ -95,7 +95,7 @@ node install.mjs
 PATH 行为取决于平台:
 
 - Windows 只管理当前用户 Registry 中的 `Path`. 即使环境变化通知成功, 当前 PowerShell, CMD 或 Git Bash 也可能保留旧环境, 因而需要新终端, 注销登录或手工刷新当前命令解释器.
-- Linux 只管理 `~/.profile` 中由 ARW 标记的准确 PATH 块, 不猜测其他 shell 配置文件.
+- Linux 只管理 `~/.profile` 中由 ARW 标记的准确 PATH 块, 不猜测其他 shell 配置文件. 新的登录 shell 才会读取它, 所以需要注销再登录, 或在当前 shell 运行 `. ~/.profile`. 如果存在 `~/.bash_profile` (此时 bash 不再读取 `~/.profile`) 或使用 zsh, 需要自行在 shell 配置中加载 `~/.profile`.
 - 实验性 macOS 不自动登记 PATH. 需要由用户自行配置, 或直接使用安装目录中的启动器.
 - `--register-path false` 不改变 PATH 或配置文件, 也不释放以前已经取得的归属.
 
@@ -119,9 +119,19 @@ arw workflow init
 
 ARW 从当前目录向上寻找最近的 Git working-tree root, 并且只观察和修改这个根目录. 嵌套 Git 仓库不会回退到外层仓库, 每个需要 ARW 的仓库都要从自己的根目录或子目录单独初始化.
 
+脚本和 Agent 使用时可以无提示运行. 非交互初始化要么用 `--reuse-profile`, 要么给出完整的 Profile 替换: `--platform`, `--domain-layout` 和三个 `--code-map-*` 选项必须一起给出, 选项不带值表示空列表:
+
+```text
+arw workflow init --non-interactive --platform codex --platform claude-code --domain-layout single-context --code-map-root --code-map-include --code-map-exclude
+```
+
 初始化会收集或复用 Repository Profile. 这个配置记录所选平台, 领域文档布局, 以及可选 Code Map 的根目录, 包含和排除规则. 用户选择的平台是安装哪些平台内容的唯一依据; ARW 不扫描用户级或平台内置 Skill, 也不下载或验证 Agent CLI.
 
 写入完成后, 命令输出完整的 `Agent Post-init Handoff`. 把整个交接块原样发给 Main Agent, 因为 Engine 观察到的缺口只是审核输入, 不能证明其他语义缺口不存在. 审核会检查仓库工作流, 领域文档和长期术语, 受管区域与重复规则, 仓库自有验证, 写作和文件名规则, `.arwignore`, Agent 管理范围及旧 ARW Artifact 的迁移准备情况.
+
+在 Windows 上, Git 可能以 CRLF 行尾检出文件. ARW 读取仓库文件时忽略行尾差异, 所以 CRLF 检出不会造成误报的漂移. 若要让整个团队的工作树保持一致, 请自行提交 `.gitattributes`, 或设置 `core.autocrlf=false`; ARW 不创建也不修改这两者.
+
+在 Windows 上, ARW 只支持官方安装的原生 `codex` 和 `claude` 可执行文件: Codex 使用官方 PowerShell 安装脚本, Claude Code 使用原生安装器或 WinGet. 不支持通过 npm 安装的 `.cmd` 包装器.
 
 `workflow init` 本身不创建根 `CONTEXT.md`, `CONTEXT-MAP.md` 或 `.scratch`. 如果领域文档缺失, 或其他审核项存在缺口, Main Agent 会把全部缺口合并到恰好一张仓库工作流补全 issue. 尚有用户选择时使用 `Status: needs-info`; 选择和 blocker 都解决后才进入 `Status: ready-for-agent`. 如果完整审核没有缺口, 不创建 issue, 此时缺少 `.scratch` 是正常结果.
 
@@ -361,7 +371,7 @@ arw agent start <name> [agent-arguments...]
 - `Not inside a Git working tree`: 进入目标 Git 仓库根目录或它的子目录后重试.
 - `.scratch` 不存在: 如果你在执行 `list`, `migrate artifacts` 或仓库工作流, 这是允许的正常状态. 只有打开或读取具体身份时, 才应检查记录是否真的已经创建.
 - Windows 安装后找不到 `arw`: 打开新终端. 如果环境刷新仍未生效, 注销再登录或手工刷新当前命令解释器.
-- Linux 安装后找不到 `arw`: 确认安装时允许登记 PATH, 并确认当前 shell 实际读取 `~/.profile`; ARW 不修改其他 shell 配置.
+- Linux 安装后找不到 `arw`: 确认安装时允许登记 PATH, 然后注销再登录或运行 `. ~/.profile`. 如果存在 `~/.bash_profile` 或使用 zsh, shell 不会自动读取 `~/.profile`, 需要自行加载; ARW 不修改其他 shell 配置.
 - 实验性 macOS 找不到 `arw`: 安装不会自动登记 PATH, 使用安装目录启动器或自行配置 PATH.
 - `open` 无法启动编辑器: 检查全局 `config.json` 中的编辑器设置; 详细配置结构见 [Agent CLI 指南](docs/manuals/agent-cli.zh-CN.md).
 - `arw agent start` 失败: 按 [Agent CLI 指南](docs/manuals/agent-cli.zh-CN.md) 检查命名配置, 参数和启动边界.

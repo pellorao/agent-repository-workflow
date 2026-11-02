@@ -36,6 +36,12 @@ arw commit-audit verify [--non-implementation]
 arw --version
 ```
 
+非交互 `arw workflow init` 要么用 `--reuse-profile`, 要么给出完整 Profile 替换: `--platform`, `--domain-layout` 和三个 `--code-map-*` 必须一起给出, 选项不带值表示空列表, 例如:
+
+```text
+arw workflow init --non-interactive --platform codex --platform claude-code --domain-layout single-context --code-map-root --code-map-include --code-map-exclude
+```
+
 会写入的命令是 `arw workflow init`, `arw workflow update` (不带 `--dry-run`), `arw workflow remove`, `arw text fix`, `arw migrate artifacts`, `arw spec-readiness prepare`, `arw spec-readiness generate`, `arw spec-readiness promote` 和 `arw commit-audit prepare`; 只在相应的独立授权工作流中运行它们. 其余命令只读. `arw migrate artifacts` 只迁移旧版 ARW Artifact 格式. 领取和解决是 ARW Artifact 工作流规则, 不是命令.
 
 供用户使用的短别名是 `li`, `lm`, `ls` 和 `lba`; Agent 编写的指令使用上面的规范形式.

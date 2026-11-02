@@ -26,7 +26,7 @@ Status: completed
 - 验收条件 1: `git diff` 显示 `lib/arw-common/agent-cli-launch.mjs` 新增 `spawnFailureHint`, `lib/arw.mjs`, `codex-app-server.mjs`, `claude-sessions.mjs` 各在原消息后追加提示, 启动参数与 `shell: false` 未变. 非测试代码净增约 +5 行, 在上限 +12 内.
 - 验收条件 2: `tests/arw-common/agent-cli.test.mjs` (更新两处期望), `tests/background-agent/claude-sessions.test.mjs` 与 `codex-app-server.test.mjs` 各新增一个用不存在的可执行文件名启动的测试, 均通过; 不创建进程.
 - 全量: `pnpm test` 833 通过, `pnpm typecheck`, `node scripts/check-workflow-distribution.mjs`, `node scripts/project-claude-skills.mjs --check`, `node scripts/generate-install-arw.mjs --check`, `arw text check`, `arw terms check --include .scratch/0033-agent-cli-launch-hint/` 通过.
-- 耗时 (三个测试文件一起运行 3 次, 中位数): 新增 "a Claude turn whose executable cannot be launched reports how to fix it" 22.8 ms, "a Codex executable that cannot be launched reports how to fix it" 31.3 ms; 修改期望文案的 `agent-cli.test.mjs` 回调中最慢 "agent start selects an exact configured name and preserves invocation process options" 27.9 ms, 均低于 100 ms.
+- 耗时 (三个测试文件一起运行 3 次, 中位数): 新增 "a Claude turn whose executable cannot be launched reports how to fix it" 22.8 ms, "a Codex executable that cannot be launched reports how to fix it" 31.3 ms; 修改期望文案的回调 "agent start maps process failures without starting a shell" 11.1 ms, 均低于 100 ms.
 - `git diff --cached --check` 无输出; 本次 7 个 JavaScript 文件 `node --check` 均通过.
 
 ## Comments
