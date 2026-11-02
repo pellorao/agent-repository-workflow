@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0054:01",
+  "exception": {
+    "confirmedAt": "2026-11-02T12:00:00Z",
+    "reason": "Single cleanup issue (delete unused upstream Skills) with no design decision; the user confirmed on 2026-11-02 that issues of this kind need no governance design."
+  },
+  "subject": {
+    "filePath": ".scratch/0054-remove-unused-upstream-skills/issues/01-remove-unused-upstream-skills.md",
+    "sha256": "d07a5c2b0b726b5e68cc627081ae0da868ed3e696ff352256263bc61369ab938"
+  },
+  "result": "not-applicable"
+}

@@ -8,7 +8,7 @@ This manual is for people who have already enabled ARW in a repository (see the 
 
 ## Skills from the upstream repository
 
-These 23 Skills come from [mattpocock/skills](https://github.com/mattpocock/skills) (`skills/engineering/` and `skills/productivity/`). ARW keeps an adapted fork pinned to one upstream commit, translated and adjusted for ARW issues, records and platforms, so behavior can differ from the upstream text. Each entry links to the upstream description at the pinned commit; read it for the original idea.
+These 20 Skills come from [mattpocock/skills](https://github.com/mattpocock/skills) (`skills/engineering/` and `skills/productivity/`). ARW keeps an adapted fork pinned to one upstream commit, translated and adjusted for ARW issues, records and platforms, so behavior can differ from the upstream text. Each entry links to the upstream description at the pinned commit; read it for the original idea.
 
 ### Discussion and clarification
 
@@ -31,16 +31,13 @@ These 23 Skills come from [mattpocock/skills](https://github.com/mattpocock/skil
 
 - `to-spec` (name it explicitly): Turns the current conversation into a specification without a new interview. [Upstream](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/engineering/to-spec/SKILL.md)
 - `to-tickets` (name it explicitly): Splits a plan or specification into vertical-slice issues that declare their blockers. [Upstream](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/engineering/to-tickets/SKILL.md)
-- `triage` (name it explicitly): Moves issues through triage states and writes agent-ready briefs. [Upstream](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/engineering/triage/SKILL.md)
 - `implement` (automatic): Builds what an implementation issue asks for, validates it, and records the result. [Upstream](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/engineering/implement/SKILL.md)
 - `tdd` (automatic): Test-first development with a red-green-refactor loop. [Upstream](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/engineering/tdd/SKILL.md)
 - `diagnosing-bugs` (automatic): A disciplined loop for hard bugs and performance regressions. [Upstream](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/engineering/diagnosing-bugs/SKILL.md)
-- `resolving-merge-conflicts` (automatic): Resolves an in-progress merge or rebase conflict hunk by hunk and finishes it. [Upstream](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/engineering/resolving-merge-conflicts/SKILL.md)
 - `code-review` (automatic): Reviews a Git comparison on two independent axes: implementation standards and requirement conformance. [Upstream](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/engineering/code-review/SKILL.md)
 
-### Handoff, setup and learning
+### Setup and learning
 
-- `handoff` (name it explicitly): Compacts the conversation into a handoff document for another agent. [Upstream](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/productivity/handoff/SKILL.md)
 - `wizard` (automatic): Generates an interactive shell script that walks you through steps only a human can do. [Upstream](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/engineering/wizard/SKILL.md)
 - `teach` (name it explicitly): Teaches you a new skill or concept over several sessions in the current directory. [Upstream](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/productivity/teach/SKILL.md)
 - `writing-for-agents` (automatic): Guidance for writing Skills, `AGENTS.md`, `CLAUDE.md` and other documents agents read. [Upstream](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/productivity/writing-for-agents/SKILL.md)

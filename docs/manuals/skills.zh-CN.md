@@ -8,7 +8,7 @@
 
 ## 上游 Skill
 
-这 23 个 Skill 来自 [mattpocock/skills](https://github.com/mattpocock/skills) (`skills/engineering/` 与 `skills/productivity/`). ARW 维护一个固定在某个上游提交的改编分支, 为适配 ARW 的 issue, 记录和平台做过翻译与调整, 所以行为可能与上游原文不同. 每一项链接到固定提交下的上游说明, 想了解原始思路可以去读.
+这 20 个 Skill 来自 [mattpocock/skills](https://github.com/mattpocock/skills) (`skills/engineering/` 与 `skills/productivity/`). ARW 维护一个固定在某个上游提交的改编分支, 为适配 ARW 的 issue, 记录和平台做过翻译与调整, 所以行为可能与上游原文不同. 每一项链接到固定提交下的上游说明, 想了解原始思路可以去读.
 
 ### 讨论与澄清
 
@@ -31,16 +31,13 @@
 
 - `to-spec` (需显式点名): 把当前对话整理成规范, 不再重新访谈. [上游说明](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/engineering/to-spec/SKILL.md)
 - `to-tickets` (需显式点名): 把计划或规范拆成声明阻断关系的纵向切片 issue. [上游说明](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/engineering/to-tickets/SKILL.md)
-- `triage` (需显式点名): 让 issue 经过分流状态流转, 并写出 Agent 可直接领取的说明. [上游说明](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/engineering/triage/SKILL.md)
 - `implement` (自动使用): 按实施 issue 构建交付内容, 验证并记录结果. [上游说明](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/engineering/implement/SKILL.md)
 - `tdd` (自动使用): 先写测试的开发方式, 遵循红-绿-重构循环. [上游说明](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/engineering/tdd/SKILL.md)
 - `diagnosing-bugs` (自动使用): 针对难复现的缺陷和性能退化的有纪律的诊断循环. [上游说明](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/engineering/diagnosing-bugs/SKILL.md)
-- `resolving-merge-conflicts` (自动使用): 逐处解决进行中的合并或变基冲突, 并完成该操作. [上游说明](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/engineering/resolving-merge-conflicts/SKILL.md)
 - `code-review` (自动使用): 沿实施标准和要求符合两个独立维度审核一个 Git 比较. [上游说明](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/engineering/code-review/SKILL.md)
 
-### 交接, 设置与学习
+### 设置与学习
 
-- `handoff` (需显式点名): 把当前对话压缩成交接文档, 供另一个 Agent 接手. [上游说明](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/productivity/handoff/SKILL.md)
 - `wizard` (自动使用): 生成交互式 shell 脚本, 带你完成只有人能做的步骤. [上游说明](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/engineering/wizard/SKILL.md)
 - `teach` (需显式点名): 在当前目录中分多个会话教你一项新技能或概念. [上游说明](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/productivity/teach/SKILL.md)
 - `writing-for-agents` (自动使用): 编写 Skill, `AGENTS.md`, `CLAUDE.md` 等供 Agent 阅读的文档时的指引. [上游说明](https://github.com/mattpocock/skills/blob/6acc160e4e0cd062dbbbd7a1b26ae92855edf07e/skills/productivity/writing-for-agents/SKILL.md)
