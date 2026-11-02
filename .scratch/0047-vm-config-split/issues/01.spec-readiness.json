@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0047:01",
+  "request": {
+    "digest": "686f801ef4efea4761ca686ffb6fc786cb9b5d1b5ceb36a86d25bed4a367b8bf",
+    "filePath": ".tmp/claude-code/ad35ce58-362f-4db3-a1d5-a5e8444e3975/0047_01/spec-readiness/requests/request-a413f10f-e84c-4b76-bf72-a027e4b76e4f.json",
+    "id": "a413f10f-e84c-4b76-bf72-a027e4b76e4f"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "ba4f23b253fe4bd4d17bde006dd684e3b4ae723ec9443a706c6f32eb66815b7e"
+  },
+  "inputs": [
+    {
+      "filePath": ".scratch/0047-vm-config-split/spec.md",
+      "role": "governing-spec",
+      "sha256": "44a86c4ddd04a09ec947bb528e3fd03cb6613333a7105d603a57052ac535a2a5"
+    },
+    {
+      "filePath": "docs/adr/0031-use-github-and-local-validation-sources.md",
+      "role": "adr",
+      "sha256": "8d434698a59c5b13e9263c3d896c07b571cb378dc39daf372ce11f8cc25c5666"
+    },
+    {
+      "filePath": "docs/adr/0039-keep-arw-local-settings-in-a-repository-local-file.md",
+      "role": "adr",
+      "sha256": "2f94e418ca9cfefefa37e8dad95d7cc8a9ee394826075f3a052e3b9326378317"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow-release/spec.md",
+      "role": "governing-spec",
+      "sha256": "b3e1d1aedefc041a1b8df45634ba564812b6d8b570463940a74a8319e58dda43"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0047-vm-config-split/issues/01-vm-config-split.md",
+    "sha256": "c2787b09b999afca018d15c376c219079b98a97a5512693940942eb90905b4e6"
+  },
+  "result": "satisfied"
+}

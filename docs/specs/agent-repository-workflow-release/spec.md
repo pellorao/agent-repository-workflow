@@ -6,7 +6,7 @@
 
 ## Release validation configuration
 
-根 `release-validation.json` 只保存规范 HTTPS 远端 `repositories.sourceCheckout.url`. Bootstrap 生成物从它投影远端, 正式推送和 tag 后验证都使用它. 它没有版本字段, 因为配置与读取代码由同一 Git 提交绑定. VM 位置, 快照和凭据由维护者在仓库外的 VM JSON 中提供, 不进入仓库, issue 或发布证据.
+根 `release-validation.json` 只保存规范 HTTPS 远端 `repositories.sourceCheckout.url`. Bootstrap 生成物从它投影远端, 正式推送和 tag 后验证都使用它. 它没有版本字段, 因为配置与读取代码由同一 Git 提交绑定. VM 位置, 快照和凭据由维护者在仓库外的 VM JSON 中提供, 不进入仓库, issue 或发布证据. VM JSON 可以是单个文件, 也可以拆成共用机器文件和引用它的 ARW 发布配置, 格式与合并规则由 `$release` Skill 的 `references/vm.md` 拥有. ARW 专用的发布配置 (含共用机器文件路径和 fixture 目录路径) 记录在仓库根被 Git 忽略的本地文件 `.arw.local.json` 的 `release` 对象中, 不含秘密, `$release` 先读它, 缺失时才询问维护者.
 
 ## Release procedure
 

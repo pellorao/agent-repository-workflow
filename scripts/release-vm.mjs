@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 // 在 VMware 受验系统中运行 scripts/release-guest-check.mjs: 还原快照, 启动, 经固定主机密钥的 SSH 传入候选 bundle 并运行检查, 最后硬关机并还原快照.
-// 用法见 USAGE. 配置是仓库外的 JSON, 格式见 .agents/skills/release/references/vm.md.
+// 用法见 USAGE. 配置来源是 --config 文件或仓库根 .arw.local.json 的 release 对象, 格式见 .agents/skills/release/references/vm.md.
 
 import {spawnSync} from 'node:child_process';
-import {copyFileSync, mkdtempSync, readFileSync, rmSync, writeFileSync} from 'node:fs';
+import {copyFileSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
-import {join} from 'node:path';
+import {dirname, join, resolve} from 'node:path';
+import {fileURLToPath} from 'node:url';
 
 const SSH_WAIT_ATTEMPTS = 60;
 const SSH_WAIT_INTERVAL_MS = 5000;
@@ -13,14 +14,18 @@ const GUEST_BUNDLE = 'arw-candidate.bundle';
 const GUEST_FIXTURE = 'arw-fixture.tgz';
 const GUEST_CHECKOUT = 'arw-candidate';
 const USAGE = `Usage:
-  node scripts/release-vm.mjs check <config.json> <machine> <candidate.bundle> [--previous <commit>] [--keep]
-  node scripts/release-vm.mjs ssh <config.json> <machine> <command>
-  node scripts/release-vm.mjs down <config.json> <machine>`;
+  node scripts/release-vm.mjs check <machine> <candidate.bundle> [--config <path>] [--previous <commit>] [--keep]
+  node scripts/release-vm.mjs ssh <machine> <command> [--config <path>]
+  node scripts/release-vm.mjs down <machine> [--config <path>]
+Without --config the release config is the "release" object of .arw.local.json in the repository root.`;
 
 /** @typedef {{vmrun: string, location: string, snapshot: string, vmwareEncryptionPassword?: string, ssh: {user: string, port: number, identityFile: string, hostKey: string}, nodeExecutables: {recommended: string, minimum?: string}}} Machine */
 
-const [operation, configPath, machineKey, argument, ...rest] = process.argv.slice(2);
-if (!['check', 'ssh', 'down'].includes(operation) || !configPath || !machineKey || (operation !== 'down' && !argument)) {
+const argv = process.argv.slice(2);
+const configFlag = argv.indexOf('--config');
+const configOption = configFlag === -1 ? undefined : argv.splice(configFlag, 2)[1];
+const [operation, machineKey, argument, ...rest] = argv;
+if (!['check', 'ssh', 'down'].includes(operation) || !machineKey || (operation !== 'down' && !argument) || (configFlag !== -1 && !configOption)) {
     process.stderr.write(`${USAGE}\n`);
     process.exit(2);
 }
@@ -29,17 +34,33 @@ if (operation === 'check' && rest.includes('--previous') && !/^[0-9a-f]{7,40}$/u
     process.stderr.write(`${USAGE}\n--previous expects a commit (7-40 hex digits).\n`);
     process.exit(2);
 }
-const config = JSON.parse(readFileSync(configPath, 'utf8'));
+/** @type {(message: string) => never} */
+const fail = message => {
+    process.stderr.write(`${message}\n`);
+    process.exit(2);
+};
+// 错误只含路径, 不含解析器消息 (它可能引用文件片段, 而共用文件含密码). fatal 解码拒绝非法 UTF-8, 不悄悄改写值. 顶层必须是对象.
+/** @param {string} file @param {string} label @returns {any} */
+const readJson = (file, label) => {
+    let value = null;
+    try {
+        value = JSON.parse(new TextDecoder('utf-8', {fatal: true}).decode(readFileSync(file)));
+    } catch { /* 读取, 解码或解析失败都归一为下面的路径消息 */ }
+    return typeof value === 'object' && value !== null && !Array.isArray(value) ? value : fail(`${label} is not readable JSON: ${file}`);
+};
+// ARW 发布配置: --config 文件本身, 或仓库根 (按脚本位置) .arw.local.json 的 release 对象.
+const localConfig = join(dirname(fileURLToPath(import.meta.url)), '..', '.arw.local.json');
+const configDirectory = dirname(resolve(configOption ?? localConfig));
+const config = configOption !== undefined ? readJson(configOption, 'Config file')
+    : existsSync(localConfig) ? readJson(localConfig, 'Config file').release : undefined;
+if (typeof config !== 'object' || config === null || Array.isArray(config)) fail('No release config: pass --config <path> or add a "release" object to .arw.local.json.');
+const shared = typeof config.sharedMachinesConfig === 'string' ? readJson(resolve(configDirectory, config.sharedMachinesConfig), 'Shared machines config')
+    : config.sharedMachinesConfig === undefined ? {} : fail('sharedMachinesConfig must be a path string.');
 /** @type {Machine | undefined} */
-const machine = config.machines?.[machineKey];
-if (machine === undefined) {
-    process.stderr.write(`Machine not found in config: ${machineKey}\n`);
-    process.exit(2);
-}
-if (operation === 'check' && typeof config.fixturesDirectory !== 'string') {
-    process.stderr.write('fixturesDirectory is missing from the config.\n');
-    process.exit(2);
-}
+const machine = shared.machines?.[machineKey] === undefined && config.machines?.[machineKey] === undefined
+    ? undefined : {...shared.machines?.[machineKey], ...config.machines?.[machineKey]};
+if (machine === undefined) fail(`Machine not found in config: ${machineKey}`);
+if (operation === 'check' && typeof config.fixturesDirectory !== 'string') fail('fixturesDirectory is missing from the config.');
 
 /** @param {string} file @param {string[]} args @param {{cwd?: string, quiet?: boolean}} [options] */
 const run = (file, args, {cwd, quiet = false} = {}) => {
@@ -90,7 +111,7 @@ const check = async (/** @type {string} */ bundle) => {
     }
     // 两个文件先复制到本地临时目录再传: Windows 路径里的 `C:` 会被 scp 当作主机名.
     copyFileSync(bundle, join(workspace, GUEST_BUNDLE));
-    copyFileSync(join(config.fixturesDirectory, 'agent-assisted.tgz'), join(workspace, GUEST_FIXTURE));
+    copyFileSync(join(resolve(configDirectory, config.fixturesDirectory), 'agent-assisted.tgz'), join(workspace, GUEST_FIXTURE));
     must('scp bundle and fixture', run('scp', [...sshOptions, '-P', String(machine.ssh.port), GUEST_BUNDLE, GUEST_FIXTURE, `${machine.ssh.user}@${host}:`], {cwd: workspace}));
     must('guest clone', ssh(host, `git -c advice.detachedHead=false clone --quiet -c core.autocrlf=false -c core.longpaths=true ${GUEST_BUNDLE} ${GUEST_CHECKOUT}`));
     // 每个 Node.js (recommended, minimum) 各跑一次, 首个失败即停. 路径不得含空格.
