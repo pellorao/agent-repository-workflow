@@ -37,14 +37,16 @@ const step = (label, result, expectOk = true) => {
 // 新开命令解释器: Windows 从注册表重新读取 Machine + User Path (与新打开的终端相同), Linux 用登录 shell 读取 ~/.profile.
 // 运行本脚本的 node 所在目录排在 PATH 最前, 让 arw 启动器调用的 `node` 就是受验的 Node.js.
 // 默认在 HOME 运行, 且 Windows 禁止从当前目录解析命令, 以免解析到候选 checkout 自带的 arw.
-/** @param {string} command @param {string} [cwd] */
-const fresh = (command, cwd = homedir()) => {
+/** @param {string} command @param {string} [cwd] @param {'cmd' | 'powershell'} [shell] */
+const fresh = (command, cwd = homedir(), shell = 'cmd') => {
     if (!WINDOWS) return run('bash', ['-lc', `PATH='${NODE_DIRECTORY}':"$PATH"; ${command}`], {cwd});
     const path = run('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command',
         "[Console]::OutputEncoding = [Text.UTF8Encoding]::new($false); [Environment]::ExpandEnvironmentVariables([Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [Environment]::GetEnvironmentVariable('Path','User'))"]);
     if (!path.ok) return path;
     const env = Object.fromEntries(Object.entries(process.env).filter(([key]) => key.toUpperCase() !== 'PATH'));
-    return run('cmd.exe', ['/d', '/c', command], {cwd, env: {...env, Path: `${NODE_DIRECTORY}${delimiter}${path.stdout}`, NoDefaultCurrentDirectoryInExePath: '1'}, windowsVerbatimArguments: true});
+    const options = {cwd, env: {...env, Path: `${NODE_DIRECTORY}${delimiter}${path.stdout}`, NoDefaultCurrentDirectoryInExePath: '1'}};
+    if (shell === 'powershell') return run('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', `[Console]::OutputEncoding = [Text.UTF8Encoding]::new($false); ${command}`], options);
+    return run('cmd.exe', ['/d', '/c', command], {...options, windowsVerbatimArguments: true});
 };
 
 const locate = WINDOWS ? 'where arw' : 'command -v arw';
@@ -68,9 +70,7 @@ const checkEntry = label => {
 const minimumNode = Number(/\d+/u.exec(JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8')).engines.node)?.[0]);
 step(`Node.js 满足 engines (>=${minimumNode})`, {ok: Number(process.versions.node.split('.')[0]) >= minimumNode, output: process.versions.node});
 step('arw 安装前不可解析', fresh(locate), false);
-if (WINDOWS) {
-    step('PowerShell 在新终端可解析', fresh('where powershell.exe'));
-}
+if (WINDOWS) step('PowerShell 在新终端可解析', fresh('where powershell.exe'));
 const commit = step('读取候选 commit', run('git', ['rev-parse', 'HEAD'], {cwd: ROOT}));
 const staging = mkdtempSync(join(tmpdir(), 'arw-release-archive-'));
 const archive = join(staging, 'arw.tar.gz');
@@ -99,10 +99,17 @@ step('从压缩包安装', run(process.execPath, [
 ], {cwd: extracted}));
 
 if (WINDOWS) checkEntry('安装后非 ASCII 用户 PATH 项仍在');
-const resolved = step('新终端解析 arw', fresh(locate));
-if (!resolved.split(/\r?\n/u).every(line => line.startsWith(INSTALLATION))) step('arw 指向 Installation 目录', {ok: false, output: resolved});
-const reported = step('arw --version', fresh('arw --version'));
-if (!reported.includes(VERSION)) step(`版本为 ${VERSION}`, {ok: false, output: reported});
+/** 在新会话解析 arw 并核对 Installation 目录 (Windows 路径不区分大小写, 可能输出多行) 与版本. @param {string} prefix 步骤名前缀 @param {string} resolveLabel @param {string} locateCommand @param {'cmd' | 'powershell'} shell */
+const checkResolved = (prefix, resolveLabel, locateCommand, shell) => {
+    const normalize = (/** @type {string} */ text) => WINDOWS ? text.toLowerCase() : text;
+    const resolved = step(resolveLabel, fresh(locateCommand, homedir(), shell));
+    if (!resolved.split(/\r?\n/u).every(line => normalize(line).startsWith(normalize(INSTALLATION)))) step(`${prefix}arw 指向 Installation 目录`, {ok: false, output: resolved});
+    const reported = step(`${prefix}arw --version`, fresh('arw --version', homedir(), shell));
+    if (!reported.includes(VERSION)) step(`${prefix}版本为 ${VERSION}`, {ok: false, output: reported});
+};
+checkResolved('', '新终端解析 arw', locate, 'cmd');
+// PowerShell 新会话经 Get-Command 解析, 与 cmd 的 where 是不同的解析路径.
+if (WINDOWS) checkResolved('PowerShell ', 'PowerShell 新会话解析 arw', '(Get-Command arw).Source', 'powershell');
 
 const target = mkdtempSync(join(tmpdir(), 'arw-release-target-'));
 step('创建目标 Git 仓库', run('git', ['init', '--quiet'], {cwd: target}));
