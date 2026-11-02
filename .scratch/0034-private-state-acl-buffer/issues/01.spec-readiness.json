@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0034:01",
+  "exception": {
+    "confirmedAt": "2026-11-02T04:55:03Z",
+    "reason": "Single-issue bug fix with no design decision (user confirmed 2026-11-02 in projects AGENTS)."
+  },
+  "subject": {
+    "filePath": ".scratch/0034-private-state-acl-buffer/issues/01-private-state-acl-buffer.md",
+    "sha256": "2c7cc8eafbf68379e2669650df66537f2b54042f30394616d05512a4722adaa1"
+  },
+  "result": "not-applicable"
+}

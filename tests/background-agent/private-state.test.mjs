@@ -8,6 +8,7 @@ import {securePrivateStatePath,verifyPrivateStatePath} from '../../lib/backgroun
 import {createBackgroundAgentStateStore} from '../../lib/background-agent/state-store.mjs';
 import {backgroundAgentMessageDatabasePaths} from '../../lib/background-agent/message-store.mjs';
 import {createTemporaryDirectory} from '../helpers/cleanup.mjs';
+import {installFakeCommand} from '../helpers/process.mjs';
 
 test('private runtime state rejects broad filesystem access before it is read', async () => {
   const directory = await mkdtemp(join(tmpdir(),'arw-private-state-'));
@@ -37,4 +38,14 @@ test('Agent, message and provider state share one private SQLite file', async t 
     .all().map(row => row.name),['agents','messages','providers']);
   database.close();
   await store.close();
+});
+
+test('Windows ACL calls survive PowerShell writing progress output to stderr',async t => {
+  const directory = await createTemporaryDirectory(t,'arw-private-state-acl-');
+  await installFakeCommand(t,directory,'powershell.exe','head -c 4096 /dev/zero | tr "\\0" x >&2\n');
+  const platform = /** @type {PropertyDescriptor} */ (Object.getOwnPropertyDescriptor(process,'platform'));
+  Object.defineProperty(process,'platform',{value:'win32'});
+  t.after(() => Object.defineProperty(process,'platform',platform));
+  await securePrivateStatePath(directory,'directory');
+  await verifyPrivateStatePath(directory,'directory');
 });
