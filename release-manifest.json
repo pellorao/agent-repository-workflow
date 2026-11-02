@@ -104,6 +104,7 @@
     "lib/installation/installation-contract.mjs",
     "lib/installation/uninstallation.mjs",
     "lib/repository-workflow/code-map.mjs",
+    "lib/repository-workflow/managed-bytes.mjs",
     "lib/repository-workflow/workflow-lock.mjs",
     "lib/repository-workflow/workflow.mjs",
     "lib/reviewer-runtime/reviewer-group.mjs",

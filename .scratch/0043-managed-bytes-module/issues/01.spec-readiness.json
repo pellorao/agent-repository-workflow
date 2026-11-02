@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0043:01",
+  "exception": {
+    "confirmedAt": "2026-11-01T17:02:13Z",
+    "reason": "Single-issue change with no design decision (user confirmed 2026-11-02 in projects AGENTS)."
+  },
+  "subject": {
+    "filePath": ".scratch/0043-managed-bytes-module/issues/01-managed-bytes-module.md",
+    "sha256": "3e60e76f7da7419d0d762c1ba8612536b1b1cb9d8a41b1923f1df6d57763350d"
+  },
+  "result": "not-applicable"
+}
