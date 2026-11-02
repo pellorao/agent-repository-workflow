@@ -45,7 +45,7 @@ Reviewer 能力测试不是发布门禁. 维护者需要时显式调用源码专
 
 Reviewer 能力测试只在角色指令, 模型或报告格式变化时才有意义, 不随每次发布运行. 旧的发布能力门禁用程序准备, 评分, 折减和会话检查, 这些代码大多校验程序自己产生的数据; 现在由 Agent 按 Skill 运行场景; 保留场景, 隐藏预期, 一个入口脚本及其评分, 报告修复, 格式罚, 暂停扣分与盲裁实现, 这些是评估角色指令的方法本身 (与 qwen_strata 的评分体系一致, 结果可比), 不是对 ARW 程序产物的发布门禁. 残差折减, 暂停计数与基线归档校验是评分体系的一部分: 归档基线是固定标尺, 其校验保证评分尺度不被意外改动, 不是校验程序运行时自己产生的数据.
 
-VM 验证只证明用户实际依赖的结果: 安装, PATH 登记, 初始化和卸载在真实 Windows 与 Linux 上可用, 包括运行环境前提 (Node.js >=24, 即 `package.json` 的 `engines.node`, 不要求准确的最低版本; Windows 上新终端能解析 `powershell.exe`), Windows 用户 PATH 中的非 ASCII 条目在安装和卸载后保留, 以及受管仓库按 `core.autocrlf=true` 重新克隆后 `workflow verify` 通过; 并包含从上一发布版升级到候选, 以及在每台受验系统上对检出上一发布版标签 `arw-<版本>` 的 agent-assisted fixture 仓库 (Windows 上用 CRLF 检出) 运行 `workflow update` 和 `workflow verify`, 并在从未初始化的 fixture 仓库上运行 `workflow init`. 这些是用户安装和升级时真正会走的路径. 它由 Agent 按 Skill 运行一个短检查脚本, 不再由程序维护场景登记表, 归档和一致性校验; 这些机制校验的大多是验证程序自己产生的数据, 维护成本远高于它们发现问题的价值. 降级, 真实目标仓库矩阵和初始化 issue 生命周期不属于发布门禁 (降级被版本策略拒绝, 矩阵成本高于它发现的问题), 需要时由维护者另行要求.
+VM 验证只证明用户实际依赖的结果: 安装, PATH 登记, 初始化和卸载在真实 Windows 与 Linux 上可用, 包括运行环境前提 (Node.js >=24, 即 `package.json` 的 `engines.node`, 不要求准确的最低版本; Windows 上新终端能解析 `powershell.exe`), Windows 用户 PATH 中的非 ASCII 条目在安装和卸载后保留, 以及受管仓库按 `core.autocrlf=true` 重新克隆后 `workflow verify` 通过; 并包含从上一发布版升级到候选, 以及在每台受验系统上对检出上一发布版标签 `arw-<版本>` 的 agent-assisted fixture 仓库 (Windows 上用 CRLF 检出) 运行 `workflow update` 和 `workflow verify`, 并在新建的从未初始化的 Git 仓库上运行 `workflow init` (plain fixture 的初始化由发布 Skill 在宿主上验证). 这些是用户安装和升级时真正会走的路径. 它由 Agent 按 Skill 运行一个短检查脚本, 不再由程序维护场景登记表, 归档和一致性校验; 这些机制校验的大多是验证程序自己产生的数据, 维护成本远高于它们发现问题的价值. 降级, 真实目标仓库矩阵和初始化 issue 生命周期不属于发布门禁 (降级被版本策略拒绝, 矩阵成本高于它发现的问题), 需要时由维护者另行要求.
 
 ## Validation strategy
 
