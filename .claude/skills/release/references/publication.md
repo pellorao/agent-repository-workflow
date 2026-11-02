@@ -39,9 +39,11 @@ Release 创建并核对后, 在临时目录中用公开 HTTPS 地址验证用户
 curl -fsSL https://raw.githubusercontent.com/<owner>/<repo>/<version>/scripts/install-arw.mjs -o <tmp>/install-arw.mjs
 HOME=<tmp>/home node <tmp>/install-arw.mjs --version <version> --non-interactive --register-path false
 <tmp>/home/.agent-repository-workflow/arw --version
+HOME=<tmp>/home-latest node <tmp>/install-arw.mjs --non-interactive --register-path false
+<tmp>/home-latest/.agent-repository-workflow/arw --version
 ```
 
-最后一条命令必须输出 `<version>`. 验证完成后删除 `<tmp>`.
+两条 `--version` 命令都必须输出 `<version>` (第二次安装不带 `--version`, 验证 Bootstrap 选择最新 Release 的路径; 此时刚创建的 Release 是最新的). 验证完成后删除 `<tmp>`.
 
 ## Rollback after the tag
 

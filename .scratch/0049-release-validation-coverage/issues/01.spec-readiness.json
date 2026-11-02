@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0049:01",
+  "request": {
+    "digest": "acd02d2e1206ade7e1002f2d04efc91641a4dad575126bf224156419a819e312",
+    "filePath": ".tmp/claude-code/ad35ce58-362f-4db3-a1d5-a5e8444e3975/0049_01/spec-readiness/requests/request-ae7b7f64-9815-4fae-a7d9-7125b19d6b34.json",
+    "id": "ae7b7f64-9815-4fae-a7d9-7125b19d6b34"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "ba4f23b253fe4bd4d17bde006dd684e3b4ae723ec9443a706c6f32eb66815b7e"
+  },
+  "inputs": [
+    {
+      "filePath": ".scratch/0049-release-validation-coverage/spec.md",
+      "role": "governing-spec",
+      "sha256": "485afa6f991eb422434aacc5850959d02bf1842c0e1b5de9eacadbffc1acb849"
+    },
+    {
+      "filePath": "docs/adr/0016-use-repository-owned-agent-projection-configs.md",
+      "role": "adr",
+      "sha256": "74ecb3ede2cff7670c8d07f9b344c4023bc17a9922adccca7109a3fac26156b1"
+    },
+    {
+      "filePath": "docs/adr/0031-use-github-and-local-validation-sources.md",
+      "role": "adr",
+      "sha256": "8d434698a59c5b13e9263c3d896c07b571cb378dc39daf372ce11f8cc25c5666"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow-release/spec.md",
+      "role": "governing-spec",
+      "sha256": "b3e1d1aedefc041a1b8df45634ba564812b6d8b570463940a74a8319e58dda43"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow/spec.md",
+      "role": "governing-spec",
+      "sha256": "1cbdbe0044b9c89c86b0e4751bef900cd7275a25695ab4ba842eafcf0d4ebb29"
+    },
+    {
+      "filePath": "lib/repository-workflow/workflow.mjs",
+      "role": "architecture-evidence",
+      "sha256": "3f9e9dd973b63c3f88d264de7b61b5fbd367c10ed921c7b007cf210e91100b07"
+    },
+    {
+      "filePath": "scripts/pack-release.mjs",
+      "role": "architecture-evidence",
+      "sha256": "7300ea32134b70406b5ee153bb91f37a8edfb04e052d1196ae270f8f9d73e810"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0049-release-validation-coverage/issues/01-release-validation-coverage.md",
+    "sha256": "1098a5c79cec7abd36ac6b10f520e162c12485af1eeae1fcb3e6c3335421ec85"
+  },
+  "result": "satisfied"
+}

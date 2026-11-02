@@ -27,17 +27,17 @@ disable-model-invocation: true
 
 ## 3. Validate on VMs
 
-本节证明候选在每台 Windows 和 Linux VM 上都能完成以下流程: 安装, PATH 登记 (新开终端能解析到 `arw`), `arw workflow init` 和 `arw workflow verify`, 以及卸载. guest 检查用 `scripts/pack-release.mjs` 把候选打成安装压缩包, 解压后用其中的 `install.mjs` 和发布标签安装.
+本节按 `docs/specs/agent-repository-workflow-release/spec.md` 的 `Validation coverage` 节验证候选: 每台 Windows 和 Linux VM 运行 guest 检查, 宿主上完成该节的 "宿主一次" 情形. guest 检查消费宿主用 `scripts/pack-release.mjs` 打成的候选安装压缩包, 与真实发布产物的来源一致.
 
 1. 先读仓库根被 Git 忽略的 `.arw.local.json` 的 `release` 对象 (ARW 发布配置: 共用机器文件路径, `fixturesDirectory`, 每机的 ARW 专用键). 文件缺失或没有 `release` 对象时才向维护者索取各路径, 并写入该文件 (只放路径, 不放秘密), 之后不再询问. 配置格式和受验系统要求见 `./references/vm.md`. 配置内容, VM 身份和凭据不写入仓库, issue 或报告.
-2. `<tmp>` 是会话工作区 (见 `docs/agents/environment.md`) 下的 `release` 目录, 本 Skill 与各参考文件都用该占位符. `mkdir -p <tmp>`, 然后 `git bundle create <tmp>/candidate.bundle HEAD`.
-3. 对配置中的每台机器运行 `node scripts/release-vm.mjs check <machine> <bundle>`. 脚本依次还原快照, 启动 VM, 传入 bundle 和配置 `fixturesDirectory` 中的 `agent-assisted.tgz`, 运行 `scripts/release-guest-check.mjs`, 最后硬关机并还原快照. 不同机器之间互不依赖, 可以并行, 但不超过配置的 `maxParallelMachines`. 从 WSL 操作 Windows 宿主上的 VM 时, 按 `./references/vm.md` 的 WSL and Windows host 节使用 Windows 的 `node.exe` 运行.
+2. `<tmp>` 是会话工作区 (见 `docs/agents/environment.md`) 下的 `release` 目录, 本 Skill 与各参考文件都用该占位符. `mkdir -p <tmp>`, 然后 `git bundle create <tmp>/candidate.bundle HEAD` 和 `node scripts/pack-release.mjs <tmp>/arw.tar.gz`.
+3. 对配置中的每台机器运行 `node scripts/release-vm.mjs check <machine> <bundle> --archive <tmp>/arw.tar.gz`. 脚本依次还原快照, 启动 VM, 传入 bundle, 压缩包和配置 `fixturesDirectory` 中的 `agent-assisted.tgz`, 运行 `scripts/release-guest-check.mjs`, 最后硬关机并还原快照. 不同机器之间互不依赖, 可以并行, 但不超过配置的 `maxParallelMachines`. 从 WSL 操作 Windows 宿主上的 VM 时, 按 `./references/vm.md` 的 WSL and Windows host 节使用 Windows 的 `node.exe` 运行.
 4. 只有每台机器的最后一行都是 `<machine>: PASS` 才算通过. 记录 guest 为每个 Node.js 输出的 `PASS <platform> node <node-version> <version> <commit>` 行.
 5. 每个 PASS 行的 node 版本都要满足 `./references/vm.md` 的 Guest requirements 节对 Node.js 的要求; 不满足时修正 VM 配置后重跑.
-6. 从上一发布版升级: 给 `check` 追加 `--previous <commit>`, `<commit>` 是 `git tag --merged HEAD` 中最高稳定版 tag 指向的 commit. guest 检查先安装该版本, 再安装候选, 然后在检出 `arw-<该版本>` 标签的 agent-assisted fixture 上运行 `arw workflow update` 与 `arw workflow verify` (覆盖范围见发布 spec 的 VM 验证段). 首次发布没有上一版时省略, fixture 检出默认分支的最新状态后再 update.
+6. 从上一发布版升级: 给 `check` 追加 `--previous <commit>`, `<commit>` 是 `git tag --merged HEAD` 中最高稳定版 tag 指向的 commit. guest 检查先安装该版本, 再安装候选, 然后在检出 `arw-<该版本>` 标签的 agent-assisted fixture 上运行 `arw workflow update` 与 `arw workflow verify` (覆盖范围见发布 spec 的 `Validation coverage` 节). 首次发布没有上一版时省略, fixture 检出默认分支的最新状态后再 update.
 7. plain fixture 验证, 步骤见 `./references/fixtures.md`; agent-assisted fixture 由 guest 检查覆盖. 通过后才算本节完成.
 
-guest 检查自动覆盖的范围见 `docs/specs/agent-repository-workflow-release/spec.md` 的 VM 验证段.
+8. Agent CLI 检查 (宿主一次, 在全部 VM 通过之后; 受验系统不安装 Agent CLI): 解压 `<tmp>/arw.tar.gz` 到 `<tmp>/agent/extracted`; 以 `HOME=<tmp>/agent/home` 运行其中的 `node install.mjs --release-tag <version> --non-interactive --register-path false`; 在 `<tmp>/agent/repo` 里 `git init`, 用隔离 home 里安装的 `arw` 运行与 `scripts/release-guest-check.mjs` 中 `INIT_ARGUMENTS` 相同参数的 `workflow init`; 在该仓库内用正常 HOME 运行 `claude -p "列出本仓库可用的 Skill 名称, 并给出 AGENTS.md 的一级标题"` 和 `codex exec "<同一问题>"` (登录凭据在正常 HOME, 每次消耗一个问题的额度). 两个回答都必须含 `implement` 与 `Agent Repository Workflow`, 否则不通过. 不使用真实 TTY.
 
 失败时先保存原始输出. 需要现场诊断时, 加 `--keep` 重跑, 用 `node scripts/release-vm.mjs ssh <machine> <command>` 检查 VM, 诊断完运行 `down` 还原快照. 判断失败原因:
 

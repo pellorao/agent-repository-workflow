@@ -22,29 +22,36 @@ test('release-vm check transfers the fixture and forwards --fixture and --previo
         nodeExecutables: {recommended: '/n/node', minimum: '/m/node'},
     }}}));
     const bundle = join(directory, 'candidate.bundle');
+    const archive = join(directory, 'arw.tar.gz');
     await writeFile(bundle, 'bundle');
-    const result = await runProcess(process.execPath, ['scripts/release-vm.mjs', 'check', 'M', bundle, '--config', config, '--previous', 'abc1234'], {env: process.env});
+    await writeFile(archive, 'archive');
+    const result = await runProcess(process.execPath, ['scripts/release-vm.mjs', 'check', 'M', bundle, '--archive', archive, '--config', config, '--previous', 'abc1234'], {env: process.env});
     assert.equal(result.status === 'exited' && result.stdout.trim(), 'M: PASS');
     const calls = (await readFile(log, 'utf8')).split('\n');
-    assert.ok(calls.some(call => call.startsWith('scp ') && call.includes(' arw-candidate.bundle arw-fixture.tgz ')));
+    assert.ok(calls.some(call => call.startsWith('scp ') && call.includes(' arw-candidate.bundle arw-fixture.tgz arw-archive.tar.gz ')));
     for (const node of ['/n/node', '/m/node']) {
-        assert.ok(calls.some(call => call.endsWith(`${node} arw-candidate/scripts/release-guest-check.mjs --fixture arw-fixture.tgz --previous abc1234`)), node);
+        assert.ok(calls.some(call => call.endsWith(`${node} arw-candidate/scripts/release-guest-check.mjs --fixture arw-fixture.tgz --archive arw-archive.tar.gz --previous abc1234`)), node);
     }
 });
 
 test('release-vm check rejects a missing or malformed --previous value with a usage error', async () => {
     const cases = [['--previous'], ['--previous', 'v0.5.0'], ['--previous', 'abc12']];
-    const results = await Promise.all(cases.map(args => runProcess(process.execPath, ['scripts/release-vm.mjs', 'check', 'M', 'none.bundle', '--config', 'none.json', ...args], {env: process.env})));
+    const results = await Promise.all(cases.map(args => runProcess(process.execPath, ['scripts/release-vm.mjs', 'check', 'M', 'none.bundle', '--archive', 'none.tar.gz', '--config', 'none.json', ...args], {env: process.env})));
     for (const [index, result] of results.entries()) {
         assert.ok(result.status === 'exited' && result.exitCode === 2 && result.stderr.includes('--previous expects a commit'), cases[index].join(' '));
     }
+});
+
+test('release-vm check requires --archive with a value', async () => {
+    const results = await Promise.all([[], ['--archive'], ['--archive', '--config', 'x.json']].map((/** @type {string[]} */ args) => runProcess(process.execPath, ['scripts/release-vm.mjs', 'check', 'M', 'none.bundle', ...args], {env: process.env})));
+    for (const result of results) assert.ok(result.status === 'exited' && result.exitCode === 2 && result.stderr.includes('--archive <arw.tar.gz> is required'));
 });
 
 test('release-vm check requires fixturesDirectory in the config', async t => {
     const directory = await createTemporaryDirectory(t, 'arw-release-vm-');
     const config = join(directory, 'vm.json');
     await writeFile(config, JSON.stringify({machines: {M: {}}}));
-    const result = await runProcess(process.execPath, ['scripts/release-vm.mjs', 'check', 'M', 'none.bundle', '--config', config], {env: process.env});
+    const result = await runProcess(process.execPath, ['scripts/release-vm.mjs', 'check', 'M', 'none.bundle', '--archive', 'none.tar.gz', '--config', config], {env: process.env});
     assert.ok(result.status === 'exited' && result.exitCode === 2 && result.stderr.includes('fixturesDirectory'));
 });
 
@@ -62,6 +69,7 @@ const setup = async t => {
     await installFakeCommand(t, directory, 'scp', `echo "scp $*" >> '${log}'\n`);
     await writeFile(join(directory, 'agent-assisted.tgz'), 'fixture');
     await writeFile(join(directory, 'candidate.bundle'), 'bundle');
+    await writeFile(join(directory, 'arw.tar.gz'), 'archive');
     // 每个仓库根各含一份脚本副本 (脚本按自身位置找 .arw.local.json), 让用例可以并行.
     /** @param {string} name @param {string} [local] */
     const root = async (name, local) => {
@@ -74,11 +82,11 @@ const setup = async t => {
     const run = await root('repo');
     const calls = async () => (await readFile(log, 'utf8').catch(() => '')).split('\n');
     const machine = {vmrun, location: 'x.vmx', snapshot: 's', vmwareEncryptionPassword: SECRET, ssh: SSH, nodeExecutables: {recommended: '/shared/node', minimum: '/shared/min'}};
-    return {directory, root, write, run, calls, machine, bundle: join(directory, 'candidate.bundle')};
+    return {directory, root, write, run, calls, machine, bundle: join(directory, 'candidate.bundle'), archive: join(directory, 'arw.tar.gz')};
 };
 
 test('release-vm merges the shared machines file under the ARW config per machine key, shallowly', async t => {
-    const {directory, write, run, calls, machine, bundle} = await setup(t);
+    const {directory, write, run, calls, machine, bundle, archive} = await setup(t);
     await write('shared.json', {fixturesDirectory: '/ignored', sharedMachinesConfig: 'missing.json', machines: {Both: machine, SharedOnly: machine}});
     // fixturesDirectory 与 sharedMachinesConfig 相对 ARW 配置所在目录; ssh 对象整体替换.
     await write('arw.json', {fixturesDirectory: '.', sharedMachinesConfig: 'shared.json', machines: {
@@ -89,12 +97,12 @@ test('release-vm merges the shared machines file under the ARW config per machin
     const elsewhere = join(directory, 'repo');
     await write('nofixtures.json', {sharedMachinesConfig: 'shared.json', machines: {}});
     const [missing, ...results] = await Promise.all([
-        run(['check', 'Both', bundle, '--config', join(directory, 'nofixtures.json')], elsewhere),
-        ...['Both', 'SharedOnly', 'ArwOnly'].map(key => run(['check', key, bundle, '--config', join(directory, 'arw.json')], elsewhere)),
+        run(['check', 'Both', bundle, '--archive', archive, '--config', join(directory, 'nofixtures.json')], elsewhere),
+        ...['Both', 'SharedOnly', 'ArwOnly'].map(key => run(['check', key, bundle, '--archive', archive, '--config', join(directory, 'arw.json')], elsewhere)),
     ]);
     for (const result of results) assert.equal(result.status === 'exited' && result.stdout.trim().endsWith('PASS'), true);
     const lines = await calls();
-    const ran = (/** @type {string} */ node) => lines.some(line => line.endsWith(`${node} arw-candidate/scripts/release-guest-check.mjs --fixture arw-fixture.tgz`));
+    const ran = (/** @type {string} */ node) => lines.some(line => line.endsWith(`${node} arw-candidate/scripts/release-guest-check.mjs --fixture arw-fixture.tgz --archive arw-archive.tar.gz`));
     for (const node of ['/arw/node', '/arw/min', '/shared/node', '/shared/min', '/arw-only/node']) assert.ok(ran(node), node);
     // ssh 对象整体替换: ARW 只给 port, 共用的 user 与 identityFile 不保留.
     assert.ok(lines.some(line => line.includes('-p 2222 ') && line.includes('undefined@')));
@@ -105,7 +113,7 @@ test('release-vm merges the shared machines file under the ARW config per machin
 });
 
 test('release-vm accepts an absolute sharedMachinesConfig and rejects unreadable configs with exit 2 without echoing contents', async t => {
-    const {directory, write, run, machine, bundle} = await setup(t);
+    const {directory, write, run, machine, bundle, archive} = await setup(t);
     const file = (/** @type {string} */ name) => join(directory, name);
     await write('shared.json', {machines: {M: machine}});
     await write('absolute.json', {fixturesDirectory: directory, sharedMachinesConfig: file('shared.json'), machines: {}});
@@ -135,7 +143,7 @@ test('release-vm accepts an absolute sharedMachinesConfig and rejects unreadable
         ['M', 'adir', 'Config file is not readable JSON'],
         ['Nope', 'shared.json', 'Machine not found in config: Nope'],
     ];
-    const results = await Promise.all(cases.map(([key, config]) => run(['check', key, bundle, '--config', file(config)])));
+    const results = await Promise.all(cases.map(([key, config]) => run(['check', key, bundle, '--archive', archive, '--config', file(config)])));
     for (const [index, result] of results.entries()) {
         const [, config, expected] = cases[index];
         assert.ok(result.status === 'exited', config);
@@ -145,7 +153,7 @@ test('release-vm accepts an absolute sharedMachinesConfig and rejects unreadable
 });
 
 test('release-vm reads the release object of .arw.local.json at the script repository root and lets --config override it', async t => {
-    const {directory, root, write, machine, bundle} = await setup(t);
+    const {directory, root, write, machine, bundle, archive} = await setup(t);
     const outside = await createTemporaryDirectory(t, 'arw-release-vm-cwd-');
     await write('shared.json', {machines: {M: machine}});
     await write('override.json', {fixturesDirectory: directory, machines: {}});
@@ -165,9 +173,9 @@ test('release-vm reads the release object of .arw.local.json at the script repos
     await mkdir(join(directory, 'dir', '.arw.local.json'), {recursive: true});
     cases.push([await root('dir'), 'Config file is not readable JSON']);
     const [pass, override, ...failures] = await Promise.all([
-        good(['check', 'M', bundle], outside),
-        good(['check', 'M', bundle, '--config', join(directory, 'override.json')], outside),
-        ...cases.map(([run]) => /** @type {Function} */ (run)(['check', 'M', bundle], outside)),
+        good(['check', 'M', bundle, '--archive', archive], outside),
+        good(['check', 'M', bundle, '--archive', archive, '--config', join(directory, 'override.json')], outside),
+        ...cases.map(([run]) => /** @type {Function} */ (run)(['check', 'M', bundle, '--archive', archive], outside)),
     ]);
     assert.ok(pass.status === 'exited' && pass.stdout.trim() === 'M: PASS');
     assert.ok(override.status === 'exited' && override.exitCode === 2 && override.stderr.includes('Machine not found'));

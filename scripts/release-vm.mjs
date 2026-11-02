@@ -12,9 +12,10 @@ const SSH_WAIT_ATTEMPTS = 60;
 const SSH_WAIT_INTERVAL_MS = 5000;
 const GUEST_BUNDLE = 'arw-candidate.bundle';
 const GUEST_FIXTURE = 'arw-fixture.tgz';
+const GUEST_ARCHIVE = 'arw-archive.tar.gz';
 const GUEST_CHECKOUT = 'arw-candidate';
 const USAGE = `Usage:
-  node scripts/release-vm.mjs check <machine> <candidate.bundle> [--config <path>] [--previous <commit>] [--keep]
+  node scripts/release-vm.mjs check <machine> <candidate.bundle> --archive <arw.tar.gz> [--config <path>] [--previous <commit>] [--keep]
   node scripts/release-vm.mjs ssh <machine> <command> [--config <path>]
   node scripts/release-vm.mjs down <machine> [--config <path>]
 Without --config the release config is the "release" object of .arw.local.json in the repository root.`;
@@ -27,6 +28,13 @@ const configOption = configFlag === -1 ? undefined : argv.splice(configFlag, 2)[
 const [operation, machineKey, argument, ...rest] = argv;
 if (!['check', 'ssh', 'down'].includes(operation) || !machineKey || (operation !== 'down' && !argument) || (configFlag !== -1 && !configOption)) {
     process.stderr.write(`${USAGE}\n`);
+    process.exit(2);
+}
+// --archive 是宿主用 scripts/pack-release.mjs 为候选打成的安装压缩包, 传入客户机供 Bootstrap 步骤使用.
+const archiveFlag = rest.indexOf('--archive');
+const archive = rest[archiveFlag + 1];
+if (operation === 'check' && (archiveFlag === -1 || !archive || archive.startsWith('--'))) {
+    process.stderr.write(`${USAGE}\n--archive <arw.tar.gz> is required.\n`);
     process.exit(2);
 }
 // --previous 的值是 commit (7-40 位十六进制), 在拼进远程命令前校验.
@@ -112,12 +120,13 @@ const check = async (/** @type {string} */ bundle) => {
     // 两个文件先复制到本地临时目录再传: Windows 路径里的 `C:` 会被 scp 当作主机名.
     copyFileSync(bundle, join(workspace, GUEST_BUNDLE));
     copyFileSync(join(resolve(configDirectory, config.fixturesDirectory), 'agent-assisted.tgz'), join(workspace, GUEST_FIXTURE));
-    must('scp bundle and fixture', run('scp', [...sshOptions, '-P', String(machine.ssh.port), GUEST_BUNDLE, GUEST_FIXTURE, `${machine.ssh.user}@${host}:`], {cwd: workspace}));
+    copyFileSync(archive, join(workspace, GUEST_ARCHIVE));
+    must('scp bundle, fixture and archive', run('scp', [...sshOptions, '-P', String(machine.ssh.port), GUEST_BUNDLE, GUEST_FIXTURE, GUEST_ARCHIVE, `${machine.ssh.user}@${host}:`], {cwd: workspace}));
     must('guest clone', ssh(host, `git -c advice.detachedHead=false clone --quiet -c core.autocrlf=false -c core.longpaths=true ${GUEST_BUNDLE} ${GUEST_CHECKOUT}`));
     // 每个 Node.js (recommended, minimum) 各跑一次, 首个失败即停. 路径不得含空格.
-    // --previous <commit> 转交 guest 检查, 让它先安装上一发布版再升级到候选; --fixture 是传入的 agent-assisted fixture.
+    // --previous <commit> 转交 guest 检查, 让它先安装上一发布版再升级到候选; --fixture 是传入的 agent-assisted fixture, --archive 是传入的候选安装压缩包.
     const previous = rest.includes('--previous') ? ` --previous ${rest[rest.indexOf('--previous') + 1]}` : '';
-    return Object.values(machine.nodeExecutables).every(node => ssh(host, `${node} ${GUEST_CHECKOUT}/scripts/release-guest-check.mjs --fixture ${GUEST_FIXTURE}${previous}`).ok);
+    return Object.values(machine.nodeExecutables).every(node => ssh(host, `${node} ${GUEST_CHECKOUT}/scripts/release-guest-check.mjs --fixture ${GUEST_FIXTURE} --archive ${GUEST_ARCHIVE}${previous}`).ok);
 };
 
 let exitCode = 1;
