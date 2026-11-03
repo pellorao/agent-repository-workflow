@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0059:01",
+  "exception": {
+    "confirmedAt": "2026-11-02T12:00:00Z",
+    "reason": "用户 2026-11-02 常设确认: 不含设计决定的清理类单 issue effort 不需要治理设计; 本项为删除已无使用者的 vmwareEncryptionPassword 支持, 用户 2026-11-03 去掉了受验 VM 的加密."
+  },
+  "subject": {
+    "filePath": ".scratch/0059-remove-vm-encryption-password/issues/01-remove-vm-encryption-password.md",
+    "sha256": "6d82a5d15dbbc0b5cce8ae441a46cd940c5a20f97b977a2567bd977c0a454a8f"
+  },
+  "result": "not-applicable"
+}

@@ -15,7 +15,6 @@
       "vmrun": "C:\\Program Files (x86)\\VMware\\VMware Workstation\\vmrun.exe",
       "location": "D:\\VMs\\Windows 11\\Windows 11.vmx",
       "snapshot": "<baseline-snapshot>",
-      "vmwareEncryptionPassword": "<optional VMware encryption password>",
       "ssh": {"user": "<user>", "port": 22, "identityFile": "C:\\Users\\<me>\\.ssh\\<key>", "hostKey": "ssh-ed25519 AAAA..."},
       "guestPasswords": {"<account>": "<password>"},
       "nodeExecutables": {"recommended": "C:\\node\\node.exe"}
@@ -27,7 +26,7 @@
 
 ### Local configuration file and shared machines file
 
-`/release` 先读仓库根的 `.arw.local.json` (被 `.gitignore` 排除, 只属于 ARW 源码仓库, 只放路径和 ARW 设置, 不放秘密), 取其 `release` 对象; 文件缺失或没有 `release` 对象时才询问维护者各路径并写入, 之后不再询问. 机器的通用信息 (`vmrun`, `location`, `snapshot`, `vmwareEncryptionPassword`, `ssh` 等) 也被其他本机工具使用时放进共用机器文件, `release` 对象只保存 ARW 专用键并用 `sharedMachinesConfig` 引用它:
+`/release` 先读仓库根的 `.arw.local.json` (被 `.gitignore` 排除, 只属于 ARW 源码仓库, 只放路径和 ARW 设置, 不放秘密), 取其 `release` 对象; 文件缺失或没有 `release` 对象时才询问维护者各路径并写入, 之后不再询问. 机器的通用信息 (`vmrun`, `location`, `snapshot`, `ssh` 等) 也被其他本机工具使用时放进共用机器文件, `release` 对象只保存 ARW 专用键并用 `sharedMachinesConfig` 引用它:
 
 ```json
 {
@@ -57,7 +56,6 @@
 - `location` 是 VMX 路径. 脚本不读取 `machineType` (只支持 VMware) 和 `guestPasswords` (只供维护者在控制台登录).
 - `nodeExecutables` 是客户机中 Node.js 的绝对路径, 不含空格. `check` 对 `recommended` 和可选的 `minimum` (第二个受验 Node.js, 通常省略) 各运行一次客户机检查, 首个失败即停. 客户机检查把该 node 所在目录排在 `PATH` 最前, 所以已安装的 `arw` 启动器也使用它.
 - `hostKey` 是客户机的 OpenSSH 公开主机密钥 (`<type> <base64>`). 脚本把它写入临时 known-hosts 文件, 并以 `StrictHostKeyChecking=yes` 和固定 `HostKeyAlias` 连接. 主机密钥不匹配时, 不得关闭校验来绕过. 应通过 VM 控制台读取 `/etc/ssh/ssh_host_*_key.pub` 或 `C:\ProgramData\ssh\ssh_host_*_key.pub` 核对.
-- `vmwareEncryptionPassword` 只在 VM 加密时填写. Windows 11 使用 virtual TPM, 因此通常需要. 它作为 `vmrun -vp` 参数传入, 宿主上的其他进程可以从进程列表读到, 只在单用户宿主上使用.
 - 客户机地址通过 `vmrun getGuestIPAddress -wait` 取得. DHCP 地址不是身份, 身份由主机密钥保证.
 
 ## Guest requirements

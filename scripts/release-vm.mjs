@@ -20,7 +20,7 @@ const USAGE = `Usage:
   node scripts/release-vm.mjs down <machine> [--config <path>]
 Without --config the release config is the "release" object of .arw.local.json in the repository root.`;
 
-/** @typedef {{vmrun: string, location: string, snapshot: string, vmwareEncryptionPassword?: string, ssh: {user: string, port: number, identityFile: string, hostKey: string}, nodeExecutables: {recommended: string, minimum?: string}}} Machine */
+/** @typedef {{vmrun: string, location: string, snapshot: string, ssh: {user: string, port: number, identityFile: string, hostKey: string}, nodeExecutables: {recommended: string, minimum?: string}}} Machine */
 
 const argv = process.argv.slice(2);
 const configFlag = argv.indexOf('--config');
@@ -78,9 +78,7 @@ const run = (file, args, {cwd, quiet = false} = {}) => {
 
 // vmrun 参数逐项传递, 含空格的 VMX 路径保持为一个参数.
 /** @param {string[]} args */
-const vmrun = (...args) => run(machine.vmrun, [
-    '-T', 'ws', ...(machine.vmwareEncryptionPassword === undefined ? [] : ['-vp', machine.vmwareEncryptionPassword]), ...args,
-], {quiet: true});
+const vmrun = (...args) => run(machine.vmrun, ['-T', 'ws', ...args], {quiet: true});
 
 /** @template {{ok: boolean, error: string}} T @param {string} label @param {T} result @returns {T} */
 const must = (label, result) => {

@@ -81,7 +81,7 @@ const setup = async t => {
     const write = (/** @type {string} */ name, /** @type {unknown} */ value) => writeFile(join(directory, name), JSON.stringify(value));
     const run = await root('repo');
     const calls = async () => (await readFile(log, 'utf8').catch(() => '')).split('\n');
-    const machine = {vmrun, location: 'x.vmx', snapshot: 's', vmwareEncryptionPassword: SECRET, ssh: SSH, nodeExecutables: {recommended: '/shared/node', minimum: '/shared/min'}};
+    const machine = {vmrun, location: 'x.vmx', snapshot: 's', ssh: SSH, nodeExecutables: {recommended: '/shared/node', minimum: '/shared/min'}};
     return {directory, root, write, run, calls, machine, bundle: join(directory, 'candidate.bundle'), archive: join(directory, 'arw.tar.gz')};
 };
 
