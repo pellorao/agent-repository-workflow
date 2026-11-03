@@ -17,7 +17,7 @@
 
 ### release-vm.mjs
 
-命令行去掉位置参数 `<config.json>`, 改为可选的 `--config <path>`: `check <machine> <candidate.bundle> [--config <path>] [--previous <commit>] [--keep]`, `ssh <machine> <command> [--config <path>]`, `down <machine> [--config <path>]`.
+命令行去掉位置参数 `<config.json>`, 改为可选的 `--config <path>`: `check <machine> <candidate.bundle> --archive <arw.tar.gz> [--config <path>] [--previous <commit>] [--keep]`, `ssh <machine> <command> [--config <path>]`, `down <machine> [--config <path>]`.
 
 - 不传 `--config`: 读取脚本所在仓库根 (由 `import.meta.url` 定位, 不依赖工作目录) 的 `.arw.local.json`, 其 `release` 对象就是 ARW 发布配置.
 - 传 `--config <path>`: 该文件本身就是 ARW 发布配置 (顶层即 `fixturesDirectory`, `machines`, 可选 `sharedMachinesConfig`), 不读本地配置文件. 这是旧调用方式 (只给配置路径) 的等价形式, 保留它只是同一段代码的第二个入口, 单文件完整配置因此继续有效, 现有维护者无需迁移. 路径值必须对运行脚本的 Node.js 有效 (用 Windows 的 `node.exe` 时写 Windows 路径).
