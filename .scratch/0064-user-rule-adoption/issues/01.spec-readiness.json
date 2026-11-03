@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0064:01",
+  "exception": {
+    "confirmedAt": "2026-11-02T05:10:54Z",
+    "reason": "Single-issue rule-text change with no design decision; the maintainer decided the content on 2026-11-04 (user confirmed 2026-11-02 in projects AGENTS that such issues need no governance design)."
+  },
+  "subject": {
+    "filePath": ".scratch/0064-user-rule-adoption/issues/01-adopt-user-rules.md",
+    "sha256": "d8623abfdcf17ead1cd2bde5796b876a5a00849e736a2a90ec0aaadea6a0a3bb"
+  },
+  "result": "not-applicable"
+}

@@ -32,6 +32,8 @@
 
 Subagent 把未解决的重要决定及其分析返回 Main Agent, 不自行选择, 不直接询问用户. 独立 Reviewer 发现治理资料歧义或冲突时同样报告给 Main Agent. Main Agent 负责提交用户决定, 并协调各 Agent 的写入范围和交付.
 
+照规则执行某一步很可能失败时 (如要一个 Reviewer 审查超出其能力的大范围), 不硬做: 先说明失败原因, 提出等效的变通方案及其成本, 用 `grilling` Skill 取得用户授权后再执行.
+
 ## Rule Conflicts
 
 用户级规则 (如 `~/.codex/AGENTS.md`, `~/.claude/CLAUDE.md`) 与 ARW 规则冲突时, 以用户级规则为准. ARW 文档之间相互冲突时, 向用户说明冲突的确切内容并请求决定, 期间只推进不受该冲突影响的工作.
@@ -48,7 +50,7 @@ Subagent 只写 Main Agent 分配的范围, Git 写入只由与用户沟通的 M
 
 ## Workflow Triggers
 
-行动前使用每个匹配的条目, 并遵循所指 Skill 或文档中的条件性交接规则. 到达触发点时才读取所指内容, 不在开工时预读后续步骤的规则.
+行动前使用每个匹配的条目, 并遵循所指 Skill 或文档中的条件性交接规则. 到达触发点时才读取所指内容, 不在开工时预读后续步骤的规则. 上下文压缩后, 压缩前读过的触发内容视为未读: 再到触发点时重新读取, 即使摘要说已读或引用了其中片段.
 
 - 更改已跟踪文件, 或构建, 修复, 修改, 完成仓库交付内容前: `implement` Skill (Entry 确认授权 issue).
 - 安排或处理就绪审核 (Spec Readiness) 前: `spec-readiness` Skill.
@@ -85,7 +87,7 @@ ARW 必须在 Codex 和 Claude Code 中都完整可用, 包括 `arw background-a
 
 - 测试命令见 `docs/agents/source-checkout-validation.md`. 只含 Agent 规则与文档的提交也运行其中三个 `node scripts/` 开头的检查, 作为 `commit` Skill 非实施分类的补充, 此类提交的分类另含 `distribution/` 副本与根 `README.zh-CN.md` 中的 Markdown. 修改某个区域的确定性测试前读取 `docs/agents/source-checkout-coverage.md`. 发布验证和发布只在维护者显式调用 `$release` Skill 时进行.
 - Reviewer 能力测试在维护者显式调用 `$reviewer-capability` Skill 时进行; 改动 Reviewer 规则 (Reviewer 角色指令, `docs/agents/reviewer.md`, Reviewer 交接与 Request 内容, 各 Skill 中约束 Reviewer 行为或复审处置的规则) 时, 也视同维护者已调用: 用受影响角色的能力场景对比改动前后, 评分不降低才接受改动. 速度提升很大而评分略有降低时, 交用户决定. 只删除重复表述或改为引用, 不改变任何规则含义的改动不做能力测试.
-- 单个测试回调耗时阈值为 100 毫秒.
+- 单个测试回调耗时阈值为 100 毫秒. 作为 `validation` Skill 要求逐例批准超阈值案例的 Baseline 例外, 本仓库不为缩短测试耗时修改生产代码 (含为测试增加的注入接缝); 不改生产代码就降不到阈值以下的测试保留超时, 不逐例请求批准.
 - 不对本仓库运行 `arw workflow init|update|verify|remove`; 它是 Workflow Distribution 的创作源, 各 Skill 中 `arw workflow verify` 的回退在本仓库不适用. Source Checkout 验证使用 Workflow Distribution 的生产检查, Repository Workflow 验证使用隔离的目标仓库.
 - 安装: `node install.mjs` (相关 issue 授权时从克隆安装), 卸载: 在安装目录运行 `node uninstall.mjs`.
 

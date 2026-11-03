@@ -21,7 +21,7 @@ disable-model-invocation: true
 
 ## Run
 
-1. 确认本次的角色, 场景, 后端和设置 (`model`, `modelProvider`, `reasoningEffort`, `serviceTier`). 每格先跑一次, 只对结果接近的格增加重复.
+1. 确认本次的角色, 场景, 后端和设置 (`model`, `modelProvider`, `reasoningEffort`, `serviceTier`). 每格先跑一次, 只对结果接近的格增加重复. 改动前后的评分对比 (A/B, 回归) 的 Reviewer 各组用 Claude `haiku` `high`, 不用 Codex `gpt-6-luna`: luna 的分数波动过大, 区分不了两组.
 2. 在当前会话临时目录 `.tmp/<platform>/<session>/<run>/` 下为每个实例搭建场景仓库 (实例目录必须是新路径; 返回的 `stateDirectory` 是它的同级 `state`, 恢复记录必须在会话临时目录内, 所以实例不能放在别处):
 
    ```sh
