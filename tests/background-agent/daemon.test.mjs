@@ -14,6 +14,7 @@ import {backgroundAgentMessageDatabasePaths} from '../../lib/background-agent/me
 import {appServerProcessIdentityPath, readOperatingSystemProcessCreationTime} from '../../lib/background-agent/process-identity.mjs';
 import {createBackgroundAgentStateStore} from '../../lib/background-agent/state-store.mjs';
 import {createTemporaryDirectory} from '../helpers/cleanup.mjs';
+import {installAclLog} from '../helpers/process.mjs';
 
 /** @param {string} runId @returns {import('../../lib/background-agent/state-store.mjs').BackgroundAgentRow} */
 const maintenanceAgent = runId => ({
@@ -400,8 +401,8 @@ test('offline maintenance preserves exit evidence after a failed recovery save a
   }finally{database.close();}
 });
 
-/** @param {string} runtimeDirectory */
-const startCredentialDaemon=async runtimeDirectory=>createBackgroundAgentDaemon({runtimeDirectory,port:0,maintenancePort:await freePort(),
+/** @param {string} runtimeDirectory @param {boolean} [runtimeDirectorySecured] */
+const startCredentialDaemon=async(runtimeDirectory,runtimeDirectorySecured=false)=>createBackgroundAgentDaemon({runtimeDirectory,port:0,maintenancePort:await freePort(),runtimeDirectorySecured,
   dispatch:async()=>({}),list:()=>[],prepareMaintenance:async()=>({status:'ready',stoppedAgents:[]})});
 
 /** @param {import('node:test').TestContext} t @param {(...args:Parameters<typeof fsPromises.link>)=>Promise<void>} replacement */
@@ -460,4 +461,31 @@ test('a credential published by another process after the pre-check is kept',asy
     assert.equal(await readFile(join(runtimeDirectory,'credential'),'utf8'),published);
     assert.deepEqual((await readdir(runtimeDirectory)).filter(name=>name.includes('.arw-tmp-')),[]);
   }finally{await daemon.close();}
+});
+
+test('Windows standalone daemon secures the runtime directory before the credential exists',async t=>{
+  const directory=await createTemporaryDirectory(t,'arw-daemon-acl-');
+  const calls=await installAclLog(t,directory);
+  const daemon=await startCredentialDaemon(directory);
+  await daemon.close();
+  assert.deepEqual(await calls(),[
+    {paths:[directory],secure:true,credential:false},
+    {paths:[join(directory,'credential')],secure:true,credential:true},
+  ]);
+});
+
+test('Windows manager start secures the runtime directory once, before the credential exists',async t=>{
+  const directory=await createTemporaryDirectory(t,'arw-manager-start-acl-');
+  const calls=await installAclLog(t,directory);
+  // The same sequence as the manager entry: the state store opens first, then the daemon is told the directory is secured.
+  const store=createBackgroundAgentStateStore({runtimeDirectory:directory});
+  await store.loadAgents();
+  await store.close();
+  const daemon=await startCredentialDaemon(directory,true);
+  await daemon.close();
+  assert.deepEqual(await calls(),[
+    {paths:[directory],secure:true,credential:false},
+    {paths:[backgroundAgentMessageDatabasePaths(directory).database],secure:true,credential:false},
+    {paths:[join(directory,'credential')],secure:true,credential:true},
+  ]);
 });

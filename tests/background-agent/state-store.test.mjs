@@ -1,10 +1,13 @@
 import assert from 'node:assert/strict';
+import {rm, writeFile} from 'node:fs/promises';
+import {join} from 'node:path';
 import {DatabaseSync} from 'node:sqlite';
 import test from 'node:test';
 
 import {createBackgroundAgentStateStore} from '../../lib/background-agent/state-store.mjs';
 import {backgroundAgentMessageDatabasePaths} from '../../lib/background-agent/message-store.mjs';
 import {createTemporaryDirectory} from '../helpers/cleanup.mjs';
+import {installAclLog} from '../helpers/process.mjs';
 
 /** @param {string} runId @returns {import('../../lib/background-agent/state-store.mjs').BackgroundAgentRow} */
 export const agentRow = runId => ({
@@ -335,4 +338,29 @@ test('provider-error batch failure keeps the newest fact and blocks acceptance u
   assert.equal(database.prepare('SELECT count(*) AS count FROM agents').get()?.count,1);
   database.close();
   await store.close();
+});
+
+test('Windows state store verifies existing database files in one process and secures only a new database file', async t => {
+  const directory = await createTemporaryDirectory(t,'arw-state-store-acl-');
+  const paths = backgroundAgentMessageDatabasePaths(directory);
+  await createBackgroundAgentStateStore({runtimeDirectory:directory}).loadAgents();
+  await writeFile(paths.shm,'');
+  await writeFile(paths.journal,'');
+  const calls = await installAclLog(t,directory);
+  const store = createBackgroundAgentStateStore({runtimeDirectory:directory});
+  await store.loadAgents();
+  await store.close();
+  assert.deepEqual(await calls(),[
+    {paths:[directory],secure:true,credential:false},
+    {paths:[paths.database,paths.shm,paths.journal],secure:false,credential:false},
+  ]);
+  await writeFile(join(directory,'fail'),'');
+  await assert.rejects(createBackgroundAgentStateStore({runtimeDirectory:directory}).loadAgents(),/could not be verified/);
+  await rm(join(directory,'fail'));
+  for (const path of Object.values(paths)) await rm(path,{force:true});
+  const before = (await calls()).length;
+  const created = createBackgroundAgentStateStore({runtimeDirectory:directory});
+  await created.loadAgents();
+  await created.close();
+  assert.deepEqual((await calls()).slice(before).map(call => call.paths),[[directory],[paths.database]]);
 });

@@ -1,5 +1,5 @@
 import {spawn} from 'node:child_process';
-import {mkdir, writeFile} from 'node:fs/promises';
+import {mkdir, readFile, writeFile} from 'node:fs/promises';
 import {basename, join} from 'node:path';
 
 const nodeProcessStdioBootstrap = new URL('./node-process-stdio.mjs', import.meta.url).href;
@@ -138,5 +138,18 @@ export const installFakeCommand = async (t, directory, name, script) => {
     process.env.PATH = `${bin}:${previousPath}`;
     t.after(() => {
         process.env.PATH = previousPath;
+    });
+};
+
+/** Fake PowerShell that logs each call's entries, secure flag and whether the credential already exists. @param {import('node:test').TestContext} t @param {string} directory */
+export const installAclLog = async (t,directory) => {
+    const log = join(directory,'calls.log');
+    await installFakeCommand(t,directory,'powershell.exe',`echo "$ARW_BACKGROUND_PRIVATE_ENTRIES|$ARW_BACKGROUND_PRIVATE_SECURE|$(test -e "${directory}/credential" && echo credential)" >> "${log}"\n[ ! -e "${directory}/fail" ] || [ -n "$ARW_BACKGROUND_PRIVATE_SECURE" ]\n`);
+    const platform = /** @type {PropertyDescriptor} */ (Object.getOwnPropertyDescriptor(process,'platform'));
+    Object.defineProperty(process,'platform',{value:'win32'});
+    t.after(() => Object.defineProperty(process,'platform',platform));
+    return async () => (await readFile(log,'utf8')).trim().split('\n').map(line => {
+        const [entries,secure,credential] = line.split('|');
+        return {paths:JSON.parse(entries).map((/** @type {{path:string}} */ entry) => entry.path),secure:secure === '1',credential:credential === 'credential'};
     });
 };
