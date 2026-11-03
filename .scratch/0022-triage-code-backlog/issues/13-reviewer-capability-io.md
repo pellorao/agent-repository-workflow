@@ -58,7 +58,7 @@ B1 的迁移 Module Design 检查接受 LF, CRLF 和 CR; B2 缺失 spec 或 issu
 
 ## Blocked by
 
-无.
+- None - can start immediately
 
 ## Validation
 

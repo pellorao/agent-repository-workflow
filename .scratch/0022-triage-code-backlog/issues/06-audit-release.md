@@ -26,7 +26,7 @@ Status: completed
 
 ## Blocked by
 
-无.
+- None - can start immediately
 ## Validation
 
 - H28: StagedIssue 只在本文件内使用, 删除的对象字段无读取方; 分组, 重复 effort 身份检查及 canonical ID 均继续使用 path.effortNumber.
