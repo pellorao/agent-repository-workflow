@@ -105,13 +105,13 @@
 #### `validation` (自动使用)
 
 - 何时: 修改行为或测试之前, 以及运行验证之前.
-- 做什么: 确定必要检查 (`arw text check`, `arw terms check --include <effort 目录>`, 已配置时的 `arw code-map verify`, 以及仓库在根 `AGENTS.md` 中声明的测试命令), 采用最少充分覆盖, 复用有效结果, 并规定纯文档变更需要哪些检查.
+- 做什么: 确定必要检查 (`arw text check`, `arw terms check --include <effort 目录>`, 已配置时的 `arw code-map verify`, 以及仓库在根 `AGENTS.md` 中声明的测试命令), 采用最少充分覆盖 (含按仓库阈值测量新增或修改的测试回调, 默认 100 毫秒), 复用有效结果, 并规定纯文档变更需要哪些检查.
 - 留下什么: 每条验收标准的具体证据, 通常写在 issue 的 `## Validation`.
 - 相关: `test-performance-optimization`, `test-value-cleanup`, `implement`.
 
 #### `test-performance-optimization` (自动使用)
 
-- 何时: 创建或语义修改测试案例之后 (按仓库阈值测量每个回调, 默认 100 毫秒), 或目标是加快现有测试套件.
+- 何时: 目标是加快现有测试套件.
 - 做什么: 做优化工作前先要有 issue, 记录基线 (总耗时和最慢 10 个回调), 然后保留每个结果的最小代表案例, 把等价输入合并为表格驱动, 共享不可变的准备结果来缩短测试.
 - 留下什么: issue 中的测量值和前后对比.
 - 相关: `validation`, `test-value-cleanup`.

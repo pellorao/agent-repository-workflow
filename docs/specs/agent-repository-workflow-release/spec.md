@@ -135,4 +135,4 @@ VM 验证的范围由 Validation coverage 节按 "情形的代码路径是否因
 
 ## Validation strategy
 
-固定测试验证发布配置读取, 以及 Bootstrap 生成物与配置一致. VM 验证和公开 Bootstrap 验证只在真实发布时由 `$release` Skill 执行, 不作为 implementation issue 的完成测试, 常规测试不访问公网. 源码仓库确定性测试矩阵由 `docs/agents/source-checkout-validation.md` 的 Source Checkout deterministic coverage 节承担.
+固定测试验证发布配置读取, 以及 Bootstrap 生成物与配置一致. VM 验证和公开 Bootstrap 验证只在真实发布时由 `$release` Skill 执行, 不作为 implementation issue 的完成测试, 常规测试不访问公网. 源码仓库确定性测试矩阵由 `docs/agents/source-checkout-coverage.md` 的 Source Checkout deterministic coverage 节承担.

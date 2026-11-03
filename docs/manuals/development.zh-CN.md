@@ -208,5 +208,5 @@ node scripts/reviewer-capability.mjs pool build|prompt|split|override ...
 - [发布长期规格](../specs/agent-repository-workflow-release/spec.md): 发布候选, Reviewer 能力, VM 验证, 标签和外部写入.
 - [读者文档规范](../specs/arw-reader-documentation/spec.md): README 与全部手册的读者目标和责任边界.
 - [验证规则](../../.agents/skills/validation/SKILL.md): 当前 Agent 验证责任和文档检查.
-- [源码仓库确定性验证](../agents/source-checkout-validation.md): 当前完整验证入口和覆盖路由.
+- [源码仓库确定性验证](../agents/source-checkout-validation.md): 当前完整验证入口; 覆盖路由见 [源码仓库确定性测试覆盖](../agents/source-checkout-coverage.md).
 - [提交规则](../../.agents/skills/commit/SKILL.md): 用户请求提交后的范围, 审核和 Commit Audit 流程.

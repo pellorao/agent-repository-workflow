@@ -105,13 +105,13 @@ These 11 Skills are written for ARW and implement its workflow: records under `.
 #### `validation` (automatic)
 
 - When: before changing behavior or tests, and before running verification.
-- What it does: decides which checks are required (`arw text check`, `arw terms check --include <effort directory>`, `arw code-map verify` when configured, and the test commands the repository declares in its root `AGENTS.md`), applies the least sufficient test coverage, reuses valid results, and defines what documentation-only changes need.
+- What it does: decides which checks are required (`arw text check`, `arw terms check --include <effort directory>`, `arw code-map verify` when configured, and the test commands the repository declares in its root `AGENTS.md`), applies the least sufficient test coverage (including measuring new or changed test callbacks against the repository threshold, 100 ms by default), reuses valid results, and defines what documentation-only changes need.
 - Leaves behind: concrete evidence per acceptance criterion, normally in the issue's `## Validation`.
 - Related: `test-performance-optimization`, `test-value-cleanup`, `implement`.
 
 #### `test-performance-optimization` (automatic)
 
-- When: after creating or semantically changing test cases (to measure each callback against the repository threshold, 100 ms by default), or when the goal is to make an existing suite faster.
+- When: the goal is to make an existing suite faster.
 - What it does: for optimization work it first needs an issue, records a baseline (total time and the ten slowest callbacks), then shortens tests by keeping the smallest representative case per outcome, table-driving equivalent inputs, and sharing immutable setup.
 - Leaves behind: measurements and before-and-after comparison in the issue.
 - Related: `validation`, `test-value-cleanup`.

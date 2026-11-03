@@ -51,14 +51,14 @@ Subagent 只写 Main Agent 分配的范围, Git 写入只由与用户沟通的 M
 行动前使用每个匹配的条目, 并遵循所指 Skill 或文档中的条件性交接规则. 到达触发点时才读取所指内容, 不在开工时预读后续步骤的规则.
 
 - 更改已跟踪文件, 或构建, 修复, 修改, 完成仓库交付内容前: `implement` Skill (Entry 确认授权 issue).
-- 实现前安排就绪审核与最终授权检查: `spec-readiness` Skill.
-- 更改行为, 测试或运行验证前: `validation` Skill; 创建或语义修改测试案例后测量耗时: `test-performance-optimization` Skill; 用户要求清理低价值测试: `test-value-cleanup` Skill.
+- 安排或处理就绪审核 (Spec Readiness) 前: `spec-readiness` Skill.
+- 更改行为, 测试或运行验证前 (含创建或语义修改测试案例后测量耗时): `validation` Skill; 以降低测试套件耗时为目标前: `test-performance-optimization` Skill; 用户要求清理低价值测试前: 读取 `.agents/skills/test-value-cleanup/SKILL.md`.
 - 处理 issue, map, spec 或其工作流字段前, 以及报告 issue 完成前: `issue-tracking` Skill.
 - 启动或控制独立 Reviewer 前: `reviewer-launch` Skill.
 - 用户请求 Git 提交后, 在提交验证或提交前: `commit` Skill.
 - 修改 Agent 指令或保存持久设计或治理的文档前: `rule-and-design-changes` Skill.
 - 探索不熟悉的领域, 命名持久领域概念或决定架构边界前: `domain-modeling` Skill.
-- 处理 ARW 命令和仓库发现时: `arw-commands` Skill; Code Map 适用时: `code-maps` Skill.
+- 处理 ARW 命令和仓库发现时, 以及 `arw workflow init` 成功后: `arw-commands` Skill; Code Map 适用时: `code-maps` Skill.
 - 开始多步任务, 委派工作或创建 subagent 前, 读取 `docs/agents/subagent-allocation.md`.
 - 创建或重命名文件或目录, 或编写仓库文本前, 读取 `docs/agents/writing.md`.
 - 创建临时文件或目录前, 读取 `docs/agents/environment.md`.

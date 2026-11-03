@@ -31,13 +31,7 @@
 
 默认串行写入: 同一时间只有一个 Agent 有权修改工程内的已跟踪文件, 即只实施一个 issue, 在主工作区进行. 上一个 issue 提交后, 或停在不留未提交修改的状态后, 下一个 issue 才开始写入. 限制的是同时写工程文件, 不是同时运行: 不写已跟踪文件的工作可以与之并行, 有空余额度和名额时应当并行, 包括研究, 审核, 测量, 日常检查等非 issue 任务中不写已跟踪文件的部分, 以及后续 issue 的前期准备和纯分析 (设计分析, 方案复核, issue 草稿, 实施计划; 结果作为报告返回或写在 `.tmp/` 下, 轮到该 issue 写入时再落盘). 小 issue 尽量合并为一个 issue 一起实施, 以减少审核轮次: 合并后的工作能在一个上下文中完成即可, 内容不相关也可以合并, 相关的优先归入同一个 issue; 开始下一个 issue 前检查待办中是否有可合并的 issue.
 
-用户可以把默认改为并行实施多个 issue. 并行时:
-
-- 每个 issue 使用一个独立的 Git worktree, 一个 worktree 只承载一个 issue. worktree 由与用户沟通的 Main Agent 创建, 合并和删除.
-- 各 worktree 内的写入, 测试和提交审核只针对本 issue. Git 写入, 包括 worktree 内的暂存, 提交和合并回主分支, 仍只由与用户沟通的 Main Agent 执行.
-- 预计改动同一文件的 issue 尽量不并行. 合并冲突由该 Main Agent 解决, 合并后在主分支重跑完整验证.
-- 删除 worktree, 仓库或其 `.tmp` 前, 用 `echo '{"id":"1","operation":"list_agents","input":{}}' | arw background-agent` 取得全用户概览, 找出 `cwd` 位于该目录之内 (含子目录) 的加载中后台 Agent (删除的是 `.tmp` 时, 恢复记录在其中而运行的 `cwd` 通常是它所属的 Git 仓库根目录, 所以还要包括 `cwd` 等于该仓库根目录的运行; `cwd` 在该仓库根目录之上的运行不查找), 对每个所属本 Main 的运行用 `unload_agent` 卸载, 再次列出确认不再有此类行后才删除. 否则其恢复记录随目录丢失, 该运行此后无法恢复, 但空闲时仍可由容量回收或 `unload_agent` 释放名额. 属于其他 Main 或卸载失败 (忙碌) 的运行不删除目录, 告知用户.
-- 并行不提高 Reviewer 和后台 Agent 的容量上限, 名额不足时排队等待.
+用户可以把默认改为并行实施多个 issue. 并行实施, 以及删除 worktree, 仓库或其 `.tmp` 前, 读取 `./parallel-implementation.md`.
 
 ## Git and recovery
 
@@ -51,7 +45,7 @@
 
 承担任务的 Agent 完成范围内交付和定向验证, 向所属运行环境的 Main Agent 返回修改结果, 验证证据及未解决的问题. 所属运行环境的 Main Agent 核对子 Agent 交付的结果; 与用户沟通的 Main Agent 组织最终集成验证, 管理正式完成记录和状态, 并按适用工作流组织实施前与提交前审查.
 
-独立 Reviewer 的结果由与用户沟通的 Main Agent 按 `./subagent-findings.md` 独立核对, 完成必要的用户决定后再分派修复. 交接前重新确认范围和基线. 实现者不组织这些审查, 不审核自己的候选内容. 提交只在用户请求后按 `commit` Skill 进行.
+独立 Reviewer 的结果由与用户沟通的 Main Agent 按 `./subagent-findings.md` 独立核对, 完成必要的用户决定后再分派修复. 交接前重新确认范围和基线. 实现者不组织这些审查, 不审核自己的候选内容.
 <!-- arw:managed:end -->
 <!-- arw:repository-owned:start -->
 None.

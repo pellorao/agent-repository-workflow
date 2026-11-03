@@ -208,5 +208,5 @@ The dependency direction allows specific business implementations to depend on `
 - [Release long-term specification (Chinese)](../specs/agent-repository-workflow-release/spec.md): release candidates, Reviewer capabilities, VM validation, tags, and external writes.
 - [Reader documentation specification (Chinese)](../specs/arw-reader-documentation/spec.md): README and manual responsibilities and boundaries.
 - [Validation rules (Chinese)](../../.agents/skills/validation/SKILL.md): current Agent validation responsibilities and documentation checks.
-- [Source Checkout deterministic validation rules (Chinese)](../agents/source-checkout-validation.md): current complete validation entry points and coverage routes.
+- [Source Checkout deterministic validation rules (Chinese)](../agents/source-checkout-validation.md): current complete validation entry points; coverage routes are in [Source Checkout deterministic coverage (Chinese)](../agents/source-checkout-coverage.md).
 - [Commit rules (Chinese)](../../.agents/skills/commit/SKILL.md): scope, reviews, and Commit Audit when the user requests a commit.

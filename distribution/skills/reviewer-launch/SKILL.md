@@ -10,7 +10,7 @@ Reviewer 的审核行为由 `docs/agents/reviewer.md` 和各 Canonical Role 规�
 平台差异:
 
 - Codex: 直接运行 `arw background-agent`. 输出 `Background Agent control is blocked by the sandbox` 时 (管理进程须在沙盒外启动, 沙盒禁用网络时连接也被拒绝), 申请提权在沙盒外重跑同一命令, 首次提权时选择本会话内总是允许该命令 (沙盒禁网时每次调用都要提权), 或按 `arw background-agent` 前缀申请长期批准; 审批策略为 `never` 等不能提权时停止, 请用户在可提权的会话中运行. 可以保留一个工具会话逐行写入请求, 长请求写入文件后用 `arw background-agent < <request.jsonl>` 发送. 管理进程在共享 Codex App Server 中为每个 Reviewer 创建独立根线程, 不占用 Main Agent 的原生子 Agent 槽位, 不用原生子 Agent 工具代替该入口. 工具调用返回时 `--wait` 进程仍未结束, 对同一会话用空输入续等并取最长等待时间 (如 `yield_time_ms` 设为 `300000`), 进程退出即返回; 不用 `sleep`, 短间隔轮询或 `list_agents` 代替等待.
-- Claude Code: Bash 工具不保留可续写的进程会话, 每次操作单独运行一次 `arw background-agent`, 用文件或管道把 JSONL 请求写入标准输入; 等待较久的命令用 Bash 工具自身的后台运行 (结束时有通知), 不用 shell `&`, `nohup` 或 `setsid` 脱离 (结束时没有通知). 未选择 `anthropic` 的 Reviewer 设置在这里默认用 Claude 后端 `haiku` 和 `high`; Claude 后端 Reviewer 只用 `haiku`, 不用其他 Claude 模型. 不用 Claude Code 原生 subagent 代替独立 Reviewer.
+- Claude Code: Bash 工具不保留可续写的进程会话, 每次操作单独运行一次 `arw background-agent`, 用文件或管道把 JSONL 请求写入标准输入; 等待较久的命令用 Bash 工具自身的后台运行 (结束时有通知), 不用 shell `&`, `nohup` 或 `setsid` 脱离 (结束时没有通知). 未选择 `anthropic` 的 Reviewer 设置在这里默认用 Claude 后端 `haiku` 和 `high`. 不用 Claude Code 原生 subagent 代替独立 Reviewer.
 - 两个平台: 标准输入结束后, 进程先等全部未返回的请求写出响应再退出, 管理进程和已启动的审核继续运行. `wait_agent` 的 `timeout_ms` 必须在 `10000` 到 `3600000` 之间; 同一进程内的请求 `id` 不能重复.
 
 ## Review rounds
@@ -48,7 +48,7 @@ Spec Readiness 和提交审核的每一轮由所属工作流的 `prepare` 写出
 
 ## Capacity priority
 
-关卡 Reviewer (Spec Readiness, 提交审核) 优先于基准, 批量和能力验证运行. 同一提供者的并行实例上限由用户配置的 `backgroundAgent.providers.<provider>.maxInstances` 决定, 管理进程在上限用尽时对新的启动请求直接返回 `capacity is exhausted`, 不排队, 所以批量或基准运行同时占用的某提供者实例数不超过上限减 2, 为提交审核的两个并行 Reviewer 留出名额. 关卡 Reviewer 启动因容量用尽失败, 或启动后 2 分钟内没有回合开始时, 仍按 `docs/agents/agent-writes.md` 的基线排队等待: 用一次 `list_agents` 找出占用名额的运行, 用 `wait_agent` 等其中一个结束后重发同一请求, 不反复轮询 `list_agents`; 同时第一时间向用户报告是哪些运行占用名额, 不静默等待. 提交审核的两个 Reviewer 只得到一个名额时先运行一个, 其 `<id>:done` 后再运行另一个, 不为凑齐并行而等待.
+关卡 Reviewer (Spec Readiness, 提交审核) 优先于基准, 批量和能力验证运行. 同一提供者的并行实例上限由用户配置的 `backgroundAgent.providers.<provider>.maxInstances` 决定, 管理进程在上限用尽时对新的启动请求直接返回 `capacity is exhausted`, 不排队, 所以批量或基准运行同时占用的某提供者实例数不超过上限减 2, 为提交审核的两个并行 Reviewer 留出名额. 关卡 Reviewer 启动因容量用尽失败, 或启动后 2 分钟内没有回合开始时, 排队等待: 用一次 `list_agents` 找出占用名额的运行, 用 `wait_agent` 等其中一个结束后重发同一请求, 不反复轮询 `list_agents`; 同时第一时间向用户报告是哪些运行占用名额, 不静默等待. 提交审核的两个 Reviewer 只得到一个名额时先运行一个, 其 `<id>:done` 后再运行另一个, 不为凑齐并行而等待.
 
 ## Long-running and paused reviews
 

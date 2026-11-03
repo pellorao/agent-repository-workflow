@@ -8,7 +8,7 @@
 
 ## Decision
 
-- 交付只是行为保持重构的实施 issue 不运行 Spec Readiness, 因而没有就绪记录, 实施提交不运行 `verify --subject-only`. 条件, 声明段落 `行为保持重构例外:` 和终态规则由长期规范 (`../specs/agent-repository-workflow/spec.md`) 拥有.
+- 交付只是行为保持重构的实施 issue 不运行 Spec Readiness, 因而没有就绪记录, 实施提交不运行 `verify --subject-only`. 条件由 `implement` Skill 的 Entry 节 (`../../.agents/skills/implement/SKILL.md`) 拥有, 声明段落 `行为保持重构例外:` 和终态规则由长期规范 (`../specs/agent-repository-workflow/spec.md`) 拥有.
 - Commit Audit 照常运行, 是这类 issue 唯一的独立审核. 其 `completed` 转换只经实施提交 (Gate 1).
 
 ## Rejected alternatives
