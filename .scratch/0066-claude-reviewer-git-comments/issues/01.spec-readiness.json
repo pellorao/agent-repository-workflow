@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0066:01",
+  "exception": {
+    "confirmedAt": "2026-11-01T17:01:05Z",
+    "reason": "用户 2026-11-01 17:01 UTC 常设确认 (原话: \"你直接拆成三个 effort, 每个 effort 一个 issue, 不就不用 spec 了? 以后都按这个方向来.\"), 2026-11-02 写入 projects 总层规则: 不含设计决定且不依赖共用 spec 的单 issue effort 不需要治理设计. 本项只更正 Claude 后端放行规则处和 Reviewer git 命令常量处的两段注释, 不改代码, 规范, 配置或公开 Interface, 不含设计决定."
+  },
+  "subject": {
+    "filePath": ".scratch/0066-claude-reviewer-git-comments/issues/01-correct-git-allow-comments.md",
+    "sha256": "cc930847a2d235afe18d855bfd4ffc6899047e25eb44d43992d1f4bd9a0b2708"
+  },
+  "result": "not-applicable"
+}
