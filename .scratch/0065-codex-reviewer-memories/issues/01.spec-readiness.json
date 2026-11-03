@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0065:01",
+  "request": {
+    "digest": "bbb5481cbe0700c9cfd6fcf67ff57abff6fdfccd032d31f5e17fa2381601e687",
+    "filePath": ".tmp/claude-code/36bd5005-1652-42c6-b818-84d5c437af7e/0065_01/spec-readiness/requests/request-0d53eeaa-b14c-4c6b-b31e-ba8349b0c8e0.json",
+    "id": "0d53eeaa-b14c-4c6b-b31e-ba8349b0c8e0"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "ba4f23b253fe4bd4d17bde006dd684e3b4ae723ec9443a706c6f32eb66815b7e"
+  },
+  "inputs": [
+    {
+      "filePath": ".scratch/0065-codex-reviewer-memories/spec.md",
+      "role": "governing-spec",
+      "sha256": "c7d8baf5760b3f666cff002f0b868b929b64608e85838de48fa9544a9ae03c0d"
+    },
+    {
+      "filePath": "CONTEXT.md",
+      "role": "domain-context",
+      "sha256": "6f89aa3efc9e393170b2d9380bacf5b1b11aea0d9c614e9367384d99767bb1fb"
+    },
+    {
+      "filePath": "docs/adr/0033-run-each-claude-turn-as-a-stream-json-process.md",
+      "role": "adr",
+      "sha256": "50175cca5b37705f4c4f9eaa917bf68b4e7e114139ece47ec00833351221dde8"
+    },
+    {
+      "filePath": "lib/reviewer-runtime/reviewer-native-policy.mjs",
+      "role": "architecture-evidence",
+      "sha256": "3f41090607f9560ffcefa6549c9bfce5da701ca4f160b7d84636d9576be49116"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0065-codex-reviewer-memories/issues/01-disable-codex-reviewer-memories.md",
+    "sha256": "bc8ac273e509ece14abba83e14720228c5cb82d323a3edf37a1cd899d3cda623"
+  },
+  "result": "satisfied"
+}

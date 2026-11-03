@@ -389,7 +389,7 @@ Strata 驱动只从 `../agent-repository-workflow-installation/spec.md` 的 Shar
 
 独立 Reviewer 在自己的审核运行环境中独自完成全部适用检查, 不创建, 复用或恢复子 Agent, 也不把部分审核交给其他 Agent. 它不占用与用户沟通的 Main Agent 的子 Agent 槽位, 对检查覆盖, 证据和最终报告质量负责.
 
-Reviewer 专属层只在 Reviewer 根线程的原生配置中强制 `agents.enabled = false`, `features.multi_agent = false` 和 `features.multi_agent_v2 = false`, 配合完整 Reviewer 规则禁止 Agent 协作, 不把禁令放到共享 App Server 的全局配置或其他后台根线程. 它根据实际原生上下文核对 Reviewer 的线程身份和文件权限, 确认本轮没有子 Agent 参与; 这些限制不施加给通用后台 Agent. 新建或恢复原线程后, 必须在启动本轮模型回合前确认没有仍活动或会参与本轮的子 Agent; 已结束且不参与本轮的历史子线程不阻断可靠原线程复用, 也不进入本轮计量. 回合前发现子 Agent 会参与时不启动模型, 不隐式新建替代线程.
+Reviewer 专属层只在 Reviewer 根线程的原生配置中强制 `agents.enabled = false`, `features.multi_agent = false` 和 `features.multi_agent_v2 = false`, 配合完整 Reviewer 规则禁止 Agent 协作, 并强制 `features.memories = false`, 使 Reviewer 不带入维护者本机的 Codex 记忆, 审核只依赖分发后用户同样拥有的输入; 这些强制配置都不放到共享 App Server 的全局配置或其他后台根线程. 它根据实际原生上下文核对 Reviewer 的线程身份和文件权限, 确认本轮没有子 Agent 参与; 这些限制不施加给通用后台 Agent. 新建或恢复原线程后, 必须在启动本轮模型回合前确认没有仍活动或会参与本轮的子 Agent; 已结束且不参与本轮的历史子线程不阻断可靠原线程复用, 也不进入本轮计量. 回合前发现子 Agent 会参与时不启动模型, 不隐式新建替代线程.
 
 执行期间若有子 Agent 被新建, 恢复或参与本轮, Reviewer 专属层请求停止该 Reviewer 根线程及相关后代和工具并拒绝结果, 不停止其他后台 Agent 的根线程. 必要的线程发现, 单 Agent 执行或文件权限事实无法核对时, 明确报告原因, 不交接有效审核结果. 静态投射成功, 平台安装成功或模型启动成功均不能代替这些实际运行核对.
 

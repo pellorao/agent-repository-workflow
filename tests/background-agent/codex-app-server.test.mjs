@@ -277,6 +277,7 @@ test('generic native start preserves caller instructions and provider environmen
   assert.equal(config['agents.enabled'], undefined);
   assert.equal(config['features.multi_agent'], undefined);
   assert.equal(config['features.multi_agent_v2'], undefined);
+  assert.equal(config['features.memories'], undefined);
   assert.equal(config.model_catalog_json, undefined);
   assert.equal(config.approvals_reviewer, undefined);
   assert.equal(/** @type {Record<string,unknown>} */ (/** @type {Record<string,unknown>} */ (config.shell_environment_policy).set).ARW_BACKGROUND_AGENT_RUN_ID,'manager-run-1');

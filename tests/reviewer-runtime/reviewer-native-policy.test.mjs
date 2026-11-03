@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {declineReviewerInteractions} from '../../lib/reviewer-runtime/reviewer-native-policy.mjs';
+import {declineReviewerInteractions, reviewerNativeSettings} from '../../lib/reviewer-runtime/reviewer-native-policy.mjs';
 
 test('Reviewer declines each native interaction without interrupting its active turn', async () => {
     const cases = [
@@ -64,4 +64,17 @@ test('an MCP request without turnId uses only the observed active root turn for 
     await declineReviewerInteractions(session,[{requestId:'mcp-request',kind:'unsupported',method:'mcpServer/elicitation/request',params:{},threadId:'reviewer-root',turnId:null}]);
     assert.deepEqual(calls.map(call=>call.operation),['respond','steer']);
     assert.equal(calls[1].input.turnId,'observed-turn');
+});
+
+test('Reviewer root thread config forces Codex memories off whatever the caller sets', () => {
+    const paths = {cwd: '/repo', readPaths: [], writePaths: []};
+    const base = {model: 'm', modelProvider: 'openai', reasoningEffort: 'high', serviceTier: /** @type {'default'} */ ('default')};
+    assert.equal(reviewerNativeSettings({...base, config: {}}, paths).config['features.memories'], false);
+    assert.equal(reviewerNativeSettings({...base, config: {'features.memories': true}}, paths).config['features.memories'], false);
+    const nested = reviewerNativeSettings({...base, config: {features: {memories: true, other_feature: true}}}, paths).config;
+    assert.deepEqual(nested.features, {memories: false, other_feature: true, multi_agent: false, multi_agent_v2: false});
+    assert.equal(nested['features.memories'], false);
+    const both = reviewerNativeSettings({...base, config: {'features.memories': true, features: {memories: true, other_feature: true}}}, paths).config;
+    assert.equal(both['features.memories'], false);
+    assert.deepEqual(both.features, {memories: false, other_feature: true, multi_agent: false, multi_agent_v2: false});
 });
