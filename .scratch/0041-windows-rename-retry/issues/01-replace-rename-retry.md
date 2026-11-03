@@ -20,7 +20,7 @@ issue 0040 的 VM 验证中, Windows 11 从 0.5.1 覆盖安装候选时, 3 次�
 
 ## Blocked by
 
-None.
+- None - can start immediately
 
 ## Comments
 
