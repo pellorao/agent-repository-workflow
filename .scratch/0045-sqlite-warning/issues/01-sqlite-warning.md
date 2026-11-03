@@ -22,7 +22,7 @@ Status: completed
 
 ## Blocked by
 
-None.
+- None - can start immediately
 
 ## Validation
 
