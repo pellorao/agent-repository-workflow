@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0067:01",
+  "request": {
+    "digest": "f47506750ba610c1b86472d693260bb8b8fe9d4462e60c12106e6dc1c651508d",
+    "filePath": ".tmp/claude-code/36bd5005-1652-42c6-b818-84d5c437af7e/0067_01/spec-readiness/requests/request-66e8ce1f-e896-4088-b9a0-c2e2676054d0.json",
+    "id": "66e8ce1f-e896-4088-b9a0-c2e2676054d0"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "ba4f23b253fe4bd4d17bde006dd684e3b4ae723ec9443a706c6f32eb66815b7e"
+  },
+  "inputs": [
+    {
+      "filePath": ".scratch/0067-process-identity-and-daemon-startup/spec.md",
+      "role": "governing-spec",
+      "sha256": "229450a9da6ae2bf9a1160b6b9fbf1571b72183850938b480e7ec50e7522869e"
+    },
+    {
+      "filePath": "CONTEXT.md",
+      "role": "domain-context",
+      "sha256": "6f89aa3efc9e393170b2d9380bacf5b1b11aea0d9c614e9367384d99767bb1fb"
+    },
+    {
+      "filePath": "docs/adr/0030-use-user-wide-background-agent-management.md",
+      "role": "adr",
+      "sha256": "afffe17adcf95c931864009d198408c2d8afb97d867c1ba20cef04fc7385abd1"
+    },
+    {
+      "filePath": "docs/adr/0033-run-each-claude-turn-as-a-stream-json-process.md",
+      "role": "adr",
+      "sha256": "50175cca5b37705f4c4f9eaa917bf68b4e7e114139ece47ec00833351221dde8"
+    },
+    {
+      "filePath": "lib/background-agent/client.mjs",
+      "role": "architecture-evidence",
+      "sha256": "0c814899a05c23fe304b27ea4f2c79ca64d03ab99f63c8b77cb02d5a1704c029"
+    },
+    {
+      "filePath": "lib/background-agent/process-identity.mjs",
+      "role": "architecture-evidence",
+      "sha256": "2cd7d2ca0eacb72fade184bd073fb9fda3f9cd1cd9d4ea39fab448670cc6f79a"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0067-process-identity-and-daemon-startup/issues/01-process-identity-and-daemon-startup.md",
+    "sha256": "a56eb24396c9f499835774dc555411996f8e2432f4d8b8195482f3c90a41c95b"
+  },
+  "result": "satisfied"
+}

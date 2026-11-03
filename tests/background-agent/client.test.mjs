@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {chmod,mkdtemp,readFile,rm,writeFile} from 'node:fs/promises';
+import {chmod,mkdtemp,readdir,readFile,rm,writeFile} from 'node:fs/promises';
 import {createServer} from 'node:net';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
@@ -52,6 +52,24 @@ async function closedPort() {
   await reservation.close();
   return reservation.port;
 }
+
+/** The startup lease of a manager that is still starting: its port accepts connections. */
+const leaseHeldPort=async()=>{
+  let connections=0;
+  const server=createServer(socket=>{connections++;socket.destroy();});
+  await new Promise(resolve=>server.listen({host:'127.0.0.1',port:0},()=>resolve(undefined)));
+  const address=server.address();
+  if(!address||typeof address!=='object')throw new Error('Lease test port is unavailable.');
+  return {port:address.port,connections:()=>connections,close:()=>new Promise(resolve=>server.close(()=>resolve(undefined)))};
+};
+/** A manager entry that fails at startup the way the real one does. @param {string} directory */
+const failingDaemon=async directory=>{
+  const entryPoint=join(directory,'failing-daemon.mjs');
+  await writeFile(entryPoint,"process.stderr.write('Runtime is broken.\\n');process.exitCode=3;");
+  return entryPoint;
+};
+/** @param {string} directory */
+const stderrFiles=async directory=>(await readdir(directory)).filter(name=>name.startsWith('daemon-stderr-'));
 
 /** @param {import('node:net').Socket} socket @param {object} message @param {string} splitText */
 function sendSplitLine(socket,message,splitText){
@@ -152,13 +170,28 @@ test('a manager launch that cannot write its state asks for a rerun outside the 
   }finally{await client.close();await chmod(parent,0o700);await rm(parent,{recursive:true,force:true});}
 });
 
-test('two concurrent cold launches in one process do not remove each other\'s probe file',async()=>{
+test('two concurrent cold launches whose managers exit while another manager keeps starting time out and leave no standard error file',async()=>{
   const runtimeDirectory=await mkdtemp(join(tmpdir(),'arw-background-agent-probe-'));
   const port=await closedPort();
-  const client=createBackgroundAgentClient({runtimeDirectory,port,messageTimeoutMs:50,entryPoint:'/unused-entry.mjs'});
+  const lease=await leaseHeldPort();
+  // The budget is far above the time the failing entry needs to exit, so a lease probe proves the exit was seen.
+  const client=createBackgroundAgentClient({runtimeDirectory,port,maintenancePort:lease.port,messageTimeoutMs:400,entryPoint:await failingDaemon(runtimeDirectory)});
   try {
     const results=await Promise.allSettled([1,2].map(()=>client.execute({operation:'list_agents',input:{}})));
     for(const result of results)assert.match(String(/** @type {PromiseRejectedResult} */(result).reason?.message),/timed out before delivery/);
+    assert.ok(lease.connections()>0);
+    assert.deepEqual(await stderrFiles(runtimeDirectory),[]);
+  }finally{await lease.close();await client.close();await rm(runtimeDirectory,{recursive:true,force:true});}
+});
+
+test('a manager that exits during startup is reported at once with its standard error',async()=>{
+  const runtimeDirectory=await mkdtemp(join(tmpdir(),'arw-background-agent-exit-'));
+  const client=createBackgroundAgentClient({runtimeDirectory,port:await closedPort(),maintenancePort:await closedPort(),messageTimeoutMs:30000,entryPoint:await failingDaemon(runtimeDirectory)});
+  try {
+    const started=Date.now();
+    await assert.rejects(client.execute({operation:'list_agents',input:{}}),/^Error: Background Agent manager exited during startup \(exit code 3\): Runtime is broken\.$/);
+    assert.ok(Date.now()-started<20000);
+    assert.deepEqual(await stderrFiles(runtimeDirectory),[]);
   }finally{await client.close();await rm(runtimeDirectory,{recursive:true,force:true});}
 });
 
@@ -167,9 +200,10 @@ test('a request reads the credential only after the control port accepts connect
   const port=await closedPort();
   // Another client's manager has published its credential but not yet secured it or started listening.
   await writeFile(join(runtimeDirectory,'credential'),`${secret}\n`,{mode:0o644});
-  const client=createBackgroundAgentClient({runtimeDirectory,port,entryPoint:'/unused-entry.mjs'});
+  const lease=await leaseHeldPort();
+  const client=createBackgroundAgentClient({runtimeDirectory,port,maintenancePort:lease.port,entryPoint:'/unused-entry.mjs'});
   /** @type {{close:()=>Promise<void>}[]} */
-  const servers=[];
+  const servers=[lease];
   const manager=(async()=>{
     await new Promise(resolve=>setTimeout(resolve,30));
     await chmod(join(runtimeDirectory,'credential'),0o600);
@@ -177,6 +211,7 @@ test('a request reads the credential only after the control port accepts connect
   })();
   try {
     assert.deepEqual(await client.execute({operation:'list_agents',input:{}}),{late:true});
+    assert.deepEqual(await stderrFiles(runtimeDirectory),[]);
   }finally{await manager;for(const server of servers)await server.close();await client.close();await rm(runtimeDirectory,{recursive:true,force:true});}
 });
 
