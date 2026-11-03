@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0068:01",
+  "request": {
+    "digest": "eeb4bf121746dbaf428524dcce0a6dddb2bfa62d9760a6b96f3280d14a4f7593",
+    "filePath": ".tmp/claude-code/36bd5005-1652-42c6-b818-84d5c437af7e/0068_01/spec-readiness/requests/request-fb2ea52e-4311-4503-a4ac-335935c830e8.json",
+    "id": "fb2ea52e-4311-4503-a4ac-335935c830e8"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "ba4f23b253fe4bd4d17bde006dd684e3b4ae723ec9443a706c6f32eb66815b7e"
+  },
+  "inputs": [
+    {
+      "filePath": ".scratch/0068-reviewer-capability-read-inspection/spec.md",
+      "role": "governing-spec",
+      "sha256": "84642641c0db0b12baa5ac14972265496bb229c6a194c1f4ea166bca997d4ed9"
+    },
+    {
+      "filePath": "CONTEXT.md",
+      "role": "domain-context",
+      "sha256": "6f89aa3efc9e393170b2d9380bacf5b1b11aea0d9c614e9367384d99767bb1fb"
+    },
+    {
+      "filePath": "docs/adr/0022-place-source-checkout-scripts-under-scripts.md",
+      "role": "adr",
+      "sha256": "b57939c455452623d8aedaea5c6223a639140e49421c7ad7705ab686c46d582f"
+    },
+    {
+      "filePath": "docs/adr/0030-use-user-wide-background-agent-management.md",
+      "role": "adr",
+      "sha256": "afffe17adcf95c931864009d198408c2d8afb97d867c1ba20cef04fc7385abd1"
+    },
+    {
+      "filePath": "docs/adr/0032-run-claude-reviewers-through-headless-claude.md",
+      "role": "adr",
+      "sha256": "3efc5f1c7c75108ee396f9e91346292e517b9f0f7dd02bfb0bcf33fae3c19ca7"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow-development/spec.md",
+      "role": "governing-spec",
+      "sha256": "fe734ff58d9037da8af2d53f2dc4181db1dabbd3baca4dafd69f62949a8f4bc8"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow/spec.md",
+      "role": "governing-spec",
+      "sha256": "7574bcbdf4adcf85594f0108fcfada1c11f2f4754018173d6149786ef710ee85"
+    },
+    {
+      "filePath": "scripts/reviewer-capability.mjs",
+      "role": "architecture-evidence",
+      "sha256": "30dafbe7579e19a082fe9ef735e56cadc4b5694d40ff7af2a00be3f60f01c6c4"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0068-reviewer-capability-read-inspection/issues/01-inspect-reviewer-reads.md",
+    "sha256": "43303b20301c3b1f06d8392d2169c8082d56d26f058c74bfcc2329af33e10203"
+  },
+  "result": "satisfied"
+}

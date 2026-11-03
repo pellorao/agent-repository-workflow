@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-// Reviewer capability suite entry: node scripts/reviewer-capability.mjs <setup|repair|score|baseline|summary|pool> ...
+// Reviewer capability suite entry: node scripts/reviewer-capability.mjs <setup|repair|score|baseline|summary|pool|inspect> ...
+//   inspect <instance-directory>
 //   setup <scenario-directory> <new-target-directory>
 //   repair <scenario-directory> <report> <new-output> [--spill FILE ...]
 //   score <scenario-directory> <report> (--repair CHANGES.json | --no-repair) [--agent LIST_AGENTS.json] [--instance ID] [--decisions FILE ...]
@@ -16,6 +17,7 @@
 
 import {setupScenario} from '../lib/reviewer-capability-setup.mjs';
 import {poolView} from '../lib/reviewer-capability-view.mjs';
+import {inspect} from '../lib/reviewer-capability/inspection.mjs';
 import {baseline, pool, repair, score, summary} from '../lib/reviewer-capability/operations.mjs';
 
 const usage = (/** @type {string} */ message) => {
@@ -62,7 +64,8 @@ else if (command === 'repair' && args.length === 3) result = await repair({out: 
 else if (command === 'score' && args.length === 2) {
     result = await score({agent: values.agent, decisions: lists.decisions, enumerate: flags.enumerate, instance: values.instance, noRepair: flags['no-repair'],
         provisional: values.provisional, repair: values.repair, report: args[1], scenario: args[0]});
-} else if (command === 'baseline' && args.length === 1) result = await baseline({unit: args[0]});
+} else if (command === 'inspect' && args.length === 1) result = await inspect({instance: args[0]});
+else if (command === 'baseline' && args.length === 1) result = await baseline({unit: args[0]});
 else if (command === 'summary' && args.length === 0) result = await summary({cells, markdown: flags.markdown});
 else if (command === 'pool' && action === 'build' && args.length >= 4) {
     result = await pool({action, candidates: args.slice(3), decisions: lists.decisions, limit: values.limit === undefined ? undefined : Number(values.limit), name: args[2], root: args[1], scenario: args[0]});
@@ -73,7 +76,7 @@ else if (command === 'pool' && action === 'override' && args.length === 5) {
     result = await pool({action, by: values.by, decision: args[3], id: args[2], name: args[1], reason: args[4], root: args[0]});
 } else if (command === 'pool' && action === 'anchor-add' && args.length === 3 && values.family && values.model && values['confirmed-by']) {
     result = await pool({action, candidate: args[1], confirmedBy: values['confirmed-by'], expected: args[2], family: values.family, id: values.id, model: values.model, scenario: args[0]});
-} else usage('Usage: reviewer-capability.mjs setup|repair|score|baseline|summary|pool ... (see the header of this file)');
+} else usage('Usage: reviewer-capability.mjs setup|repair|score|baseline|summary|pool|inspect ... (see the header of this file)');
 
 const {diagnostics = [], ...payload} = /** @type {{diagnostics?: string[], status: string}} */ (result);
 for (const diagnostic of diagnostics) process.stderr.write(`${diagnostic}\n`);

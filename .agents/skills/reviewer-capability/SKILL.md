@@ -30,6 +30,7 @@ disable-model-invocation: true
 
    输出 `{"status":"succeeded","input":{...}}`, `input` 是 `spawn_agent` 输入 (角色指令, 交接, 空报告, 恢复目录). 比较别的报告格式时, 改写场景仓库中的角色文件和 `input` 的 `instructions`, `handoff`, `reportPath`, `writePaths`.
 3. 按 `reviewer-launch` Skill 通过 `arw background-agent` 启动: 给 `input` 加上 `settings`, 例如 Codex `{"model":"gpt-6-luna","modelProvider":"openai","reasoningEffort":"xhigh","serviceTier":"default"}`, Claude `{"model":"haiku","modelProvider":"anthropic","reasoningEffort":"high","serviceTier":"default"}`. 用 `wait_agent` 等到完成, 记录 `measurement`. 本流程覆盖 `reviewer-launch` 对阈值暂停通知的处理 (不询问用户): `wait_agent` 返回来源 `provider-program` 且正文以 `The Reviewer runtime paused this same task after ` 开头的通知时, Main 对同一运行发 `send_message` "继续" 后再 `wait_agent`, 直到 `completion` 非空. 完成后, `unload_agent` 之前, 把该运行的 `list_agents {runId}` 结果存为 `<instance>/agent.json` (已送达消息卸载后或超过 24 小时即丢失), 供计分统计暂停.
+   保存 `agent.json` 后, 计分之前运行 `node scripts/reviewer-capability.mjs inspect <instance>` 检查该 Reviewer 是否读了禁止来源 (答案键, 其他实例, 源码仓库, 以前的运行). 输出 `blocked` (记录不完整, 无法证明没读过) 或 `flags` 非空的实例默认作废: 不计分, 不入盲池, 用相同设置换新实例路径从 `setup` 重跑. 输出 `failed` 表示检查没有完成: 排除原因后重跑 `inspect`, 完成之前不计分. 只有 Main 从所列条目确认实际没有读到禁止内容 (例如 `/` 只是分隔符, 读取被拒绝, 读回自己的报告时措辞巧合) 时才保留, 理由写进结果表. 同一格因同一原因连续作废 2 次就停止并向用户报告 (多半是记录格式变了或 Reviewer 配置有问题). 匹配规则, 输出字段与已知缺口见 `docs/specs/agent-repository-workflow-development/spec.md` 的 Reviewer capability suite 节 的 `inspect` 接口.
 4. 计分: 报告是当前角色的自由格式 (`.txt` 或 `.md`, 要点 `- ... path:line`), 基线格式用 `.jsonl`:
 
    ```sh
@@ -64,7 +65,7 @@ disable-model-invocation: true
    ```
 
    每格前 5 个实例入主统计 (平均, SD, SE, 95% 区间, 负分数个数, 最小, 中位数), 其余列入 `extraIds` 并提示; 未定稿的输入返回 `blocked`.
-9. 在活动 issue 中写结果表: 每个模型 × 场景 (× 格式) 的 `score`, 召回, 误报和偷懒迹象 (未检查却声称满足, 批量填写, 错误定位, 格式损坏). 说明样本量和天花板效应.
+9. 在活动 issue 中写结果表: 每个模型 × 场景 (× 格式) 的 `score`, 召回, 误报和偷懒迹象 (未检查却声称满足, 批量填写, 错误定位, 格式损坏), 以及作废数与原因 (`inspect` 的标记). 说明样本量和天花板效应.
 
 Strata 提供方先读 `docs/specs/agent-repository-workflow/strata.md`. 直接启动的 `claude -p` 不在本流程内.
 
