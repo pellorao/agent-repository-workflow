@@ -295,6 +295,16 @@ test('verify takes each Reviewer report from the latest non-empty round and reso
     assert.deepEqual((await verifyCommitAudit({platformAdapter: claude, repositoryRoot: repository.root})).errors, []);
 });
 
+test('prepare numbers a new round after the highest existing one, so verify checks the round it just created', async t => {
+    const repository = await stagedRepository(t, {statuses: ['in-progress']});
+    const {round: first} = await prepare(repository.root, {authorizingIssueIds: ['issue:0001:01']});
+    await mkdir(join(dirname(first), '7'));
+    const {round: second} = await prepare(repository.root, {authorizingIssueIds: ['issue:0001:01']});
+    assert.match(second, /\/_commit-audit\/8$/u);
+    await writeReports(second);
+    assert.equal(await verifyRound(repository.root), '');
+});
+
 test('verify --non-implementation rejects non-canonical effort directories and NUL Markdown, and keeps checking after an Artifact error', async t => {
     const repository = await createRepository(t);
     const verify = async () => (await run(['commit-audit', 'verify', '--non-implementation'], repository)).events[0].message;
