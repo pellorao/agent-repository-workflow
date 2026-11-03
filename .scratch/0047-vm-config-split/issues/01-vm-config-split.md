@@ -1,6 +1,6 @@
 # release-vm 读取本地配置文件并支持共用机器文件
 
-Status: ready-for-agent
+Status: completed
 
 ## What to build
 
@@ -19,21 +19,21 @@ Status: ready-for-agent
 
 ## Acceptance criteria
 
-- [ ] spec Testing 节 (a) 拆分配置 (相对与绝对路径引用) 下 `check` 通过且每个 ARW 指定的 Node.js 都被运行; 有测试观察.
-- [ ] (a0) 相对 `fixturesDirectory` 相对所在配置文件目录解析 (`--config` 与本地文件各一例); 有测试观察.
-- [ ] (b) ARW 每机键覆盖共用条目, 对象值 (`ssh`) 整体替换; 有测试观察.
-- [ ] (c) 机器键只在一边时按该边条目运行; 有测试观察.
-- [ ] (d) 共用文件中的顶层键和 `sharedMachinesConfig` 被忽略; 有测试观察.
-- [ ] (e) `--config` 文件缺失, 非 JSON 或是目录 (EISDIR), 共用文件缺失, 非 JSON, `sharedMachinesConfig` 非字符串, 机器键两边都没有, 都退出 2, 且 stderr 不含共用文件中的秘密值; 有测试观察.
-- [ ] (f) 现有测试改用 `--config` 后通过.
-- [ ] (g) 无 `--config` 时读取 `.arw.local.json` 的 `release`, `--config` 优先, 本地文件不存在或无 `release` 对象时输出 `No release config`, 非 JSON 或是目录时输出 `Config file is not readable JSON`, 都退出 2 且消息不含文件内容 (测试把脚本复制到临时仓库根运行), `.gitignore` 含 `/.arw.local.json`; 有测试观察.
-- [ ] `$release` Skill 先读本地配置文件再询问维护者, 命令用新用法 (审核核对文字).
-- [ ] `references/vm.md`, 发布 spec 的配置一节和 ADR 0031 已更新, ADR 0039 与实现一致, 示例只含占位符.
-- [ ] 上述验证命令全部退出码 0 (测试观察: `pnpm test` 通过).
+- [x] spec Testing 节 (a) 拆分配置 (相对与绝对路径引用) 下 `check` 通过且每个 ARW 指定的 Node.js 都被运行; 有测试观察.
+- [x] (a0) 相对 `fixturesDirectory` 相对所在配置文件目录解析 (`--config` 与本地文件各一例); 有测试观察.
+- [x] (b) ARW 每机键覆盖共用条目, 对象值 (`ssh`) 整体替换; 有测试观察.
+- [x] (c) 机器键只在一边时按该边条目运行; 有测试观察.
+- [x] (d) 共用文件中的顶层键和 `sharedMachinesConfig` 被忽略; 有测试观察.
+- [x] (e) `--config` 文件缺失, 非 JSON 或是目录 (EISDIR), 共用文件缺失, 非 JSON, `sharedMachinesConfig` 非字符串, 机器键两边都没有, 都退出 2, 且 stderr 不含共用文件中的秘密值; 有测试观察.
+- [x] (f) 现有测试改用 `--config` 后通过.
+- [x] (g) 无 `--config` 时读取 `.arw.local.json` 的 `release`, `--config` 优先, 本地文件不存在或无 `release` 对象时输出 `No release config`, 非 JSON 或是目录时输出 `Config file is not readable JSON`, 都退出 2 且消息不含文件内容 (测试把脚本复制到临时仓库根运行), `.gitignore` 含 `/.arw.local.json`; 有测试观察.
+- [x] `$release` Skill 先读本地配置文件再询问维护者, 命令用新用法 (审核核对文字).
+- [x] `references/vm.md`, 发布 spec 的配置一节和 ADR 0031 已更新, ADR 0039 与实现一致, 示例只含占位符.
+- [x] 上述验证命令全部退出码 0 (测试观察: `pnpm test` 通过).
 
 ## Blocked by
 
-None.
+- None - can start immediately
 
 ## Validation
 
@@ -54,3 +54,4 @@ None.
 - 体积: `git diff --cached --numstat` 显示 `scripts/release-vm.mjs` +40/-19 (净 +21), `.gitignore` +3, 非测试代码净增 +24, 在预算 25 之内, 无需超出说明.
 - 第 3 轮处置: `release` 是数组时同样报 `No release config` 并补测试.
 - 台账: scripts/release-vm.mjs:47 记录不修 TextDecoder 默认剥离 UTF-8 BOM, 带 BOM 的配置被接受; 方便 Windows 编辑器保存的文件, 不影响其他错误分支
+- 完成记录 (11-03 补, 实施已在 `f851b16` 提交): 补记审核第 1 轮要求符合审核指出 `spec.md:20` 与本 issue 的 `check` 用法缺 `--archive <arw.tar.gz>`; 该参数由后续 effort 0049 加入, 不是本次变更引入, 按 Triage by origin 不阻断, `spec.md:20` 另以非实施提交补齐, issue 文字保留 0047 交付时的用法.
