@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0082:01",
+  "exception": {
+    "confirmedAt": "2026-11-01T17:01:05Z",
+    "reason": "单 issue effort, 不含设计决定 (9 个已同意恢复的小项合批), 用户已于 2026-11-02 确认这类 issue 不需要治理设计 (常设确认), 范围由用户 2026-11-04 的已同意恢复项指定"
+  },
+  "subject": {
+    "filePath": ".scratch/0082-removedrules-restores/issues/01-removedrules-restores.md",
+    "sha256": "3c22768cfd911554025830c273c041084cf79cc338807ece6e5dfba1203c8220"
+  },
+  "result": "not-applicable"
+}

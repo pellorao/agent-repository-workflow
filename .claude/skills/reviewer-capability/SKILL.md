@@ -17,7 +17,7 @@ disable-model-invocation: true
 - `expected.json`: 隐藏答案键 (问题用例与干净用例, 每例带 k 档位和证据位置), 只给评分用, 不进入场景仓库.
 - `brief.md` 和 `anchors.json`: 盲裁 brief 与已知裁决的锚点和合成对照.
 
-场景: `requirements-reviewer/code-spec`, `requirements-reviewer/commit-audit`, `code-standards-reviewer/code-standards`, `spec-readiness-reviewer/spec-readiness`. 新增缺陷要同时补答案键和候选中的确定位置; 测量中发现的真实未预设缺陷补进答案键并在 issue 中说明.
+场景: `requirements-reviewer/code-spec`, `requirements-reviewer/commit-audit`, `code-standards-reviewer/code-standards`, `spec-readiness-reviewer/spec-readiness`. 新增缺陷要同时补答案键和候选中的确定位置; 测量中发现的真实未预设缺陷补进答案键并在 issue 中说明. 新增或修改场景时, Reviewer 可见的名称, 注释和顺序不得暗示缺陷位置, 也不得暗示问题用例与干净用例的分类 (例如文件名或注释里写 `bug`, `missing check`).
 
 ## Run
 
@@ -65,7 +65,7 @@ disable-model-invocation: true
    ```
 
    每格前 5 个实例入主统计 (平均, SD, SE, 95% 区间, 负分数个数, 最小, 中位数), 其余列入 `extraIds` 并提示; 未定稿的输入返回 `blocked`.
-9. 在活动 issue 中写结果表: 每个模型 × 场景 (× 格式) 的 `score`, 召回, 误报和偷懒迹象 (未检查却声称满足, 批量填写, 错误定位, 格式损坏), 以及作废数与原因 (`inspect` 的标记). 说明样本量和天花板效应.
+9. 在活动 issue 中写结果表: 每个模型 × 场景 (× 格式) 的 `score`, 耗时 (第 3 步记录的 `measurement`), 召回, 误报和偷懒迹象 (未检查却声称满足, 批量填写, 错误定位, 格式损坏), 以及作废数与原因 (`inspect` 的标记). 说明样本量和天花板效应.
 
 Strata 提供方先读 `docs/specs/agent-repository-workflow/strata.md`. 直接启动的 `claude -p` 不在本流程内.
 

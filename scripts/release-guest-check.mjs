@@ -25,7 +25,7 @@ const INIT_ARGUMENTS = 'workflow init --non-interactive --platform codex --platf
 const run = (file, args, options = {}) => {
     const result = spawnSync(file, args, {encoding: 'utf8', ...options});
     const stdout = `${result.stdout ?? ''}`.trim();
-    return {ok: result.status === 0, stdout, output: `${stdout}\n${result.stderr ?? ''}${result.error?.message ?? ''}`.trim()};
+    return {ok: result.status === 0, stdout, stderr: `${result.stderr ?? ''}`.trim(), output: `${stdout}\n${result.stderr ?? ''}${result.error?.message ?? ''}`.trim()};
 };
 
 /** @param {string} label @param {{ok: boolean, output: string}} result @param {boolean} [expectOk] */
@@ -87,8 +87,9 @@ step(`Node.js 满足 engines (>=${minimumNode})`, {ok: Number(process.versions.n
 step('arw 安装前不可解析', fresh(locate), false);
 if (WINDOWS) step('PowerShell 在新终端可解析', fresh('where powershell.exe'));
 const commit = step('读取候选 commit', run('git', ['rev-parse', 'HEAD'], {cwd: ROOT}));
-const created = await (await importLib('background-agent/process-identity.mjs')).readOperatingSystemProcessCreationTime(process.pid);
-step('读取本进程创建时间', {ok: /^\d+$/u.test(created ?? ''), output: String(created)});
+const {readOperatingSystemProcessCreationTime, creationValuePattern} = await importLib('background-agent/process-identity.mjs');
+const created = await readOperatingSystemProcessCreationTime(process.pid);
+step('读取本进程创建时间', {ok: creationValuePattern.test(created ?? ''), output: String(created)});
 const staging = mkdtempSync(join(tmpdir(), 'arw-release-archive-'));
 const extracted = join(staging, 'extracted');
 mkdirSync(extracted);
@@ -130,8 +131,10 @@ const checkResolved = (prefix, resolveLabel, locateCommand, shell) => {
     const normalize = (/** @type {string} */ text) => WINDOWS ? text.toLowerCase() : text;
     const resolved = step(resolveLabel, fresh(locateCommand, homedir(), shell));
     if (!resolved.split(/\r?\n/u).every(line => normalize(line).startsWith(normalize(INSTALLATION)))) step(`${prefix}arw 指向 Installation 目录`, {ok: false, output: resolved});
-    const reported = step(`${prefix}arw --version`, fresh('arw --version', homedir(), shell));
+    const versionRun = fresh('arw --version', homedir(), shell);
+    const reported = step(`${prefix}arw --version`, versionRun);
     if (!reported.includes(VERSION)) step(`${prefix}版本为 ${VERSION}`, {ok: false, output: reported});
+    step(`${prefix}arw --version 标准错误为空`, {ok: versionRun.stderr === '', output: versionRun.stderr});
 };
 checkResolved('', '新终端解析 arw', locate, 'cmd');
 // PowerShell 新会话经 Get-Command 解析, 与 cmd 的 where 是不同的解析路径.
