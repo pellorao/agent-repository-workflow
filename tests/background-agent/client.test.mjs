@@ -1,16 +1,17 @@
 import assert from 'node:assert/strict';
-import {chmod,mkdtemp,rm,writeFile} from 'node:fs/promises';
+import {chmod,mkdtemp,readFile,rm,writeFile} from 'node:fs/promises';
 import {createServer} from 'node:net';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import test from 'node:test';
 import {controlProof,createBackgroundAgentClient,sendBackgroundAgentRequest} from '../../lib/background-agent/client.mjs';
+import {installFakeCommand} from '../helpers/process.mjs';
 
 const secret='1'.repeat(64);
 const serverNonce='2'.repeat(32);
 
 /** @param {(socket:import('node:net').Socket,request:Record<string,unknown>)=>void} onRequest */
-async function controlServer(onRequest) {
+async function controlServer(onRequest,port=0) {
   /** @type {Set<import('node:net').Socket>} */
   const sockets=new Set();
   const server=createServer(socket=>{
@@ -35,7 +36,7 @@ async function controlServer(onRequest) {
   });
   await new Promise((resolve,reject)=>{
     server.once('error',reject);
-    server.listen({host:'127.0.0.1',port:0},()=>{server.off('error',reject);resolve(undefined);});
+    server.listen({host:'127.0.0.1',port},()=>{server.off('error',reject);resolve(undefined);});
   });
   const address=server.address();
   if(!address||typeof address!=='object')throw new Error('Control test port is unavailable.');
@@ -43,6 +44,13 @@ async function controlServer(onRequest) {
     for(const socket of sockets)socket.destroy();
     await new Promise(resolve=>server.close(()=>resolve(undefined)));
   }};
+}
+
+/** A port nothing listens on, so a client never reaches a manager running on this machine. */
+async function closedPort() {
+  const reservation=await controlServer(()=>{});
+  await reservation.close();
+  return reservation.port;
 }
 
 /** @param {import('node:net').Socket} socket @param {object} message @param {string} splitText */
@@ -99,9 +107,10 @@ test('ordinary request budget covers a partial response and timeout leaves accep
 
 test('cold credential and manager startup share one pre-delivery budget',async t=>{
   const runtimeDirectory=await mkdtemp(join(tmpdir(),'arw-background-agent-budget-'));
+  const port=await closedPort();
   let launches=0;
   t.mock.timers.enable({apis:['Date','setTimeout'],now:1000});
-  const client=createBackgroundAgentClient({runtimeDirectory,messageTimeoutMs:25,entryPoint:async()=>{
+  const client=createBackgroundAgentClient({runtimeDirectory,port,messageTimeoutMs:25,entryPoint:async()=>{
     launches++;t.mock.timers.setTime(1025);
     await writeFile(join(runtimeDirectory,'credential'),`${secret}\n`,{mode:0o600});
   }});
@@ -113,7 +122,7 @@ test('cold credential and manager startup share one pre-delivery budget',async t
 
 test('a stalled cold launch cannot hold the control call beyond its budget',async()=>{
   const runtimeDirectory=await mkdtemp(join(tmpdir(),'arw-background-agent-stalled-'));
-  const client=createBackgroundAgentClient({runtimeDirectory,messageTimeoutMs:15,entryPoint:()=>new Promise(()=>{})});
+  const client=createBackgroundAgentClient({runtimeDirectory,port:await closedPort(),messageTimeoutMs:15,entryPoint:()=>new Promise(()=>{})});
   try {
     await assert.rejects(client.execute({operation:'list_agents',input:{}}),/timed out before delivery/);
   }finally{await client.close();await rm(runtimeDirectory,{recursive:true,force:true});}
@@ -122,9 +131,7 @@ test('a stalled cold launch cannot hold the control call beyond its budget',asyn
 test('a refused connection cannot restart the ordinary request budget',async t=>{
   const runtimeDirectory=await mkdtemp(join(tmpdir(),'arw-background-agent-retry-'));
   await writeFile(join(runtimeDirectory,'credential'),`${secret}\n`,{mode:0o600});
-  const reservation=await controlServer(()=>{});
-  const port=reservation.port;
-  await reservation.close();
+  const port=await closedPort();
   let launches=0;
   t.mock.timers.enable({apis:['Date','setTimeout'],now:1000});
   const client=createBackgroundAgentClient({runtimeDirectory,port,messageTimeoutMs:25,entryPoint:async()=>{
@@ -139,7 +146,7 @@ test('a refused connection cannot restart the ordinary request budget',async t=>
 test('a manager launch that cannot write its state asks for a rerun outside the sandbox',async()=>{
   const parent=await mkdtemp(join(tmpdir(),'arw-background-agent-sandbox-'));
   await chmod(parent,0o500);
-  const client=createBackgroundAgentClient({runtimeDirectory:join(parent,'runtime'),entryPoint:'/unused-entry.mjs'});
+  const client=createBackgroundAgentClient({runtimeDirectory:join(parent,'runtime'),port:await closedPort(),entryPoint:'/unused-entry.mjs'});
   try {
     await assert.rejects(client.execute({operation:'list_agents',input:{}}),/blocked by the sandbox\. Rerun this same command with escalated permissions/);
   }finally{await client.close();await chmod(parent,0o700);await rm(parent,{recursive:true,force:true});}
@@ -147,9 +154,42 @@ test('a manager launch that cannot write its state asks for a rerun outside the 
 
 test('two concurrent cold launches in one process do not remove each other\'s probe file',async()=>{
   const runtimeDirectory=await mkdtemp(join(tmpdir(),'arw-background-agent-probe-'));
-  const client=createBackgroundAgentClient({runtimeDirectory,messageTimeoutMs:50,entryPoint:'/unused-entry.mjs'});
+  const port=await closedPort();
+  const client=createBackgroundAgentClient({runtimeDirectory,port,messageTimeoutMs:50,entryPoint:'/unused-entry.mjs'});
   try {
     const results=await Promise.allSettled([1,2].map(()=>client.execute({operation:'list_agents',input:{}})));
-    for(const result of results)assert.match(String(/** @type {PromiseRejectedResult} */(result).reason?.message),/timed out before delivery|did not start/);
+    for(const result of results)assert.match(String(/** @type {PromiseRejectedResult} */(result).reason?.message),/timed out before delivery/);
+  }finally{await client.close();await rm(runtimeDirectory,{recursive:true,force:true});}
+});
+
+test('a request reads the credential only after the control port accepts connections',async()=>{
+  const runtimeDirectory=await mkdtemp(join(tmpdir(),'arw-background-agent-ready-'));
+  const port=await closedPort();
+  // Another client's manager has published its credential but not yet secured it or started listening.
+  await writeFile(join(runtimeDirectory,'credential'),`${secret}\n`,{mode:0o644});
+  const client=createBackgroundAgentClient({runtimeDirectory,port,entryPoint:'/unused-entry.mjs'});
+  /** @type {{close:()=>Promise<void>}[]} */
+  const servers=[];
+  const manager=(async()=>{
+    await new Promise(resolve=>setTimeout(resolve,30));
+    await chmod(join(runtimeDirectory,'credential'),0o600);
+    servers.push(await controlServer((socket,request)=>socket.write(`${JSON.stringify({id:request.id,ok:true,result:{late:true}})}\n`),port));
+  })();
+  try {
+    assert.deepEqual(await client.execute({operation:'list_agents',input:{}}),{late:true});
+  }finally{await manager;for(const server of servers)await server.close();await client.close();await rm(runtimeDirectory,{recursive:true,force:true});}
+});
+
+test('a missing credential fails with ENOENT before any PowerShell process starts',async t=>{
+  const runtimeDirectory=await mkdtemp(join(tmpdir(),'arw-background-agent-missing-'));
+  const log=join(runtimeDirectory,'calls.log');
+  await installFakeCommand(t,runtimeDirectory,'powershell.exe',`echo called >> "${log}"\n`);
+  const platform=/** @type {PropertyDescriptor} */ (Object.getOwnPropertyDescriptor(process,'platform'));
+  Object.defineProperty(process,'platform',{value:'win32'});
+  t.after(()=>Object.defineProperty(process,'platform',platform));
+  const client=createBackgroundAgentClient({runtimeDirectory});
+  try {
+    await assert.rejects(client.execute({operation:'list_agents',input:{}}),{code:'ENOENT'});
+    await assert.rejects(readFile(log),{code:'ENOENT'});
   }finally{await client.close();await rm(runtimeDirectory,{recursive:true,force:true});}
 });

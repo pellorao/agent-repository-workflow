@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {DatabaseSync} from 'node:sqlite';
-import {chmod,mkdtemp,rm,writeFile} from 'node:fs/promises';
+import {chmod,mkdtemp,readFile,rm,writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import test from 'node:test';
@@ -48,4 +48,23 @@ test('Windows ACL calls survive PowerShell writing progress output to stderr',as
   t.after(() => Object.defineProperty(process,'platform',platform));
   await securePrivateStatePath(directory,'directory');
   await verifyPrivateStatePath(directory,'directory');
+});
+
+test('Windows private state is secured and verified in one PowerShell process per call',async t => {
+  const directory = await createTemporaryDirectory(t,'arw-private-state-batch-');
+  const file = join(directory,'credential');
+  await writeFile(file,'private\n');
+  const log = join(directory,'calls.log');
+  await installFakeCommand(t,directory,'powershell.exe',`env >> "${log}"\necho ---- >> "${log}"\n[ ! -e "${directory}/fail" ]\n`);
+  const platform = /** @type {PropertyDescriptor} */ (Object.getOwnPropertyDescriptor(process,'platform'));
+  Object.defineProperty(process,'platform',{value:'win32'});
+  t.after(() => Object.defineProperty(process,'platform',platform));
+  const calls = async () => (await readFile(log,'utf8')).split('----\n').length - 1;
+  await securePrivateStatePath(directory,'directory');
+  assert.equal(await calls(),1);
+  await verifyPrivateStatePath(directory,'directory',[file,'file']);
+  assert.equal(await calls(),2);
+  assert.ok((await readFile(log,'utf8')).split('----\n')[1].includes(file));
+  await writeFile(join(directory,'fail'),'');
+  await assert.rejects(verifyPrivateStatePath(directory,'directory',[file,'file']),/could not be verified/);
 });
