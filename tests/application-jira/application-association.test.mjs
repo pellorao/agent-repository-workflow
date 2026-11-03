@@ -4,7 +4,7 @@ import test from 'node:test';
 import {associateApplicationIssue} from '../../lib/application-jira/application-association.mjs';
 
 test('Application Association creates distinct bidirectional fields and projects external blockers', () => {
-    const blocker = {association: undefined, id: 'issue:0001:01', kind: 'implementation', number: '01', status: 'ready-for-agent', title: 'Finish design'};
+    const blocker = {association: undefined, blockerRecords: [], id: 'issue:0001:01', kind: 'implementation', number: '01', status: 'ready-for-agent', title: 'Finish design'};
     const applicationRecord = {
         association: undefined,
         blockerRecords: [blocker],
@@ -71,8 +71,8 @@ test('Application Association normalizes still-uncommitted same-Module dependenc
         moduleIssueId: moduleRecord.id,
         moduleIssues: {billing: [
             {path: 'target.md', record: moduleRecord, text: '# Target\n\nStatus: ready-for-agent\n\n## Blocked by\n\n- None\n'},
-            {path: 'earlier.md', record: {association: {coordinate: 'issue:payments:0001:03', kind: 'application-source'}, id: 'issue:0007:08', kind: 'implementation', status: 'ready-for-agent'}, text: earlierText},
-            {path: 'frozen.md', record: {association: {coordinate: 'issue:payments:0001:04', kind: 'application-source'}, id: 'issue:0007:09', kind: 'implementation', status: 'ready-for-agent'}, text: earlierText},
+            {path: 'earlier.md', record: {blockerRecords: [], number: '08', title: 'Issue', association: {coordinate: 'issue:payments:0001:03', kind: 'application-source'}, id: 'issue:0007:08', kind: 'implementation', status: 'ready-for-agent'}, text: earlierText},
+            {path: 'frozen.md', record: {blockerRecords: [], number: '09', title: 'Issue', association: {coordinate: 'issue:payments:0001:04', kind: 'application-source'}, id: 'issue:0007:09', kind: 'implementation', status: 'ready-for-agent'}, text: earlierText},
         ]},
         moduleName: 'billing',
         applicationIssueId: applicationRecord.id,
@@ -94,15 +94,15 @@ test('Application Association inspects every configured Module and normalizes on
         moduleIssues: {
             billing: [{path: 'billing-target.md', record: billingRecord, text: '# Build\n\nStatus: ready-for-agent\n\n## Blocked by\n\n- None\n'}],
             ledger: [
-                {path: 'ledger-same.md', record: {association: {coordinate: 'issue:payments:0001:03', kind: 'application-source'}, id: 'issue:0005:08', kind: 'implementation', status: 'ready-for-agent'}, text: `# Ledger\n\nStatus: ready-for-agent\nApplication source issue: \`issue:payments:0001:03\`\n\n## Blocked by\n\n${dependency}`},
-                {path: 'ledger-other.md', record: {association: {coordinate: 'issue:payments:0001:04', kind: 'application-source'}, id: 'issue:0009:09', kind: 'implementation', status: 'ready-for-agent'}, text: `# Other\n\nStatus: ready-for-agent\nApplication source issue: \`issue:payments:0001:04\`\n\n## Blocked by\n\n${dependency}`},
+                {path: 'ledger-same.md', record: {blockerRecords: [], number: '08', title: 'Issue', association: {coordinate: 'issue:payments:0001:03', kind: 'application-source'}, id: 'issue:0005:08', kind: 'implementation', status: 'ready-for-agent'}, text: `# Ledger\n\nStatus: ready-for-agent\nApplication source issue: \`issue:payments:0001:03\`\n\n## Blocked by\n\n${dependency}`},
+                {path: 'ledger-other.md', record: {blockerRecords: [], number: '09', title: 'Issue', association: {coordinate: 'issue:payments:0001:04', kind: 'application-source'}, id: 'issue:0009:09', kind: 'implementation', status: 'ready-for-agent'}, text: `# Other\n\nStatus: ready-for-agent\nApplication source issue: \`issue:payments:0001:04\`\n\n## Blocked by\n\n${dependency}`},
             ],
         },
         moduleName: 'billing',
         applicationIssueId: applicationRecord.id,
         applicationIssues: [
             {path: 'application.md', record: applicationRecord, text: '# Source\n\nStatus: ready-for-agent\n\n## Blocked by\n\n- None\n'},
-            {path: 'ledger-application.md', record: {association: {coordinate: 'issue:ledger:0005:05', kind: 'module-implementation'}, id: 'issue:0001:01', kind: 'implementation', status: 'ready-for-agent'}, text: ''},
+            {path: 'ledger-application.md', record: {blockerRecords: [], number: '01', title: 'Issue', association: {coordinate: 'issue:ledger:0005:05', kind: 'module-implementation'}, id: 'issue:0001:01', kind: 'implementation', status: 'ready-for-agent'}, text: ''},
         ],
         applicationName: 'payments',
     });
@@ -136,7 +136,7 @@ test('Application Association edits only the Status line outside fenced code and
 });
 
 test('Application Association checks the Module effort only within the same Application effort', () => {
-    const record = (/** @type {string} */ id) => ({blockerRecords: [], id, kind: 'implementation', status: 'ready-for-agent', title: 'T'});
+    const record = (/** @type {string} */ id) => ({blockerRecords: [], id, number: id.slice(-2), kind: 'implementation', status: 'ready-for-agent', title: 'T'});
     const associate = (/** @type {string} */ otherApplicationIssueId) => associateApplicationIssue({
         moduleIssueId: 'issue:0007:07',
         moduleIssues: {billing: [{path: 'module.md', record: record('issue:0007:07'), text: 'Status: ready-for-agent\n\n## Blocked by\n\n- None\n'}]},
@@ -157,12 +157,12 @@ test('Application Association rewrites External dependency lines only inside Blo
     const result = associateApplicationIssue({
         moduleIssueId: 'issue:0007:07',
         moduleIssues: {billing: [
-            {path: 'target.md', record: {blockerRecords: [], id: 'issue:0007:07', kind: 'implementation', status: 'ready-for-agent'}, text: 'Status: ready-for-agent\n\n## Blocked by\n\n- None\n'},
-            {path: 'earlier.md', record: {association: {coordinate: 'issue:payments:0001:03', kind: 'application-source'}, id: 'issue:0007:08', kind: 'implementation', status: 'ready-for-agent'}, text: `# E\n\n## What to build\n\n${dependency}\n\n## Blocked by\n\n${dependency}\n`},
+            {path: 'target.md', record: {number: '07', title: 'Issue', blockerRecords: [], id: 'issue:0007:07', kind: 'implementation', status: 'ready-for-agent'}, text: 'Status: ready-for-agent\n\n## Blocked by\n\n- None\n'},
+            {path: 'earlier.md', record: {blockerRecords: [], number: '08', title: 'Issue', association: {coordinate: 'issue:payments:0001:03', kind: 'application-source'}, id: 'issue:0007:08', kind: 'implementation', status: 'ready-for-agent'}, text: `# E\n\n## What to build\n\n${dependency}\n\n## Blocked by\n\n${dependency}\n`},
         ]},
         moduleName: 'billing',
         applicationIssueId: 'issue:0001:01',
-        applicationIssues: [{path: 'application.md', record: {blockerRecords: [], id: 'issue:0001:01', kind: 'implementation', status: 'ready-for-agent'}, text: 'Status: ready-for-agent\n\n## Blocked by\n\n- None\n'}],
+        applicationIssues: [{path: 'application.md', record: {number: '01', title: 'Issue', blockerRecords: [], id: 'issue:0001:01', kind: 'implementation', status: 'ready-for-agent'}, text: 'Status: ready-for-agent\n\n## Blocked by\n\n- None\n'}],
         applicationName: 'payments',
     });
     assert.equal(result.status, 'succeeded');

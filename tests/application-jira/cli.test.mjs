@@ -872,3 +872,67 @@ test('JIRA complete reads the complete committed effort and converges an existin
         result: 0,
     });
 });
+
+for (const invalidUtf8 of [false, true]) {
+    test(`Application associate preserves sibling freeze boundaries (${invalidUtf8 ? 'invalid HEAD UTF-8' : 'valid documents'})`, async t => {
+        const repository = await createRepository(t);
+        const moduleRoot = join(repository.root, 'modules', 'billing');
+        await mkdir(moduleRoot, {recursive: true});
+        await runGit(moduleRoot, ['init', '--quiet', '--initial-branch=dev']);
+        await writeConfig(repository.programDirectory, globalConfiguration);
+        await writeJsonRecord(repository.root, 'arw.config.json', {
+            ...applicationConfiguration,
+            application: {...applicationConfiguration.application, modules: [{name: 'billing', path: 'modules/billing'}]},
+        });
+        const effort = '0007-billing-work';
+        const applicationEffort = '0001-application-work';
+        const dependency = '- External dependency: `issue:payments:0001:01` - Wait for target.';
+        const render = (/** @type {string} */ association, /** @type {string} */ blocked = '- None') =>
+            `# Work\n\nStatus: ready-for-agent\n${association}\n## Blocked by\n\n${blocked}\n`;
+        const target = render('');
+        const frozen = render('Application source issue: `issue:payments:0001:02`\n', `- 10 - Sibling\n${dependency}`);
+        await writeIssue(moduleRoot, effort, '07-target.md', target);
+        await writeIssue(moduleRoot, effort, '08-frozen.md', frozen);
+        await writeIssue(moduleRoot, effort, '10-sibling.md', invalidUtf8 ? Buffer.concat([Buffer.from(`${target}\n## Comments\n\n`), Buffer.from([0xff])]) : target);
+        // An unrelated committed effort is malformed; only efforts containing associated issues are read.
+        await writeIssue(moduleRoot, '0008-unrelated', '01-invalid.md', '# Invalid\n');
+        await runGit(moduleRoot, ['add', '.scratch']);
+        await runGit(moduleRoot, ['commit', '--quiet', '-m', 'committed inputs']);
+        await writeIssue(moduleRoot, '0008-unrelated', '01-invalid.md', target);
+        await writeIssue(moduleRoot, effort, '09-uncommitted.md', render('Application source issue: `issue:payments:0001:03`\n', `- 10 - Sibling\n${dependency}`));
+        await writeIssue(moduleRoot, effort, '10-sibling.md', render('Application source issue: `issue:payments:0001:04`\n', dependency));
+        for (const [number, moduleNumber] of [['01', null], ['02', '08'], ['03', '09'], ['04', '10']]) {
+            await writeIssue(repository.root, applicationEffort, `${number}-source.md`, render(moduleNumber === null ? '' : `Module implementation issue: \`issue:billing:0007:${moduleNumber}\`\n`));
+        }
+        await runGit(moduleRoot, ['add', '.scratch']);
+        await runGit(repository.root, ['add', '.scratch']);
+        const before = await Promise.all(['07-target.md', '08-frozen.md', '09-uncommitted.md', '10-sibling.md'].map(filename => readFile(join(moduleRoot, '.scratch', effort, 'issues', filename))));
+        const unused = async () => assert.fail('Unused Git operation.');
+        const result = await run(['application', 'associate', 'issue:0001:01', 'issue:billing:0007:07'], repository, {
+            applicationJiraDependencies: {
+                submoduleGit: {
+                    inspectConvergence: async () => ({diagnostics: [], state: {branch: 'dev', clean: true, head: 'aaa'}, status: 'succeeded'}),
+                    inspectSwitch: unused,
+                    restore: unused,
+                    switchBranch: unused,
+                },
+            },
+        });
+        const issues = join(moduleRoot, '.scratch', effort, 'issues');
+        if (invalidUtf8) {
+            assert.equal(result.result, 1);
+            assert.ok(result.events.some(event => event.channel === 'stderr' && event.message === 'Committed Module association inputs could not be read.'));
+            assert.deepEqual(await Promise.all(['07-target.md', '08-frozen.md', '09-uncommitted.md', '10-sibling.md'].map(filename => readFile(join(issues, filename)))), before);
+            assert.doesNotMatch(await readFile(join(repository.root, '.scratch', applicationEffort, 'issues', '01-source.md'), 'utf8'), /Module implementation issue/u);
+            return;
+        }
+        assert.equal(result.result, 0, JSON.stringify(result.events));
+        assert.equal(await readFile(join(issues, '08-frozen.md'), 'utf8'), frozen);
+        assert.match(await readFile(join(issues, '07-target.md'), 'utf8'), /^Application source issue: `issue:payments:0001:01`$/mu);
+        for (const filename of ['09-uncommitted.md', '10-sibling.md']) {
+            assert.match(await readFile(join(issues, filename), 'utf8'), /^- 07 - Wait for target\.$/mu);
+        }
+        assert.match(await readFile(join(issues, '09-uncommitted.md'), 'utf8'), /^- 10 - Sibling$/mu);
+        assert.match((await runGit(moduleRoot, ['show', ':.scratch/0007-billing-work/issues/08-frozen.md'])).stdout, /External dependency/u);
+    });
+}

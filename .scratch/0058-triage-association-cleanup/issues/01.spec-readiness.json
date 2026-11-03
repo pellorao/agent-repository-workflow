@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0058:01",
+  "request": {
+    "digest": "54655627ca4e7b0d4f1c3ef3b4f01bfb2b8e3ab357310712edbbf53149c1eb6d",
+    "filePath": ".tmp/codex/01a19eb7-a792-7711-b9cf-691003d684f8/0058_01/spec-readiness/requests/request-3e2fe689-f86d-4e0c-8134-6bd1b7e143d6.json",
+    "id": "3e2fe689-f86d-4e0c-8134-6bd1b7e143d6"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "ba4f23b253fe4bd4d17bde006dd684e3b4ae723ec9443a706c6f32eb66815b7e"
+  },
+  "inputs": [
+    {
+      "filePath": "CONTEXT.md",
+      "role": "domain-context",
+      "sha256": "6f89aa3efc9e393170b2d9380bacf5b1b11aea0d9c614e9367384d99767bb1fb"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow-application-jira/spec.md",
+      "role": "governing-spec",
+      "sha256": "3103fef9e2096ba69840cd0ba01b01d691c3d35e4af06c69b6de2d6e207b26be"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow-installation/spec.md",
+      "role": "governing-spec",
+      "sha256": "c8529a89f3269dfa061bd610ea83d30aec82e5f64a95fd4786881880e22061f0"
+    },
+    {
+      "filePath": "lib/application-jira/application-jira-cli.mjs",
+      "role": "architecture-evidence",
+      "sha256": "ae8abadc7200212fd5c8b58e5d0732f82eedabb1a467cdf9fab6ef19b75cff42"
+    },
+    {
+      "filePath": "lib/arw-common/artifacts.mjs",
+      "role": "architecture-evidence",
+      "sha256": "6a3e1bbd8f455f3e337511349c904cbc0d4a121ed9b3b52568e403d88c324570"
+    },
+    {
+      "filePath": "lib/arw-common/issue-documents.mjs",
+      "role": "architecture-evidence",
+      "sha256": "f9378b1feef90bbd7c41519b5efa04a21cafaf930b6ef066edb719bf0102feff"
+    },
+    {
+      "filePath": "uninstall.mjs",
+      "role": "architecture-evidence",
+      "sha256": "9d2148822e9c15b48bcee8349372fd1cfd275383c07cdc9119e18774788ba13c"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0058-triage-association-cleanup/issues/01-association-cleanup.md",
+    "sha256": "9983dfd400c6f592a5d904805bc15b66d61051af03fe7888e681506b60cae002"
+  },
+  "result": "satisfied"
+}
