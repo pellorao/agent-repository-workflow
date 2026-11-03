@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0061:01",
+  "request": {
+    "digest": "564a3b2f143c10561706395a2162cab6c241317c4f089c5bdab93ac194710676",
+    "filePath": ".tmp/claude-code/ad35ce58-362f-4db3-a1d5-a5e8444e3975/0061_01/spec-readiness/requests/request-d606dabc-52c6-4df4-b74f-7ede32f7269d.json",
+    "id": "d606dabc-52c6-4df4-b74f-7ede32f7269d"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "ba4f23b253fe4bd4d17bde006dd684e3b4ae723ec9443a706c6f32eb66815b7e"
+  },
+  "inputs": [
+    {
+      "filePath": ".scratch/0061-commit-audit-measure/spec.md",
+      "role": "governing-spec",
+      "sha256": "31f651ca30ed58c243ddc211e5935e6d1899340c7e22529455cbd974cf532bc3"
+    },
+    {
+      "filePath": "CONTEXT.md",
+      "role": "domain-context",
+      "sha256": "6f89aa3efc9e393170b2d9380bacf5b1b11aea0d9c614e9367384d99767bb1fb"
+    },
+    {
+      "filePath": "docs/adr/0023-separate-commit-audit-review-from-implementation.md",
+      "role": "adr",
+      "sha256": "1fa50379282eb7326dad3618ee053b150c9f0598717200cf1dc5161fd2a1d379"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow/spec.md",
+      "role": "governing-spec",
+      "sha256": "40b1f26fdc9db4c1892884d4d7bc0cef38217a31c870bb1cacdd9d8e6bc7d03f"
+    },
+    {
+      "filePath": "lib/arw-common/repository-state-inspector.mjs",
+      "role": "architecture-evidence",
+      "sha256": "c38efcaebe0bbae400b51e6e809270d52e746320d1b90b73ab6cf3847f9b908a"
+    },
+    {
+      "filePath": "lib/commit-audit/commit-audit.mjs",
+      "role": "architecture-evidence",
+      "sha256": "624ff8da1f2c9461849be8cdeee22777a5dd57a62fdc37339c05f3f6e1090dd0"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0061-commit-audit-measure/issues/01-commit-audit-measure.md",
+    "sha256": "f8773b419dc6615598c9c593f0ffb5db389b314b843b2333c73050a398fe8d6e"
+  },
+  "result": "satisfied"
+}

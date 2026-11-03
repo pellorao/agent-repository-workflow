@@ -522,7 +522,9 @@ Reviewer 在完成全部适用检查和绑定文件写入后单独返回完成�
 
 ## Commit Audit
 
-Main Agent 在仓库 `.tmp/` 下写一个 `input.json`, 只包含同一 effort 的排序 `authorizingIssueIds`, 不含其他字段. 每次运行 `arw commit-audit prepare --input <absolute-input-path>` 都在当前会话工作区下新建审核轮目录 `_commit-audit/<n>/` (`n` 从 1 递增), 从实时 Git 索引物化 `request.json` (授权范围, Gate 1 终态 issue, Gate 2 的治理文档与 `since`, `reviewPath`, `base` 为 `HEAD` 提交, `tree` 为 `git write-tree` 固定的已暂存树), 为 `requirements-reviewer` 和 `code-standards-reviewer` 各建一个只含空 `review.txt` 的报告目录, 并按 Review rounds 节写出本轮其余文件, 然后只输出轮目录绝对路径. Code Standards 的 handoff 列出按 `.arwignore` 和 effort `prototype/**`, `research/**` 排除后的纳入路径, 并指向授权 issue 的预估净增行数. 复审的相邻版本变化是 `git diff <前轮 tree> <tree>`. 每个 Reviewer 的交接还含一行处置台账指引, 指向全部授权 issue 的 `## Comments` 章节 (首轮, 复审和新建线程的轮次都有), 不复制章节内容.
+Main Agent 在仓库 `.tmp/` 下写一个 `input.json`, 只包含同一 effort 的排序 `authorizingIssueIds`, 不含其他字段. 每次运行 `arw commit-audit prepare --input <absolute-input-path>` 都在当前会话工作区下新建审核轮目录 `_commit-audit/<n>/` (`n` 从 1 递增), 从实时 Git 索引物化 `request.json` (授权范围, Gate 1 终态 issue, Gate 2 的治理文档与 `since`, `reviewPath`, `base` 为 `HEAD` 提交, `tree` 为 `git write-tree` 固定的已暂存树), 为 `requirements-reviewer` 和 `code-standards-reviewer` 各建一个只含空 `review.txt` 的报告目录, 并按 Review rounds 节写出本轮其余文件, 然后在标准输出只输出轮目录绝对路径 (调用方把它当路径使用), 另在标准错误输出候选体积摘要和下一个 ADR 编号. Code Standards 的 handoff 列出按 `.arwignore` 和 effort `prototype/**`, `research/**` 排除后的纳入路径, 并指向授权 issue 的预估净增行数. 复审的相邻版本变化是 `git diff <前轮 tree> <tree>`. 每个 Reviewer 的交接还含一行处置台账指引, 指向全部授权 issue 的 `## Comments` 章节 (首轮, 复审和新建线程的轮次都有), 不复制章节内容.
+
+`prepare` 的标准错误摘要供 Main Agent 写 issue 的 `## Validation` 或 `## Comments` 时直接复制, 使 Reviewer 能用同一口径复算. 摘要只由已暂存树和 HEAD 决定, 只描述本次候选 (一个 issue 分多次提交时, 各次数字相加才是该 issue 的实测净增), 不写入 `request.json` 和 Reviewer 交接, 不改变任何关卡, `verify` 也不检查 issue 中的数字. 计入路径是候选中发生变化的路径, 去掉 `.scratch` 下的全部工作记录和子模块 gitlink, 并按顺序归入第一个匹配的类别: 测试 (路径含目录段 `test`, `tests` 或 `__tests__`, 或文件名在扩展名之前带 `.test` 或 `.spec`), 文档 (扩展名 `.md`), 代码 (其余). 每个路径的净增是已暂存版本减 HEAD 版本 (新增文件的 HEAD 版本和删除文件的已暂存版本为空, 重命名按删除旧路径加新增新路径计); 代码和测试按行数计 (按换行符分行, 结尾换行不多算一行), 文档按字符数计 (Unicode 码点数, 含换行), 删除多于新增时为负. 摘要依次给出每类的 `<类别>: <净增> <单位> (files: <n>)`, 每行之后逐文件列出 `  <路径> <净增>`, 最后一行是 `next ADR number: <NNNN>`: 已暂存树中 `docs/adr/NNNN-<slug>.md` 的最大 `NNNN` 加 1, 四位补零, 没有时为 `0001`, 已暂存的新 ADR 计入. 摘要不应用 `.arwignore`, 因为它取自工作树, 会使数字依赖未暂存的状态, 使 Reviewer 无法只用受审树复算; 也不识别锁文件, 生成文件或镜像副本, 它们按路径类别计入, 逐文件列表让作者在 issue 中说明. 效率规则只要求其中一类入预算, 摘要不选择类别, 也不比较预算.
 
 要求符合审核的 Reviewer 接收 Request 路径, 只用 `git diff <base> <tree>`, `git show <tree>:<path>` 和 `git ls-tree` 读取受审版本, 把发现的要求问题逐条写入 `review.txt` (每条写明位置, 影响和修正方向), 没有问题时写 `No problems.`, 然后只返回 `ready | incomplete`. `incomplete` 结束本轮并交回 Main Agent.
 
@@ -695,7 +697,7 @@ Main Agent 或用户负责语义决定. 独立 Reviewer 只返回结果. Module 
 
 `Spec Readiness Module` 拥有准备, Reviewer Request, 草稿绑定, 生成, 提升和特定 issue 验证. 它机械验证身份, 字节, 摘要, 结构, 路径与证据, 不判断开放语义, 原生会话控制由共享 Reviewer 运行责任承担.
 
-`Commit Audit Module` 复用 Repository State Inspector, 通过 Git Runner 读取实时已暂存候选及 HEAD, 验证单 effort 授权范围并推导 Gate 1 和 Gate 2 范围 (含 effort 起点), 准备 Reviewer Request 和空报告. 它还承担 `arw commit-audit verify` 的机械检查和审核轮核对, 额外复用 ARW Artifact 清单, 文本策略和 Platform Adapter 的会话身份. 它不判断语义, 不选择暂存范围, 不承担原生会话控制, 不写受 Git 跟踪文件. Main Agent 协调版本与准确记录差异, 独立 Reviewer 判断当前语义及历史覆盖.
+`Commit Audit Module` 复用 Repository State Inspector, 通过 Git Runner 读取实时已暂存候选及 HEAD, 验证单 effort 授权范围并推导 Gate 1 和 Gate 2 范围 (含 effort 起点), 准备 Reviewer Request 和空报告, 并从同一份候选只读计算体积摘要和下一个 ADR 编号. 它还承担 `arw commit-audit verify` 的机械检查和审核轮核对, 额外复用 ARW Artifact 清单, 文本策略和 Platform Adapter 的会话身份. 它不判断语义, 不选择暂存范围, 不承担原生会话控制, 不写受 Git 跟踪文件. Main Agent 协调版本与准确记录差异, 独立 Reviewer 判断当前语义及历史覆盖.
 
 `Agent CLI Launch Module` 接受已经验证的 Agent 配置, 本次参数, 当前目录和子进程 Adapter. 它稳定拼接固定参数与本次参数, 直接启动可执行文件, 等待结束并返回 `exited | failed`. 它不读取全局配置, 不解析公开命令, 不发现当前 Git 仓库, 不创建命令解释器或会话登记表.
 
@@ -713,7 +715,7 @@ Main Agent 或用户负责语义决定. 独立 Reviewer 只返回结果. Module 
 
 Issue Documents 要求操作接受完整 issue UTF-8 文本与相对当前 Git 仓库根目录的 issue 路径, 返回准确审核对象内容, 审核对象身份内容和规范化要求. 两份审核对象内容都使用 LF; 身份内容只规范 `## Acceptance criteria` 中围栏代码外实际列表项开头的任务列表标记. 位置, 路径或锚点无效时不返回部分结果.
 
-Commit Audit `verify` 操作接受仓库根目录和 `--non-implementation` 标志, 读取实时已暂存候选及 HEAD (不带该标志时还读取当前会话的最新审核轮及两个 Reviewer 的 `review.txt`, 用 `git write-tree`, `git diff-tree` 与 `git show` 比较受审树, 会话身份取自 Platform Adapter, Codex 与 Claude Code 的会话目录各按自己的会话标识), 返回 `errors` 列表, 每项含 `filePath` 和 `message` 并按两者排序; 列表为空表示通过 (退出码 `0`), 否则退出码 `1`. 含代码的候选在 `--non-implementation` 下作为不符合条件的路径报告.
+Commit Audit `verify` 操作接受仓库根目录和 `--non-implementation` 标志, 读取实时已暂存候选及 HEAD (不带该标志时还读取当前会话的最新审核轮及两个 Reviewer 的 `review.txt`, 用 `git write-tree`, `git diff-tree` 与 `git show` 比较受审树, 会话身份取自 Platform Adapter, Codex 与 Claude Code 的会话目录各按自己的会话标识), 返回 `errors` 列表, 每项含 `filePath` 和 `message` 并按两者排序; 列表为空表示通过 (退出码 `0`), 否则退出码 `1`. 含代码的候选在 `--non-implementation` 下作为不符合条件的路径报告. Commit Audit `prepare` 的结果除审核轮目录外含 Commit Audit 节所述的多行摘要文本, 命令入口把轮目录写到标准输出, 摘要写到标准错误.
 
 Repository Workflow 提示 Interface 是 `prompt(question) -> Promise<answer>`. `question` 包含稳定 `id`, 非空英文 `description`, 可选 `example`, 简短 `message` 和可选的封闭 `choices`. 终端与注入的 Adapter 使用同一对象. `description` 字节不进入 Profile, 计划或摘要.
 

@@ -40,12 +40,16 @@ const stageIssue = async (/** @type {string} */ root, /** @type {string} */ text
     await runGit(root, ['add', '.scratch']);
 };
 let roundNumber = 0;
-const prepare = async (/** @type {string} */ root, /** @type {unknown} */ input, platformAdapter = adapter) => {
+const writeInput = async (/** @type {string} */ root, /** @type {unknown} */ input) => {
     roundNumber += 1;
     const directory = join(root, '.tmp', 'audit', String(roundNumber));
     await mkdir(directory, {recursive: true});
     const inputPath = join(directory, 'input.json');
     await writeFile(inputPath, JSON.stringify(input), 'utf8');
+    return inputPath;
+};
+const prepare = async (/** @type {string} */ root, /** @type {unknown} */ input, platformAdapter = adapter) => {
+    const inputPath = await writeInput(root, input);
     const round = (await prepareCommitAudit({inputPath, platformAdapter, repositoryRoot: root})).roundDirectory;
     const request = JSON.parse(await readFile(join(round, 'request.json'), 'utf8'));
     return {request, round};
@@ -303,6 +307,36 @@ test('prepare numbers a new round after the highest existing one, so verify chec
     assert.match(second, /\/_commit-audit\/8$/u);
     await writeReports(second);
     assert.equal(await verifyRound(repository.root), '');
+});
+
+test('prepare summarizes staged net growth by category, skips .scratch records and numbers the next ADR', async t => {
+    const repository = await stagedRepository(t, {statuses: ['in-progress']});
+    // One more change of every kind the summary distinguishes.
+    const files = {'docs/adr/0001-a.md': '# A\n', 'docs/adr/0004-b.md': '# B\n', 'docs/agents/reviewer.md': '#\n', 'docs/note.md': 'hello', 'tests/x.test.mjs': 'a\nb\nc\n'};
+    for (const [path, text] of Object.entries(files)) {
+        await mkdir(join(repository.root, path, '..'), {recursive: true});
+        await writeFile(join(repository.root, path), text, 'utf8');
+    }
+    await runGit(repository.root, ['add', '.']);
+    const {summary} = await prepareCommitAudit({inputPath: await writeInput(repository.root, {authorizingIssueIds: ['issue:0001:01']}), platformAdapter: adapter, repositoryRoot: repository.root});
+    assert.equal(summary, [
+        'code: +9 lines (files: 2)', '  generated.txt +1', '  implementation.mjs +8',
+        'documents: -11 characters (files: 4)', '  docs/adr/0001-a.md +4', '  docs/adr/0004-b.md +4', '  docs/agents/reviewer.md -24', '  docs/note.md +5',
+        'tests: +3 lines (files: 1)', '  tests/x.test.mjs +3',
+        'next ADR number: 0005',
+    ].join('\n'));
+});
+
+test('the prepare command keeps standard output to the round directory and writes the summary to standard error', async t => {
+    const repository = await stagedRepository(t, {statuses: ['in-progress']});
+    const environment = {CLAUDECODE: process.env.CLAUDECODE, CODEX_THREAD_ID: process.env.CODEX_THREAD_ID};
+    t.after(() => Object.assign(process.env, environment));
+    delete process.env.CLAUDECODE;
+    process.env.CODEX_THREAD_ID = 'summary-session';
+    const {events} = await run(['commit-audit', 'prepare', '--input', await writeInput(repository.root, {authorizingIssueIds: ['issue:0001:01']})], repository);
+    assert.deepEqual(events.map(event => event.channel), ['stdout', 'stderr']);
+    assert.match(events[0].message, /\/_commit-audit\/1$/u);
+    assert.match(events[1].message, /^code: \+9 lines \(files: 2\)\n/u);
 });
 
 test('verify --non-implementation rejects non-canonical effort directories and NUL Markdown, and keeps checking after an Artifact error', async t => {
