@@ -145,7 +145,7 @@ Claude 明确授权按模块规划一个 effort 的两个 issue, 本 issue 是 I
 
 M1 原草稿称四个缺陷, 本 issue 按授权排除 lib/background-agent/** 项后实际交付三个. 安装器原本已复用读取器, 本次只把其缓冲实现移到公共模块并由工作流共用. 新公共文件同步登记 release-manifest.json, 并更新隔离卸载测试的载荷.
 
-- 台账: Windows 实机验证 转入后续 issue 本机克隆无 Windows 目标; 下次发布验证的 win11 guest 检查覆盖
+- 台账: Windows 实机验证转入后续 issue; 下次发布验证的 win11 guest 检查覆盖
 
 就绪例外已针对 Claude 接受的验证文字重新 generate, promote, verify 并通过. Commit Audit 第 1 轮准备输出: `code: -41 lines (files: 25)`, `documents: 0 characters (files: 0)`, `tests: +207 lines (files: 16)`. 后者是 Engine 净增口径, 与上文新增及删除合计口径不同.
 
