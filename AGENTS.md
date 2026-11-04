@@ -10,7 +10,7 @@
 3. 只为当前验收标准写代码. 不为假设的未来需求加选项, 抽象层或扩展点. 外部数据 (用户文件, 命令参数, 环境变量, 外部程序输出) 只在进入程序的信任边界校验一次, 之后以确定类型的值往里传, 内部各层不再重复判断; 仓库内部代码可知且可改, 彼此信任, 不校验程序自己产生的数据. 每条错误处理路径 (包括 `try`/`catch`) 都要对应一个现实中会发生的失败场景, 说不出场景就不写.
 4. 代码保持直白. 只用一次的逻辑直接写在调用处, 不提前抽成函数, 除非它会复用或确实封装了一块复杂逻辑; 一个函数能写清的不拆成多个.
 5. 不以理论稳健性扩大范围. 为推测性或极不可能发生的竞态, 安全极端情况增加复杂度前, 先向用户说明故障模式, 发生概率和复杂度成本, 取得同意后再做.
-6. 先删后加. 新增实现前先看能否删除或合并已有实现; 不保留一次性脚本, 已放弃路线的代码和没有价值的测试.
+6. 先删后加. 新增实现前先看能否删除或合并已有实现; 不保留一次性脚本, 已放弃路线的代码和没有价值的测试. 删除规则, 检查, 门禁或测试前, 写明它守护的目标, 以及该目标已不存在或由何处覆盖; 说不出时保留, 或交用户决定.
 7. 体积预算. 开工前估算本任务的净增量 (新增减删除; 改代码的任务按行数只计非测试代码, 测试与文档不计入; 改文档的任务按字符数只计文档, 因为文档段落不手动换行, 行数不反映篇幅; 只算为完成本任务所做的改动, 含被替换的旧代码; 有 issue 时写进 issue 的 `## What to build`); 实际净增超出预算时先尝试削减; 无法再削减时不停下, 继续完成, 在 issue 的 `## Comments` 写明超出量和原因, 由提交审核判断能否删减. 无关的冗余代码删除鼓励, 但不抵扣净增, 在交付说明中单独列出, 能分开时单独提交.
 
 ## Work Dependencies
@@ -89,7 +89,7 @@ ARW 必须在 Codex 和 Claude Code 中都完整可用, 包括 `arw background-a
 # Source Checkout Validation
 
 - 测试命令见 `docs/agents/source-checkout-validation.md`. 只含 Agent 规则与文档的提交也运行其中三个 `node scripts/` 开头的检查, 作为 `commit` Skill 非实施分类的补充, 此类提交的分类另含 `distribution/` 副本与根 `README.zh-CN.md` 中的 Markdown. 修改某个区域的确定性测试前读取 `docs/agents/source-checkout-coverage.md`. 发布验证和发布只在维护者显式调用 `$release` Skill 时进行.
-- Reviewer 能力测试在维护者显式调用 `$reviewer-capability` Skill 时进行; 改动 Reviewer 规则 (Reviewer 角色指令, `docs/agents/reviewer.md`, Reviewer 交接与 Request 内容, 各 Skill 中约束 Reviewer 行为或复审处置的规则, Reviewer 运行时 (原生工具, 权限, 沙盒, 上下文, 默认模型与设置)) 时, 也视同维护者已调用: 用受影响角色的能力场景对比改动前后, 评分不降低才接受改动. 速度提升很大而评分略有降低时, 交用户决定. Reviewer 运行时改动频繁时可以减轻测试: 只用受影响角色的一个场景, 或把几次改动合并为一次测试 (对比最早一次改动前与最后一次改动后). 只删除重复表述或改为引用, 不改变任何规则含义的改动不做能力测试.
+- Reviewer 能力测试在维护者显式调用 `$reviewer-capability` Skill 时进行; 改动 Reviewer 规则 (Reviewer 角色指令, `docs/agents/reviewer.md`, Reviewer 交接与 Request 内容, 各 Skill 中约束 Reviewer 行为或复审处置的规则, Reviewer 运行时 (原生工具, 权限, 沙盒, 上下文, 默认模型与设置)) 时, 也视同维护者已调用: 用受影响角色的能力场景对比改动前后, 接受或拒绝按 `reviewer-capability` Skill 的 A/B 判定规则. 速度提升很大, 而该规则拒绝或候选均值低于对照时, 交用户决定. Reviewer 运行时改动频繁时可以减轻测试: 只用受影响角色的一个场景, 或把几次改动合并为一次测试 (对比最早一次改动前与最后一次改动后). 只删除重复表述或改为引用, 不改变任何规则含义的改动不做能力测试.
 - 单个测试回调耗时阈值为 100 毫秒. 作为 `validation` Skill 要求逐例批准超阈值案例的 Baseline 例外, 本仓库不为缩短测试耗时修改生产代码 (含为测试增加的注入接缝); 不改生产代码就降不到阈值以下的测试保留超时, 不逐例请求批准.
 - 不对本仓库运行 `arw workflow init|update|verify|remove`; 它是 Workflow Distribution 的创作源, 各 Skill 中 `arw workflow verify` 的回退在本仓库不适用. Source Checkout 验证使用 Workflow Distribution 的生产检查, Repository Workflow 验证使用隔离的目标仓库.
 - 安装: `node install.mjs` (相关 issue 授权时从克隆安装), 卸载: 在安装目录运行 `node uninstall.mjs`.
