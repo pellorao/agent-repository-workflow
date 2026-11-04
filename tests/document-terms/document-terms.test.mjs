@@ -377,3 +377,18 @@ test('Document Terms Module 对绑定 candidate tree 忽略漂移 working tree',
     assert.equal(workingResult.status, 'failed');
     assert.equal(workingResult.contexts[0].diagnostics.some(({code}) => code === 'term-spelling-invalid'), true);
 });
+
+
+test('Document Terms excludes negated files inside excluded directories for working and candidate sources', async () => {
+    for (const source of /** @type {const} */ ([{kind: 'working-tree'}, {kind: 'candidate-tree', candidateTree: 'a'.repeat(40)}])) {
+        const {result} = await checkContents([
+            ['CONTEXT.md', validContext({avoid: ['Wrong Name']})],
+            ['.arwignore', 'docs/\n!docs/keep.md\n'],
+            ['README.md', '# Readme\n\nAmber Compass.\n'],
+            ['docs/keep.md', '# Kept\n\nWrong Name.\n'],
+            ['docs/other.md', '# Other\n\nWrong Name.\n'],
+        ], {mode: 'immediate', source});
+        assert.equal(result.status, 'passed', JSON.stringify(result.diagnostics));
+        assert.equal(result.contexts[0].summary.documents, 2);
+    }
+});

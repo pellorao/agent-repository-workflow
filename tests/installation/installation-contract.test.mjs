@@ -1,10 +1,12 @@
 import assert from 'node:assert/strict';
+import childProcess from 'node:child_process';
+import {syncBuiltinESMExports} from 'node:module';
 import {mkdir, readFile, writeFile} from 'node:fs/promises';
 import {dirname, join} from 'node:path';
 import test from 'node:test';
 
 import {createTemporaryDirectory} from '../helpers/cleanup.mjs';
-import {installFakeCommand} from '../helpers/process.mjs';
+import {installFakeCommand, runProcess} from '../helpers/process.mjs';
 import {createScopedFilesystem} from '../../lib/common/filesystem.mjs';
 import {
     applyPathOwnershipPlan,
@@ -203,4 +205,41 @@ test('Windows PATH registration keeps non-ASCII user PATH entries', async t => {
 
     assert.equal(applied.status, 'succeeded');
     assert.ok((await readFile(written, 'utf8')).includes(`=${userPath};${installationDirectory}\n`));
+});
+
+test('Windows PATH preflight reports PowerShell timeout before writing', async t => {
+    const original = childProcess.execFile;
+    let calls = 0;
+    childProcess.execFile = /** @type {typeof childProcess.execFile} */ (/** @type {unknown} */ ((/** @type {string} */ file, /** @type {string[]} */ _args, /** @type {{timeout: number}} */ options, /** @type {(error: Error) => void} */ callback) => {
+        calls += 1;
+        assert.equal(file, 'powershell.exe');
+        assert.equal(options.timeout, 60_000);
+        callback(Object.assign(new Error('Command failed: powershell.exe -NoProfile -Command <script>'), {killed: true, signal: 'SIGTERM'}));
+    }));
+    syncBuiltinESMExports();
+    t.after(() => { childProcess.execFile = original; syncBuiltinESMExports(); });
+    const {planPathRegistration: plan} = await import(new URL('../../lib/installation/installation-contract.mjs?timeout', import.meta.url).href);
+    const result = await plan({
+        installation: {directory: 'C:\\arw', exists: true, managed: false, manifest: null, pathKind: 'windows-user-path'},
+        registerPath: true,
+    });
+    assert.equal(result.status, 'failed');
+    if (result.status !== 'failed') assert.fail('Timeout must fail preflight.');
+    assert.equal(result.stage, 'path-observation');
+    assert.equal(result.diagnostics[0].message, 'PowerShell did not finish within 60 seconds.');
+    assert.equal(calls, 1);
+});
+
+test('Windows release guest check rejects missing Git before installation', async () => {
+    const result = await runProcess(process.execPath, ['--input-type=module', '-e', `
+        import assert from 'node:assert/strict';
+        import childProcess from 'node:child_process';
+        import {syncBuiltinESMExports} from 'node:module';
+        Object.defineProperty(process, 'platform', {value: 'win32'});
+        childProcess.spawnSync = () => ({status: 1, stdout: '', stderr: 'Git not found'});
+        syncBuiltinESMExports();
+        await assert.rejects(import(${JSON.stringify(new URL('../../scripts/release-guest-check.mjs', import.meta.url).href)}), /Git for Windows is required/);
+    `]);
+    assert.equal(result.status, 'exited');
+    if (result.status === 'exited') assert.equal(result.exitCode, 0, result.stderr);
 });

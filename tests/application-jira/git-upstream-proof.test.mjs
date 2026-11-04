@@ -15,10 +15,13 @@ const batchResult = entries => result(Buffer.concat(entries.flatMap(entry => [
 test('Git Upstream Proof fetches the current upstream and accepts an identical effort tree', async () => {
     /** @type {string[][]} */
     const calls = [];
+    /** @type {(number | undefined)[]} */
+    const timeouts = [];
     const proof = await proveUpstreamEffort({
         effortPath: '.scratch/payment-retry',
-        git: {run: async (/** @type {{argv: string[]}} */ input) => {
+        git: {run: async (/** @type {{argv: string[], timeoutMs?: number}} */ input) => {
             calls.push(input.argv);
+            timeouts.push(input.timeoutMs);
             if (input.argv.includes('@{upstream}')) return result('origin/dev\n');
             if (input.argv[0] === 'fetch') return result('');
             return result('same-tree\n');
@@ -30,6 +33,7 @@ test('Git Upstream Proof fetches the current upstream and accepts an identical e
         proof: {localTree: 'same-tree', upstream: 'origin/dev', upstreamTree: 'same-tree'},
         status: 'succeeded',
     });
+    assert.deepEqual(timeouts, [undefined, 600_000, undefined, undefined]);
     assert.deepEqual(calls, [
         ['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{upstream}'],
         ['fetch'],

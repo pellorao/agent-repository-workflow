@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {mkdir, readFile, readdir, rm, writeFile} from 'node:fs/promises';
+import {mkdir, readFile, readdir, rm, symlink, writeFile} from 'node:fs/promises';
 import {dirname, join} from 'node:path';
 import test from 'node:test';
 
@@ -243,7 +243,7 @@ test('verify checks configured Code Map coverage', async t => {
 test('dual-platform init migrates meaningful CLAUDE.md content into AGENTS.md in the same plan', async t => {
     const distribution = await createDistribution(t);
     const root = await createRepositoryWithMockGit(t);
-    await writeFile(join(root, 'CLAUDE.md'), 'Local Claude instructions.\n', 'utf8');
+    await writeFile(join(root, 'CLAUDE.md'), '@AGENTS.md\nLocal Claude instructions.\n', 'utf8');
     await git(root, ['add', 'CLAUDE.md']);
     await git(root, ['commit', '--quiet', '-m', 'local claude instructions']);
 
@@ -251,6 +251,7 @@ test('dual-platform init migrates meaningful CLAUDE.md content into AGENTS.md in
     assert.equal(initialized.applied, true, JSON.stringify(initialized.diagnostics));
     assert.equal(await readFile(join(root, 'CLAUDE.md'), 'utf8'), '@AGENTS.md\n');
     assert.match(await readFile(join(root, 'AGENTS.md'), 'utf8'), /Local Claude instructions\./u);
+    assert.doesNotMatch(await readFile(join(root, 'AGENTS.md'), 'utf8'), /^@AGENTS\.md$/mu);
     const lock = parseWorkflowLock(await readFile(join(root, 'arw-lock.json'), 'utf8'));
     assert.deepEqual(lock.profile.platforms, ['claude-code', 'codex']);
     assert.deepEqual(lock.managedTargets.find(record => record.path === 'AGENTS.md')?.platforms, ['claude-code', 'codex']);
@@ -954,4 +955,20 @@ test('Codex invalid configuration blocks all writes while Claude-only ignores it
     const claude = await initWorkflow({distribution, repositoryRoot: root, platforms: ['claude-code']});
     assert.equal(claude.applied, true, JSON.stringify(claude.diagnostics));
     assert.equal(claude.plan?.operations.some(operation => operation.path === '.codex/config.toml'), false);
+});
+
+
+test('workflow ignores a tracked CLAUDE.md link outside Code Map roots and rejects linked write targets', {skip: process.platform === 'win32'}, async t => {
+    const distribution = await createDistribution(t);
+    const root = await createRepositoryWithMockGit(t);
+    await symlink('AGENTS.md', join(root, 'CLAUDE.md'));
+    await git(root, ['add', 'CLAUDE.md']);
+    await git(root, ['commit', '--quiet', '-m', 'claude link']);
+    const filesystem = createNodeRepositoryFilesystem(root);
+    assert.deepEqual(await filesystem.inspectPath({path: 'CLAUDE.md'}), {kind: 'symbolic-link', path: 'CLAUDE.md'});
+    const initialized = await initWorkflow({distribution, repositoryRoot: root});
+    assert.equal(initialized.applied, true, JSON.stringify(initialized.diagnostics));
+    const verified = await runRepositoryWorkflow({distribution, operation: 'verify', repositoryRoot: root});
+    assert.equal(verified.satisfied, true, JSON.stringify(verified.diagnostics));
+    await assert.rejects(filesystem.replaceFileAtomically({phase: 4, path: 'CLAUDE.md', bytes: Buffer.from('unsafe\n')}));
 });

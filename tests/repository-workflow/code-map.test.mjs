@@ -249,3 +249,26 @@ test('Code Map 验证在当前主机拒绝已配置的符号链接根目录', as
     assert.ok(result.diagnostics.some(entry => entry.code === 'invalid-code-map-root' && entry.path === 'linked'));
     await assert.rejects(readFile(join(root, 'linked', 'README.md')));
 });
+
+
+test('coverage observes Git paths only within configured roots, including root dot', async () => {
+    for (const roots of [[], ['src'], ['.']]) {
+        /** @type {string[]} */
+        const observed = [];
+        const visible = ['CLAUDE.md', 'src/a.js', 'src-other/a.js'];
+        const coverage = await inspectCodeMapCoverage({
+            filesystem: {
+                inspectPath: async ({path}) => {
+                    observed.push(path);
+                    return {kind: roots.includes(path) ? 'directory' : path === 'CLAUDE.md' ? 'symbolic-link' : 'file', path};
+                },
+                listDirectory: async () => [], readBytes: async () => Buffer.alloc(0), readFrontmatterBytes: async () => Buffer.alloc(0),
+            },
+            policyAvailable: false, profile: {roots, includes: roots.length === 0 ? [] : ['**/*'], excludes: []},
+            repositoryState: {git: {gitVisiblePaths: visible, agentScopeExcludedPaths: []}},
+        });
+        const expected = roots.length === 0 ? [] : roots[0] === '.' ? visible : ['src/a.js'];
+        assert.deepEqual(coverage.gitVisibleEntries.map(entry => entry.path), expected);
+        assert.deepEqual(observed.filter(path => visible.includes(path)), expected);
+    }
+});

@@ -73,6 +73,7 @@ else if (command === 'score' && args.length === 2) {
 else if (command === 'baseline' && args.length === 1) result = await baseline({unit: args[0]});
 else if (command === 'summary' && args.length === 0) result = await summary({cells, compare, markdown: flags.markdown});
 else if (command === 'pool' && action === 'build' && args.length >= 4) {
+    if (values.limit !== undefined && (!Number.isSafeInteger(Number(values.limit)) || Number(values.limit) <= 0)) usage('--limit must be a positive integer.');
     result = await pool({action, candidates: args.slice(3), decisions: lists.decisions, limit: values.limit === undefined ? undefined : Number(values.limit), name: args[2], root: args[1], scenario: args[0]});
 } else if (command === 'pool' && action === 'view' && args.length === 3) result = await poolView({name: args[1], root: args[0], scenario: args[2]});
 else if (command === 'pool' && action === 'prompt' && args.length === 2) result = await pool({action, name: args[1], root: args[0]});

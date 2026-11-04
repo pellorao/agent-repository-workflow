@@ -915,6 +915,7 @@ test('installed uninstall command executes through the real CLI entry point', as
             'lib/background-agent/recovery-state.mjs',
             'lib/background-agent/sqlite.mjs',
             'lib/background-agent/state-store.mjs',
+            'lib/common/cli-prompt.mjs',
             'lib/common/filesystem.mjs',
             'lib/common/json.mjs',
             'lib/common/process-warnings.mjs',
@@ -943,6 +944,7 @@ test('installed uninstall command executes through the real CLI entry point', as
     await copyFile(join(SOURCE_DIRECTORY, 'lib', 'background-agent', 'sqlite.mjs'), join(installationDirectory, 'lib', 'background-agent', 'sqlite.mjs'));
     await copyFile(join(SOURCE_DIRECTORY, 'lib', 'background-agent', 'state-store.mjs'), join(installationDirectory, 'lib', 'background-agent', 'state-store.mjs'));
     await mkdir(join(installationDirectory, 'lib', 'common'), {recursive: true});
+    await copyFile(join(SOURCE_DIRECTORY, 'lib', 'common', 'cli-prompt.mjs'), join(installationDirectory, 'lib', 'common', 'cli-prompt.mjs'));
     await copyFile(join(SOURCE_DIRECTORY, 'lib', 'common', 'filesystem.mjs'), join(installationDirectory, 'lib', 'common', 'filesystem.mjs'));
     await copyFile(join(SOURCE_DIRECTORY, 'lib', 'common', 'json.mjs'), join(installationDirectory, 'lib', 'common', 'json.mjs'));
     await copyFile(join(SOURCE_DIRECTORY, 'lib', 'common', 'process-warnings.mjs'), join(installationDirectory, 'lib', 'common', 'process-warnings.mjs'));

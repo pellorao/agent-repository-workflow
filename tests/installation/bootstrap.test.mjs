@@ -1,4 +1,7 @@
 import assert from 'node:assert/strict';
+import childProcess from 'node:child_process';
+import {EventEmitter} from 'node:events';
+import {syncBuiltinESMExports} from 'node:module';
 import {access, copyFile, mkdir, mkdtemp, readFile, rm, writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {dirname, join} from 'node:path';
@@ -238,4 +241,41 @@ test('Bootstrap artifact projects the canonical remote from Release configuratio
     assert.match(first, /https:\/\/example\.invalid\/team\/arw\.git/u);
     assert.doesNotMatch(first, /release-validation-config\.mjs/u);
     assert.notEqual(first, second);
+});
+
+
+test('bootstrap bounds downloads and launches the installer with the active Node executable', async t => {
+    /** @type {Array<{file: string, args: string[]}>} */
+    const launched = [];
+    const start = t.mock.method(childProcess, 'spawn', (/** @type {string} */ file, /** @type {string[]} */ args) => {
+        launched.push({file, args});
+        const child = new EventEmitter();
+        queueMicrotask(() => child.emit('close', 0, null));
+        return child;
+    });
+    syncBuiltinESMExports();
+    t.after(() => { start.mock.restore(); syncBuiltinESMExports(); });
+    let aborted = false;
+    t.mock.method(globalThis, 'fetch', async (/** @type {string} */ _url, /** @type {{signal: AbortSignal}} */ options) => {
+        assert.ok(options.signal instanceof AbortSignal);
+        if (aborted) {
+            options.signal.throwIfAborted();
+            assert.fail('The timeout signal must be aborted.');
+        }
+        return new Response('archive');
+    });
+    const options = {
+        createTemporaryDirectory: async () => 'unused', extractArchive: async () => {},
+        loadReleaseConfiguration: async () => RELEASE_CONFIGURATION, removeTemporaryDirectory: async () => {},
+    };
+    assert.equal(await runBootstrap(['--version', '0.2.0'], options), 0);
+    assert.equal(launched[0].file, process.execPath);
+    assert.ok(launched[0].args.includes('--release-tag'));
+    aborted = true;
+    t.mock.method(AbortSignal, 'timeout', (/** @type {number} */ milliseconds) => {
+        assert.equal(milliseconds, 60_000);
+        return AbortSignal.abort(new DOMException('Download timed out.', 'TimeoutError'));
+    });
+    await assert.rejects(runBootstrap(['--version', '0.2.0'], options), {name: 'TimeoutError'});
+    assert.equal(launched.length, 1);
 });

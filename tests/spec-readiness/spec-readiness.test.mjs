@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
 import {createHash, randomUUID} from 'node:crypto';
-import {mkdir, readFile, readdir, writeFile} from 'node:fs/promises';
+import {mkdir, readFile, readdir, unlink, writeFile} from 'node:fs/promises';
 import {dirname, join} from 'node:path';
 import test from 'node:test';
 
+import {runGit} from '../helpers/git.mjs';
 import {createTemporaryDirectory} from '../helpers/cleanup.mjs';
 import {createRepository as createGitRepository} from '../helpers/repository-fixture.mjs';
 import {
@@ -756,4 +757,16 @@ test('prepare rejects Agent instructions and platform Agent configurations under
             {filePath, role: 'domain-context'},
         ]}), /cannot be an Agent instruction or platform Agent configuration/i);
     }
+});
+
+
+test('prepare skips tracked instructions deleted only in the working tree', async t => {
+    const repositoryRoot = await createRepository(t);
+    await writeFile(join(repositoryRoot, 'AGENTS.md'), '# Instructions\n');
+    await runGit(repositoryRoot, ['add', 'AGENTS.md', 'docs/agents/reviewer.md']);
+    await unlink(join(repositoryRoot, 'AGENTS.md'));
+    const prepared = await prepare(repositoryRoot);
+    const round = dirname(dirname(prepared.draftPath));
+    await assert.rejects(readFile(join(round, 'rules', 'AGENTS.md')), {code: 'ENOENT'});
+    assert.equal(await readFile(join(round, 'rules', 'docs/agents/reviewer.md'), 'utf8'), '# Reviewer rules\n');
 });

@@ -252,3 +252,12 @@ test('Text Policy Module 批量收集不同规模的 Git-visible inventory', asy
     assert.deepEqual(await runCase(1), {checked: 1, gitCalls: 2});
     assert.deepEqual(await runCase(40), {checked: 40, gitCalls: 2});
 });
+
+
+test('scope negation cannot reinclude a file below an excluded directory', () => {
+    const paths = ['docs/keep.md', 'docs/other.md', 'nested/docs/keep.md', 'keep.md', 'other.md'];
+    assert.deepEqual(filterAgentManagedPaths(paths, 'docs/\n!docs/keep.md\n!nested/docs/keep.md\n'), ['keep.md', 'other.md']);
+    assert.deepEqual(filterAgentManagedPaths(['keep.md', 'other.md'], '*.md\n!keep.md\n'), ['keep.md']);
+    assert.deepEqual(filterAgentManagedPaths(['docs/keep.md'], 'docs/*\n!docs/keep.md\n'), ['docs/keep.md']);
+    assert.deepEqual(filterAgentManagedPaths(['docs/sub/keep.md'], 'docs/*\n!docs/sub/keep.md\n'), []);
+});

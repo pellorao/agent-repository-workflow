@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import fsPromises from 'node:fs/promises';
+import {syncBuiltinESMExports} from 'node:module';
 import {mkdir, readFile, rm, writeFile} from 'node:fs/promises';
 import {join} from 'node:path';
 import test from 'node:test';
@@ -179,6 +181,18 @@ test('pools: prompt checks adj, split gives the review lists, override and ancho
     assert.match((await pool({action: 'split', decisions: join(root, 'right.json'), name: 'p', root})).diagnostics[0], /current brief/u);
 
     const override = (/** @type {any} */ input) => pool({action: 'override', id: 'c-real one', name: 'p', reason: 'checked', root, ...input});
+    const storePath = join(root, 'p', 'decisions.json');
+    const originalStore = await readFile(storePath, 'utf8');
+    const rename = t.mock.method(fsPromises, 'rename', async () => { throw Object.assign(new Error('rename denied'), {code: 'EACCES'}); });
+    syncBuiltinESMExports();
+    try {
+        const interrupted = await override({decision: 'not-matched', by: 'me'});
+        assert.equal(interrupted.status, 'blocked');
+        assert.equal(await readFile(storePath, 'utf8'), originalStore);
+    } finally {
+        rename.mock.restore();
+        syncBuiltinESMExports();
+    }
     assert.equal((await override({decision: 'not-matched', by: 'me'})).entry.source, 'override (me)');
     for (const input of [{decision: 'unsupported'}, {decision: 'maybe'}, {decision: 'matched', reason: ' '}, {id: 'c-gone', decision: 'matched'}]) assert.equal((await override(input)).status, 'blocked');
     const store = JSON.parse(await readFile(join(root, 'p', 'decisions.json'), 'utf8'));

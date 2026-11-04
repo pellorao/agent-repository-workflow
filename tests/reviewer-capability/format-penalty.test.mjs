@@ -101,6 +101,11 @@ test('repair fixes a short path and a preamble on a copy, and the format penalty
     assert.deepEqual([repaired.status, Object.keys(repaired.changes).sort()], ['succeeded', ['markdown-preamble', 'short-evidence-path']]);
     assert.equal(await readFile(join(root, 'repaired.md'), 'utf8'), '- `src/a.mjs:3` default export.\n');
     assert.equal((await repair({out: join(root, 'repaired.md'), report: original, scenario: directory})).status, 'blocked');
+    const changesOnly = join(root, 'changes-only.md');
+    await writeFile(`${changesOnly}.changes.json`, 'existing evidence');
+    assert.equal((await repair({out: changesOnly, report: original, scenario: directory})).status, 'blocked');
+    assert.equal(await readFile(`${changesOnly}.changes.json`, 'utf8'), 'existing evidence');
+    await assert.rejects(readFile(changesOnly), {code: 'ENOENT'});
     const result = await matched({directory, root, run}, '- `src/a.mjs:3` default export.\n', {noRepair: false, repair: repaired.record, report: join(root, 'repaired.md')});
     assert.deepEqual(result.diagnostics, []);
     assert.deepEqual([result.scores.rRepairable, result.scores.r, result.scores.T], [2, 2, 1]);

@@ -1,16 +1,11 @@
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
-import {mkdir, symlink, writeFile} from 'node:fs/promises';
-import {join} from 'node:path';
 import test from 'node:test';
 
-import {createTemporaryDirectory} from '../helpers/cleanup.mjs';
 import {serializeCanonicalJson} from '../../lib/common/canonical-contract.mjs';
 import {
     createWorkflowLock,
     parseWorkflowLock,
-    planManagedContentRemoval,
-    selectRemovableManagedContent,
     serializeWorkflowLock,
     verifyManagedContent,
 } from '../../lib/repository-workflow/workflow-lock.mjs';
@@ -114,14 +109,14 @@ test('rejects unknown schemas, unsafe targets, and ambiguous legacy paths', () =
     assert.throws(() => serializeWorkflowLock(lock), /normalized Repository-relative path/);
 });
 
-test('verifies managed files and only the managed span of baseline-major documents', async t => {
-    const root = await createTemporaryDirectory(t, 'arw-lock-v2-');
-    await mkdir(join(root, 'docs'), {recursive: true});
+test('verifies managed files and only the managed span of baseline-major documents', async () => {
     const managedFile = Buffer.from('managed file\n', 'utf8');
     const managedSpan = '<!-- arw:managed:start -->\nmanaged\n<!-- arw:managed:end -->';
     const document = `${managedSpan}\n<!-- arw:repository-owned:start -->\ncustom\n<!-- arw:repository-owned:end -->\n`;
-    await writeFile(join(root, 'managed.md'), managedFile);
-    await writeFile(join(root, 'docs', 'mixed.md'), document, 'utf8');
+    const repositoryState = {files: {
+        'managed.md': {bytes: managedFile, observed: {kind: 'file'}},
+        'docs/mixed.md': {bytes: Buffer.from(document), observed: {kind: 'file'}},
+    }};
 
     const lock = createLock();
     lock.managedTargets = [
@@ -142,59 +137,12 @@ test('verifies managed files and only the managed span of baseline-major documen
         },
     ];
 
-    assert.deepEqual(await verifyManagedContent({lock, repositoryRoot: root}), {diagnostics: [], satisfied: true});
-    await writeFile(join(root, 'docs', 'mixed.md'), document.replace('custom', 'changed by repository'), 'utf8');
-    assert.deepEqual(await verifyManagedContent({lock, repositoryRoot: root}), {diagnostics: [], satisfied: true});
+    assert.deepEqual(await verifyManagedContent({lock, repositoryState}), {diagnostics: [], satisfied: true});
+    repositoryState.files['docs/mixed.md'].bytes = Buffer.from(document.replace('custom', 'changed by repository'));
+    assert.deepEqual(await verifyManagedContent({lock, repositoryState}), {diagnostics: [], satisfied: true});
 
-    await writeFile(join(root, 'managed.md'), 'drift\n', 'utf8');
-    const drifted = await verifyManagedContent({lock, repositoryRoot: root});
+    repositoryState.files['managed.md'].bytes = Buffer.from('drift\n');
+    const drifted = await verifyManagedContent({lock, repositoryState});
     assert.equal(drifted.satisfied, false);
     assert.deepEqual(drifted.diagnostics, [{code: 'managed-content-drift', path: 'managed.md'}]);
-});
-
-test('managed verification rejects a linked parent without reading its external target', async t => {
-    const root = await createTemporaryDirectory(t, 'arw-lock-linked-root-');
-    const outside = await createTemporaryDirectory(t, 'arw-lock-linked-outside-');
-    const bytes = Buffer.from('external bytes\n', 'utf8');
-    await writeFile(join(outside, 'managed.md'), bytes);
-    await symlink(outside, join(root, 'linked'), 'junction');
-
-    const lock = createLock();
-    lock.managedTargets = [{
-        hash: sha256(bytes),
-        kind: 'file',
-        ownership: 'managed',
-        path: 'linked/managed.md',
-        platforms: ['codex'],
-    }];
-
-    const result = await verifyManagedContent({lock, repositoryRoot: root});
-    assert.equal(result.satisfied, false);
-    assert.deepEqual(result.diagnostics, [{
-        code: 'filesystem-link-unsupported',
-        message: 'Symbolic links and directory junctions are not supported.',
-        path: 'linked/managed.md',
-    }]);
-});
-
-test('selects removal only after every contributing platform is removed', async t => {
-    const root = await createTemporaryDirectory(t, 'arw-lock-remove-v2-');
-    const bytes = Buffer.from('shared\n', 'utf8');
-    await writeFile(join(root, 'shared.md'), bytes);
-    const record = {
-        hash: sha256(bytes),
-        kind: 'file',
-        ownership: 'managed',
-        path: 'shared.md',
-        platforms: ['claude-code', 'codex'],
-    };
-    const lock = createWorkflowLock({
-        managedTargets: [record],
-        profile: {...profile, platforms: ['claude-code', 'codex']},
-        repositoryOwnedSeeds: [],
-    });
-
-    assert.deepEqual(selectRemovableManagedContent({managedTargets: [record], remainingPlatforms: ['codex']}), []);
-    const ready = await planManagedContentRemoval({lock, remainingPlatforms: [], repositoryRoot: root});
-    assert.deepEqual(ready, {diagnostics: [], removable: lock.managedTargets, satisfied: true});
 });

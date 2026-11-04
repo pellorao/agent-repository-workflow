@@ -4,6 +4,8 @@ import {join} from 'node:path';
 import test from 'node:test';
 
 import {createRepository, createRepositoryWithMockGit, run} from '../helpers/arw-cli.mjs';
+import {runProcess} from '../helpers/process.mjs';
+import {createRepository as createGitRepository} from '../helpers/repository-fixture.mjs';
 import {runArw} from '../../arw.mjs';
 import {parseCommand, UsageError} from '../../lib/arw.mjs';
 import {createNodeRepositoryFilesystem} from '../../lib/repository-workflow/workflow.mjs';
@@ -374,4 +376,20 @@ test('workflow remove lists directories it could not remove on stdout after all 
         {channel: 'stdout', message: '- docs/agents'},
     ]);
     assert.ok(removed.events.every(event => event.channel === 'stdout'));
+});
+
+
+test('interactive workflow init consumes a complete piped answer sequence on both platforms', async t => {
+    for (const platform of ['codex', 'claude-code']) {
+        const root = await createGitRepository(t, {initialCommit: true, prefix: 'arw-piped-workflow-'});
+        const result = await runProcess(process.execPath, [join(import.meta.dirname, '../../arw.mjs'), 'workflow', 'init'], {
+            cwd: root, input: `${platform}\nsingle-context\n\nyes\n`, timeout: 10_000,
+        });
+        assert.equal(result.status, 'exited');
+        if (result.status !== 'exited') continue;
+        assert.equal(result.exitCode, 0, result.stderr + result.stdout);
+        assert.deepEqual(JSON.parse(await readFile(join(root, 'arw-lock.json'), 'utf8')).profile.platforms, [platform]);
+        assert.match(result.stdout, /Select platforms/u);
+        assert.match(result.stdout, /Select domain-documentation layout/u);
+    }
 });

@@ -82,6 +82,7 @@
     "lib/background-agent/usage.mjs",
     "lib/commit-audit/commit-audit.mjs",
     "lib/common/canonical-contract.mjs",
+    "lib/common/cli-prompt.mjs",
     "lib/common/codex-home.mjs",
     "lib/common/configuration-conversion.mjs",
     "lib/common/diagnostics.mjs",

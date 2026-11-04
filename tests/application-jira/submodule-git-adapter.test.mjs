@@ -62,3 +62,18 @@ test('Submodule Git Adapter distinguishes missing references and all remote rela
         });
     }
 });
+
+
+test('Submodule fetch alone uses the extended network timeout', async () => {
+    /** @type {Array<{argv: string[], timeoutMs?: number}>} */
+    const calls = [];
+    const adapter = createSubmoduleGitAdapter({git: {run: async request => {
+        calls.push(request);
+        return {code: 0, failure: null, stdout: Buffer.from('dev\n'), stderr: ''};
+    }}});
+    assert.equal((await adapter.fetch(input)).status, 'succeeded');
+    await adapter.inspectConvergence(input);
+    assert.equal(calls[0].timeoutMs, 600_000);
+    assert.ok(calls.length > 1);
+    assert.ok(calls.slice(1).every(call => call.timeoutMs === undefined));
+});

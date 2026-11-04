@@ -14,7 +14,9 @@ const WINDOWS = process.platform === 'win32';
 const INSTALLATION = join(homedir(), '.agent-repository-workflow');
 const NODE_DIRECTORY = dirname(process.execPath);
 // Git for Windows 的安装根目录 (`<root>\cmd\git.exe`), 提供 GNU tar 与 bash.
-const GIT_ROOT = WINDOWS ? dirname(dirname(spawnSync('where', ['git'], {encoding: 'utf8'}).stdout.split(/\r?\n/u)[0])) : '';
+const gitLocation = WINDOWS ? spawnSync('where', ['git'], {encoding: 'utf8'}) : null;
+if (gitLocation !== null && (gitLocation.status !== 0 || !gitLocation.stdout?.trim())) throw new Error('Git for Windows is required for the release guest check.');
+const GIT_ROOT = gitLocation === null ? '' : dirname(dirname(gitLocation.stdout.split(/\r?\n/u)[0]));
 /** @param {string} path 候选 checkout 的 lib 下的模块 */
 const importLib = path => import(pathToFileURL(join(ROOT, 'lib', path)).href);
 const VERSION = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8')).version;

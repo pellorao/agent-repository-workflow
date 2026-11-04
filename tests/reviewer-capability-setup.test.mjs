@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {mkdir, readFile, writeFile} from 'node:fs/promises';
+import {access, mkdir, readFile, writeFile} from 'node:fs/promises';
 import {join} from 'node:path';
 import test from 'node:test';
 
@@ -59,4 +59,35 @@ test('the entry parses the repeatable options and the cell lists', async () => {
     const [noCells, missingCell] = await Promise.all([run('summary', '--markdown'), run('summary', '--cell')]);
     assert.deepEqual([noCells.exitCode, JSON.parse(noCells.stdout).status], [1, 'blocked']);
     assert.equal(missingCell.exitCode, 2);
+});
+
+
+test('setup ignores signing and removes a failed scenario target', async t => {
+    const root = await createTemporaryDirectory(t, 'arw-capability-settings-');
+    const scenario = join(root, 'code-standards-reviewer', 'demo');
+    await mkdir(join(scenario, 'base'), {recursive: true});
+    await writeFile(join(scenario, 'expected.json'), '{}');
+    const config = join(root, 'gitconfig');
+    await writeFile(config, '[commit]\n    gpgsign = true\n[gpg]\n    program = missing-signing-program\n[core]\n    hooksPath = missing-hooks\n');
+    const built = await runProcess(process.execPath, [ENTRY, 'setup', scenario, join(root, 'signed')], {env: {...process.env, GIT_CONFIG_GLOBAL: config}});
+    assert.equal(built.status, 'exited');
+    if (built.status !== 'exited') return;
+    assert.equal(built.exitCode, 0, built.stderr);
+    const target = join(root, 'failed');
+    const failed = await runProcess(process.execPath, [ENTRY, 'setup', scenario, target], {env: {...process.env, GIT_AUTHOR_DATE: 'not-a-date'}});
+    assert.equal(failed.status, 'exited');
+    if (failed.status !== 'exited') return;
+    assert.equal(JSON.parse(failed.stdout).stage, 'scenario-build');
+    assert.match(failed.stderr, /invalid date/u);
+    await assert.rejects(access(target), {code: 'ENOENT'});
+});
+
+test('pool build rejects non-positive, fractional and nonnumeric limits as usage errors', async () => {
+    for (const limit of ['0', '-1', '1.5', 'abc']) {
+        const result = await runProcess(process.execPath, [ENTRY, 'pool', 'build', 'scenario', 'root', 'pool', 'candidates', '--limit', limit]);
+        assert.equal(result.status, 'exited');
+        if (result.status !== 'exited') continue;
+        assert.equal(result.exitCode, 2);
+        assert.match(result.stderr, /--limit must be a positive integer/u);
+    }
 });

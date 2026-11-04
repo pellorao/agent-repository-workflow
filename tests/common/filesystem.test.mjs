@@ -300,3 +300,17 @@ test('Filesystem replacement does not retry on other platforms or for other erro
         assert.deepEqual(delays, [], `${platform} ${code}`);
     }
 });
+
+
+test('Filesystem replacement preserves existing permissions unless fileMode is explicit', {skip: process.platform === 'win32'}, async t => {
+    const root = await createTemporaryDirectory(t, 'arw-filesystem-mode-');
+    await writeFile(join(root, 'run.sh'), '#!/bin/sh\n', {mode: 0o755});
+    const created = await createScopedFilesystem({root});
+    assert.equal(created.status, 'succeeded');
+    if (created.status !== 'succeeded') return;
+    for (const [fileMode, expected] of [[undefined, 0o755], [0o640, 0o640]]) {
+        const written = await created.scopedFilesystem.write({bytes: Buffer.from('updated\n'), fileMode, mode: 'replace', path: 'run.sh'});
+        assert.equal(written.status, 'succeeded');
+        assert.equal((await stat(join(root, 'run.sh'))).mode & 0o777, expected);
+    }
+});

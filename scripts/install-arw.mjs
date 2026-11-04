@@ -85,7 +85,7 @@ const parseBootstrapArguments = args => {
 
 /** @param {string} url @returns {Promise<Buffer>} */
 const download = async url => {
-    const response = await fetch(url);
+    const response = await fetch(url, {signal: AbortSignal.timeout(60_000)});
     if (!response.ok) throw new Error(`Download failed: ${url} returned HTTP ${response.status}.`);
     return Buffer.from(await response.arrayBuffer());
 };
@@ -103,7 +103,7 @@ const extractArchive = async (bytes, directory) => {
 
 /** @param {InstallerLaunchInput} input @returns {Promise<number>} */
 const launchInstaller = ({arguments: installerArguments, directory, tag}) => new Promise((resolve, reject) => {
-    const child = spawn('node', [
+    const child = spawn(process.execPath, [
         '--import',
         INSTALLER_RUNTIME_HANDOFF,
         join(directory, 'install.mjs'),
