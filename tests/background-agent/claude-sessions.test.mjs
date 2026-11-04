@@ -90,6 +90,30 @@ test('a Claude turn runs one restricted stream-json process and later turns resu
     await assert.rejects(restored.steer({threadId, turnId, instruction: 'More.'}), /turn has ended/);
 });
 
+test('a session record in the shortened project directory of a long working directory is resumed', async t => {
+    const f = await fixture(t);
+    const cwd = join(f.directory, 'w'.repeat(220));
+    await mkdir(cwd);
+    const name = cwd.replace(/[^A-Za-z0-9]/g, '-');
+    const threadId = '11111111-2222-4333-8444-555555555555';
+    const recorded = join(f.directory, 'projects', `${name.slice(0, 200)}-x7k2p9`, `${threadId}.jsonl`);
+    const session = await f.sessions.open({settings: {...settings, programDirectory: f.directory}, role: 'generic', cwd, readPaths: [], writePaths: [], runId: 'run-1', onNotification: () => {}});
+    // Without a project directory the computed path stands.
+    assert.ok(String((await session.start({instructions: 'General rules.'})).sessionPath).startsWith(join(f.directory, 'projects', name)));
+    await mkdir(dirname(recorded), {recursive: true});
+    await writeFile(recorded, '');
+    assert.deepEqual(await session.resume({threadId, expectedSessionPath: null, instructions: 'General rules.'}), {threadId, sessionPath: recorded});
+    await session.startTurn({threadId, handoff: 'Continue.'});
+    while ((await session.snapshot({rootThreadId: threadId})).members[0].state !== 'idle') await new Promise(resolve => setTimeout(resolve, 5));
+    const [started] = await f.calls();
+    assert.equal(started.args[started.args.indexOf('--resume') + 1], threadId);
+    assert.ok(!started.args.includes('--session-id'));
+    // A restore expects the path recorded before the first turn.
+    const expected = join(f.directory, 'projects', name, `${threadId}.jsonl`);
+    assert.equal((await (await f.sessions.open({settings: {...settings, programDirectory: f.directory}, role: 'generic', cwd, readPaths: [], writePaths: [], runId: 'run-2',
+        onNotification: () => {}})).resume({threadId, expectedSessionPath: expected, instructions: 'General rules.'})).sessionPath, expected);
+});
+
 test('a running Claude turn takes instructions and pending permission requests through stdio', async t => {
     const f = await fixture(t, {FAKE_CLAUDE_MODE: 'ask'});
     const session = await f.open('generic');

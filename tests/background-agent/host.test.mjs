@@ -29,9 +29,10 @@ const failed = response => {
     return response.error;
 };
 
-/** @returns {{scripted: ReturnType<typeof createScriptedReviewerSessions>, nativeSessions: NativeSessions}} */
+/** @returns {{scripted: ReturnType<typeof createScriptedReviewerSessions>, nativeSessions: NativeSessions, control: {failSnapshots: boolean}}} */
 const scriptedNativeSessions = () => {
     const scripted = createScriptedReviewerSessions();
+    const control = {failSnapshots: false};
     let nextItem = 0;
     let serverRunning = false;
     const nativeSessions = /** @type {NativeSessions} */ ({
@@ -59,15 +60,16 @@ const scriptedNativeSessions = () => {
                         record(request.threadId, result.turnId, request.instruction);
                         return {turnId: result.turnId};
                     };
-                    if (property === 'snapshot') return async (/** @type {Parameters<typeof target.snapshot>[0]} */ request) => ({
-                        ...await target.snapshot(request), userMessages: [...userMessages],
-                    });
+                    if (property === 'snapshot') return async (/** @type {Parameters<typeof target.snapshot>[0]} */ request) => {
+                        if (control.failSnapshots) throw new Error('Injected native snapshot failure.');
+                        return {...await target.snapshot(request), userMessages: [...userMessages]};
+                    };
                     return Reflect.get(target, property, receiver);
                 },
             }));
         },
     });
-    return {scripted, nativeSessions};
+    return {scripted, nativeSessions, control};
 };
 
 /** @param {string} repositoryRoot @param {string} taskName */
@@ -102,7 +104,7 @@ const fixture = async (t, providers, createStrataDriver, engineOptions = {}) => 
         reviewEditor: {command: 'code', args: ['{file}']}, jira: {listLimit: 50},
         ...engineOptions,
     }));
-    const {scripted, nativeSessions} = scriptedNativeSessions();
+    const {scripted, nativeSessions, control} = scriptedNativeSessions();
     const modelCatalog = providers === undefined ? undefined : {
         async prepare() {return join(directory, 'models.json');},
         async getProviders() {return structuredClone(providers);},
@@ -118,7 +120,7 @@ const fixture = async (t, providers, createStrataDriver, engineOptions = {}) => 
         instructions: 'Complete Reviewer rules.', handoff: 'Review the prepared evidence.',
         cwd: repositoryRoot, writePaths: [reportDirectory], reportPath, stateDirectory};
     return {directory, repositoryRoot, installationDirectory, programDirectory, reportDirectory, reportPath, stateDirectory,
-        host, scripted, nativeSessions, dispatch, handoff};
+        host, scripted, nativeSessions, control, dispatch, handoff};
 };
 
 /** @param {Record<string,unknown>} result */
@@ -392,6 +394,37 @@ test('Host accepts Reviewer work asynchronously and delivers its messages throug
     assert.ok(Array.isArray(overview.agents));
     assert.equal(overview.agents.length, 1);
     assert.equal(overview.agents[0].cwd, f.repositoryRoot);
+});
+
+test('a failed run check before emitting a wait response is emitted with its code and still marks the messages delivered', async t => {
+    const f = await fixture(t);
+    const runId = String(succeeded(await f.dispatch('spawn_agent', f.handoff)).runId);
+    await f.host.manager.owned(runId, 'main-session', 'main-session').work;
+    const active = succeeded(await f.dispatch('list_agents', {runId}));
+    const notice = succeeded(await f.dispatch('send_message', {runId, message: 'Checking the bound evidence.'}, String(active.threadId)));
+    const execute = f.host.manager.execute;
+    f.host.manager.execute = request => {
+        // The first check has passed, so the check before emitting fails.
+        if (request.operation === 'wait_agent') f.control.failSnapshots = true;
+        return execute(request);
+    };
+    /** @type {unknown[]} */ const emitted = [];
+    const response = await f.dispatch('wait_agent', {runId, cursor: active.cursor}, 'main-session', async value => {emitted.push(value);});
+    assert.deepEqual(emitted, [response]);
+    assert.notEqual(failed(response).code, 'background-agent-operation-failed');
+    const page = succeeded(await f.dispatch('messages', {runId, direction: 'agent-to-main'}));
+    assert.ok(Array.isArray(page.messages));
+    assert.equal(page.messages.find(item => item.messageId === notice.messageId).deliveryStatus, 'delivered');
+});
+
+test('resuming a paused Reviewer requires an absolute launching repository root', async t => {
+    const f = await earlyExitFixture(t);
+    await finishEarly(f, t);
+    await finishEarly(f, t);
+    assert.equal((await pauseNotices(f)).length, 1);
+    const relative = await f.host.dispatch({ownerId: 'main-session', caller: {repositoryRoot: 'relative/repository', programDirectory: f.programDirectory},
+        operation: 'send_message', input: {runId: f.runId, message: 'Additional evidence is available.'}});
+    assert.match(String(failed(relative).message), /requires its launching Git repository/u);
 });
 
 test('Reviewer pre-turn rejection ends accepted delivery and permits safe maintenance', async t => {

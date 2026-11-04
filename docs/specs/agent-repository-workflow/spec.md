@@ -406,7 +406,7 @@ Reviewer 专属层只在 Reviewer 根线程的原生配置中强制 `agents.enab
 `arw spec-readiness prepare` 和 `arw commit-audit prepare` 每次新建一个审核轮目录, 写入本轮全部 Reviewer 交接材料, Main Agent 只运行 `cat <轮目录>/*.jsonl | arw background-agent --wait` 启动本轮全部 Reviewer 并等到各自结束; 只需重审其中一个时只传它的文件. 轮目录包含:
 
 - 每个 Reviewer 一个报告目录, 其中只有一个空 txt 报告.
-- 执行规则副本 `rules/`: 全部 `AGENTS.md` (含嵌套), `docs/agents/**`, `.agents/skills/**` 和 `.claude/skills/**`, 保持仓库相对路径, 另有 `sha256sum` 格式的 `rules/SHA256SUMS`. Spec Readiness 取工作树中已跟踪或未被忽略的文件字节, 提交审核取已暂存字节.
+- 执行规则副本 `rules/`: 全部 `AGENTS.md` (含嵌套), `docs/agents/**`, `.agents/skills/**` 和 `.claude/skills/**`, 保持仓库相对路径, 另有 `sha256sum` 格式的 `rules/SHA256SUMS`. Spec Readiness 取工作树中已跟踪或未被忽略的文件字节, Git 清单仍列出但已在工作树中删除 (未暂存删除) 的文件被跳过, 其他文件照常复制; 提交审核取已暂存字节.
 - 每个 Reviewer 一个 `<role>.jsonl`, 只含一行机器请求: `instructions` 是该 Role 文件加 `docs/agents/reviewer.md` 的副本正文, `cwd` 是仓库根目录, `writePaths` 只含报告目录, `stateDirectory` 是轮目录的上级, 身份是该 Role 加完整排序的 issue ID 集合. 该身份在 `stateDirectory` 中的恢复记录已有 `threadId` 且 `failure` 为 `null` (`failure` 是恢复记录已有字段, 运行层以具体错误 `{code, message}` 结束该运行, 即该运行没有交付 `ready` 而以运行层错误结束时写入; 正常结束, 正常停止和提前结束阈值暂停都保持 `null`. 审核轮准备只看它是否为 `null`, 不解释错误种类) 时, 请求是带原 `runId` 的 `followup_task` (原线程已卸载也由管理进程恢复), handoff 另给前轮报告和相邻版本变化; 没有恢复记录时是 `spawn_agent`, 有记录但不满足上述条件时是带 `newThread: true` 的 `spawn_agent`.
 
 ### Communication and sessions

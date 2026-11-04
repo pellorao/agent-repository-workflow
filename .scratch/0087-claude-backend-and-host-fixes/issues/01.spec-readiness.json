@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0087:01",
+  "exception": {
+    "confirmedAt": "2026-11-02T00:00:00Z",
+    "reason": "Mechanical fixes and spec alignment with no design decision; covered by the user's standing confirmation of 2026-11-02 that this class of issue needs no governance design."
+  },
+  "subject": {
+    "filePath": ".scratch/0087-claude-backend-and-host-fixes/issues/01-claude-backend-host-spec-fixes.md",
+    "sha256": "89d87a73e4e9db450c453948cc504c08b625fb133929d016236ede68281b47e5"
+  },
+  "result": "not-applicable"
+}

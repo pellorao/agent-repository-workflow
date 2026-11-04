@@ -84,7 +84,7 @@ Workflow Distribution Module 递归枚举固定安全树. 每个安全普通文�
 
 `repositoryOwnedSeeds` 只接受精确文件或目标目录根, 不接受 `glob`. 目录只约束 ARW 投影的目标, 不取得目录中其他文件的归属.
 
-`distributedSkills` 与 `sourceOnlySkills` 是合法 Skill 身份的无重复列表, 两者不相交, `distributedSkills` 不得为空, 违反时诊断码为 `skill-lists-invalid` (键集合错误仍是 `distribution-config-invalid`). 只有 `distributedSkills` 中的 Skill 进入 Workflow Distribution. `.agents/skills/` 下每个 Skill (至少含一个文件的直接子目录) 必须恰好出现在两个列表之一: 未登记的 Skill 得到 `skill-unregistered`, 名单中已不存在的名字得到 `skill-registration-stale`, 直接位于 `.agents/skills/` 下的非目录条目得到 `skill-source-path-invalid`, 符号链接得到 `filesystem-link-unsupported`. 发布前同步在读取与验证阶段和 `scripts/check-workflow-distribution.mjs` 的生产检查调用同一个 Sync Module 的 `checkSkillRegistration`, 因而新 Skill 在登记前使两者都失败, 失败发生在删除之前, 提示须先由维护者判断是否分发. 阻断而不是警告, 使没有判断过的 Skill 不会被默认分发或遗漏.
+`distributedSkills` 与 `sourceOnlySkills` 是合法 Skill 身份的无重复列表, 两者不相交, `distributedSkills` 不得为空, 违反时诊断码为 `skill-lists-invalid` (键集合错误仍是 `distribution-config-invalid`). 只有 `distributedSkills` 中的 Skill 进入 Workflow Distribution. `.agents/skills/` 下每个 Skill (至少含一个文件的直接子目录) 必须恰好出现在两个列表之一: 未登记的 Skill 得到 `skill-unregistered`, 名单中已不存在的名字得到 `skill-registration-stale`, 直接位于 `.agents/skills/` 下的非目录条目, 以及名称不是合法 Skill 身份的含文件子目录 (每个这样的目录只报告一次, 不再另报 `skill-unregistered`) 得到 `skill-source-path-invalid`, 符号链接得到 `filesystem-link-unsupported`. 发布前同步在读取与验证阶段和 `scripts/check-workflow-distribution.mjs` 的生产检查调用同一个 Sync Module 的 `checkSkillRegistration`, 因而新 Skill 在登记前使两者都失败, 失败发生在删除之前, 提示须先由维护者判断是否分发. 阻断而不是警告, 使没有判断过的 Skill 不会被默认分发或遗漏.
 
 规范 Role 文件保留扁平身份布局, 同名子目录只保存该 Role 按需引用的安全普通 Markdown 文档, 不建立另一份 Role 身份. Claude Code 的静态 Skill 与 `CLAUDE.md` 投射继续按安装和更新生命周期处理, Claude Reviewer 经 Claude 后端执行. 运行支持范围与共享入口的实际上下文核对由 `../agent-repository-workflow/spec.md` 的 Reviewer workflow 节拥有, 不能用静态投射代替运行证据或豁免审核关卡.
 
