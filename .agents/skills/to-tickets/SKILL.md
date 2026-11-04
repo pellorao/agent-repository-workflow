@@ -69,4 +69,4 @@ Status: ready-for-agent
 
 没有阻断项时 `## Blocked by` 准确写 `- None - can start immediately`.
 
-`## What to build` 和验收标准写到用户请求要求的最终状态, 不只写其中第一步. 写完对照用户原话, 确认每项请求都有对应的验收标准.
+`## What to build` 和验收标准的写法 (写到最终状态, 对照用户原话) 见 `../issue-tracking/SKILL.md` 的 Issue structure 节.

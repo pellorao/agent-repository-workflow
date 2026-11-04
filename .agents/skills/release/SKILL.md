@@ -40,7 +40,7 @@ disable-model-invocation: true
 8. Agent CLI 检查 (宿主一次, 在全部 VM 通过之后): 解压 `<tmp>/arw.tar.gz` 到 `<tmp>/agent/extracted`; 以 `HOME=<tmp>/agent/home` 运行其中的 `node install.mjs --release-tag <version> --non-interactive --register-path false`; 在 `<tmp>/agent/repo` 里 `git init`, 用隔离 home 里安装的 `arw` 运行与 `scripts/release-guest-check.mjs` 中 `INIT_ARGUMENTS` 相同参数的 `workflow init`; 在该仓库内用正常 HOME 运行 `claude -p "列出本仓库可用的 Skill 名称, 并给出 AGENTS.md 的一级标题"` 和 `codex exec "<同一问题>"` (登录凭据在正常 HOME, 每次消耗一个问题的额度). 两个回答都必须含 `implement` 与 `Agent Repository Workflow`, 否则不通过. 不使用真实 TTY.
 
 9. 初始化后交接冒烟 (可选, 宿主一次, 在第 8 步之后; 维护者选 run 或 skip, 不设默认值, skip 不阻断发布; 约 10 至 30 分钟和一次 Agent 任务的额度): 把 plain fixture (`./references/fixtures.md`) 解压到 `<tmp>/handoff/repo`, 用第 8 步隔离 home 里的 `arw` 运行同样参数的 `workflow init`, 运行前用 `git rev-parse HEAD` 记下 fixture 的初始提交 `<base>`. 在该仓库内用正常 HOME (登录凭据在那里) 运行 `claude -p`, `PATH` 前置第 8 步隔离 home 的安装目录, 使它运行的 `arw` 就是候选的安装, 授予它在该仓库写文件和运行 `arw`, `git` 的权限, 让它按已安装的 `arw-commands` Skill 的 Post-init handoff 完成交接, 遇到需要用户决定的事取默认并说明. 全部满足才算通过 (命令用同样的 `PATH`): `arw workflow verify` 退出 0; `arw list issues --all-statuses --full` 退出 0 且列出的 issue 行数等于 `.scratch/*/issues/*.md` 的文件数 (结构无效的 issue 不会被列出, 行数不符就是产出的 issue 不合规; 没有 issue 文件时输出以 `No matching` 开头的一行, 行数 0 等于文件数 0, 也算满足); `git diff --name-status --no-renames <base>` 中状态不是 `A` 的文件只可能是 `AGENTS.md` 和 `CLAUDE.md`, README 与源码不得改动.
-10. Reviewer 能力漂移检查 (可选, 在全部 VM 通过之后; 维护者选 run 或 skip, 不设默认值, skip 不阻断发布也不由其他检查替代, 因为其他检查证明候选行为, 不证明 Reviewer 能力): 按 `$reviewer-capability` Skill 的 Drift check 节执行, 约 1 至 2 小时的额度; 判定漂移后继续或放弃发布由维护者决定, 检查本身不阻止发布步骤. 第 9, 10 步选择 skip 时在发布准备 issue 的 `## Comments` 各记一行 "skip".
+10. Reviewer 能力漂移检查 (可选, 在全部 VM 通过之后; 维护者选 run 或 skip, 不设默认值, skip 不阻断发布也不由其他检查替代, 因为其他检查证明候选行为, 不证明 Reviewer 能力): 按 `../reviewer-capability/drift-check.md` 执行, 约 1 至 2 小时的额度; 判定漂移后继续或放弃发布由维护者决定, 检查本身不阻止发布步骤. 第 9, 10 步选择 skip 时在发布准备 issue 的 `## Comments` 各记一行 "skip".
 
 失败时先保存原始输出. 需要现场诊断时, 加 `--keep` 重跑, 用 `node scripts/release-vm.mjs ssh <machine> <command>` 检查 VM, 诊断完运行 `down` 还原快照. 判断失败原因:
 
@@ -55,7 +55,7 @@ disable-model-invocation: true
 
 ## 5. Advance main
 
-发布和公开 Bootstrap 验证完成后, 用一个独立 issue 把 `package.json` 的 `version` 推进到下一个开发版本 (下一个更高的 `MAJOR.MINOR.PATCH`), 运行 `node scripts/generate-install-arw.mjs` 并提交. 之后源码安装的 `-pre` 身份基于新版本. 发布版本的 fixture 更新也在此时按 `./references/fixtures.md` 进行; 第 3 节第 10 步运行过漂移检查时, 按该 Skill 的 Drift check 节第 4 项写回登记表.
+发布和公开 Bootstrap 验证完成后, 用一个独立 issue 把 `package.json` 的 `version` 推进到下一个开发版本 (下一个更高的 `MAJOR.MINOR.PATCH`), 运行 `node scripts/generate-install-arw.mjs` 并提交. 之后源码安装的 `-pre` 身份基于新版本. 发布版本的 fixture 更新也在此时按 `./references/fixtures.md` 进行; 第 3 节第 10 步运行过漂移检查时, 按 `../reviewer-capability/drift-check.md` 第 4 项写回登记表.
 
 ## Records
 

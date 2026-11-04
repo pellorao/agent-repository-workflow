@@ -9,7 +9,7 @@ Spec Readiness 针对每个实施 issue 运行 (交付只含非实施分类内�
 
 ## Authorization timing
 
-- Spec Readiness 在 spec 和 issue 设计定稿时审核一次, 不在报告完成或提交审核时重复. 首次修改本 issue 的实现文件前 (行为保持重构例外的 issue 除外) 须取得 `satisfied` 或例外记录 (`implement` Skill 的 Entry 检查完整 `verify`; 例外记录可以按 Exception workflow 节补生成). 记录只授权开始实施; 开始实施后的设计改动由提交审核核对.
+- Spec Readiness 在 spec 和 issue 设计定稿时审核一次, 不在报告完成或提交审核时重复. 首次修改本 issue 的实现文件前 (行为保持重构例外的 issue 除外) 须取得 `satisfied` 或例外记录 (`implement` Skill 的 Entry 检查完整 `verify`; 例外记录可以按 `./exception-workflow.md` 补生成). 记录只授权开始实施; 开始实施后的设计改动由提交审核核对.
 - 不通过时修正后复审: 重新执行 `prepare -> review -> generate -> promote`, Reviewer 按 `docs/agents/reviewer.md` 的 Re-review 节只看改动部分及其影响范围. 开始实施前, 治理 Input 字节, Reviewer Role 或 subject 变化后旧记录不授权新版本, 须做增量复审, 不由 Main Agent 自行判断改动是否相关. `architecture-evidence` 是 issue 本身会修改的实现事实, 不受字节检查.
 - 已开始实施后, 提交审核提出的只涉及措辞, 重复或一致性 (不改变范围, 行为或验收含义) 的问题不修改 subject: 在 issue 的 `## Comments` 记录处置, 由提交审核的要求符合审核对照 spec 与实现核对, 不重跑本工作流. 改变范围, 行为或验收含义的真实变化仍修改 subject 并做增量复审. 判断由 Main Agent 作出, 拿不准时按真实变化处理.
 - "已开始实施" 只按规则判断, 不由引擎判断: 当前分支已有本 issue 授权的实施提交, 或工作树已有本 issue 的实现改动. 已开始实施后 Input 与 Reviewer Role 的字节变化不再阻断, 中断后恢复实施也不重跑完整 `verify`. 实现文件指该 issue 交付的所有已跟踪文件 (代码, 测试, 文档, 规则, 含它的治理 Input), 不含 `.scratch` 中该 issue 的 issue 文件与就绪记录.
@@ -40,15 +40,10 @@ issue 不列治理要求引用: Reviewer 根据 `## What to build` 在 `docs/spe
 - 运行 `arw spec-readiness promote --input <generated-path>`, 传入精确生成路径, 不编辑其字节. 它是写入 `.scratch/<NNNN>-<effort-slug>/issues/<NN>.spec-readiness.json` 的唯一边界, 写入前重新验证请求, subject, Input 字节, Reviewer Role 和派生结果; 任何失败都保留先前记录. 有效的 `gap` 记录可以作为诊断结果提升, 但不满足授权.
 - 按 Authorization timing 节运行 `verify`. 只有模式版本 7 记录有效; 更早版本和 effort 根目录的 `spec-readiness.json` 只是历史记录, Engine 不读取, 不迁移也不删除它们.
 
-## Respond to findings
+## Findings and exceptions
 
-Main Agent 在修改 issue 前独立验证每个问题. 问题有效时修正设计或 issue: 要求修改 spec 或 PRD 的问题按 `../rule-and-design-changes/SKILL.md` 的 Reviewer-proposed changes 节由 Main Agent 与独立 subagent 共同决定, 只有分歧交用户. 然后对新内容执行完整工作流 (已开始实施后的措辞, 重复或一致性问题按 Authorization timing 节只记录不改 subject). 每轮修正后, 重新 `prepare` 前, 对本轮改动的每一处执行 Prepare and review 节第 2 步自检, 并补齐修正带来的义务 (第 2 轮起的发现多数是上一轮修正引入的): 按类全文 grep, 同步 subject, spec, 长期规范和 ADR 中的同一事实 (含计数, 清单和例外); 新增或改变的行为, 错误和分支补测试观察与验收项; 新的设计选择 (新来源, 新例外, 新公开字段或输出) 补理由和 `ADR Evaluation` 条目, 并复核 Module Design; 新的调用方可见输出写明输出流, 文字, 缺省情形和退出码. 修正会转变设计方向 (如失败改为成功, 新的配置位置, 长期规则的例外, 新的公开输出) 时, 优先选择不改变方向的收窄修正; 必须转向时先把整段设计按上述各项写齐再 `prepare`. 按 `docs/agents/subagent-findings.md` 的 Triage by origin 节属于既有缺口的问题记入后续 issue, 并按下段质疑, 理由是本次交付不引入, 不改变也不依赖该缺口; Reviewer 指出交付对缺失事实的具体依赖而保留它时, 它不是既有缺口, 按本次影响的问题修正; 提交审核只修改代码时就绪记录仍有效, 不重跑.
-
-结果符合 `docs/agents/subagent-findings.md` 的质疑条件时, 用未变的 subject 和 Input 重新 `prepare`, 通过 `followup_task` 把新请求, 每个受质疑问题的具体证据和推理错误交给原 Reviewer. 质疑消息只是提示, 不是 Input, 证据或授权. 有争议的结果在替代结果完成 `generate -> promote` 前继续阻断提交. subject 或 Input 已改变时改用普通的新请求.
-
-## Exception workflow
-
-只有应用治理设计和 ADR 触发条件, 并取得用户关于不需要治理设计的明确确认后, 才使用例外. Main Agent 写入临时 JSON 例外草稿, 只包含 `exception.reason` 和 UTC 秒级 `exception.confirmedAt`, 然后执行同样的 `generate -> promote -> verify`; 只有 `promote` 写入与 issue 绑定的 `not-applicable` 记录. 例外不使用 Reviewer 报告. 不得推断确认, 也不得把失败的普通审查转为例外. 用户确认须早于首次修改本 issue 的实现文件; `exception.confirmedAt` 写用户作出确认的时间 (用户事先对一类 issue 作出的常设确认, 写该常设确认作出的时间), 不写生成时间. 满足这一条件时, 例外记录可以在实施开始后补生成, 在实施提交前完成上述流程, 因为例外不经 Reviewer, 记录内容与生成时机无关.
+- Reviewer 报告有问题, 或结果符合质疑条件时: 读取 `./respond-to-findings.md`.
+- 取得用户关于不需要治理设计的明确确认, 要走例外时: 读取 `./exception-workflow.md`.
 
 ## Responsibilities
 

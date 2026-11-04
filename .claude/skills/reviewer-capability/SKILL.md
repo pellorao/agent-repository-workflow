@@ -30,7 +30,7 @@ disable-model-invocation: true
 
    输出 `{"status":"succeeded","input":{...}}`, `input` 是 `spawn_agent` 输入 (角色指令, 交接, 空报告, 恢复目录). 比较别的报告格式时, 改写场景仓库中的角色文件和 `input` 的 `instructions`, `handoff`, `reportPath`, `writePaths`.
 3. 按 `reviewer-launch` Skill 通过 `arw background-agent` 启动: 给 `input` 加上 `settings`, 例如 Codex `{"model":"gpt-6-luna","modelProvider":"openai","reasoningEffort":"xhigh","serviceTier":"default"}`, Claude `{"model":"haiku","modelProvider":"anthropic","reasoningEffort":"high","serviceTier":"default"}`. 用 `wait_agent` 等到完成, 记录 `measurement`. 本流程覆盖 `reviewer-launch` 对阈值暂停通知的处理 (不询问用户): `wait_agent` 返回来源 `provider-program` 且正文以 `The Reviewer runtime paused this same task after ` 开头的通知时, Main 对同一运行发 `send_message` "继续" 后再 `wait_agent`, 直到 `completion` 非空. 完成后, `unload_agent` 之前, 把该运行的 `list_agents {runId}` 结果存为 `<instance>/agent.json` (已送达消息卸载后或超过 24 小时即丢失), 供计分统计暂停.
-   保存 `agent.json` 后, 计分之前运行 `node scripts/reviewer-capability.mjs inspect <instance>` 检查该 Reviewer 是否读了禁止来源 (答案键, 其他实例, 源码仓库, 以前的运行). 输出 `blocked` (记录不完整, 无法证明没读过) 或 `flags` 非空的实例默认作废: 不计分, 不入盲池, 用相同设置换新实例路径从 `setup` 重跑. 输出 `failed` 表示检查没有完成: 排除原因后重跑 `inspect`, 完成之前不计分. 只有 Main 从所列条目确认实际没有读到禁止内容 (例如 `/` 只是分隔符, 读取被拒绝, 读回自己的报告时措辞巧合) 时才保留, 理由写进结果表. 同一格因同一原因连续作废 2 次就停止并向用户报告 (多半是记录格式变了或 Reviewer 配置有问题). 匹配规则, 输出字段与已知缺口见 `docs/specs/agent-repository-workflow-development/spec.md` 的 Reviewer capability suite 节 的 `inspect` 接口.
+   保存 `agent.json` 后, 计分之前运行 `node scripts/reviewer-capability.mjs inspect <instance>` 检查该 Reviewer 是否读了禁止来源 (答案键, 其他实例, 源码仓库, 以前的运行). 输出 `blocked` (记录不完整, 无法证明没读过) 或 `flags` 非空的实例默认作废: 不计分, 不入盲池, 用相同设置换新实例路径从 `setup` 重跑. 输出 `failed` 表示检查没有完成: 排除原因后重跑 `inspect`, 完成之前不计分. 只有 Main 从所列条目确认实际没有读到禁止内容 (例如 `/` 只是分隔符, 读取被拒绝, 读回自己的报告时措辞巧合) 时才保留, 理由写进结果表. 同一格因同一原因连续作废 2 次就停止并向用户报告 (多半是记录格式变了或 Reviewer 配置有问题). 匹配规则, 输出字段与已知缺口见 `docs/specs/agent-repository-workflow-development/spec.md` 的 Reviewer capability suite 节的 `inspect` 接口.
 4. 计分: 报告是当前角色的自由格式 (`.txt` 或 `.md`, 要点 `- ... path:line`), 基线格式用 `.jsonl`:
 
    ```sh
@@ -50,7 +50,7 @@ disable-model-invocation: true
    ```
 
    候选超过池上限 (150, Spec Readiness 与 Code Standards 为 210) 时自动拆成 `<name>-1`, `<name>-2` ... 多个池, 其余步骤对每个池各做一次; `--decisions` 让已有同简报裁决的候选不再入池. `pool view` 从夹具现场搭出被审状态写入 `<root>/<name>/adj/` (给场景目录), 不必从 Reviewer 工作过的实例目录取; 它还写 `change.diff`, 脱敏的 `REVIEWER-REQUEST.json` 与 `view-binding.json`, `pool prompt` 据此检查 `adj/` 未被改动. `adj/` 是裁判唯一可见的目录, key, 提示和裁决库在 `<root>/<name>/`, 不在 `adj/` 内.
-6. 用 `pool prompt` 输出的 `prompt.md` 启动一个裁判 (至少 sonnet high, 不用 haiku; 唯一例外: issue 18 迁移验收与已有 haiku 基线的对比), 让它读写 `adj/` (提示中 `<ADJ>` 就是 `adj`, 把 `adj/` 复制进裁判的工作目录). 裁判写出 `adj/decisions-<name>.json` 后:
+6. 用 `pool prompt` 输出的 `prompt.md` 启动一个裁判 (至少 sonnet high, 不用 haiku), 让它读写 `adj/` (提示中 `<ADJ>` 就是 `adj`, 把 `adj/` 复制进裁判的工作目录). 裁判写出 `adj/decisions-<name>.json` 后:
 
    ```sh
    node scripts/reviewer-capability.mjs pool split <root> <name> <root>/<name>/adj/decisions-<name>.json [--hard <池项 id> ...]
@@ -71,12 +71,7 @@ Strata 提供方先读 `docs/specs/agent-repository-workflow/strata.md`. 直接�
 
 ## Drift check
 
-发布时由 `release` Skill 的可选步骤调用 (维护者选 run 或 skip), 也可由维护者单独调用. 目的是发现提供方更新默认模型或 CLI 升级造成的 Reviewer 能力下降; 它不是发布门禁, 不授权审核, 提交或发布.
-
-1. 四个场景在两个后端的默认设置 (Codex `gpt-6-luna` `xhigh`, Claude `haiku` `high`) 各跑 1 个实例, 共 8 个, 按 Run 流程计分并定稿 (盲裁用至少 sonnet high 的裁判).
-2. 每格的 `final` 与同目录 `last-results.md` 中同场景, 同后端, 同设置的记录比较, 不使用绝对分数门槛. 没有记录的格只登记, 不比较.
-3. 某格 `final` 比记录低 0.15 以上时, 同格再跑 2 个实例; 3 个实例的平均仍比记录低 0.15 以上才判定漂移, 停下排查 (模型版本, CLI 版本, Reviewer 运行时) 并在发布准备 issue 的 `## Comments` 报告, 不自动修复. 0.15 只决定是否多跑 2 个实例, 不是失败判定, 因为单个实例有波动.
-4. 检查可在全部 VM 通过之后运行, 但结果只在发布完成之后 (`release` Skill 第 5 节) 把各格本次结果 (有加跑时取 3 个实例的平均) 写入 `last-results.md` 并提交, 再运行 `node scripts/project-claude-skills.mjs` 重新投影; 候选修复导致发布流程重来时丢弃本次结果. 同一格只保留最新一行. 只有本检查维护该表, A/B 与回归的结果不写入. 写入或提交失败, 或检查在写入前中断时表保持原样 (已发布版本的登记可以缺失, 旧行保留), 下一次检查以表中仍有的行为基准, 没有则只登记, 并在发布准备 issue 的 `## Comments` 报告维护者, 不阻止任何发布步骤, 也不重跑已完成的检查. 两次检查之间改动频繁时, 一次检查覆盖这期间的全部变化. 每格只与上一次记录比较并覆盖它, 所以多期缓慢累积的下降不会被识别; 本检查只发现明显下降, 不追踪长期趋势.
+发布时由 `release` Skill 的可选步骤调用, 也可由维护者单独调用: 读取 `./drift-check.md`.
 
 ## Finish
 

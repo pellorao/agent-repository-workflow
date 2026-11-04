@@ -18,7 +18,7 @@ name: code-review
 
 非提交比较中, 要求调用方为 Requirements 轴提供适用的治理要求输入. 接受仓库相对路径, 在任一审查轴启动前, 将每份来源路径, SHA-256 和完整内容保存在本轮绑定的临时副本中. 不发现其他 issue, spec, PRD 或 ADR.
 
-Main Agent 按 `../reviewer-launch/SKILL.md` 的 Other reviews 节固定适用的 Agent 指令. Standards Reviewer 按其规范角色读取这些完整的绑定副本. 它们是执行规则, 不是治理输入; Standards 轴不要求调用方选择标准文档路径集合, 也不要求确认没有标准.
+Main Agent 按 `../reviewer-launch/other-reviews.md` 固定适用的 Agent 指令. Standards Reviewer 按其规范角色读取这些完整的绑定副本. 它们是执行规则, 不是治理输入; Standards 轴不要求调用方选择标准文档路径集合, 也不要求确认没有标准.
 
 缺少治理要求输入时, 请用户提供, 或明确确认没有治理要求.
 

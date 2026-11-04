@@ -22,7 +22,7 @@ name: issue-tracking
 
 渲染后的第一项内容是 H1.
 
-- 实施 issue: H1 后第一段是 `Status:`, 不添加 `Type:`. 正文依次包含二级章节 `## What to build` 和 `## Acceptance criteria`, 不降为更深的标题, 然后是 `## Blocked by`, 其中只写 bullet, 没有阻断项时写 `- None - can start immediately`. `## What to build` 可以引用 spec 章节, 引用不做机械校验. 每个实施 issue 都指明预期验证和相关边界情况.
+- 实施 issue: H1 后第一段是 `Status:`, 不添加 `Type:`. 正文依次包含二级章节 `## What to build` 和 `## Acceptance criteria`, 不降为更深的标题, 然后是 `## Blocked by`, 其中只写 bullet, 没有阻断项时写 `- None - can start immediately`. `## What to build` 可以引用 spec 章节, 引用不做机械校验. 每个实施 issue 都指明预期验证和相关边界情况. `## What to build` 和验收标准写到用户请求要求的最终状态, 不只写其中第一步; 写完对照用户原话, 确认每项请求都有对应的验收标准.
 - Application Source Issue: 沿用实施 issue 结构, 由精确的 `Module implementation issue:` 关联字段标识. 它镜像 Module 状态, 状态只来自 Application 同步, 不执行本地实施, Spec Readiness, 验证或 Commit Audit, 也不添加本地完成证据.
 - Wayfinder issue: H1 后使用 `Type:`, 可选的 `Status:` 和 `Blocked by:` 元数据, 正文使用 `##### Question`. 这里的 `Type:` 是 Wayfinder 字段.
 

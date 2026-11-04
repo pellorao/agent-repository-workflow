@@ -1,18 +1,18 @@
 # 分离 Commit Audit 审核与实现责任
 
-状态: 历史记录. `code-spec-reviewer` 和 `commit-audit-reviewer` 已合并为 `requirements-reviewer`, Reviewer 改写自然语言 `review.txt`, 不再有 JSONL 草稿, `arw commit-audit generate` 和审计文件提升; 当前做法见 `.agents/skills/commit/SKILL.md` 的 Commit Audit 节. 实现者不判断自己候选的验收结论这一原则继续有效.
+状态: 历史记录. `code-spec-reviewer` 和 `commit-audit-reviewer` 已合并为 `requirements-reviewer`, Reviewer 改写自然语言 `review.txt`, 不再有 JSONL 草稿, `arw commit-audit generate` 和审计文件提升; 当前做法见 `.agents/skills/commit/implementation-workflow.md` 的 Commit Audit 节. 实现者不判断自己候选的验收结论这一原则继续有效.
 
 Commit Audit 的 Gate 1 和 Gate 2 判断完整交付是否满足正式要求. 实现者同时判断自己的验收结论会削弱独立性, 因而实现协调, 独立语义审核和机械结果生成分别承担责任. 这些边界影响提交流程, Reviewer Role 及审计文件的权威关系.
 
 ## Decision
 
-Gate 1 和 Gate 2 在通用提交工作流判定 Commit Audit 适用后运行; 准确调用条件只由 `.agents/skills/commit/SKILL.md` 的 Implementation issue commit workflow 节拥有. Main Agent 准备完整候选, 按 `code-review` Skill Package 的实际输入有效性规则复用已有完整 Gate 3 结果, 或安排必要的 Code Standards 与 Code Spec 双轴审核. 有效 Spec Readiness (开始实施前的授权, 提交时 subject 未变), 必要实施验证及真实完整的最终候选齐备后, 两个代码审核轴和适用 Commit Audit 可以对同一候选并行, 实际验收要求另一审核完成事实时仍保留依赖. 有效就绪结果的检查时点由 `.agents/skills/spec-readiness/SKILL.md` 的 Authorization timing 节拥有, 运行中结果不作为通过. 审查候选不包含本次 Gate 1 或 Gate 2 输出.
+Gate 1 和 Gate 2 在通用提交工作流判定 Commit Audit 适用后运行; 准确调用条件只由 `.agents/skills/commit/implementation-workflow.md` 的 Implementation issue commit workflow 节拥有. Main Agent 准备完整候选, 按 `code-review` Skill Package 的实际输入有效性规则复用已有完整 Gate 3 结果, 或安排必要的 Code Standards 与 Code Spec 双轴审核. 有效 Spec Readiness (开始实施前的授权, 提交时 subject 未变), 必要实施验证及真实完整的最终候选齐备后, 两个代码审核轴和适用 Commit Audit 可以对同一候选并行, 实际验收要求另一审核完成事实时仍保留依赖. 有效就绪结果的检查时点由 `.agents/skills/spec-readiness/SKILL.md` 的 Authorization timing 节拥有, 运行中结果不作为通过. 审查候选不包含本次 Gate 1 或 Gate 2 输出.
 
 需要新审核时, Reviewer 一旦核实问题就写入结果文件. Main Agent 可按需读取并独立核对, 并处理已授权修复或请求必要决定; 两个审核轴仍各自返回完整结果. Main Agent 按 `./0013-use-main-agent-single-writer-orchestration.md` 协调实现和修复, 负责暂存, Reviewer 调用, 结论检查和文件提升, 但不负责独立审核结论.
 
 Validation 与 Comments 的整章记录身份由 `../specs/agent-repository-workflow/spec.md` 的 Implementation records 节拥有. Gate 1 的要求来自正式交付要求与验收条件, 两个记录章节不产生要求或授权例外, 内容变化本身不触发语义复审. Main Agent 仍核对实际证据, 新失败及相反证据, 并负责准确的记录差异和最终证据定位检查. 这不豁免正式要求, 整份 issue 或其他完整治理输入, 也不解除真实验收依赖.
 
-Commit Audit 适用时, Main Agent 按 `.agents/skills/commit/SKILL.md` 的 Commit Audit 节固定完整实时索引, HEAD, 候选范围, 关联上下文, 治理输入及执行规则, 再为本次唯一 effort 提供完整排序的 `authorizingIssueIds`, 准备独立 Reviewer Request, 并调用 `commit-audit-reviewer`. 旧轮完整结束前这些输入保持不变, 同一仓库不执行另一提交. 固定版本的其他审核及已授权源工作树工作可以继续, 包括本候选已经获准的修复; 新字节不流入旧轮, 旧轮完整结束后才暂存新实现并交接替代版本.
+Commit Audit 适用时, Main Agent 按 `.agents/skills/commit/implementation-workflow.md` 的 Commit Audit 节固定完整实时索引, HEAD, 候选范围, 关联上下文, 治理输入及执行规则, 再为本次唯一 effort 提供完整排序的 `authorizingIssueIds`, 准备独立 Reviewer Request, 并调用 `commit-audit-reviewer`. 旧轮完整结束前这些输入保持不变, 同一仓库不执行另一提交. 固定版本的其他审核及已授权源工作树工作可以继续, 包括本候选已经获准的修复; 新字节不流入旧轮, 旧轮完整结束后才暂存新实现并交接替代版本.
 
 `authorizingIssueIds` 表示已暂存实现的完整 issue 授权范围. `gate1` 只表示本次提交实际适用 Gate 1 的子集. 未完成 issue 可以授权中间提交而不进入 Gate 1. Engine 从实时已暂存索引推导机械可见终态转换并拒绝授权或 Gate 1 遗漏, Reviewer 复核 Git 无法证明的仅代码候选, 重新打开后再次完成的历史, 以及任意代码与 issue 的语义关系.
 

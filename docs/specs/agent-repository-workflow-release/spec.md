@@ -107,7 +107,7 @@ Reviewer 能力测试不是发布门禁. 维护者需要时显式调用源码专
 | 情形 | 理由 |
 |---|---|
 | 初始化后交接冒烟 | 交接是用户在 `workflow init` 之后实际走的路径, 现行检查只证明投影的 Skill 名被加载; 它只检查交接没有破坏仓库且 issue 可读, 不判断交接审计是否完整, 也不运行 issue 的实施, 审核, 提交生命周期 ("初始化 issue 生命周期" 一行保持不变); 耗额度, 所以可选 |
-| Reviewer 能力漂移检查 (`$reviewer-capability` Skill 的 Drift check 节) | 其他检查证明候选行为, 不证明 Reviewer 能力; 耗额度, 所以可选 |
+| Reviewer 能力漂移检查 (`.agents/skills/reviewer-capability/drift-check.md`) | 其他检查证明候选行为, 不证明 Reviewer 能力; 耗额度, 所以可选 |
 
 ### Fixed tests
 

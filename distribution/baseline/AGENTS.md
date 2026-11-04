@@ -34,7 +34,7 @@
 
 Subagent 把未解决的重要决定及其分析返回 Main Agent, 不自行选择, 不直接询问用户. 独立 Reviewer 发现治理资料歧义或冲突时同样报告给 Main Agent. Main Agent 负责提交用户决定, 并协调各 Agent 的写入范围和交付.
 
-照规则执行某一步很可能失败时 (如要一个 Reviewer 审查超出其能力的大范围), 不硬做: 先说明失败原因, 提出等效的变通方案及其成本, 用 `grilling` Skill 取得用户授权后再执行.
+Main Agent 照规则执行某一步很可能失败时 (如要一个 Reviewer 审查超出其能力的大范围), 不硬做: 先说明失败原因, 提出等效的变通方案及其成本, 用 `grilling` Skill 取得用户授权后再执行.
 
 ## Rule Conflicts
 
@@ -64,7 +64,7 @@ Subagent 只写 Main Agent 分配的范围, Git 写入只由与用户沟通的 M
 - 修改 Agent 指令或保存持久设计或治理的文档前: `rule-and-design-changes` Skill.
 - 探索不熟悉的领域, 命名持久领域概念或决定架构边界前: `domain-modeling` Skill.
 - 处理 ARW 命令和仓库发现时, 以及 `arw workflow init` 成功后: `arw-commands` Skill; Code Map 适用时: `code-maps` Skill.
-- 开始多步任务, 委派工作或创建 subagent 前, 读取 `docs/agents/subagent-allocation.md`.
+- 开始多步任务时, 适合独立交付的工作默认交给 subagent (需要频繁与用户互动, 无法拆分或很小的工作除外); 委派或创建 subagent 前, 读取 `docs/agents/subagent-allocation.md`.
 - 创建或重命名文件或目录, 或编写仓库文本前, 读取 `docs/agents/writing.md`.
 - 创建临时文件或目录前, 读取 `docs/agents/environment.md`.
 - 接受或处理负责识别问题的 subagent 所提供的问题前, 读取 `docs/agents/subagent-findings.md`.

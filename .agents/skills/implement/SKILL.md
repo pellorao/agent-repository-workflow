@@ -19,7 +19,7 @@ name: implement
    - 初始规划记录授权只允许创建或更新其治理 Skill 授权的规划产物, 不授权生产代码, 测试或无关文档.
 3. 完成 issue 所必需, 且不增加行为, 规则, 公开合同或架构决定的机械性配套修改可以留在本 issue 内. 其他新要求先通过 issue 工作流记录并取得授权, 不默默扩大 issue.
 4. 完整读取 issue 及其 effort spec (如存在). 新 Agent 接手, 中断后恢复, 或 spec 任何字节变化时, 重新完整读取.
-5. 只改 Agent 规则和文档的 issue 不安排就绪审核, 其终态也按该工作流提交. 交付只是行为保持重构的 issue 同样不安排就绪审核, 条件是同时满足: 只删除死代码或不可达分支, 或合并完全相同的重复实现; 命令输出, 公开 Interface, 错误结果和持久状态不变; 不改变 Module 责任, Interface, Seam, 依赖方向, 权威来源或数据流; 不改动长期规范. `## What to build` 含一个以 `行为保持重构例外:` 开头的段落, 复述这四项条件, 使其受提交审核的 Gate 1 核对. 提交审核照常运行并兜底, 终态只经实施提交, 提交时没有就绪记录, 不运行 `arw spec-readiness verify --subject-only`. 不满足条件的改动不放入该 issue, 另建 issue 并按 `spec-readiness` Skill 安排就绪审核. 其余实施 issue 按 `spec-readiness` Skill 安排就绪审核; 首次修改本 issue 的实现文件前运行 `arw spec-readiness verify --issue issue:<NNNN>:<NN>` 并取得 `0`, 否则不开始实施 (按 `spec-readiness` Skill 的 Exception workflow 节补生成例外记录的 issue 除外); 过期时按 `spec-readiness` Skill 增量复审. 实现文件的范围与 "已开始实施" 的界定见 `spec-readiness` Skill 的 Authorization timing, 已开始实施后不再重跑完整核对.
+5. 只改 Agent 规则和文档的 issue 不安排就绪审核, 其终态也按该工作流提交. 交付只是行为保持重构的 issue 同样不安排就绪审核, 条件是同时满足: 只删除死代码或不可达分支, 或合并完全相同的重复实现; 命令输出, 公开 Interface, 错误结果和持久状态不变; 不改变 Module 责任, Interface, Seam, 依赖方向, 权威来源或数据流; 不改动长期规范. `## What to build` 含一个以 `行为保持重构例外:` 开头的段落, 复述这四项条件, 使其受提交审核的 Gate 1 核对. 提交审核照常运行并兜底, 终态只经实施提交, 提交时没有就绪记录, 不运行 `arw spec-readiness verify --subject-only`. 不满足条件的改动不放入该 issue, 另建 issue 并按 `spec-readiness` Skill 安排就绪审核. 其余实施 issue 按 `spec-readiness` Skill 安排就绪审核; 首次修改本 issue 的实现文件前运行 `arw spec-readiness verify --issue issue:<NNNN>:<NN>` 并取得 `0`, 否则不开始实施 (按 `../spec-readiness/exception-workflow.md` 补生成例外记录的 issue 除外); 过期时按 `spec-readiness` Skill 增量复审. 实现文件的范围与 "已开始实施" 的界定见 `spec-readiness` Skill 的 Authorization timing, 已开始实施后不再重跑完整核对.
 
 ## Preparation
 
@@ -28,7 +28,7 @@ name: implement
 
 ## Implementation
 
-完成 issue 授权的交付内容, 适用时使用 `$tdd`. 授权或上下文失效时回到 Entry, 分工或写入范围变化时回到 Preparation.
+完成 issue 授权的交付内容, 适用时使用 `$tdd`; spec 的 Testing Decisions 和 issue 写明的验证边界视为已与用户确认的 Seam (`to-spec` 第 3 步已核对), 不再按 `$tdd` 逐个确认. 授权或上下文失效时回到 Entry, 分工或写入范围变化时回到 Preparation.
 
 ## Validation
 

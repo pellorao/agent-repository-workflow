@@ -17,38 +17,16 @@ Reviewer 的审核行为由 `docs/agents/reviewer.md` 和各 Canonical Role 规�
 
 Spec Readiness 和提交审核的每一轮由所属工作流的 `prepare` 写出审核轮目录: 固定版本的输入, 执行规则副本, 每个 Reviewer 的空报告和一行 `<role>.jsonl` 请求 (首轮 `spawn_agent`, 复审 `followup_task`). Main Agent 不手工拼请求或复制规则.
 
-1. 运行 `cat <轮目录>/*.jsonl | arw background-agent --wait`; 只重审其中一个 Reviewer 时只传它的文件. 平台支持后台命令完成通知时在后台运行它并等待通知, 不用固定间隔的 sleep 或轮询.
+1. 运行 `cat <轮目录>/*.jsonl | arw background-agent --wait`; 只重审其中一个 Reviewer 时只传它的文件.
 2. 每个请求先输出回执, 结束时再输出一行 `<id>:done`. `completion` 非空时读取其 `reportPath` 的报告; `completion` 为 `null` 而 `messages` 含 `source` 为 `provider-program` 的消息时按 Long-running and paused reviews 节处理; 来源为 `agent` 的是 Reviewer 的中途通知, 结果以报告为准; `ok: false` (含 `reviewer-not-ready`), `state: "exited"` 或 `providerError` 按具体原因处理; `reviewer-not-ready` 和 `incomplete` 都不是审核结果, 重派时重新 `prepare` 后重跑.
 3. 复审前修复并重新运行 `prepare`, 得到下一轮目录. 运行中的输入不改写, 未完成审核不当作通过.
 
-## Other reviews
+## 按需读取
 
-`code-review` 的独立比较等没有 `prepare` 的审核, 按审核轮目录的同样结构手工准备: 固定 `code-review` 规定的不可变 Git 对象, 在会话临时目录保存执行规则副本及来源路径和 SHA-256, 为报告分配只含空报告文件的独立目录, 然后调用 `spawn_agent`, `input` 提供:
-
-- `role`: Canonical Role ID. `identity`: 普通审核为 `{kind: "ordinary", issueIds: [...]}`, `issueIds` 完整排序.
-- `instructions`: 完整 Canonical Role 与 `docs/agents/reviewer.md` 内容. `handoff`: 所属审核工作流要求的全部审查输入.
-- `cwd`: 当前 Git 仓库根目录, 省略 `readPaths`. `writePaths`: 只含报告目录. `reportPath`: 准确报告文件. `stateDirectory`: 已存在的会话临时目录, 不在 `writePaths` 内.
-
-所有路径都是绝对路径. 模型设置由用户配置 `config.json` 和仓库 `arw.config.json` 决定, Main Agent 不覆盖; 只有 Reviewer Capability 和基准的隔离实例可以在 `settings` 中覆盖. 复审用 `runId` 加相同完整字段调用 `followup_task`; 只有 issue 身份集合改变, 原线程不可用或不可恢复, 或用户明确要求时, 才用 `newThread` 创建替代线程.
-
-## Machine operations
-
-| 操作 | 用法 |
-| --- | --- |
-| `list_agents` | 按 `runId` 观察状态, 原生线程与回合身份, 保留期内的通知, 待处理请求, `cursor`, `completion` 和 `measurement`; 查询不启动审核 |
-| `wait_agent` | `runId`, 已取得的 `cursor` 和可选 `timeout_ms`; 有更新即返回, 超时不代表 Reviewer 失败, 取消等待不停止审核 |
-| `followup_task` | 向可靠原线程交付新一轮完整任务, 更新输入与报告绑定; 原线程已卸载时由管理进程内部恢复后开始新回合 |
-| `send_message` | 向 `runId` 排入消息, 活动回合提供准确 `turnId`; 不唤醒空闲 Reviewer, 回合已变化时处理错误, 不改投替代线程 |
-| `messages` | `runId` 和可选的 `direction`, `limit`, `beforeMessageId`; 回复不确定时据此决定等待, 重发或报告不确定 |
-| `interrupt_agent` | `runId` 与当前 `turnId`; 中断活动工作或结束等待用户的暂停任务, 保留运行环境与原线程 |
-
-- 回执超时或连接失败时, 不自动重发: 用 `messages` 查询发给该 Reviewer 的最近消息, 再决定等待, 重发或报告结果不确定. 查不到记录不能单独证明发送失败.
-- `--wait` 命令在输出 `<id>:done` 前返回 (读到回执后工具超时或进程被终止) 不表示审核结束, 审核仍在运行; 工具会话丢失后重新连接同理: 用回执中的 `runId` 调 `list_agents` 取 `cursor` 观察, 再按需 `wait_agent` 续等, 直到 `completion` 非空. 原线程或原有路径与设置无法恢复时明确失败, 不静默新建线程.
-- 从 `completion` 取得结果后读取绑定报告. 空报告或残留草稿不是有效结果; 收尾失败时按具体原因处理.
-
-## Capacity priority
-
-关卡 Reviewer (Spec Readiness, 提交审核) 优先于基准, 批量和能力验证运行. 同一提供者的并行实例上限由用户配置的 `backgroundAgent.providers.<provider>.maxInstances` 决定, 管理进程在上限用尽时对新的启动请求直接返回 `capacity is exhausted`, 不排队, 所以批量或基准运行同时占用的某提供者实例数不超过上限减 2, 为提交审核的两个并行 Reviewer 留出名额. 关卡 Reviewer 启动因容量用尽失败, 或启动后 2 分钟内没有回合开始时, 排队等待: 用一次 `list_agents` 找出占用名额的运行, 用 `wait_agent` 等其中一个结束后重发同一请求, 不反复轮询 `list_agents`; 同时第一时间向用户报告是哪些运行占用名额, 不静默等待. 提交审核的两个 Reviewer 只得到一个名额时先运行一个, 其 `<id>:done` 后再运行另一个, 不为凑齐并行而等待.
+- 审核没有 `prepare` 可用 (如 `code-review` 的独立比较) 时: 读取 `./other-reviews.md`.
+- 用 `list_agents`, `wait_agent`, `followup_task`, `send_message`, `messages`, `interrupt_agent` 观察或控制 Reviewer, 或回执超时, 连接失败, `--wait` 提前返回时: 读取 `./machine-operations.md`.
+- 启动批量, 基准或能力验证运行前: 读取 `./capacity-priority.md`.
+- 启动因 `capacity is exhausted` 失败, 或启动后 2 分钟内没有回合开始时: 读取 `./capacity-priority.md`.
 
 ## Long-running and paused reviews
 
