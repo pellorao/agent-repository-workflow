@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0081:01",
+  "request": {
+    "digest": "e195dfcae09ba32cd52a884b3f8dc4fe1bc65517226de904647d35f52d0bcf37",
+    "filePath": ".tmp/claude-code/36bd5005-1652-42c6-b818-84d5c437af7e/0081_01/spec-readiness/requests/request-28de6ab3-3f5f-4a83-9300-be92b758698e.json",
+    "id": "28de6ab3-3f5f-4a83-9300-be92b758698e"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "ba4f23b253fe4bd4d17bde006dd684e3b4ae723ec9443a706c6f32eb66815b7e"
+  },
+  "inputs": [
+    {
+      "filePath": ".scratch/0081-release-and-capability-restores/spec.md",
+      "role": "governing-spec",
+      "sha256": "efd605d24be77f85943dc1849c279ad4759f2fb80605390f91a3916af30ac390"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0081-release-and-capability-restores/issues/01-restore-release-and-capability-protections.md",
+    "sha256": "afc7d3235400a5f66f77780bda3c1aa1877ac3e1970379f62c7f1f424b20a121"
+  },
+  "result": "satisfied"
+}

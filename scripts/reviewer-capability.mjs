@@ -6,7 +6,7 @@
 //   score <scenario-directory> <report> (--repair CHANGES.json | --no-repair) [--agent LIST_AGENTS.json] [--instance ID] [--decisions FILE ...]
 //         [--provisional lower|upper | --enumerate]
 //   baseline <unit>
-//   summary [--markdown] --cell LABEL FILE... [--cell LABEL FILE...]
+//   summary [--markdown] --cell LABEL FILE... [--cell LABEL FILE...] [--compare CONTROL-LABEL CANDIDATE-LABEL]
 //   pool build <scenario-directory> <root> <name> <candidates-file ...> [--decisions FILE ...] [--limit N]
 //   pool view <root> <name> <scenario-directory>
 //   pool prompt <root> <name>
@@ -39,6 +39,8 @@ const lists = {decisions: [], hard: [], spill: []};
 const flags = {};
 /** @type {Array<{files: string[], label: string}>} */
 const cells = [];
+/** @type {[string, string] | undefined} */
+let compare;
 for (let index = 0; index < rest.length; index += 1) {
     const option = rest[index].startsWith('--') ? rest[index].slice(2) : undefined;
     if (option === undefined) positional.push(rest[index]);
@@ -48,6 +50,9 @@ for (let index = 0; index < rest.length; index += 1) {
         while (index + 1 < rest.length && !rest[index + 1].startsWith('--')) files.push(rest[++index]);
         if (label === undefined || label.startsWith('--')) usage('--cell needs a label and files.');
         cells.push({files, label});
+    } else if (option === 'compare') {
+        compare = [rest[++index], rest[++index]];
+        if (compare.some(label => label === undefined || label.startsWith('--'))) usage('--compare needs two cell labels.');
     } else if (FLAGS.includes(option)) flags[option] = true;
     else if (VALUE_OPTIONS.includes(option) || LIST_OPTIONS.includes(option)) {
         const value = rest[++index];
@@ -66,7 +71,7 @@ else if (command === 'score' && args.length === 2) {
         provisional: values.provisional, repair: values.repair, report: args[1], scenario: args[0]});
 } else if (command === 'inspect' && args.length === 1) result = await inspect({instance: args[0]});
 else if (command === 'baseline' && args.length === 1) result = await baseline({unit: args[0]});
-else if (command === 'summary' && args.length === 0) result = await summary({cells, markdown: flags.markdown});
+else if (command === 'summary' && args.length === 0) result = await summary({cells, compare, markdown: flags.markdown});
 else if (command === 'pool' && action === 'build' && args.length >= 4) {
     result = await pool({action, candidates: args.slice(3), decisions: lists.decisions, limit: values.limit === undefined ? undefined : Number(values.limit), name: args[2], root: args[1], scenario: args[0]});
 } else if (command === 'pool' && action === 'view' && args.length === 3) result = await poolView({name: args[1], root: args[0], scenario: args[2]});

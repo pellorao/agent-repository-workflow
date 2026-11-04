@@ -21,7 +21,7 @@ disable-model-invocation: true
 
 ## Run
 
-1. 确认本次的角色, 场景, 后端和设置 (`model`, `modelProvider`, `reasoningEffort`, `serviceTier`). 每格先跑一次, 只对结果接近的格增加重复. 改动前后的评分对比 (A/B, 回归) 的 Reviewer 各组用 Claude `haiku` `high`, 不用 Codex `gpt-6-luna`: luna 的分数波动过大, 区分不了两组.
+1. 确认本次的角色, 场景, 后端和设置 (`model`, `modelProvider`, `reasoningEffort`, `serviceTier`). 每格先跑一次, 只对结果接近的格增加重复. 改动前后的评分对比 (A/B, 回归) 的 Reviewer 各组用 Claude `haiku` `high`, 不用 Codex `gpt-6-luna`: luna 的分数波动过大, 区分不了两组. 判定 Reviewer 规则改动的 A/B 按事先固定的两阶段进行: 对照组 (改动前) 与候选组 (改动后) 交替启动, 各先跑 3 次, 两组候选并入同一批盲裁, 用 `summary --compare` 看差值 (候选减对照) 的 95% 区间: 整体低于 0 就拒绝, 候选均值不低于对照就接受, 其余情况两组各加跑到 10 次 (中途不看结果, 不提前停), 再按全部 10 次只判一次: 区间整体低于 0 就拒绝, 否则接受. 每个受测场景分别判定, 任一场景拒绝即拒绝. 结果表写出每阶段的差值与区间, 区间下界就是本次不能排除的降幅, 不把 "未拒绝" 写成 "没有降低". 不看两格各自区间是否重叠. A/B 两组使用同一版场景, 答案键, 简报和评分器并同期运行, 不与旧版本的历史分数比较, 也不在同一改动里顺手修场景或答案键; Reviewer 没遵循已有规则时先查原因, 不靠叠加同义指令代替诊断.
 2. 在当前会话临时目录 `.tmp/<platform>/<session>/<run>/` 下为每个实例搭建场景仓库 (实例目录必须是新路径; 返回的 `stateDirectory` 是它的同级 `state`, 恢复记录必须在会话临时目录内, 所以实例不能放在别处):
 
    ```sh
@@ -40,7 +40,7 @@ disable-model-invocation: true
 
    先对每份报告做 `repair` (规范化副本与修复记录); 记录有修改时对副本计分并给 `--repair`, 无修改时对原报告计分并给 `--no-repair`; 二者必须声明其一, 缺少 `--agent` 也返回 `blocked`.
 
-   输出 `{status, candidates, scores}`. `candidates` 是尚未裁决的候选 (关联候选与发现候选), `scores` 是按现有裁决计的分 (未裁决的候选按机械规则暂计), 含 `reportDiagnostics`, `scoreBeforePenalty` 与残差折减后的 `score`. 空报告或没有可评分内容的报告是模型失败, 返回 `succeeded` 且分数为 0 (带 `modelFailure`). `--instance` 在不同报告间必须唯一, 因为候选的稳定 id 含它. `scores` 另含格式罚, 暂停扣分与 `final`. Commit Audit 的 txt 报告没有 satisfied 行, 只计问题召回. `baseline <unit>` (评分单元 `code-standards`, `code-spec`, `commit-audit`, `spec-readiness`) 校验该评分单元登记的 pBase 基线及其归档; 场景答案键改动后须重测基线并重新登记.
+   输出 `{status, candidates, scores}`. `candidates` 是尚未裁决的候选 (关联候选与发现候选), `scores` 是按现有裁决计的分 (未裁决的候选按机械规则暂计), 含 `reportDiagnostics`, `scoreBeforePenalty` 与残差折减后的 `score`. `score` 对没有可评分内容的报告返回 `succeeded` 且分数为 0 (带 `modelFailure`); 是否调用它由下面的 `completion` 判据决定. 报告为空或缺失时, 计分前先看 `agent.json`: `completion` 非空 (`ready` 或 `incomplete`, 不论 `reason` 文本) 而报告没有可评分内容是模型失败, 记 0 并把理由写进结果表. `completion` 为 `null` (含状态 `exited` 而没有结论) 或额度, 传输, 准备, 凭据错误导致没有生成记录是运行故障, 不运行 `score`, 修复后用新实例路径重跑; 启动前先确认场景文件和交接路径可读; 同一场景, 设置和实例序号用新实例路径连续尝试三次都是 `completion` 为 `null` 时不记分, 停止并报告维护者. `--instance` 在不同报告间必须唯一, 因为候选的稳定 id 含它. `scores` 另含格式罚, 暂停扣分与 `final`. Commit Audit 的 txt 报告没有 satisfied 行, 只计问题召回. `baseline <unit>` (评分单元 `code-standards`, `code-spec`, `commit-audit`, `spec-readiness`) 校验该评分单元登记的 pBase 基线及其归档; 场景答案键改动后须重测基线并重新登记.
 5. 盲裁: 把 `candidates` 数组存成 JSON 文件, 同一裁决批次的所有报告并入同一次建池:
 
    ```sh
@@ -61,13 +61,22 @@ disable-model-invocation: true
 8. 统计: 每格 (一个模型 × 场景 × 设置) 的重复实例按开始先后给出定稿的 `score` 输出:
 
    ```sh
-   node scripts/reviewer-capability.mjs summary [--markdown] --cell <标签> <score.json ...> [--cell <标签> <score.json ...>]
+   node scripts/reviewer-capability.mjs summary [--markdown] --cell <标签> <score.json ...> [--cell <标签> <score.json ...>] [--compare <对照标签> <候选标签>]
    ```
 
-   每格前 5 个实例入主统计 (平均, SD, SE, 95% 区间, 负分数个数, 最小, 中位数), 其余列入 `extraIds` 并提示; 未定稿的输入返回 `blocked`.
+   每格前 5 个实例入主统计 (平均, SD, SE, 95% 区间, 负分数个数, 最小, 中位数), 其余列入 `extraIds` 并提示; 未定稿的输入返回 `blocked`. `--compare` 用两格给出的全部实例 (不受前 5 个限制) 计算差值 (候选减对照), Welch SE, 自由度与 95% 区间, 只供第 1 步的 A/B 使用, 调用方只给该步规定的前 3 个或前 10 个实例.
 9. 在活动 issue 中写结果表: 每个模型 × 场景 (× 格式) 的 `score`, 耗时 (第 3 步记录的 `measurement`), 召回, 误报和偷懒迹象 (未检查却声称满足, 批量填写, 错误定位, 格式损坏), 以及作废数与原因 (`inspect` 的标记). 说明样本量和天花板效应.
 
 Strata 提供方先读 `docs/specs/agent-repository-workflow/strata.md`. 直接启动的 `claude -p` 不在本流程内.
+
+## Drift check
+
+发布时由 `release` Skill 的可选步骤调用 (维护者选 run 或 skip), 也可由维护者单独调用. 目的是发现提供方更新默认模型或 CLI 升级造成的 Reviewer 能力下降; 它不是发布门禁, 不授权审核, 提交或发布.
+
+1. 四个场景在两个后端的默认设置 (Codex `gpt-6-luna` `xhigh`, Claude `haiku` `high`) 各跑 1 个实例, 共 8 个, 按 Run 流程计分并定稿 (盲裁用至少 sonnet high 的裁判).
+2. 每格的 `final` 与同目录 `last-results.md` 中同场景, 同后端, 同设置的记录比较, 不使用绝对分数门槛. 没有记录的格只登记, 不比较.
+3. 某格 `final` 比记录低 0.15 以上时, 同格再跑 2 个实例; 3 个实例的平均仍比记录低 0.15 以上才判定漂移, 停下排查 (模型版本, CLI 版本, Reviewer 运行时) 并在发布准备 issue 的 `## Comments` 报告, 不自动修复. 0.15 只决定是否多跑 2 个实例, 不是失败判定, 因为单个实例有波动.
+4. 检查可在全部 VM 通过之后运行, 但结果只在发布完成之后 (`release` Skill 第 5 节) 把各格本次结果 (有加跑时取 3 个实例的平均) 写入 `last-results.md` 并提交, 再运行 `node scripts/project-claude-skills.mjs` 重新投影; 候选修复导致发布流程重来时丢弃本次结果. 同一格只保留最新一行. 只有本检查维护该表, A/B 与回归的结果不写入. 写入或提交失败, 或检查在写入前中断时表保持原样 (已发布版本的登记可以缺失, 旧行保留), 下一次检查以表中仍有的行为基准, 没有则只登记, 并在发布准备 issue 的 `## Comments` 报告维护者, 不阻止任何发布步骤, 也不重跑已完成的检查. 两次检查之间改动频繁时, 一次检查覆盖这期间的全部变化. 每格只与上一次记录比较并覆盖它, 所以多期缓慢累积的下降不会被识别; 本检查只发现明显下降, 不追踪长期趋势.
 
 ## Finish
 

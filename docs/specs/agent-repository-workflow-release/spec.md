@@ -27,7 +27,7 @@
 
 ## Reviewer capability tests
 
-Reviewer 能力测试不是发布门禁. 维护者需要时显式调用源码专用的 `$reviewer-capability` Skill (`.agents/skills/reviewer-capability/`): 用 `tests/fixtures/reviewer-capability/<role>/<scenario>/` 中带隐藏预期的场景 (qwen_strata benchmark v2 (`benchmarks/multi-model-v2`) 的 4 个计划, 夹具直接保存物化结果, 不含补丁链), 通过 `arw background-agent` 在 Codex 和 Claude 后端运行 Reviewer, 再用 `scripts/reviewer-capability.mjs` 计分, 组盲池, 生成视图并统计, 由盲裁裁判 (至少 sonnet high) 裁决候选的召回和误报. 套件只属于 Source Checkout, 不进入 Workflow Distribution 和 release 安装包; 评分与盲裁工具的合同由 `../agent-repository-workflow-development/spec.md` 的 Module Design 节拥有. 结果用于评估角色指令, 模型和报告格式, 不授权审核, 提交或发布.
+Reviewer 能力测试不是发布门禁. 维护者需要时显式调用源码专用的 `$reviewer-capability` Skill (`.agents/skills/reviewer-capability/`): 用 `tests/fixtures/reviewer-capability/<role>/<scenario>/` 中带隐藏预期的场景 (qwen_strata benchmark v2 (`benchmarks/multi-model-v2`) 的 4 个计划, 夹具直接保存物化结果, 不含补丁链), 通过 `arw background-agent` 在 Codex 和 Claude 后端运行 Reviewer, 再用 `scripts/reviewer-capability.mjs` 计分, 组盲池, 生成视图并统计, 由盲裁裁判 (至少 sonnet high) 裁决候选的召回和误报. 套件只属于 Source Checkout, 不进入 Workflow Distribution 和 release 安装包; 评分与盲裁工具的合同由 `../agent-repository-workflow-development/spec.md` 的 Module Design 节拥有. 结果用于评估角色指令, 模型和报告格式, 不授权审核, 提交或发布. 发布时可选的漂移检查见 Optional checks, 它不是门禁, 判定漂移后继续或放弃发布由维护者决定.
 
 ## Failure recovery and authorization
 
@@ -60,6 +60,7 @@ Reviewer 能力测试不是发布门禁. 维护者需要时显式调用源码专
 | 同版本交互重装 (管道应答, Windows 用 `y\r\n`), PATH 登记仍只有一项 | 交互应答的行尾和登记去重因系统而异 |
 | 后台管理进程运行时重装和卸载都成功并使它结束; 能观察到进程存在与不存在; 能读取进程创建时间 | 进程观察和创建时间依赖 `/proc` 或 CIM, 管理进程的私有状态和 SQLite 依赖系统与 Node.js 构建 |
 | 新 Git 仓库 `workflow init` 与 `verify`; `core.autocrlf=true` 克隆后 `verify`; 对该克隆 `workflow remove` 后受管文件消失, `verify` 不再通过; agent-assisted fixture 检出后 (有上一发布版时检出上一发布版标签, 首次发布检出默认分支最新状态; Windows 用 CRLF) 的 `workflow update` 与 `verify` | 行尾与文件系统行为因系统而异 |
+| 安装后已安装的每个受管文件 (安装目录 `manifest.json` 的 `managedFiles`) 与解压出的载荷逐字节相同 | Windows rename 重试与访问控制路径可能悄悄写坏部分文件, 而 guest 检查只运行部分模块 |
 | 保留配置的卸载后新终端不再解析 `arw`, 配置文件保留, 随后重装成功 | 卸载重写 PATH 登记与保留状态走平台专属代码 |
 | 删除配置的卸载后 Installation 目录不剩文件 (后台管理进程运行过留下的私密凭据除外, 安装长期规范规定 `removeConfig` 不授权删除它) | 同上 |
 | Node.js 满足 `package.json` 的 `engines.node` | 每台系统自带不同的 Node.js |
@@ -98,6 +99,15 @@ Reviewer 能力测试不是发布门禁. 维护者需要时显式调用源码专
 | plain fixture 的 `workflow init` | 与系统无关, Skill 引用的 fixtures 参考 |
 | 公开 Bootstrap 带 `--version` 与不带 `--version` 各安装一次并核对版本 | 下载与版本选择与系统无关, Release 创建后运行 |
 | 候选在隔离 home 安装并初始化临时仓库后, 用 `claude -p` 和 `codex exec` 各问一句, 回答必须说出投影的 Skill 名与 `AGENTS.md` 标题 | 加载投影的行为与系统无关 |
+
+### Optional checks
+
+下列检查不在上面各表承诺的必测范围内, 是否运行由维护者在发布时选择, 选择 skip 时在发布准备 issue 的 `## Comments` 记一行; skip 不阻断发布, 都不是发布门禁; 步骤, 通过条件和 skip 的记录见 `$release` Skill 第 3 节第 9, 10 步.
+
+| 情形 | 理由 |
+|---|---|
+| 初始化后交接冒烟 | 交接是用户在 `workflow init` 之后实际走的路径, 现行检查只证明投影的 Skill 名被加载; 它只检查交接没有破坏仓库且 issue 可读, 不判断交接审计是否完整, 也不运行 issue 的实施, 审核, 提交生命周期 ("初始化 issue 生命周期" 一行保持不变); 耗额度, 所以可选 |
+| Reviewer 能力漂移检查 (`$reviewer-capability` Skill 的 Drift check 节) | 其他检查证明候选行为, 不证明 Reviewer 能力; 耗额度, 所以可选 |
 
 ### Fixed tests
 

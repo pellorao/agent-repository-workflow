@@ -203,7 +203,7 @@ test('pools: prompt checks adj, split gives the review lists, override and ancho
     assert.deepEqual([anchorMeta.source, anchorMeta.origin], ['anchor', {candidateId: 'c-new anchor'}]);
 });
 
-test('summary: the first five files count, unfinished and repeated inputs are blocked', async t => {
+test('summary: the first five files count, compare uses all files, unfinished and repeated inputs are blocked', async t => {
     const directory = await scenario(t);
     const write = async (/** @type {string} */ name, /** @type {any} */ scores, /** @type {any} */ extra = {}) => {
         await writeFile(join(directory, name), JSON.stringify({candidates: [], provisional: null, scores: {f: 0.1, final: 0.5, missingChecks: 0, overallDeduction: 0.1, rawScore: 0.6, rRepairable: 1, scoreBeforePenalty: 0.6, ...scores}, status: 'succeeded', ...extra}));
@@ -215,7 +215,19 @@ test('summary: the first five files count, unfinished and repeated inputs are bl
     assert.ok(Math.abs(result.cells[0].mean - 0.6) < 1e-12 && Math.abs(result.cells[0].meanR83 - 0.54) < 1e-12);
     assert.equal(result.diagnostics.length, 1);
     assert.ok(result.markdown.split('\n').every((/** @type {string} */ line) => line === '' || line.startsWith('|')));
+    const finals = (/** @type {number[]} */ values, /** @type {string} */ prefix) => Promise.all(values.map((final, index) => write(`${prefix}${index}.json`, {final})));
+    const [control, candidate] = await Promise.all([finals([0.5, 0.6, 0.7], 'c'), finals([0.4, 0.5, 0.6], 'd')]);
+    const ten = await finals([0.5, 0.6, 0.7, 0.5, 0.6, 0.7, 0.5, 0.6, 0.7, 0.6], 't');
+    const compared = (await summary({cells: [{files: control, label: 'control'}, {files: candidate, label: 'candidate'}], compare: ['control', 'candidate'], markdown: true})).comparison;
+    assert.deepEqual([compared.nControl, compared.nCandidate, compared.df], [3, 3, 4]);
+    assert.ok([compared.diff + 0.1, compared.se - 0.08165, compared.ci95[0] + 0.3267, compared.ci95[1] - 0.1267].every(value => Math.abs(value) < 1e-4));
+    const tenth = await summary({cells: [{files: ten, label: 'control'}, {files: candidate, label: 'candidate'}], compare: ['control', 'candidate']});
+    assert.deepEqual([tenth.comparison.nControl, tenth.cells[0].n], [10, 5]);
+    const flat = await write('flat.json', {final: 0.5});
+    const same = await summary({cells: [{files: [flat, await write('flat2.json', {final: 0.5})], label: 'a'}, {files: [await write('flat3.json', {final: 0.3}), await write('flat4.json', {final: 0.3})], label: 'b'}], compare: ['a', 'b']});
+    assert.deepEqual([same.comparison.df, same.comparison.ci95.map((/** @type {number} */ value) => Math.round(value * 10) / 10)], [null, [-0.2, -0.2]]);
     const blocked = (/** @type {any} */ cells) => summary({cells}).then(output => output.status);
+    assert.deepEqual(await Promise.all([['control', 'control'], ['control', 'missing'], ['single', 'control']].map(compare => summary({cells: [{files: control, label: 'control'}, {files: [control[0]], label: 'single'}], compare: /** @type {[string, string]} */ (compare)}).then(output => output.status))), Array(3).fill('blocked'));
     assert.deepEqual(await Promise.all([blocked([]), blocked([{files: [], label: 'a'}]), blocked([{files: [files[0]], label: 'a'}, {files: [files[1]], label: 'a'}]), blocked([{files: [files[0]], label: 'a'}, {files: [files[0]], label: 'b'}]),
         blocked([{files: [await write('open.json', {}, {candidates: [{}]})], label: 'a'}]), blocked([{files: [await write('prov.json', {}, {provisional: 'lower'})], label: 'a'}]),
         blocked([{files: [await write('single.json', {final: undefined})], label: 'a'}]), blocked([{files: [join(directory, 'missing.json')], label: 'a'}])]), Array(8).fill('blocked'));

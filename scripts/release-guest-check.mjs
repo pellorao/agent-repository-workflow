@@ -124,6 +124,14 @@ for (const [label, directory] of WINDOWS ? [['bsdtar', join(String(process.env.S
     ).then((/** @type {number} */ code) => ({ok: code === 0, output: ''}), (/** @type {Error} */ error) => ({ok: false, output: error.message})));
 }
 process.env.PATH = inheritedPath;
+// 安装后的每个受管文件与解压出的载荷逐字节相同 (Windows 的 rename 重试或访问控制路径可能悄悄写坏部分文件, 而本检查只运行部分模块).
+/** @param {string} label */
+const checkInstalledBytes = label => {
+    const {managedFiles} = JSON.parse(readFileSync(join(INSTALLATION, 'manifest.json'), 'utf8'));
+    const differing = managedFiles.filter((/** @type {string} */ file) => !existsSync(join(INSTALLATION, file)) || !readFileSync(join(INSTALLATION, file)).equals(readFileSync(join(extracted, file))));
+    step(`${label}已安装的 ${managedFiles.length} 个受管文件与载荷逐字节相同`, {ok: differing.length === 0, output: differing.join('\n')});
+};
+checkInstalledBytes('');
 
 if (WINDOWS) checkPath('安装后 ExpandString 类型, 未展开项与非 ASCII 项仍在', PRESERVED);
 /** 在新会话解析 arw 并核对 Installation 目录 (Windows 路径不区分大小写, 可能输出多行) 与版本. @param {string} prefix 步骤名前缀 @param {string} resolveLabel @param {string} locateCommand @param {'cmd' | 'powershell'} shell */
@@ -197,6 +205,7 @@ const install = (/** @type {string[]} */ options, /** @type {string} */ input = 
 await startManager();
 step('管理进程运行时同版本交互重装', install([], WINDOWS ? 'y\r\n' : 'y\n'));
 await expectManager('重装后管理进程已结束', 'absent');
+checkInstalledBytes('重装后');
 if (WINDOWS) checkPath('重装后用户 PATH 只有一个 Installation 条目', "@($v -split ';' | Where-Object { $_.TrimEnd('\\') -ieq $d }).Count -eq 1");
 else {
     const count = readFileSync(join(homedir(), '.profile'), 'utf8').split('# >>> agent-repository-workflow PATH >>>').length - 1;
@@ -215,6 +224,7 @@ if (WINDOWS) {
     step('删除用户 PATH 值', userPath("$k.DeleteValue('Path', $false)"));
 }
 const reinstalled = step('卸载后重装', install(['--non-interactive', '--register-path', 'true']));
+checkInstalledBytes('卸载后重装后');
 step('重装无环境刷新警告', {ok: !reinstalled.includes('windows-environment-refresh-failed') && !reinstalled.includes('Windows environment refresh failed'), output: reinstalled});
 if (WINDOWS) checkPath('用户 PATH 值被创建为只含 Installation 的 ExpandString', "$v -ne $null -and $k.GetValueKind('Path') -eq 'ExpandString' -and $v.TrimEnd(';') -ieq $d");
 checkResolved('卸载后重装后 ', '卸载后重装后新终端解析 arw', locate, 'cmd');
