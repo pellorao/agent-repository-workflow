@@ -9,9 +9,12 @@ import {homedir, tmpdir} from 'node:os';
 import {delimiter, dirname, join, resolve} from 'node:path';
 import {fileURLToPath, pathToFileURL} from 'node:url';
 
+import {INSTALLATION_DIRECTORY_NAME} from '../lib/arw-common/product-identity.mjs';
+import {backgroundAgentRuntimeDirectory} from '../lib/background-agent/client.mjs';
+
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const WINDOWS = process.platform === 'win32';
-const INSTALLATION = join(homedir(), '.agent-repository-workflow');
+const INSTALLATION = join(homedir(), INSTALLATION_DIRECTORY_NAME);
 const NODE_DIRECTORY = dirname(process.execPath);
 // Git for Windows 的安装根目录 (`<root>\cmd\git.exe`), 提供 GNU tar 与 bash.
 const gitLocation = WINDOWS ? spawnSync('where', ['git'], {encoding: 'utf8'}) : null;
@@ -192,7 +195,7 @@ writeFileSync(request, '{"id":"1","operation":"list_agents","input":{}}\n');
 const {observeBackgroundAgentManagerProcess} = await importLib('background-agent/manager-process.mjs');
 /** @param {string} label @param {'present' | 'absent'} expected */
 const expectManager = async (label, expected) => {
-    const state = await observeBackgroundAgentManagerProcess({runtimeDirectory: join(INSTALLATION, 'background-agent-state')});
+    const state = await observeBackgroundAgentManagerProcess({runtimeDirectory: backgroundAgentRuntimeDirectory(INSTALLATION)});
     step(label, {ok: state === expected, output: state});
 };
 // guest 检查不调用 Agent CLI, `arw background-agent` 需要的会话身份由这里代为提供.

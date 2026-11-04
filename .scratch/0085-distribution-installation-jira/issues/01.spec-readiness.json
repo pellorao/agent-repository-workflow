@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0085:01",
+  "exception": {
+    "confirmedAt": "2026-11-04T00:00:00Z",
+    "reason": "Claude 于 2026-11-04 明确确认此单 issue effort 不含设计决定: 经核实积压中的机械整理与明确授权的缺陷修复, 不需要治理设计."
+  },
+  "subject": {
+    "filePath": ".scratch/0085-distribution-installation-jira/issues/01-distribution-installation-jira.md",
+    "sha256": "6d6325459ca53dbe7ff52578a79ec437df640d33b91f3869e6b08fa59457f23a"
+  },
+  "result": "not-applicable"
+}

@@ -406,6 +406,7 @@ test('sync directly rebuilds the fixed generated range and leaves source-only Sk
 
 test('sync blocks before deleting anything when Skill registration is wrong', async t => {
     const cases = /** @type {Array<[string, (root: string) => Promise<void>, string]>} */ ([
+        ['invalid Skill identity', async root => { await write(root, '.agents/skills/Bad_Name/SKILL.md', 'bad\n'); await write(root, '.agents/skills/Bad_Name/a.md', 'bad\n'); }, 'skill-source-path-invalid'],
         ['unregistered Skill', root => write(root, '.agents/skills/extra/SKILL.md', 'extra\n'), 'skill-unregistered'],
         ['stale name', root => write(root, 'distribution/config.json', `${JSON.stringify({...distributionConfig, sourceOnlySkills: ['gone']})}\n`), 'skill-registration-stale'],
         ['invalid list', root => write(root, 'distribution/config.json', `${JSON.stringify({...distributionConfig, distributedSkills: []})}\n`), 'skill-lists-invalid'],
@@ -423,6 +424,7 @@ test('sync blocks before deleting anything when Skill registration is wrong', as
         const result = await syncWorkflowDistribution({repositoryRoot: root, stateAdapter: cleanState([])});
         assert.equal(result.status, 'blocked', name);
         assert.ok(result.diagnostics.some(entry => entry.code === code), name);
+        assert.equal(result.diagnostics.filter(entry => entry.code === code).length, 1, name);
         assert.equal(await readFile(obsoletePath(root), 'utf8'), '# Obsolete\n', name);
     }
 });

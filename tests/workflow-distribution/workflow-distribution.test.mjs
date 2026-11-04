@@ -253,7 +253,7 @@ test('production check reports unregistered, stale and misplaced Skill sources, 
     const result = await check(drifted);
     assert.equal(result.status, 'failed');
     assert.deepEqual(result.diagnostics.map(entry => [entry.code, entry.path]), [
-        ['skill-unregistered', '.agents/skills/Bad_Name'],
+        ['skill-source-path-invalid', '.agents/skills/Bad_Name'],
         ['skill-unregistered', '.agents/skills/extra'],
         ['skill-source-path-invalid', '.agents/skills/notes.md'],
         ['skill-registration-stale', 'distribution/config.json'],
