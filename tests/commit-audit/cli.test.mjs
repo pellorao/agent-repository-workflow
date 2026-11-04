@@ -327,6 +327,35 @@ test('prepare summarizes staged net growth by category, skips .scratch records a
     ].join('\n'));
 });
 
+test('prepare warns about a recorded net growth that differs from the measurement and about checked acceptance commands missing from Validation', async t => {
+    const repository = await stagedRepository(t, {statuses: ['in-progress']});
+    await mkdir(join(repository.root, 'tests'));
+    await writeFile(join(repository.root, 'tests/x.test.mjs'), 'a\nb\nc\n', 'utf8');
+    await runGit(repository.root, ['add', 'tests']);
+    await stageIssue(repository.root, issueText('in-progress').replace('- [ ] Complete.', [
+        '- [x] Run `pnpm test` and `node ok.mjs`.', '* [x] Run `node missing.mjs`.', '  + [X] Run `git diff --check`.', '- [ ] Run `arw unchecked`.', '-[x] Run `arw no-space`.',
+        '```', '- [x] Run `arw fenced`.', '```',
+    ].join('\n')) + [
+        '\n## Validation\n', '- code: +8 lines (files: 2)', '- tests: +3 lines (files: 1)', '- documents: 245 passed', '- documents: 5 lines', '- tests: 9 characters', '- 17 lines of code changed', '- `pnpm test` and `node ok.mjs` passed',
+    ].join('\n') + '\n');
+    const {summary} = await prepareCommitAudit({inputPath: await writeInput(repository.root, {authorizingIssueIds: ['issue:0001:01']}), platformAdapter: adapter, repositoryRoot: repository.root});
+    const lines = summary.split('\n');
+    const path = '.scratch/0001-workflow/issues/01-issue.md';
+    assert.equal(lines.at(-4), 'next ADR number: 0001');
+    assert.deepEqual(lines.slice(-3), [
+        `warning: ${path}: Validation records code: 8 but this candidate measures 9.`,
+        `warning: ${path}: checked acceptance item "* [x] Run \`node missing.mjs\`." names \`node missing.mjs\`, which Validation does not mention.`,
+        `warning: ${path}: checked acceptance item "+ [X] Run \`git diff --check\`." names \`git diff --check\`, which Validation does not mention.`,
+    ]);
+});
+
+test('prepare treats a missing Validation or Acceptance criteria section as empty text', async t => {
+    const repository = await stagedRepository(t, {statuses: ['in-progress']});
+    await stageIssue(repository.root, issueText('in-progress').replace('- [ ] Complete.\n\n## Blocked by', '## Blocked by').replace('## Acceptance criteria\n\n', '- [x] Run `node a.mjs`.\n\n') + '\n## Comments\n\n- code: +1 lines\n');
+    const {summary} = await prepareCommitAudit({inputPath: await writeInput(repository.root, {authorizingIssueIds: ['issue:0001:01']}), platformAdapter: adapter, repositoryRoot: repository.root});
+    assert.equal(summary.split('\n').at(-1), 'next ADR number: 0001');
+});
+
 test('the prepare command keeps standard output to the round directory and writes the summary to standard error', async t => {
     const repository = await stagedRepository(t, {statuses: ['in-progress']});
     const environment = {CLAUDECODE: process.env.CLAUDECODE, CODEX_THREAD_ID: process.env.CODEX_THREAD_ID};

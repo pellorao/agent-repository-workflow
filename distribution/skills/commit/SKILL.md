@@ -36,7 +36,7 @@ name: commit
 
 ### Run
 
-1. 在仓库 `.tmp/` 下写一个 `input.json`, 只含完整排序的 `authorizingIssueIds`. 运行 `arw commit-audit prepare --input <absolute-input-path>`; 它新建审核轮目录 `_commit-audit/<n>/` (见 `../reviewer-launch/SKILL.md` 的 Review rounds 节), 其中 `request.json` 含 `gate1`, `gate2` (文档与 `since`), `reviewPath` 和受审版本 `base`, `tree`, 在标准输出只打印轮目录, 并在标准错误输出候选的实测净增 (代码行数, 文档字符数, 测试行数) 和下一个 ADR 编号, 写 issue 的 `## Validation` 或 `## Comments` 时直接复制 (一个 issue 分多次提交时把各次数字相加).
+1. 在仓库 `.tmp/` 下写一个 `input.json`, 只含完整排序的 `authorizingIssueIds`. 运行 `arw commit-audit prepare --input <absolute-input-path>`; 它新建审核轮目录 `_commit-audit/<n>/` (见 `../reviewer-launch/SKILL.md` 的 Review rounds 节), 其中 `request.json` 含 `gate1`, `gate2` (文档与 `since`), `reviewPath` 和受审版本 `base`, `tree`, 在标准输出只打印轮目录, 并在标准错误输出候选的实测净增 (代码行数, 文档字符数, 测试行数) 和下一个 ADR 编号, 写 issue 的 `## Validation` 或 `## Comments` 时直接复制 (一个 issue 分多次提交时把各次数字相加); 摘要后的 `warning:` 行逐条核对, 只是提示, 不是关卡.
 2. 按 `../reviewer-launch/SKILL.md` 的 Review rounds 节运行 `cat <轮目录>/*.jsonl | arw background-agent --wait`. Reviewer 按 `docs/agents/reviewer.md` 的 Report 节逐条写入问题, 或写 `No problems.`.
 
 Main Agent 负责暂存, Request, 审核协调和处理问题, 不代写语义判断. Reviewer 只用只读 git 命令读取 `base` 和 `tree`, 不调用 Engine, 不修改索引.
