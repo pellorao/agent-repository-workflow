@@ -28,6 +28,7 @@ test('setup stages the candidate over the base commit and returns the reviewer i
     assert.match(input.handoff, /Only the staged comparison\.$/u);
     assert.equal((await runGit(target, ['diff', '--cached', '--name-only'])).stdout.trim(), 'a.txt');
     assert.equal((await runGit(target, ['log', '--format=%s'])).stdout.trim(), 'scenario base');
+    assert.match(await readFile(join(target, 'AGENTS.md'), 'utf8'), /^# Agent Repository Workflow$/mu);
 });
 
 test('setup prepares the Spec Readiness Request', async t => {

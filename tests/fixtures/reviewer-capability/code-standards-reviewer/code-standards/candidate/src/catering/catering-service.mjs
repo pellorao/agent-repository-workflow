@@ -151,3 +151,16 @@ export const vendorManifests = async ({day, feeds, store, vendorIds}) => {
     const menus = Object.fromEntries(await Promise.all(vendorIds.map(async (vendorId) => [vendorId, await menuFor(feeds, vendorId)])));
     return kitchenManifests(await store.list({state: 'confirmed'}), menus, {startAt: day, endAt: day + DAY});
 };
+
+const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+export const notifyVendorWithRetry = async ({attempts = 3, notice, notifier, orderId, retryDelayMs = 250}) => {
+    for (let attempt = 1; ; attempt += 1) {
+        try {
+            return await notifier.vendor(notice);
+        } catch (error) {
+            if (attempt >= attempts) throw new Error(`vendor of order ${orderId} was not notified`, {cause: error});
+            await pause(retryDelayMs);
+        }
+    }
+};

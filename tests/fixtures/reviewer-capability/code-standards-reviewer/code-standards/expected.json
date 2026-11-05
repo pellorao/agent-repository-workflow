@@ -2201,6 +2201,76 @@
       }
      ],
      "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/billing/invoice-service.mjs",
+       "line": 36
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/billing/invoice-service.mjs",
+       "line": 36
+      },
+      {
+       "filePath": "src/billing/invoice-service.mjs",
+       "line": 37
+      }
+     ],
+     "expectation": "issueInvoice no longer throws 'nothing to invoice' when the draft has no line items: this change deletes that check without stating the goal it guarded or where that goal is now covered, which root AGENTS.md rule 6 of Efficiency First requires before deleting a check.",
+     "findingTerms": [
+      [
+       "nothing to invoice",
+       "lineItems.length",
+       "empty invoice",
+       "no line items",
+       "zero line items",
+       "without line items"
+      ],
+      [
+       "removed",
+       "deleted",
+       "delete",
+       "removal",
+       "dropped",
+       "no longer"
+      ]
+     ],
+     "result": "gap"
+    },
+    {
+     "associationEvidence": [
+      {
+       "filePath": "src/catering/catering-service.mjs",
+       "line": 157
+      }
+     ],
+     "evidence": [
+      {
+       "filePath": "src/catering/catering-service.mjs",
+       "line": 157
+      },
+      {
+       "filePath": "tests/catering/vendor-retry.spec.mjs",
+       "line": 12
+      }
+     ],
+     "expectation": "notifyVendorWithRetry takes the retryDelayMs parameter (default 250 ms) only so the new test can pass 0 and stay under the 100 ms test callback threshold; root AGENTS.md forbids changing production code, including test injection seams, to shorten test time.",
+     "findingTerms": [
+      [
+       "retryDelayMs"
+      ],
+      [
+       "test",
+       "seam",
+       "inject",
+       "100",
+       "threshold"
+      ]
+     ],
+     "result": "gap"
     }
    ],
    "scope": "CODE-STANDARDS-FINDINGS"

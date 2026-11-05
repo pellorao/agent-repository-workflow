@@ -97,7 +97,7 @@
       0.1531532
     ],
     "scenarioSha256": {
-      "code-standards-reviewer/code-standards": "92eafd6429bf71cb652cb7c615f1cd367b016ffa8fd63be97e6cd8f502577afd"
+      "code-standards-reviewer/code-standards": "be34e5e93cc8573617661ccbd80707f9a09a00ece0ad1dba47a55d32bd15d2c6"
     },
     "scoringPatchSha256": "ebc4ad013b225cca8fc5a2d7b8542dba5bc6a459c6dec44e5e42716266b05666",
     "archive": "format-baseline/code-standards-v5.1"

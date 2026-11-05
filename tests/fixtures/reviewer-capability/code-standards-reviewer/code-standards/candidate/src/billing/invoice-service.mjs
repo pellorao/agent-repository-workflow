@@ -34,7 +34,6 @@ export const issueInvoice = async ({extraCharges = [], nextId, notifier, now, re
     const existing = await store.findByPeriod(prepared);
     if (existing !== null) return existing;
     const draft = draftFor(prepared, reservations, extraCharges);
-    if (draft.lineItems.length === 0) throw new Error('nothing to invoice');
     const at = now();
     const id = nextId();
     const invoice = {

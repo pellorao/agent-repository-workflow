@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0093:01",
+  "exception": {
+    "confirmedAt": "2026-11-02T12:00:00Z",
+    "reason": "Single issue with no design decision (a test-suite scenario addition and one capability A/B); the user confirmed on 2026-11-02 that issues of this kind need no governance design."
+  },
+  "subject": {
+    "filePath": ".scratch/0093-c10-reviewer-check-ab/issues/01-code-standards-root-agents-scenario.md",
+    "sha256": "7a16c8d0f0928dbafe3dc5d93cc40df4c21bbd2c6996a771059783e531dd15ad"
+  },
+  "result": "not-applicable"
+}
