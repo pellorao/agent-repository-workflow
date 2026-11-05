@@ -8,7 +8,7 @@
 
 独立审查所提供的治理文档是否已经具备开始实施所需的设计就绪. 只使用一个由 ARW Engine 生成的 Reviewer Request, 判断治理设计是否完整, 一致, 可实现且可验证. Module Design 是该审查中有条件适用的一部分, 不是审查目的.
 
-审查前, 阅读并遵循 `../reviewer.md`. 同时阅读 `issue-tracking` Skill, `../writing.md` 和 `domain-modeling` Skill 的 Long-term specification boundary 章节. 将长期规范边界应用于每项检查; 但 spec 对调用方不可见的内部算法, 数据结构或实现策略提出的要求是有效的交付要求, 不因长期规范边界成为就绪缺口.
+审查前, 阅读并遵循 `../reviewer.md`. 同时阅读 `issue-tracking` Skill 的 Issue structure 节, `../writing.md` 的 Minimal sufficient contracts 节, `../specification-presentation.md` 和 `domain-modeling` Skill 的 Long-term specification boundary 章节. 将长期规范边界应用于每项检查; 但 spec 对调用方不可见的内部算法, 数据结构或实现策略提出的要求是有效的交付要求, 不因长期规范边界成为就绪缺口.
 
 ## Inputs
 
@@ -35,7 +35,7 @@ Reviewer Request 为响应绑定精确的绝对 `draftPath`.
 3. 依次完成 `SPEC-READINESS-RATIONALE`, `SPEC-READINESS-ADR-EVALUATION` 和 `MODULE-DESIGN-APPLICABILITY`. 每项检查处理完自己负责的全部独立义务才算完成.
 4. 如果任何治理 spec 或 PRD 使用 `Not required:` 或完整的 Module Design 格式, 阅读 `./spec-readiness-reviewer/module-design.md`, 并在共用检查后完成其中适用的检查.
 
-首次核实 `gap` 或 `uncertain` 问题时, 立即阅读 `./spec-readiness-reviewer/findings.md` 和 `../agent-writes.md`, 把该问题写入绑定的 `draftPath`, 再继续当前阶段. 后续发现, 修订和撤回都直接更新同一草稿. 写入不改变上述阶段完成标准.
+首次核实 `gap` 或 `uncertain` 问题时, 立即阅读 `./spec-readiness-reviewer/findings.md`, 把该问题写入绑定的 `draftPath`, 再继续当前阶段. 后续发现, 修订和撤回都直接更新同一草稿. 写入不改变上述阶段完成标准.
 
 ## Common checks
 
@@ -80,15 +80,11 @@ Reviewer Request 为响应绑定精确的绝对 `draftPath`.
 
 ## Output
 
-ARW Engine 已经把精确的 `draftPath` 创建为空 txt 草稿, Reviewer 必须亲自将完整审核报告写入该文件, 并在审核过程中更新其中的当前结论. 报告按 `../reviewer.md` 的 Report 节编写: 有问题时按 `./spec-readiness-reviewer/findings.md` 逐条写出, 没有问题时内容精确为 `No problems.`. Engine 把 `No problems.` 记为 `satisfied`, 其他非空报告记为 `gap`. 完成审查并写入最终草稿后, 在最终响应中只返回 `{"status":"ready"}`.
+ARW Engine 已经把精确的 `draftPath` 创建为空 txt 草稿, Reviewer 必须亲自将完整审核报告写入该文件, 并在审核过程中更新其中的当前结论. 报告按 `../reviewer.md` 的 Report 节编写: 有问题时按 `./spec-readiness-reviewer/findings.md` 逐条写出, 没有问题时内容精确为 `No problems.`. Engine 把 `No problems.` 记为 `satisfied`, 其他非空报告记为 `gap`.
 
-如果请求无法读取或格式错误, 或完整草稿无法写入其绑定路径, 则在最终响应中只返回包含简明理由的 `{"status":"incomplete","reason":"..."}`. 不得搜索替代内容, 编造其他路径或创建替代记录.
+如果请求无法读取或格式错误, 或完整草稿无法写入其绑定路径, 按 `../reviewer.md` 的 Report 节返回 `incomplete`. 不得搜索替代内容, 编造其他路径或创建替代记录.
 
 ## Constraints
-
-负责本次审核的 Reviewer 按 `../reviewer.md` 的 Single-agent execution 节独自完成全部适用检查, 核对每项证据, 并对完整覆盖和最终报告质量负责.
-
-通信必须遵循 `../reviewer.md` 的 Communication and observation 节, 最终响应按本文件的 Output 节提供.
 
 不得添加, 修改, 重命名或删除已跟踪的仓库文件. 完整响应草稿必须由负责本次审核的 Reviewer 亲自写入请求指定的 `draftPath`. 平台原生命令能力用于读取适用 Agent 指令, 完整当前 Reviewer Request 和公共复审规则明确交接的自身前轮原始草稿及绑定请求, 写入绑定的 `draftPath`, 以及按公共通信规则通过 `arw background-agent` 发送允许的中途消息. 前轮材料不作为当前语义证据. 不得读取或推导 Main Agent 会话身份, 读取 ARW Engine 实现, 调用准备, 生成, 提升或验证入口, 或生成报告之外的路径. 不得把作者对话, 隐藏推理, 倾向性结论, 正式旧就绪结果或当前 Input 以外的文件用作当前证据. 语法, 路径, 摘要值, 顺序和新鲜度由 Engine 检查, Reviewer 不自行执行这些检查. 不得声称证明运行时配置, 模型身份, 权限或修改归属.
 

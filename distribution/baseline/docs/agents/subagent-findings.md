@@ -5,7 +5,7 @@
 
 在接受或处理以识别问题为职责的 subagent 所报告的问题前, Main Agent 必须独立检查其引用的证据和推理. 该问题为 Main Agent 的判断提供信息, 但不构成证明.
 
-根据普通 Code Review 问题更改候选内容前, 如果以下任一条件适用, 请求用户决定:
+根据 `code-review` Skill 的普通 Code Review 问题更改候选内容前 (提交审核和就绪审核的处置见 `commit`, `spec-readiness`, `rule-and-design-changes`), 如果以下任一条件适用, 请求用户决定:
 
 - Main Agent 质疑问题的有效性.
 - 影响可能不足以证明更改候选内容并重复每个受影响的下游关卡是合理的.

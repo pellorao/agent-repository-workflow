@@ -19,7 +19,8 @@ Spec Readiness 和提交审核的每一轮由所属工作流的 `prepare` 写出
 
 1. 运行 `cat <轮目录>/*.jsonl | arw background-agent --wait`; 只重审其中一个 Reviewer 时只传它的文件.
 2. 每个请求先输出回执, 结束时再输出一行 `<id>:done`. `completion` 非空时读取其 `reportPath` 的报告; `completion` 为 `null` 而 `messages` 含 `source` 为 `provider-program` 的消息时按 Long-running and paused reviews 节处理; 来源为 `agent` 的是 Reviewer 的中途通知, 结果以报告为准; `ok: false` (含 `reviewer-not-ready`), `state: "exited"` 或 `providerError` 按具体原因处理; `reviewer-not-ready` 和 `incomplete` 都不是审核结果, 重派时重新 `prepare` 后重跑.
-3. 复审前修复并重新运行 `prepare`, 得到下一轮目录. 运行中的输入不改写, 未完成审核不当作通过.
+3. Reviewer 正常结束后, Main Agent 每轮自选一两处 Reviewer 应当检查的要求或代码位置抽查, 提交审核其中至少一处是回归抽查 (改动代码所服务的既有要求是否仍成立); 发现漏检时该轮结果作废并重审.
+4. 复审前修复并重新运行 `prepare`, 得到下一轮目录. 运行中的输入不改写, 未完成审核不当作通过.
 
 ## 按需读取
 

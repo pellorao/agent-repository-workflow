@@ -4,7 +4,7 @@ name: to-spec
 disable-model-invocation: true
 ---
 
-本 Skill 把当前对话和已获得的代码库理解整理为规范, 不重新访谈用户. 编写前遵循 `docs/agents/subagent-allocation.md`, `docs/agents/agent-writes.md` 与 `docs/agents/writing.md` 的 Specification design presentation 节.
+本 Skill 把当前对话和已获得的代码库理解整理为规范, 不重新访谈用户. 编写前遵循 `docs/agents/subagent-allocation.md`, `docs/agents/agent-writes.md` 与 `docs/agents/specification-presentation.md`.
 
 ## Process
 

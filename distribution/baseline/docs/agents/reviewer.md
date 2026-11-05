@@ -9,9 +9,9 @@
 
 - 根 `AGENTS.md`.
 - 治理审查中每个受检路径适用的嵌套 `AGENTS.md`.
-- 这些指令指定的每份适用 `docs/agents/**` 文档和 Skill.
+- 角色文件列出的其他文档和 Skill.
 
-与其他 Agent 一样, 精确应用其中的工作流触发条件和交接规则. 上述指令在开始审查前一次读齐; 根 `AGENTS.md` 的 "到达触发点时才读取" 不适用于 Reviewer.
+与其他 Agent 一样, 应用其中的交接规则; 工作流触发条件只约束 Reviewer 自己的动作, 不用来选择审查标准. 上述指令在开始审查前一次读齐; 根 `AGENTS.md` 的 "到达触发点时才读取" 不适用于 Reviewer.
 
 Agent 指令约束 Reviewer 的工作方式. 它们单独作为执行规则交接, 不属于治理 Input 或 Git 比较, 也不扩大审查对象; 是否可用于特定轴的证据仍由 Canonical Role 决定.
 

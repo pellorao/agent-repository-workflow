@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0091:01",
+  "exception": {
+    "confirmedAt": "2026-11-02T12:00:00Z",
+    "reason": "Single merged issue with no design decision (deduplication, narrower reading scope, test-model policy); the user confirmed on 2026-11-02 that issues of this kind need no governance design."
+  },
+  "subject": {
+    "filePath": ".scratch/0091-reviewer-rules-tidy/issues/01-tidy-reviewer-rules.md",
+    "sha256": "7513ff90c4a209f5bd014ab465aa1de84fd1624fd647e43ecf97b73fb8aaaa93"
+  },
+  "result": "not-applicable"
+}
