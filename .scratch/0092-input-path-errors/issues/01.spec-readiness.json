@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0092:01",
+  "exception": {
+    "confirmedAt": "2026-11-02T12:00:00Z",
+    "reason": "Single issue with no design decision (error message wording and two Skill sentences); the user confirmed on 2026-11-02 that issues of this kind need no governance design."
+  },
+  "subject": {
+    "filePath": ".scratch/0092-input-path-errors/issues/01-name-expected-input-paths.md",
+    "sha256": "4d9416acc6ba794cb50b885b87fa8a89f5d5214a3ce3231b23d0f6f68b4e4ae4"
+  },
+  "result": "not-applicable"
+}

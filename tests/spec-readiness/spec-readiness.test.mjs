@@ -638,6 +638,17 @@ test('exception is invalidated when the effort gains a second implementation iss
     });
 });
 
+test('exception input outside the Agent workspace names the expected directory', async t => {
+    const repositoryRoot = await createRepository(t, {git: false});
+    const inputPath = join(repositoryRoot, '.tmp', 'exception.json');
+    await mkdir(dirname(inputPath), {recursive: true});
+    await writeFile(inputPath, '{}\n', 'utf8');
+    await assert.rejects(
+        generateSpecReadiness({inputPath, issueId: 'issue:0001:01', platformAdapter: adapter, repositoryRoot}),
+        {message: new RegExp(`workspace: ${join(repositoryRoot, '.tmp', 'codex', 'readiness-test', '0001_01', 'spec-readiness')}\\.`, 'u')},
+    );
+});
+
 test('exception generation requires exact Human confirmation data', async t => {
     const repositoryRoot = await createRepository(t, {git: false});
     await writeFile(join(repositoryRoot, '.scratch', '0001-workflow', 'issues', '01-implement.md'), issue(), 'utf8');

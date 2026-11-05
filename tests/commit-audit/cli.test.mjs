@@ -66,6 +66,14 @@ test('Commit Audit CLI keeps explicit absolute Request handles', () => {
     ]) assert.throws(() => parseCommand(args), UsageError);
 });
 
+test('prepare names the expected input.json location when the path is wrong', async t => {
+    const repository = await stagedRepository(t, {statuses: ['in-progress']});
+    await assert.rejects(
+        prepareCommitAudit({inputPath: join(repository.root, 'input.json'), platformAdapter: adapter, repositoryRoot: repository.root}),
+        {message: new RegExp(`${repository.root}/\\.tmp/<directory>/input\\.json`, 'u')},
+    );
+});
+
 test('prepare writes a fixed-version round for both Reviewers and follows up their threads in the next round', async t => {
     const repository = await stagedRepository(t, {statuses: ['in-progress']});
     const first = await prepare(repository.root, {authorizingIssueIds: ['issue:0001:01']});
