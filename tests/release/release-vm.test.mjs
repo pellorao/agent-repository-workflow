@@ -75,6 +75,8 @@ const setup = async t => {
     const root = async (name, local) => {
         await mkdir(join(directory, name, 'scripts'), {recursive: true});
         await copyFile('scripts/release-vm.mjs', join(directory, name, 'scripts', 'release-vm.mjs'));
+        await mkdir(join(directory, name, 'lib', 'common'), {recursive: true});
+        await copyFile('lib/common/git-content.mjs', join(directory, name, 'lib', 'common', 'git-content.mjs'));
         if (local !== undefined) await writeFile(join(directory, name, '.arw.local.json'), local);
         return (/** @type {string[]} */ args, cwd = directory) => runProcess(process.execPath, [join(directory, name, 'scripts', 'release-vm.mjs'), ...args], {cwd, env: process.env});
     };
@@ -187,3 +189,25 @@ test('release-vm reads the release object of .arw.local.json at the script repos
 test('the repository ignores .arw.local.json', async () => {
     assert.ok((await readFile('.gitignore', 'utf8')).split('\n').includes('/.arw.local.json'));
 });
+
+for (const [primary, keep] of [[true, false], [false, false], [true, true]]) {
+    test(`release-vm retains check and cleanup errors (primary=${primary}, keep=${keep})`, async t => {
+        const {directory, write, run, machine, bundle, archive} = await setup(t);
+        const marker = join(directory, 'reverted');
+        await writeFile(machine.vmrun, `#!/bin/sh
+case "$3" in
+    revertToSnapshot)
+        if [ -f '${marker}' ]; then echo 'cleanup revert failure' >&2; exit 1; fi
+        touch '${marker}' ;;
+    start) ${primary ? "echo 'primary start failure' >&2; exit 1" : ':'} ;;
+    getGuestIPAddress) echo 10.0.0.1 ;;
+esac
+`);
+        await write('errors.json', {fixturesDirectory: directory, machines: {M: machine}});
+        const result = await run(['check', 'M', bundle, '--archive', archive, '--config', join(directory, 'errors.json'), ...(keep ? ['--keep'] : [])]);
+        assert.ok(result.status === 'exited' && result.exitCode === 1);
+        assert.equal(result.stdout.trim(), 'M: FAIL');
+        assert.equal(result.stderr.includes('primary start failure'), primary);
+        assert.equal(result.stderr.includes('cleanup revert failure'), !keep);
+    });
+}

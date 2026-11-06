@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0100:02",
+  "request": {
+    "digest": "2cb801b59ed24f244a84e7cbb65b0ed05413a1d7092151ce15f9cdc82ddaae60",
+    "filePath": ".tmp/codex/01a1b209-754d-7ac2-ab43-fcddb969a188/0099_02/spec-readiness/requests/request-a67d1bff-2d8f-43b8-a158-d86a10d79dba.json",
+    "id": "a67d1bff-2d8f-43b8-a158-d86a10d79dba"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "35d036e20f7b1f620c8254ffe234bbfbfc48430a40d341567b142638fe17f44f"
+  },
+  "inputs": [
+    {
+      "filePath": "CONTEXT.md",
+      "role": "domain-context",
+      "sha256": "6f89aa3efc9e393170b2d9380bacf5b1b11aea0d9c614e9367384d99767bb1fb"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow-development/spec.md",
+      "role": "governing-spec",
+      "sha256": "f79c727be6d67e765036bf9931944de91dd454ca1b525fa365e16242776592ed"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow-release/spec.md",
+      "role": "governing-spec",
+      "sha256": "58fcb61c7fae706701dc93d94ff46f4f068e46af4305b90502a34e36c2db8630"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow/spec.md",
+      "role": "governing-spec",
+      "sha256": "b8b97d897cd1cfeb4a8aca801800a263fd1c6c0669c5ca6df71c185a997b2723"
+    },
+    {
+      "filePath": "lib/reviewer-capability-view.mjs",
+      "role": "architecture-evidence",
+      "sha256": "05c826c2f38435cd57181a9a20f975470d7c28e89e7efa7c9b047c114642c815"
+    },
+    {
+      "filePath": "lib/reviewer-capability/inspection.mjs",
+      "role": "architecture-evidence",
+      "sha256": "f22482da637c4039ddeeb294a541bc2d74efee58d187f22654d9ef7c578a7b58"
+    },
+    {
+      "filePath": "lib/reviewer-capability/operations.mjs",
+      "role": "architecture-evidence",
+      "sha256": "0c939592cca1a6c92a3cdbd8115634d9db00f373b39a8b8c8995c91945983cf4"
+    },
+    {
+      "filePath": "lib/reviewer-runtime/reviewer-native-policy.mjs",
+      "role": "architecture-evidence",
+      "sha256": "de8352e16729e320a06d1680189eeb384a5f5c91f8d87589deba57822e01523a"
+    },
+    {
+      "filePath": "lib/reviewer-runtime/reviewer-runtime.mjs",
+      "role": "architecture-evidence",
+      "sha256": "0616ff62df397a0af3df19514c4c6faea6e4b7ae0a8ef3ffc87e2278175ff3cb"
+    },
+    {
+      "filePath": "scripts/release-guest-check.mjs",
+      "role": "architecture-evidence",
+      "sha256": "d657369064cfba5f016745ae978c17b0a9d0b5c2c255d355c41f364a649774bb"
+    },
+    {
+      "filePath": "scripts/release-vm.mjs",
+      "role": "architecture-evidence",
+      "sha256": "8cd4e2f4f6562b2387fb843a3aa904399219f5ed27cff0f63df2d52ed4a0bfdd"
+    },
+    {
+      "filePath": "scripts/reviewer-capability.mjs",
+      "role": "architecture-evidence",
+      "sha256": "4daff45809ef87d7cc205de2ce8fa0add6e683d08e44edf5ec81318df104231e"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0100-code-backlog/issues/02-reviewer-and-release-cleanup.md",
+    "sha256": "d44fcd32109c5aec771fb2b5210b9cadf777655a741f35c5f7af83dd25c4fd35"
+  },
+  "result": "satisfied"
+}

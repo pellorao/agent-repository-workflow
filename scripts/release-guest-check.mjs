@@ -9,6 +9,7 @@ import {homedir, tmpdir} from 'node:os';
 import {delimiter, dirname, join, resolve} from 'node:path';
 import {fileURLToPath, pathToFileURL} from 'node:url';
 
+import {isAbbreviatedCommitId} from '../lib/common/git-content.mjs';
 import {INSTALLATION_DIRECTORY_NAME} from '../lib/arw-common/product-identity.mjs';
 import {backgroundAgentRuntimeDirectory} from '../lib/background-agent/client.mjs';
 
@@ -22,7 +23,8 @@ if (gitLocation !== null && (gitLocation.status !== 0 || !gitLocation.stdout?.tr
 const GIT_ROOT = gitLocation === null ? '' : dirname(dirname(gitLocation.stdout.split(/\r?\n/u)[0]));
 /** @param {string} path 候选 checkout 的 lib 下的模块 */
 const importLib = path => import(pathToFileURL(join(ROOT, 'lib', path)).href);
-const VERSION = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8')).version;
+const packageJson = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8'));
+const VERSION = packageJson.version;
 const INIT_ARGUMENTS = 'workflow init --non-interactive --platform codex --platform claude-code'
     + ' --domain-layout single-context --code-map-root --code-map-include --code-map-exclude';
 
@@ -52,7 +54,7 @@ const fresh = (command, cwd = homedir(), shell = 'cmd') => {
     if (!WINDOWS) return run(shell === 'sh' || shell === 'profile' ? 'sh' : 'bash', [shell === 'profile' ? '-c' : '-lc', `PATH='${NODE_DIRECTORY}':"$PATH"; ${command}`], {cwd});
     const path = run('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command',
         "[Console]::OutputEncoding = [Text.UTF8Encoding]::new($false); [Environment]::ExpandEnvironmentVariables([Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [Environment]::GetEnvironmentVariable('Path','User'))"]);
-    if (!path.ok) return path;
+    if (!path.ok) throw new Error(path.output);
     const env = Object.fromEntries(Object.entries(process.env).filter(([key]) => key.toUpperCase() !== 'PATH'));
     const options = {cwd, env: {...env, Path: `${NODE_DIRECTORY}${delimiter}${path.stdout}`, NoDefaultCurrentDirectoryInExePath: '1'}};
     if (shell === 'gitbash') return run(join(GIT_ROOT, 'bin', 'bash.exe'), ['-lc', command], options);
@@ -63,7 +65,7 @@ const fresh = (command, cwd = homedir(), shell = 'cmd') => {
 const locate = WINDOWS ? 'where arw' : 'command -v arw';
 const previousIndex = process.argv.indexOf('--previous');
 const previous = previousIndex === -1 ? undefined : process.argv[previousIndex + 1];
-if (previousIndex !== -1) step('--previous 是 commit', {ok: /^[0-9a-f]{7,40}$/u.test(previous ?? ''), output: String(previous)});
+if (previousIndex !== -1) step('--previous 是 commit', {ok: isAbbreviatedCommitId(previous ?? ''), output: String(previous)});
 /** @param {string} flag */
 const fileArgument = flag => {
     const index = process.argv.indexOf(flag);
@@ -87,7 +89,7 @@ const checkPath = (label, condition) => {
 };
 const PRESERVED = "$v -ne $null -and $k.GetValueKind('Path') -eq 'ExpandString' -and ($v -split ';') -contains $e -and ($v -split ';') -contains $x";
 
-const minimumNode = Number(/\d+/u.exec(JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8')).engines.node)?.[0]);
+const minimumNode = Number(/\d+/u.exec(packageJson.engines.node)?.[0]);
 step(`Node.js 满足 engines (>=${minimumNode})`, {ok: Number(process.versions.node.split('.')[0]) >= minimumNode, output: process.versions.node});
 step('arw 安装前不可解析', fresh(locate), false);
 if (WINDOWS) step('PowerShell 在新终端可解析', fresh('where powershell.exe'));

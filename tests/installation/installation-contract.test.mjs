@@ -243,3 +243,33 @@ test('Windows release guest check rejects missing Git before installation', asyn
     assert.equal(result.status, 'exited');
     if (result.status === 'exited') assert.equal(result.exitCode, 0, result.stderr);
 });
+
+test('Windows release guest PATH failure cannot pass a negative probe', async t => {
+    const directory = await createTemporaryDirectory(t, 'arw-guest-path-');
+    const fixture = join(directory, 'fixture.tgz');
+    await writeFile(fixture, 'fixture');
+    for (const failed of [true, false]) {
+        const result = await runProcess(process.execPath, ['--input-type=module', '-e', `
+            import assert from 'node:assert/strict';
+            import childProcess from 'node:child_process';
+            import {syncBuiltinESMExports} from 'node:module';
+            Object.defineProperty(process, 'platform', {value: 'win32'});
+            process.argv = ['node', 'guest-check', '--fixture', ${JSON.stringify(fixture)}, '--archive', ${JSON.stringify(fixture)}];
+            let probed = false;
+            childProcess.spawnSync = (file, args) => {
+                if (file === 'where') return {status: 0, stdout: '/git/cmd/git.exe'};
+                if (file === 'powershell.exe') return {status: ${failed ? 1 : 0}, stdout: 'registry PATH', stderr: 'PATH read denied'};
+                if (file === 'cmd.exe') { probed = true; return {status: args.includes('where arw') ? 1 : 0}; }
+                throw new Error('probe completed; stop before installation');
+            };
+            syncBuiltinESMExports();
+            await assert.rejects(import(${JSON.stringify(new URL('../../scripts/release-guest-check.mjs', import.meta.url).href)}), /${failed ? 'PATH read denied' : 'probe completed'}/u);
+            assert.equal(probed, ${!failed});
+        `]);
+        assert.equal(result.status, 'exited');
+        if (result.status === 'exited') {
+            assert.equal(result.exitCode, 0, result.stderr);
+            assert.equal(result.stdout.includes('ok arw 安装前不可解析'), !failed);
+        }
+    }
+});

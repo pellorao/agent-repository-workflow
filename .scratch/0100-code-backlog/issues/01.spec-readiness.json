@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0100:01",
+  "request": {
+    "digest": "14c8ef228f49ed10d23e124f730dad0562eeefc6d914b2ae1e80e375ac411319",
+    "filePath": ".tmp/codex/01a1b209-754d-7ac2-ab43-fcddb969a188/0099_01/spec-readiness/requests/request-66af103b-a388-4888-b06e-d48e1b207557.json",
+    "id": "66af103b-a388-4888-b06e-d48e1b207557"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "35d036e20f7b1f620c8254ffe234bbfbfc48430a40d341567b142638fe17f44f"
+  },
+  "inputs": [
+    {
+      "filePath": "CONTEXT.md",
+      "role": "domain-context",
+      "sha256": "6f89aa3efc9e393170b2d9380bacf5b1b11aea0d9c614e9367384d99767bb1fb"
+    },
+    {
+      "filePath": "distribution/skills/wizard/template.sh",
+      "role": "architecture-evidence",
+      "sha256": "6566f147299bc6f1d941e64591ed04385416d543e11f96f564c7228f5018d0ed"
+    },
+    {
+      "filePath": "docs/adr/0004-maintain-an-arw-skills-distribution-fork.md",
+      "role": "adr",
+      "sha256": "53d097b5d0c6ba135e4111404c4bf9f8a41525af930f8cbda158bc89b98ae6bb"
+    },
+    {
+      "filePath": "docs/adr/0023-separate-commit-audit-review-from-implementation.md",
+      "role": "adr",
+      "sha256": "c88d5ccaa2e41be9153b4ad8c5f28e39cc4eb5c9f620402a98f4e94c7dab0acc"
+    },
+    {
+      "filePath": "docs/adr/0028-derive-upstream-sync-local-differences.md",
+      "role": "adr",
+      "sha256": "c30a8351f374d4ee06aa40e2295f654bcc9a61eb0ff7bcae4c7fcf0111f90d5e"
+    },
+    {
+      "filePath": "docs/adr/0030-use-user-wide-background-agent-management.md",
+      "role": "adr",
+      "sha256": "afffe17adcf95c931864009d198408c2d8afb97d867c1ba20cef04fc7385abd1"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow-development/spec.md",
+      "role": "governing-spec",
+      "sha256": "f79c727be6d67e765036bf9931944de91dd454ca1b525fa365e16242776592ed"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow-installation/spec.md",
+      "role": "governing-spec",
+      "sha256": "9a4774d728e8c3f0ddda2d31816e799a61915107d7031e02ef1502af9d862ede"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow/spec.md",
+      "role": "governing-spec",
+      "sha256": "b8b97d897cd1cfeb4a8aca801800a263fd1c6c0669c5ca6df71c185a997b2723"
+    },
+    {
+      "filePath": "lib/arw.mjs",
+      "role": "architecture-evidence",
+      "sha256": "e32360586201cfd2e6b6544be765a9e5b2678d5103759be3330c0ab55b238101"
+    },
+    {
+      "filePath": "lib/background-agent/client.mjs",
+      "role": "architecture-evidence",
+      "sha256": "c2824622aa6ad69d7f0abed025328e9aad5fac8f57ddcbc7c28220c01f1e3d54"
+    },
+    {
+      "filePath": "lib/background-agent/machine.mjs",
+      "role": "architecture-evidence",
+      "sha256": "236030319a9beede8064d03a6f231cf6c6c86cd95fe0dd1fd7eca1a163f22a8d"
+    },
+    {
+      "filePath": "lib/commit-audit/commit-audit.mjs",
+      "role": "architecture-evidence",
+      "sha256": "4124c9b1cabf0336e52b6bdc232ee05d32f38ade56e75937310213d9bb668e06"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0100-code-backlog/issues/01-authorized-fixes.md",
+    "sha256": "782d1df50d775be5c7ffec2806af06be00840c7391426c297090e998265aa9bb"
+  },
+  "result": "gap"
+}

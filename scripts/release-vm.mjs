@@ -8,6 +8,8 @@ import {tmpdir} from 'node:os';
 import {dirname, join, resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 
+import {isAbbreviatedCommitId} from '../lib/common/git-content.mjs';
+
 const SSH_WAIT_ATTEMPTS = 60;
 const SSH_WAIT_INTERVAL_MS = 5000;
 const GUEST_BUNDLE = 'arw-candidate.bundle';
@@ -38,7 +40,9 @@ if (operation === 'check' && (archiveFlag === -1 || !archive || archive.startsWi
     process.exit(2);
 }
 // --previous 的值是 commit (7-40 位十六进制), 在拼进远程命令前校验.
-if (operation === 'check' && rest.includes('--previous') && !/^[0-9a-f]{7,40}$/u.test(rest[rest.indexOf('--previous') + 1] ?? '')) {
+const previousIndex = rest.indexOf('--previous');
+const previous = previousIndex === -1 ? undefined : rest[previousIndex + 1];
+if (operation === 'check' && previousIndex !== -1 && !isAbbreviatedCommitId(previous ?? '')) {
     process.stderr.write(`${USAGE}\n--previous expects a commit (7-40 hex digits).\n`);
     process.exit(2);
 }
@@ -123,8 +127,8 @@ const check = async (/** @type {string} */ bundle) => {
     must('guest clone', ssh(host, `git -c advice.detachedHead=false clone --quiet -c core.autocrlf=false -c core.longpaths=true ${GUEST_BUNDLE} ${GUEST_CHECKOUT}`));
     // 每个 Node.js (recommended, minimum) 各跑一次, 首个失败即停. 路径不得含空格.
     // --previous <commit> 转交 guest 检查, 让它先安装上一发布版再升级到候选; --fixture 是传入的 agent-assisted fixture, --archive 是传入的候选安装压缩包.
-    const previous = rest.includes('--previous') ? ` --previous ${rest[rest.indexOf('--previous') + 1]}` : '';
-    return Object.values(machine.nodeExecutables).every(node => ssh(host, `${node} ${GUEST_CHECKOUT}/scripts/release-guest-check.mjs --fixture ${GUEST_FIXTURE} --archive ${GUEST_ARCHIVE}${previous}`).ok);
+    const previousArgument = previous === undefined ? '' : ` --previous ${previous}`;
+    return Object.values(machine.nodeExecutables).every(node => ssh(host, `${node} ${GUEST_CHECKOUT}/scripts/release-guest-check.mjs --fixture ${GUEST_FIXTURE} --archive ${GUEST_ARCHIVE}${previousArgument}`).ok);
 };
 
 let exitCode = 1;
@@ -137,9 +141,10 @@ try {
     } else {
         try {
             exitCode = await check(argument) ? 0 : 1;
-        } finally {
-            if (!rest.includes('--keep')) down();
+        } catch (error) {
+            process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
         }
+        if (!rest.includes('--keep')) down();
     }
 } catch (error) {
     exitCode = 1;

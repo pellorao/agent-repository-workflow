@@ -34,7 +34,7 @@ const positional = [];
 /** @type {Record<string, string>} */
 const values = {};
 /** @type {Record<string, string[]>} */
-const lists = {decisions: [], hard: [], spill: []};
+const lists = Object.fromEntries(LIST_OPTIONS.map(option => [option, []]));
 /** @type {Record<string, boolean>} */
 const flags = {};
 /** @type {Array<{files: string[], label: string}>} */

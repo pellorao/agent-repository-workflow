@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
-import {mkdir, writeFile} from 'node:fs/promises';
-import {join} from 'node:path';
+import fsPromises, {mkdir, writeFile} from 'node:fs/promises';
+import {syncBuiltinESMExports} from 'node:module';
+import {join, relative} from 'node:path';
 import test from 'node:test';
 
 import {inspect} from '../../lib/reviewer-capability/inspection.mjs';
@@ -164,4 +165,31 @@ test('unreadable inputs fail, repeated runs agree, and the entry maps results to
     const [usage, blocked] = await Promise.all([runProcess(process.execPath, [entry, 'inspect']), runProcess(process.execPath, [entry, 'inspect', join(instance, 'src')])]);
     assert.equal(/** @type {any} */ (usage).exitCode, 2);
     assert.deepEqual([/** @type {any} */ (blocked).exitCode, JSON.parse(/** @type {any} */ (blocked).stdout).status], [1, 'blocked']);
+});
+
+test('relative and empty session paths are blocked at agent.json', async t => {
+    const {fixtures, instance, sessionPath} = await setup(t, [claude.owner()]);
+    for (const path of [relative(process.cwd(), sessionPath), '']) {
+        await writeFile(join(instance, 'agent.json'), JSON.stringify({result: {threadId: THREAD, snapshot: {members: [{sessionPath: path}]}}}));
+        const result = await inspect({fixtures, instance});
+        assert.equal(result.status, 'blocked');
+        assert.match(result.diagnostics[0], /agent.json/u);
+    }
+});
+
+test('an instance file read failure is reported at fixture-read', async t => {
+    const {fixtures, instance} = await setup(t, [claude.owner()]);
+    const original = fsPromises.readFile;
+    const mocked = t.mock.method(fsPromises, 'readFile', (/** @type {any[]} */ ...args) => {
+        if (args[0] === join(instance, 'src', 'a.mjs')) throw new Error('instance read denied');
+        return Reflect.apply(original, fsPromises, args);
+    });
+    syncBuiltinESMExports();
+    try {
+        const result = /** @type {any} */ (await inspect({fixtures, instance}));
+        assert.deepEqual([result.status, result.stage, result.diagnostics], ['failed', 'fixture-read', ['instance read denied']]);
+    } finally {
+        mocked.mock.restore();
+        syncBuiltinESMExports();
+    }
 });
