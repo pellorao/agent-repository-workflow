@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0105:01",
+  "exception": {
+    "confirmedAt": "2026-11-02T06:00:06Z",
+    "reason": "Single-issue version bump with no design decision (user standing confirmation 2026-11-02 in projects AGENTS)."
+  },
+  "subject": {
+    "filePath": ".scratch/0105-version-0-5-4/issues/01-version-0-5-4.md",
+    "sha256": "2048330de312febafd01398aa90330b8779f4300981a808a576b12e3cf9dcb0b"
+  },
+  "result": "not-applicable"
+}
