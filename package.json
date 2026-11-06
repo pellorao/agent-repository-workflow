@@ -1,6 +1,6 @@
 {
   "name": "agent-repository-workflow",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "Repository workflow manager for coding agents with no third-party runtime dependencies.",
   "type": "module",
   "engines": {
