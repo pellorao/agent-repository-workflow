@@ -2,33 +2,33 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md)
 
-Agent Repository Workflow, or ARW, is a workflow manager for work in local Git repositories. It connects work records, implementation authorization, Agent collaboration rules, repository configuration, and release maintenance. It does not replace user authorization for important decisions, commits, or external publication.
+Agent Repository Workflow (ARW) helps you and coding Agents build software together in a local Git repository without losing control of design decisions, code quality, or commits. It is a local workflow manager that connects work records, implementation authorization, Agent collaboration rules, repository configuration, and release maintenance. While Agents handle investigation, implementation, and independent review, ARW keeps important decisions, commits, and external publication under your explicit authorization.
 
-This README is for new developers who know basic terminal, Git, and Node.js operations but have not used ARW. Node.js 24 is the minimum runtime. ARW uses native JavaScript and ES modules and has no npm runtime dependencies. Windows and Linux are fully supported; macOS is currently experimental.
+This guide is for developers who know basic terminal, Git, and Node.js operations and are setting up ARW for the first time. To run ARW, you need Node.js 24 or later. Because ARW is written in native JavaScript and ES modules with no npm runtime dependencies, it runs directly on Node.js. Windows and Linux are fully supported; macOS is currently experimental.
 
 ## What ARW is for
 
-ARW is for teams that want users and Agents to keep working together in the same Git repository. It aims to improve several problems that come with using Agents to write code:
+When a team works with coding Agents in the same Git repository over time, fast code generation creates new risks that raw prompting does not solve:
 
-- YOLO (You Only Live Once) can cause an Agent to skip necessary understanding, authorization, and validation, seriously reducing code and documentation quality.
-- Code written by an Agent can look complete while its validity remains difficult to establish.
-- Agents produce code much faster than users can review it item by item.
-- When context is too full, Agent intelligence declines, making it easier to miss constraints or connect information incorrectly.
-- Having one Agent repeatedly reread and review its own work to address these risks consumes too many tokens.
-- Agent-written documentation can fill up with jargon, making actual behavior and responsibility hard for users to understand.
+- Running an Agent in YOLO (You Only Live Once) mode lets it skip necessary understanding, authorization, and validation, which seriously degrades code and documentation quality.
+- Code written by an Agent can look complete on the surface while its actual validity remains difficult to establish.
+- Agents produce code much faster than humans can review it item by item.
+- When the context window fills up, Agent intelligence declines, making it easier to miss constraints or connect information incorrectly.
+- Asking the same Agent to repeatedly reread and review its own work to reduce these risks consumes too many tokens.
+- Agent-written documentation often fills up with jargon, making actual behavior and responsibility hard for users to understand.
 
-ARW has not fully solved these problems:
+Even with ARW in place, two trade-offs remain:
 
-- Long-term maintainability of Agent-written code is still low. Continuous refactoring can improve it, but at high cost.
-- Under ARW's strict process, reviews take much longer than implementation. This makes ARW's return on investment less compelling than YOLO mode.
+- The long-term maintainability of Agent-written code is still low. Continuous refactoring can improve it, but at high cost.
+- Under ARW's strict process, reviews take much longer than implementation. This makes ARW's short-term return on investment less compelling than YOLO mode.
 
-ARW may be too heavy if you only want an Agent to answer occasional questions, or if you do not need work authorization and evidence stored in a Git repository. The first-use path below is suitable if you want users to confirm important decisions, work records to authorize implementation scope, and an independent Reviewer to inspect work before a commit.
+Because of that review cost, ARW may be too heavy if you only want an Agent to answer occasional questions, or if you do not need work authorization and validation evidence stored in a Git repository. If instead you want users to confirm important decisions, work records to authorize implementation scope, and an independent Reviewer to inspect changes before every commit, follow the first-use path below.
 
 ## Quick start
 
-First install the ARW program for the current user, then initialize the target Git repository where you plan to use ARW long term. Keeping the source checkout, installation directory, and target repository separate avoids mixing their roles.
+To get started, you first install the shared ARW program for your user account, and then initialize the target Git repository where you plan to use ARW long term. Keeping the ARW source checkout, the installation directory, and your target repository separate prevents you from mixing up their roles.
 
-During initialization, ARW asks whether to configure a Code Map. A Code Map is an Agent-maintained description of source directories. It helps later Agents understand each directory's responsibility through its README files, and lets validation detect missing descriptions for configured source areas. You can leave it unconfigured if the project does not need this navigation and coverage check.
+During repository initialization, ARW asks whether to configure a Code Map. A Code Map is an Agent-maintained set of README files that describe your source directories. It helps future Agents understand each directory's responsibility from its README, and lets validation detect missing descriptions in configured source areas. If your project does not need directory navigation and coverage checks, you can leave it unconfigured.
 
 1. Prepare Node.js 24 or later. Download the single-file [`scripts/install-arw.mjs`](scripts/install-arw.mjs) (Bootstrap) from GitHub, inspect it, and install the highest stable version:
 
@@ -36,50 +36,50 @@ During initialization, ARW asks whether to configure a Code Map. A Code Map is a
    node install-arw.mjs
    ```
 
-2. The installer can register `arw` on Windows or Linux. The current terminal may retain its old PATH, so open a new terminal and verify with `arw --version`. Experimental macOS does not register PATH automatically.
-3. Enter the target Git repository where you want to use ARW and run `arw workflow init`. This writes repository workflow content based on your platform, domain-document layout, and optional Code Map configuration. It does not install an Agent CLI.
-4. Give the complete `Agent Post-init Handoff` from the command to the Main Agent in the current session. The Agent reviews rule, documentation, and validation gaps that mechanical checks cannot judge. It creates no issue when there are no gaps; otherwise it creates exactly one summary issue to complete the repository workflow, and completes it before ordinary implementation.
-5. Run `arw workflow verify` and the applicable checks requested by the handoff review. Then use `arw list issues` to see work that can proceed. If the repository has no work records yet, a missing `.scratch` directory and an empty list are both normal; neither indicates failed initialization.
+2. The installer can register `arw` on your PATH on Windows or Linux. Because your current terminal may retain its old PATH, open a new terminal and verify the installation with `arw --version`. Experimental macOS does not register PATH automatically.
+3. Open your target Git repository and run `arw workflow init`. Based on your chosen platform, domain-document layout, and optional Code Map configuration, this writes the repository workflow files. It does not install an Agent CLI.
+4. Pass the complete `Agent Post-init Handoff` printed by the command to the Main Agent in your current session. The Agent reviews rule, documentation, and validation gaps that mechanical checks cannot judge. If it finds no gaps, it creates no issue; otherwise it creates exactly one summary issue to complete the repository workflow, and finishes that issue before ordinary implementation begins.
+5. Run `arw workflow verify` along with the applicable checks requested by the handoff review, and then run `arw list issues` to see what work is ready to proceed. If the repository has no work records yet, a missing `.scratch` directory and an empty list are both normal and do not indicate failed initialization.
 
-After these five steps, `arw` is available and the target repository has its own Agent working rules. The rest of this README explains why each step matters, then moves from the first work record into the everyday workflow.
+After these five steps, `arw` is available on your machine and your target repository has its own Agent working rules. The next section explains the options and platform details behind installation, initialization, and upgrades; after that, we trace the everyday workflow from your first work record to a reviewed commit.
 
 ## Install and configure ARW
 
-Installation and initialization solve different problems. Installation places the ARW runtime and Workflow Distribution in a fixed directory for the current user. Workflow Distribution is shared Agent workflow content that target repositories consume during initialization. Updating the ARW installation directory is different from running `arw workflow update`: the first replaces the user's runtime, while the second updates Managed Content in the current target repository.
+In the quick start, you ran two separate setup steps because installation and initialization solve different problems. Installation places the ARW runtime and Workflow Distribution into a fixed directory for your user account. Workflow Distribution is the shared Agent workflow content that target repositories consume during initialization. For the same reason, updating your ARW installation directory is different from running `arw workflow update`: the first replaces your user-level runtime, while the second updates Managed Content inside the current target repository.
 
 ### Install the ARW program
 
-The main installation route is the single-file [`scripts/install-arw.mjs`](scripts/install-arw.mjs) (Bootstrap) obtained from GitHub, which installs a stable release. It requires Node.js 24 or later; it does not require GitLab access, an SSH key, or Git. Do not pipe a remote response directly to Node.js; inspect the downloaded file first. Bootstrap does not accept a remote override or save credentials. It downloads `arw.tar.gz` (about 0.5 MB, installation payload only) from the GitHub release and unpacks it with the system `tar`.
+For most users, the main installation route is the single-file [`scripts/install-arw.mjs`](scripts/install-arw.mjs) (Bootstrap) from GitHub, which installs a stable release. It requires Node.js 24 or later, and does not require GitLab access, an SSH key, or Git. Always inspect the downloaded file before running it; do not pipe a remote response directly to Node.js. Bootstrap does not accept a remote override or save credentials. Instead, it downloads `arw.tar.gz` (about 0.5 MB, containing only the installation payload) from the GitHub release and unpacks it with the system `tar`.
 
-Source maintainers and developers can instead clone `main` and install from the source checkout (see below). That route uses local-source mode and has an identity of `<version>-pre`; running `node install.mjs` does not access a remote. When installing from source, ARW checks source bytes exactly. Git must not convert repository text line endings to Windows form while obtaining the source, or installation can fail because the source bytes do not match.
+If you are maintaining or developing ARW itself, you can instead clone `main` and install from the source checkout (shown below). That route uses local-source mode with a version identity of `<version>-pre`, and running `node install.mjs` does not access a remote server. Because source installation verifies source bytes exactly, Git must not convert repository text line endings to Windows form during checkout, or installation will fail on a byte mismatch.
 
-Check the runtime first:
+Before running either installer, check your Node.js runtime:
 
 ```text
 node --version
 ```
 
-The version must be 24 or later. Before obtaining source or writing installation content, the installer rejects a runtime below that minimum.
+The version must be 24 or later. If the runtime is below that minimum, the installer aborts before downloading source files or writing to disk.
 
-Bootstrap's interactive installation selects the highest stable SemVer release by default.
+Once Node.js is ready, run Bootstrap interactively to select the highest stable SemVer release by default:
 
 ```text
 node install-arw.mjs
 ```
 
-To install the highest stable version without interaction and register PATH, use:
+To install the highest stable version without prompts and register PATH automatically, run:
 
 ```text
 node install-arw.mjs --non-interactive --register-path true
 ```
 
-Choose an exact stable version present on the remote only when you explicitly want a historical version for a first installation. ARW does not downgrade: if the installed version is higher than the target, installation fails and writes nothing, so uninstall first if you need an older version.
+If you specifically need a historical version for a first installation, pass an exact stable version that exists on the remote. ARW never downgrades an existing installation: if the installed version is higher than your target version, installation fails and writes nothing, so uninstall first when you need to move to an older version.
 
 ```text
 node install-arw.mjs --version MAJOR.MINOR.PATCH
 ```
 
-Source maintainers and developers use the following command to clone the complete public repository. The clone's own `-c` option disables line-ending conversion before the first checkout and stores the setting only in this Repository:
+If you are a source maintainer or developer installing from source, clone the public repository with `-c core.autocrlf=false`. That flag disables line-ending conversion before the first checkout and scopes the setting to this repository only:
 
 ```text
 git clone -c core.autocrlf=false --branch main https://github.com/pellorao/agent-repository-workflow.git
@@ -87,57 +87,58 @@ cd agent-repository-workflow
 node install.mjs
 ```
 
-Do not install from a working tree where line endings have already been converted. Run the clone command again to keep repository data in its original bytes. The repository is public, so cloning does not require private GitLab access. If your goal is to modify ARW source, continue to the [Developer Guide](docs/manuals/development.md), which covers the development environment, source navigation, and maintenance paths.
+Do not run `node install.mjs` from a working tree where line endings have already been converted; run the clone command above again so the repository keeps its original bytes. Because the repository is public, cloning does not require private GitLab access. If your goal is to modify ARW source code, continue to the [Developer Guide](docs/manuals/development.md) for the development environment, source navigation, and maintenance paths.
 
-The installation directory is fixed:
+Whichever installation route you use, ARW writes to a fixed user directory:
 
-- Windows: `%USERPROFILE%\.agent-repository-workflow`, including when installing from Git Bash; it does not switch to `$HOME`.
+- Windows: `%USERPROFILE%\.agent-repository-workflow`, even when you run the installer from Git Bash (it does not switch to `$HOME`).
 - Linux and experimental macOS: `$HOME/.agent-repository-workflow`.
 
-PATH behavior depends on the platform:
+How the installer registers `arw` on your PATH depends on your operating system:
 
-- Windows manages only `Path` in the current user's Registry. Even if the environment-change notification succeeds, the current PowerShell, CMD, or Git Bash session may retain its old environment. Open a new terminal, sign out and back in, or refresh the current command interpreter manually.
-- Linux manages only the exact PATH block marked by ARW in `~/.profile`; it does not guess other shell configuration files. A new login shell reads it, so sign out and back in, or run `. ~/.profile` in the current shell. If `~/.bash_profile` exists (bash then skips `~/.profile`) or you use zsh, load `~/.profile` from your own shell configuration yourself.
-- Experimental macOS does not register PATH automatically. Configure it yourself or use the launcher in the installation directory.
-- `--register-path false` does not change PATH or configuration files, and does not release ownership previously established by ARW.
+- Windows updates only `Path` in the current user's Registry. Even when the environment-change notification succeeds, an open PowerShell, CMD, or Git Bash window may keep its old environment. Open a new terminal, sign out and back in, or refresh the current command interpreter manually.
+- Linux updates only the exact PATH block marked by ARW in `~/.profile` and never guesses other shell configuration files. Because `~/.profile` is read by a new login shell, sign out and back in, or run `. ~/.profile` in your current shell. If `~/.bash_profile` exists (which causes bash to skip `~/.profile`) or if you use zsh, source `~/.profile` from your own shell configuration file.
+- Experimental macOS does not register PATH automatically. Add the directory to PATH yourself or invoke the launcher directly from the installation directory.
+- Passing `--register-path false` leaves PATH and shell configuration files untouched, and does not release PATH ownership that ARW established in an earlier install.
 
-After installation, verify it:
+Next, open a new terminal and verify that `arw` resolves on your PATH:
 
 ```text
 arw --version
 ```
 
-The installer does not copy Node.js. The `arw` launcher resolves `node` from the current PATH each time, so verification uses the runtime visible to the new terminal.
+Because the installer does not bundle a copy of Node.js, the `arw` launcher resolves `node` from the active PATH on every run. Running `arw --version` confirms both the launcher and the Node.js runtime visible in your new terminal.
 
-To stop using ARW, enter the installation directory and run `node uninstall.mjs`. The user's `config.json` is kept by default; it is removed only when you explicitly run `node uninstall.mjs --remove-config true`. Uninstall removes only runtime and PATH or configuration-file entries that the valid installation manifest proves ARW owns. Unknown files remain untouched.
+If you later decide to remove ARW from your machine, enter the installation directory and run `node uninstall.mjs`. By default, uninstall preserves your user `config.json`; pass `node uninstall.mjs --remove-config true` if you want to delete it too. The uninstaller removes only the runtime files and PATH or shell entries that a valid installation manifest proves ARW owns, leaving any unknown files untouched.
 
 ### Initialize or adjust files in a target repository
 
-Installation makes the command available, but it does not tell ARW which Agent platforms or documentation layout a project uses. Open a new terminal, enter the target Git repository, and run:
+Installing `arw` puts the command on your machine, but each project still needs its own Agent rules and platform files. Open a new terminal, enter your target Git repository, and run:
 
 ```text
 arw workflow init
 ```
 
-ARW searches upward from the current directory for the nearest Git working-tree root, and observes and modifies only that root. A nested Git repository does not fall back to an outer repository. Initialize each repository that needs ARW separately, from its root or a subdirectory.
+ARW walks upward from your current working directory to find the nearest Git working-tree root, and observes and modifies only that root. Because a nested Git repository never falls back to an outer repository, initialize each repository that uses ARW separately from its own root or one of its subdirectories.
 
-For scripts and Agents, run it without prompts. Non-interactive initialization takes either `--reuse-profile` or a complete Profile replacement, where `--platform`, `--domain-layout`, and all three `--code-map-*` options must be given together; an option with no value means an empty list:
+When running from a script or an Agent, use non-interactive mode. You must pass either `--reuse-profile` or a complete Profile replacement that specifies `--platform`, `--domain-layout`, and all three `--code-map-*` options together (passing an option with no value sets an empty list):
 
 ```text
 arw workflow init --non-interactive --platform codex --platform claude-code --domain-layout single-context --code-map-root --code-map-include --code-map-exclude
 ```
 
-Initialization collects or reuses a Repository Profile. This configuration records the selected platforms, domain-document layout, and optional Code Map root, include, and exclude rules. The platforms selected by the user are the sole basis for which platform content is installed. ARW does not scan user-level or platform-built-in Skills, and does not download or validate an Agent CLI.
+During initialization, ARW collects or reuses a Repository Profile that records your chosen platforms, domain-document layout, and optional Code Map root, include, and exclude rules. Your selected platforms are the sole basis for which platform files ARW installs: ARW does not scan user-level or platform-built-in Skills, and it does not download or validate an Agent CLI.
 
-After writing, the command prints the complete `Agent Post-init Handoff`. Give the entire handoff block to the Main Agent: gaps observed by the Engine are review input and cannot prove there are no other semantic gaps. The review checks repository workflow, domain documents and long-term terms, managed areas and duplicate rules, repository-owned validation, writing and filename rules, `.arwignore`, Agent management scope, and preparation to migrate old ARW Artifacts.
+If you work on Windows, keep two platform behaviors in mind:
 
-On Windows, Git may check files out with CRLF line endings. ARW ignores line-ending differences when it reads repository files, so a CRLF checkout does not cause false drift. To keep the working tree consistent for the whole team, commit a `.gitattributes` yourself, or set `core.autocrlf=false`; ARW does not create or change either.
+- Git on Windows may check out files with CRLF line endings. ARW ignores line-ending differences when reading repository files, so a CRLF checkout will not trigger false drift errors. To keep line endings consistent across your team, commit a `.gitattributes` file or set `core.autocrlf=false` yourself; ARW does not create or modify either setting.
+- ARW on Windows supports only the officially installed native `codex` and `claude` executables: install Codex with its official PowerShell install script, and install Claude Code with its native installer or WinGet. npm-installed `.cmd` wrappers are not supported.
 
-On Windows, ARW supports only the officially installed native `codex` and `claude` executables: Codex through its official PowerShell install script, and Claude Code through its native installer or WinGet. npm-installed `.cmd` wrappers are not supported.
+Once `arw workflow init` finishes writing files, it prints the `Agent Post-init Handoff`. Pass that entire handoff block to your Main Agent. Because the gaps detected by the Engine are only initial inputs and cannot rule out deeper semantic gaps, the Main Agent reviews your repository workflow, domain documents and long-term terms, managed areas and duplicate rules, repository-owned validation, writing and filename rules, `.arwignore`, Agent management scope, and preparation for migrating any old ARW Artifacts.
 
-`workflow init` does not create root `CONTEXT.md`, `CONTEXT-MAP.md`, or `.scratch`. If domain documents are missing or another review item has a gap, the Main Agent combines all gaps into exactly one repository workflow completion issue. It uses `Status: needs-info` while user choices remain, and changes to `Status: ready-for-agent` only after choices and blockers are resolved. If the complete review finds no gaps, no issue is created; a missing `.scratch` is then normal.
+Notice that `workflow init` does not create a root `CONTEXT.md`, `CONTEXT-MAP.md`, or `.scratch` directory on its own. If domain documents are missing or any other review item has a gap, the Main Agent combines every gap into a single repository workflow completion issue. That issue stays at `Status: needs-info` while it waits for your decisions, and moves to `Status: ready-for-agent` once all choices and blockers are resolved. If the handoff review finds no gaps at all, the Agent creates no issue, and having no `.scratch` directory is completely normal.
 
-After the handoff is complete, run:
+Once the handoff review (and its completion issue, if one was needed) is finished, verify the repository state:
 
 ```text
 arw workflow verify
@@ -146,9 +147,14 @@ arw text check
 arw terms check
 ```
 
-`arw workflow verify` reads the lock file, Repository Profile, Managed Content, platform projections, and configured Code Map. Run `arw code-map verify` separately only when the Profile configures a Code Map. `arw text check` checks UTF-8, BOM, and LF for Agent-managed text. `arw terms check` discovers the terminology source from the repository root: if root `CONTEXT-MAP.md` exists, it uses the referenced `CONTEXT.md` files; otherwise it uses root `CONTEXT.md`. It checks managed Markdown and excludes `.scratch` by default. To include the current effort, add `--include .scratch/<NNNN>-<effort-slug>/`. Each command proves only the contract it actually observes; they do not replace one another.
+Each verification command checks a distinct contract, so they do not replace one another:
 
-A new ARW installation does not automatically update repositories that already have an initialized ARW workflow. To use the newer installed workflow content in a target repository, preview the update plan, confirm it, apply it, and verify the result:
+- `arw workflow verify` checks the lock file, Repository Profile, Managed Content, platform projections, and any configured Code Map.
+- `arw code-map verify` needs to be run separately only when your Repository Profile configures a Code Map.
+- `arw text check` verifies that Agent-managed text files use valid UTF-8 without BOM and LF line endings.
+- `arw terms check` locates your terminology source from the repository root (using the `CONTEXT.md` files referenced by root `CONTEXT-MAP.md` if present, or root `CONTEXT.md` otherwise) and checks managed Markdown files while excluding `.scratch` by default. To check an active effort as well, add `--include .scratch/<NNNN>-<effort-slug>/`.
+
+When you upgrade your user-level ARW installation later on, existing repositories do not update automatically. To bring a target repository up to the newer installed workflow content, preview the update plan first, confirm it, apply it, and verify the result:
 
 ```text
 arw workflow update --dry-run
@@ -156,45 +162,45 @@ arw workflow update
 arw workflow verify
 ```
 
-`--dry-run` shows how the newer workflow would change this repository. After confirming the plan, the second command applies the update and the last command reads back the result.
+Running `--dry-run` shows exactly how the newer workflow will change the repository without writing anything. Once you are happy with the plan, `arw workflow update` writes the changes and `arw workflow verify` confirms the updated state.
 
-When upgrading from an earlier ARW version, also check the following:
+If you are upgrading from an earlier ARW version, check three migration details as well:
 
-- `code-spec-reviewer` and `commit-audit-reviewer` have been merged into `requirements-reviewer`. Settings under the old role names in `config.json` or `arw.config.json` are ignored; move any model settings you gave them to `reviewers.requirements-reviewer`.
-- Spec Readiness records are now schema version 7. `arw spec-readiness verify` reports older records of not-yet-committed issues as stale, including `not-applicable` exception records. Regenerate them with the normal `prepare -> review -> generate -> promote -> verify` sequence, or `generate -> promote -> verify` for an exception.
-- When the new workflow no longer contains a rule document that held repository-owned content, `arw workflow update` moves that content into the repository-owned region of `AGENTS.md` under a heading naming the old path, deletes the old file, and lists the paths after the update. Review the moved content and merge or delete it.
+- `code-spec-reviewer` and `commit-audit-reviewer` have been merged into `requirements-reviewer`. Settings under the old role names in `config.json` or `arw.config.json` are now ignored, so move any custom model settings to `reviewers.requirements-reviewer`.
+- Spec Readiness records now use schema version 7. `arw spec-readiness verify` treats older records on uncommitted issues as stale, including `not-applicable` exception records. Regenerate them using the standard `prepare -> review -> generate -> promote -> verify` sequence, or `generate -> promote -> verify` for an exception.
+- If the new workflow removes a rule document that contained repository-owned content, `arw workflow update` moves that content into the repository-owned section of `AGENTS.md` under a heading naming the old file path, deletes the old file, and lists the affected paths after updating. Review the moved text and merge or delete it.
 
-Run `arw workflow remove` when you no longer want ARW in the target repository. The command asks you to choose how to handle platform Agent configuration, `.arwignore`, Code Map, and mixed Agent documents. ARW does not treat files whose ownership it cannot prove as deletable.
+If you stop using ARW in a target repository, run `arw workflow remove`. The command prompts you to choose how to handle platform Agent configuration, `.arwignore`, Code Map files, and mixed Agent documents, and never deletes files whose ARW ownership it cannot prove.
 
 ## Complete one JIRA request across multiple repositories
 
-When a task changes only one Git repository, continue with the everyday path below. When the same JIRA request must be completed across multiple Git repositories, a single-repository path cannot clearly separate the overall request, work in each repository, and final JIRA state.
+Once your repository is initialized, your next step depends on whether your work stays inside a single Git repository or spans several. When a task modifies only one Git repository, go straight to the everyday workflow below. When a single JIRA request requires coordinated changes across multiple Git repositories, however, a single-repository workflow cannot cleanly separate the overall request, the changes in each repository, and the final JIRA status.
 
-ARW's multi-repository path keeps the overall request and coordination record in an Application Repository, while each Module Repository owns only its own implementation and validation. This adds repository configuration, work records on both sides, ordered commits and pushes, and authorization for JIRA writes. In return, each fact has a clear owner and failures can be retried from a precise boundary.
+To keep those boundaries clear, ARW's multi-repository path stores the overall request and coordination record in an Application Repository while each Module Repository owns only its own implementation and validation. That separation adds setup work: you configure the repositories, maintain work records on both sides, commit and push in a defined order, and explicitly authorize JIRA writes. In exchange, every piece of state has a single owner, and if a step fails you can retry from an exact boundary.
 
-If you are deciding whether a task needs multi-repository collaboration, or have chosen this path and need to understand the repository and record responsibilities, use [Distribute work across repositories and sync JIRA](docs/manuals/application-jira.md). To have an Agent perform the coordination, explicitly invoke the `application-workflow` Skill; repository configuration and JIRA requests do not trigger it automatically.
+To decide whether your task needs multi-repository coordination, or to follow the repository roles and step order once you choose this path, read [Distribute work across repositories and sync JIRA](docs/manuals/application-jira.md). When you want an Agent to run that coordination, explicitly invoke the `application-workflow` Skill; neither repository configuration nor JIRA requests trigger it automatically.
 
 ## Everyday use
 
-After repository initialization, the everyday path starts by checking whether there is work that can proceed. If a record exists, read its status and blockers. If there is no record, choose a discussion or investigation path based on how much is unknown, then create an implementation issue. Finishing implementation does not automatically create a commit; the commit and review process starts only when the user explicitly requests it.
+For work inside a single repository, your daily loop follows five stages: check whether runnable work records already exist, start a Main Agent for your session, plan and create an implementation issue if one does not exist yet, run implementation with validation, and request an independent review and commit when the work is done. Finishing implementation never creates a commit automatically; review and commit begin only when you ask for them.
 
-If you are already in an Agent conversation and only want to choose a request to send, use [Everyday commands for Agent conversations](docs/manuals/daily-agent-conversation-commands.md). It is a quick reference with decision prompts, not a replacement for the complete workflow below.
+If you are already in an active Agent session and just want to pick a prompt to send right now, open [Everyday commands for Agent conversations](docs/manuals/daily-agent-conversation-commands.md) for a quick reference with decision prompts, then come back here when you need the full workflow context.
 
 ### Find and read work records
 
-ARW groups its registered `issue`, `map`, and `spec` records under the name ARW Artifacts and stores them in `.scratch` in the nearest Git repository. An effort uses `.scratch/<NNNN>-<effort-slug>/`; an issue uses `issues/<NN>-<issue-slug>.md`. Numeric identifiers carry stable identity, while descriptive slugs make paths easier to read.
+Every day starts by checking what work is already tracked in the repository. ARW calls its registered `issue`, `map`, and `spec` records ARW Artifacts and stores them under `.scratch` in the nearest Git repository. Each effort lives in `.scratch/<NNNN>-<effort-slug>/`, and each issue lives in `issues/<NN>-<issue-slug>.md`. The numeric prefixes provide a permanent identity, while the descriptive slugs make directory and file paths readable.
 
-The corresponding local Canonical IDs are `issue:<NNNN>:<NN>`, `map:<NNNN>`, and `spec:<NNNN>`. A Canonical ID contains no slug or file path, so it remains stable if an effort or issue is renamed.
+When you reference these records in commands or prompts, use their local Canonical IDs: `issue:<NNNN>:<NN>`, `map:<NNNN>`, and `spec:<NNNN>`. Because a Canonical ID omits the slug and file path, it stays valid even if you rename the effort or issue later.
 
-First list issues that can proceed and have no unfinished blockers:
+Start by listing the issues that are ready to proceed and have no unfinished blockers:
 
 ```text
 arw list issues
 ```
 
-In a terminal, the short alias is `arw li`. By default, results may include implementation issues with `ready-for-agent` or `ready-for-human` status, and open unclaimed Wayfinder issues. Application Source Issues mirror the status of another repository and are not included by default.
+In your terminal, you can also use the short alias `arw li`. By default, this list includes implementation issues in `ready-for-agent` or `ready-for-human` status, along with open, unclaimed Wayfinder issues. Application Source Issues only mirror the status of another repository, so they are omitted by default.
 
-Narrow the results when investigating by status or type:
+When you need to inspect blocked, completed, or specific types of work, filter the list by status or type:
 
 ```text
 arw list issues --all-statuses
@@ -202,14 +208,16 @@ arw list issues --status ready-for-agent,needs-info
 arw list issues --type implementation,application-source,wayfinder
 ```
 
-To view investigation maps and local specs:
+To see investigation maps or local specs instead of issues, run:
 
 ```text
 arw list maps
 arw list specs
 ```
 
-The short aliases are `arw lm` and `arw ls`. The `li`, `lm`, `ls`, `lba` and `jl` tables are laid out at 100 display columns by default and only the name column (`Title`, or the session title in `lba`) is truncated with `...`; add `--full` (`-f`) to print full names, for example `arw li -a -f`. After finding a record, use its complete Canonical ID to open or print it:
+Their terminal aliases are `arw lm` and `arw ls`. By default, `li`, `lm`, `ls`, `lba`, and `jl` format their tables to 100 display columns and truncate only the name column (`Title`, or the session title in `lba`) with `...`; add `--full` (`-f`) to print full names, such as `arw li -a -f`.
+
+Once you spot the record you want in the list, pass its full Canonical ID to `open` or `print`:
 
 ```text
 arw open issue:0007:02
@@ -218,11 +226,11 @@ arw open map:0007
 arw print spec:0007
 ```
 
-`open` uses the `editor` in the global `config.json`, prints the repository-relative path, starts the editor, and returns immediately. `print` writes the exact original UTF-8 content to stdout for an Agent or script. Both accept only local Canonical IDs; neither reads Git history or another repository.
+`open` reads the `editor` setting from your global `config.json`, prints the repository-relative path, launches the editor, and returns immediately. `print` writes the exact original UTF-8 text to stdout so an Agent or script can read it. Both commands accept only local Canonical IDs and never read from Git history or another repository.
 
-`.scratch` may be absent when the repository has no ARW Artifacts. `list` succeeds with an empty result, `migrate artifacts` succeeds without changes, and a specific `open` or `print` returns a controlled `not-found`. The parent directory for a record is created only when that record is created. Do not manually create an empty `.scratch` just to make a command succeed.
+If your repository has no ARW Artifacts yet, `.scratch` does not need to exist: `list` returns an empty table with exit code `0`, `migrate artifacts` succeeds as a no-op, and running `open` or `print` on a specific ID returns a controlled `not-found` result. ARW creates parent directories under `.scratch` automatically when it creates the first record, so never create an empty `.scratch` folder by hand just to make a command pass.
 
-You can first ask an Agent to read the state and suggest the next step:
+Once you have an issue ID, you can ask an Agent to read it and recommend the next action before touching any files:
 
 ```text
 Read <issue-canonical-ID> and tell me its current status, blockers, and next step. Do not modify files yet.
@@ -230,90 +238,92 @@ Read <issue-canonical-ID> and tell me its current status, blockers, and next ste
 
 ### Start an Agent for the current session
 
-Each independent session needs one Main Agent to communicate with the user, coordinate task assignments, and own Git writes. ARW does not require that Agent to be launched with an ARW command. For a first use, directly launching the installed and authenticated platform CLI from the target Git repository is usually simplest, for example `codex` or `claude`.
+To discuss plans or run an issue, each session needs a single Main Agent that talks with you, coordinates subagent tasks, and owns all Git writes. You do not have to launch that Agent through `arw`: for your first sessions, running your installed and authenticated platform CLI directly from the target repository (such as `codex` or `claude`) is usually the simplest choice.
 
-If you often use the same Agent CLI with the same fixed parameters, you can save a named configuration in ARW's user configuration and start it from the target repository:
+If you find yourself passing the same CLI flags every day, you can save a named profile in your user-level ARW configuration and launch it from the target repository with:
 
 ```text
 arw agent start <name> [agent-arguments...]
 ```
 
-A named configuration avoids repeated typing; it does not turn an external CLI into an ARW internal Reviewer. If you choose this path, read the [Agent CLI Guide](docs/manuals/agent-cli.md) before editing the configuration. It covers the current global configuration structure, Codex and Claude Code examples, per-run arguments, executable programs, exit codes, and process and session boundaries. Only one writer should use a working tree at a time; ARW does not provide an automatic write lock.
+Saving a named configuration only saves typing; it does not turn an external CLI into an internal ARW Reviewer. Before editing that configuration, read the [Agent CLI Guide](docs/manuals/agent-cli.md) for the global `config.json` schema, Codex and Claude Code examples, per-run argument forwarding, executable rules, exit codes, and process and session boundaries. Whichever way you start your Agent, run only one writer per working tree at a time, as ARW does not enforce an automatic write lock.
 
 <a id="create-and-plan-work"></a>
 
 ### Create and plan work
 
-If `arw list issues` already shows an issue ready for implementation, continue to the next section. If there is no record, choose the smallest sufficient discussion path based on what is unknown. An implementation issue should authorize writes only after its requirements and important decisions are clear.
+With your Main Agent running, check what `arw list issues` returned. If an implementation issue is already `ready-for-agent`, skip ahead to the next section. If no issue exists yet, choose the lightest planning path that resolves what is still unknown, because an implementation issue should authorize file changes only after its requirements and important decisions are settled.
 
-When the boundaries are clear but product behavior or long-term maintenance choices remain, use `grill-with-docs` to discuss each choice and save decisions after they are confirmed:
+When the overall scope is clear but you still need to settle product behavior or long-term maintenance trade-offs, use `grill-with-docs` to work through each choice and record your confirmed decisions:
 
 ```text
 I want to add CSV export to the existing list. Use $grill-with-docs to reach agreement with me. Do not implement until I confirm that the discussion is complete.
 ```
 
-When the scope is broad, spans more than one Agent session, or the current idea is not yet a complete request, use `wayfinder` to create a shared investigation map and resolve one question at a time:
+When the problem is broad, spans multiple Agent sessions, or is still too vague to form a concrete requirement, use `wayfinder` to build a shared investigation map and answer one question at a time:
 
 ```text
 I want to redesign the project's permissions system, but I do not know the full scope yet. Use $wayfinder to create an investigation map. Do not implement product changes yet.
 ```
 
-Once investigation and discussion are clear enough, `to-spec` organizes the confirmed content into a spec without interviewing you again:
+Once your investigation and discussion have answered the open questions, use `to-spec` to turn the confirmed decisions into a structured spec without starting a second interview:
 
 ```text
 Use $to-spec to organize the requirements we have confirmed into a spec. Do not start a new interview.
 ```
 
-Then use `to-tickets` to split the plan or spec into issues with blocker relationships. Review the split before records are created:
+Finally, use `to-tickets` to break the plan or spec into individual implementation issues ordered by blocker relationships, reviewing the proposed split before the Agent writes the files:
 
 ```text
 Use $to-tickets to split this spec into issues that can be implemented one at a time. Show me the proposed split first; create the records only after I approve it.
 ```
 
-Combine these paths as needed; not every task needs to start from the beginning. Existing complete requirements can go straight to issue splitting. An already authorized implementation issue can go straight to implementation. Read-only answers usually need no implementation record. A Wayfinder investigation issue does not authorize implementation, and an Application Source Issue only mirrors Module status. Only a matching, actionable implementation issue authorizes changes to deliverables.
+You do not need to run all four steps for every task; pick only the stages your current task requires. If your requirements are already complete, go straight to splitting issues; if an implementation issue is already authorized, go straight to implementation; if you only want a read-only answer, you do not need an implementation record at all. Keep in mind that a Wayfinder investigation issue never authorizes code changes, and an Application Source Issue only mirrors a Module repository's status. Only a matching, actionable implementation issue authorizes changes to repository deliverables.
 
-Common implementation statuses help determine the next step:
+As issues move through planning and execution, their `Status` field tells you who acts next:
 
-- `needs-triage`: classification and an initial check are needed.
-- `needs-info`: a user decision or external fact is still needed.
+- `needs-triage`: needs classification and an initial check.
+- `needs-info`: waiting on a user decision or an external fact.
 - `ready-for-human`: the next action must be performed by the user.
-- `ready-for-agent`: user decisions and blockers are resolved, and an Agent may start implementation.
+- `ready-for-agent`: user decisions and blockers are resolved, so an Agent may start implementation.
 - `completed`: acceptance criteria and required validation are complete and recorded.
-- `wontfix`: the issue has explicitly been ended without implementation.
+- `wontfix`: the issue has been explicitly closed without implementation.
 
 ### Start implementation
 
-Choose an implementation issue with `ready-for-agent` status and completed blockers, then give the Agent a request with clear boundaries:
+Once an implementation issue has `ready-for-agent` status and all of its blockers are completed, ask the Main Agent to implement it within clear boundaries:
 
 ```text
 Use $implement to implement issue:<NNNN>:<NN>. If an important decision has not been confirmed, stop and use $grilling to discuss it with me.
 ```
 
-`implement` first reads the issue and its effort spec in full. It then uses the Issue Gate to check issue status, blockers, and implementation authorization, and completes Spec Readiness through `prepare -> independent review -> generate -> promote -> verify`. The `spec-readiness-reviewer` only checks whether the issue-selected governance design is current, complete, and sufficient to implement. A successful record authorizes starting that issue; it does not prove the final implementation is correct.
+When `implement` starts, the Agent first reads the full issue and its effort spec. Next, it runs the Issue Gate to verify the issue's status, blockers, and implementation authorization, and completes Spec Readiness through `prepare -> independent review -> generate -> promote -> verify`. During that sequence, `spec-readiness-reviewer` checks whether the governance design selected by the issue is current, complete, and sufficient to implement. Passing Spec Readiness authorizes the Agent to begin coding that issue; it does not prove that the resulting code will be correct.
 
-After authorization, the Main Agent establishes a recoverable baseline for the write scope and coordinates assignments. A subagent may deliver work within its assigned non-overlapping scope, but the Main Agent performs all Git writes. If the task exceeds the issue, an important decision remains unresolved, or repository rules conflict, stop affected writes and ask the user to decide.
+With authorization in place, the Main Agent establishes a recoverable Git baseline for the write scope and coordinates the work. Subagents may write within non-overlapping scopes assigned to them, while the Main Agent performs all Git operations. If the work grows beyond the issue scope, hits an unconfirmed important decision, or runs into conflicting repository rules, the Agent stops the affected writes and asks you to decide.
 
-Implementation proceeds against the acceptance criteria. Start with focused validation closest to the change, then run the complete validation required by the repository before finishing. Each acceptance criterion needs actual evidence. When all criteria are met, the Agent records evidence under `## Validation`, checks completed criteria, and changes the issue status to `completed`.
+As the Agent writes code, it validates against the issue's acceptance criteria, starting with focused checks closest to the modified files and finishing with the full validation suite required by the repository. Every acceptance criterion must be backed by actual validation evidence. Once all criteria pass, the Agent records that evidence under `## Validation`, checks off the criteria, and sets the issue status to `completed`.
 
-`completed` means only that the work record is complete. It does not stage files, create a commit, or include unrelated worktree changes.
+Marking an issue `completed` only updates the work record. It does not stage files, create a Git commit, or sweep in unrelated changes from your working tree.
 
 ### Review and commit
 
-The Main Agent enters the commit workflow only after an explicit user request to commit. The request should identify the issue and exact scope, for example:
+Because `completed` stops short of a commit, the Main Agent enters the commit workflow only after you explicitly ask it to commit. Name the exact issue and scope in your prompt:
 
 ```text
 Review and commit the implementation for issue:<NNNN>:<NN>. Include only changes authorized by this issue and preserve other worktree content.
 ```
 
-The Main Agent first confirms completion evidence and the exact staged candidate, then runs `arw commit-audit prepare`. ARW derives the review scope from the issue and applicable specs and creates an empty txt report. Two Reviewers then run in parallel: `requirements-reviewer` writes each requirement problem it finds, and `code-standards-reviewer` checks repository standards and points out removable code; each writes `No problems.` when it finds none. The commit gate is that both Reviewers end normally and every reported problem is handled; the Main Agent then runs `arw commit-audit verify` and the other mechanical checks. A re-review after fixes receives only the changes and their impact; unaffected conclusions stay.
+When you send this request, the Main Agent verifies the completion evidence and isolates the exact staged candidate, then runs `arw commit-audit prepare`. ARW derives the review scope from the issue and its applicable specs and creates an empty txt report. Two independent Reviewers then inspect the staged candidate in parallel: `requirements-reviewer` records any unmet requirement it finds, while `code-standards-reviewer` checks repository standards and flags removable code (each writes `No problems.` when clean). Only after both Reviewers finish normally and every reported problem is resolved does the Main Agent run `arw commit-audit verify` and the remaining mechanical checks to create the commit. If fixes require a re-review, the Reviewers inspect only the new changes and their impact while keeping unaffected conclusions.
 
-A candidate containing only investigation, design, or other closed non-implementation content may use the lighter commit path. Once a candidate includes implementation deliverables for the current repository, use the complete implementation commit workflow. The target repository's `code-review` and `commit` Skills own exact comparison preparation, result reuse, and recovery rules; this README does not copy their full protocols.
+If your staged candidate contains only investigation notes, design records, or other closed non-implementation files, the Agent can use a lighter commit path. As soon as the candidate includes implementation deliverables for the repository, it must go through the full implementation commit workflow above. The target repository's `code-review` and `commit` Skills define the exact diff preparation, result reuse, and recovery rules, so this README does not repeat their full protocols.
 
 ## Common commands
 
-This section summarizes everyday entry points. For complete syntax, run the installed `arw` command and consult the applicable long-term specification. The Main Agent uses complete specification commands in operating instructions; users may use the short aliases shown here in a terminal.
+Now that you have seen how setup and the daily workflow fit together, use the tables below as a quick reference for the commands you and your Agent run at each stage. For full flag syntax, run `arw` in your terminal or check the long-term specifications. While the Main Agent always writes full command names in operating instructions, you can type the short aliases in your terminal.
 
 ### Check version and repository configuration
+
+Use these commands when setting up, verifying, upgrading, or removing ARW in a repository:
 
 | Command | Question it answers |
 | --- | --- |
@@ -331,6 +341,8 @@ This section summarizes everyday entry points. For complete syntax, run the inst
 
 ### Find, open, and read work records
 
+Use these commands during daily work to inspect ARW Artifacts in `.scratch`:
+
 | Command | Short alias | Question it answers |
 | --- | --- | --- |
 | `arw list issues` | `arw li` | Which issues can proceed without unfinished blockers? |
@@ -343,19 +355,21 @@ This section summarizes everyday entry points. For complete syntax, run the inst
 | `arw open <canonical-id>` | - | How do I open a local ARW Artifact in the configured editor? |
 | `arw print <canonical-id>` | - | How do I write the exact original text of a local ARW Artifact to stdout? |
 
-`--all-statuses` and `--status` are mutually exclusive. `--type` can be combined with status filters. If `list`, `open`, or `print` reports an old issue or `PRD.md` format, check the entire preflight scope first; `arw migrate artifacts` migrates the nearest repository's entire `.scratch`, not only the record just mentioned.
+Note that `--all-statuses` and `--status` are mutually exclusive, while `--type` can be combined with status filters. If `list`, `open`, or `print` reports a legacy issue or `PRD.md` format, check the entire preflight scope before migrating: `arw migrate artifacts` migrates the nearest repository's entire `.scratch` directory, not just the single record you queried.
 
 ### Start a saved Agent CLI configuration
+
+Once you have saved a named Agent profile in your global `config.json`, start it from your target repository with:
 
 ```text
 arw agent start <name> [agent-arguments...]
 ```
 
-Use this entry point after deciding to save a named configuration. See the [Agent CLI Guide](docs/manuals/agent-cli.md) for its fields, arguments, and process behavior.
+See the [Agent CLI Guide](docs/manuals/agent-cli.md) for configuration fields, argument forwarding, and process behavior.
 
 ### Review commands usually run by an Agent
 
-Users usually need to specify only the issue and goal. The Main Agent organizes these commands under the current workflow:
+During implementation and commit reviews, you normally just specify the issue ID and goal in conversation, and let the Main Agent run these gate commands:
 
 | Command | Responsibility |
 | --- | --- |
@@ -368,30 +382,30 @@ Users usually need to specify only the issue and goal. The Main Agent organizes 
 
 ### What to check when a command fails
 
-For ordinary commands, exit code `0` means success or an accepted no-op, `1` means findings, blockers, or operation failure, and `2` means invalid command usage. Agent CLI exit behavior is covered in its dedicated guide.
+When an ordinary `arw` command exits, code `0` means success or an accepted no-op, `1` means review findings, blockers, or an operation failure, and `2` means invalid command usage (Agent CLI exit codes follow the rules in the [Agent CLI Guide](docs/manuals/agent-cli.md)). Check the matching symptom below to recover:
 
-- `Not inside a Git working tree`: enter the target Git repository root or a subdirectory and try again.
-- `.scratch` is absent: this is an allowed normal state for `list`, `migrate artifacts`, and repository workflows. When opening or printing a specific identity, check whether the record has actually been created.
-- `arw` is missing after installation on Windows: open a new terminal. If environment refresh still has not taken effect, sign out and back in or refresh the current command interpreter manually.
-- `arw` is missing after installation on Linux: check that PATH registration was allowed, then sign out and back in or run `. ~/.profile`. If `~/.bash_profile` exists or you use zsh, the shell does not read `~/.profile` by itself; load it yourself. ARW does not change other shell configuration.
-- `arw` is missing on experimental macOS: installation does not register PATH automatically. Use the installation-directory launcher or configure PATH yourself.
-- `open` cannot start the editor: check the editor setting in the global `config.json`; the [Agent CLI Guide](docs/manuals/agent-cli.md) has the full structure.
-- `arw agent start` fails: check its named configuration, arguments, and launch boundary in the [Agent CLI Guide](docs/manuals/agent-cli.md).
-- Spec Readiness returns `gap`, `uncertain`, or an expired result: fix the governance source or review input that owns the issue, then rerun the full workflow. Do not bypass the result.
-- `workflow update` reports unknown ownership or state drift: preserve user changes, resolve the conflict using the current lock file and Git recovery baseline, then rerun the full operation.
-- Multiple Agents are writing to the same working tree: stop the extra writers. The Main Agent must reconfirm the recovery baseline and non-overlapping scopes.
+- `Not inside a Git working tree`: `cd` into your target Git repository root (or one of its subdirectories) and run the command again.
+- `.scratch` is absent: this is normal when running `list`, `migrate artifacts`, or repository workflow commands in a repo with no records yet. If `open` or `print` fails on a specific Canonical ID, check whether that record has actually been created.
+- `arw` is missing after installation on Windows: open a new terminal window. If the updated environment still has not appeared, sign out and back in or refresh your command interpreter manually.
+- `arw` is missing after installation on Linux: confirm that you allowed PATH registration during install, then sign out and back in or run `. ~/.profile`. If `~/.bash_profile` exists or you use zsh, your shell will not read `~/.profile` automatically; load it from your shell config yourself, as ARW never edits other shell files.
+- `arw` is missing on experimental macOS: the installer does not register PATH on macOS, so either invoke the launcher from the installation directory or add it to PATH yourself.
+- `open` cannot start the editor: check the `editor` field in your global `config.json` (see the [Agent CLI Guide](docs/manuals/agent-cli.md) for the full configuration schema).
+- `arw agent start` fails: verify the profile name, arguments, and launch boundary in the [Agent CLI Guide](docs/manuals/agent-cli.md).
+- Spec Readiness returns `gap`, `uncertain`, or an expired result: fix the governance document or review input that owns the design, then rerun the full Spec Readiness sequence. Never bypass the check.
+- `workflow update` reports unknown ownership or state drift: keep your local changes safe, resolve the conflict against the current `arw-lock.json` and your Git recovery baseline, and rerun the full update.
+- Multiple Agents are writing to the same working tree: stop the extra writers immediately, then have the Main Agent re-verify the Git recovery baseline and non-overlapping write scopes.
 
 <a id="reviewers"></a>
 
 ## Why independent reviews matter
 
-The Main Agent communicates with the user, selects scope, coordinates implementation, runs validation, and performs all Git writes. An Agent reviewing its own work can retain its original assumptions, so ARW uses three Canonical Reviewer Roles at different stages:
+The commands and workflow gates above rely on independent Reviewers rather than letting the Main Agent check its own work. Because the Main Agent talks with you, chooses scope, coordinates implementation, runs validation, and performs all Git writes, asking it to grade its own output risks carrying over its initial assumptions and blind spots. To get an independent check at the moments that matter most, ARW runs three Canonical Reviewer Roles at two stages:
 
-- `spec-readiness-reviewer`: reviews once when the design is finalized whether the governance design selected by the issue is current, complete, and sufficient to implement, then re-reviews only changes.
-- `requirements-reviewer`: after the user requests an implementation commit, checks each issue requirement and applicable long-term requirement against the candidate.
-- `code-standards-reviewer`: at the same stage and in parallel, checks the candidate against repository standards and applicable writing or code rules.
+- `spec-readiness-reviewer`: runs once when an issue's design is finalized to verify that the selected governance design is current, complete, and sufficient to implement, and thereafter re-reviews only changes.
+- `requirements-reviewer`: runs after you request an implementation commit to check every issue requirement and applicable long-term requirement against the staged candidate.
+- `code-standards-reviewer`: runs in parallel with `requirements-reviewer` at commit time to check the staged candidate against repository standards and applicable writing or code rules.
 
-A typical relationship is:
+Together, the Main Agent and Reviewers divide work along this timeline:
 
 ```text
 Main Agent
@@ -402,11 +416,13 @@ Main Agent
     `-- requirements-reviewer
 ```
 
-A Reviewer Role is a temporary Agent started by the current workflow, not an external program launched by `arw agent start` from the global `config.json`. The two have no name mapping or shared session. Independent reviews add waiting time and model usage, so they run only at their relevant stages; in return, the judgment comes from someone separate from the implementer.
+Each Reviewer judges only its bound inputs: it never chooses work scope, makes important decisions for the user, edits implementation files, or creates a commit. While the Main Agent can verify the evidence and impact of a Reviewer finding, it cannot override a Spec Readiness or Commit Audit authorization result with its own judgment.
+
+Under the hood, a Reviewer Role is a temporary Agent spawned by the active workflow, not an external CLI profile started via `arw agent start` from your global `config.json`. The two mechanisms share no name mapping or session state. Because independent reviews cost extra wait time and model tokens, ARW runs them only at the pre-implementation and pre-commit gates, trading that cost for a second opinion that is separate from the implementer.
 
 ### Use a third-party model for Claude Reviewers
 
-In Claude Code, a Reviewer whose `modelProvider` is `"anthropic"` runs through headless `claude -p`. To use a third-party model that serves the Anthropic API, add `env` to that role in the `config.json` of the ARW installation directory; these variables are injected into every `claude -p` turn:
+When you use Claude Code, any Reviewer whose `modelProvider` is set to `"anthropic"` runs through headless `claude -p`. If you want that Reviewer to use a third-party model that serves an Anthropic-compatible API, add an `env` object to the role in the `config.json` inside your ARW installation directory. ARW injects those environment variables into every `claude -p` turn:
 
 ```json
 "reviewers": {
@@ -421,11 +437,11 @@ In Claude Code, a Reviewer whose `modelProvider` is `"anthropic"` runs through h
 }
 ```
 
-Because `env` may hold credentials, it is accepted only in the user-level `config.json`. If a repository's `arw.config.json` contains `env`, configuration validation fails and the Reviewer does not start.
+Because `env` often contains secret tokens, ARW accepts it only in the user-level `config.json`. If a repository's `arw.config.json` includes an `env` field, configuration validation fails and the Reviewer refuses to start.
 
 ### Allow common ARW commands in Claude Code
 
-ARW does not generate `.claude/settings.json`. To let Claude Code run these `arw` commands without prompting, as Codex does with `.codex/rules/default.rules`, merge the `permissions.allow` list below into the user-level `~/.claude/settings.json` or the repository's `.claude/settings.json`. In the ARW source repository, where commands run as `node arw.mjs`, replace `arw ` with `node arw.mjs ` in each entry.
+Whereas Codex receives command-approval rules through `.codex/rules/default.rules`, ARW does not generate `.claude/settings.json`. To let Claude Code run routine `arw` commands without prompting every time, merge the `permissions.allow` list below into your user-level `~/.claude/settings.json` or the repository's `.claude/settings.json`. (When working inside the ARW source repository where commands run as `node arw.mjs`, replace `arw ` with `node arw.mjs ` in each entry.)
 
 ```json
 {
@@ -452,21 +468,23 @@ ARW does not generate `.claude/settings.json`. To let Claude Code run these `arw
 
 ## Included Skills
 
-`arw workflow init` installs applicable Skills for the platforms selected by the user. Codex uses `.agents/skills` in the target repository; Claude Code uses `.claude/skills`. A Skill is a set of task-specific operating instructions. Most are used automatically when a task matches; the rest never trigger on their own, so you name them in a conversation, for example `Use $grill-with-docs to confirm the requirements with me`. To see every Skill, whether it is automatic or must be named, and when to use it, read the [Skills manual](docs/manuals/skills.md).
+In addition to CLI gates and Reviewers, `arw workflow init` installs task-specific operating instructions called Skills for the platforms you selected (`.agents/skills` for Codex, and `.claude/skills` for Claude Code). The Agent triggers most Skills automatically as soon as your task matches their scope; the remaining Skills never trigger on their own and wait for you to name them in conversation, such as `Use $grill-with-docs to confirm the requirements with me`. To see the full list of installed Skills, which ones run automatically versus by name, and when to use each, consult the [Skills manual](docs/manuals/skills.md).
 
 ## Develop ARW
 
-If your goal is to modify ARW Source Checkout rather than use ARW in your own project, do not run `arw workflow init`, `update`, `verify`, or `remove` on the source repository. Source Checkout is where Workflow Distribution is authored, not a target repository that consumes the distribution.
+If your goal is to modify the ARW Source Checkout itself rather than use ARW in another project, do not run `arw workflow init`, `update`, `verify`, or `remove` inside the source repository. The Source Checkout is where Workflow Distribution is authored, not a target repository that consumes that distribution.
 
-After cloning Source Checkout and preparing to make changes, confirm Node.js 24 or later from the repository root, then continue to the [Developer Guide](docs/manuals/development.md). It helps you prepare the full development environment, choose an implementation or maintenance path, run focused and shared validation, and locate code by source responsibility. Stable product behavior and long-term boundaries belong to the [ARW long-term specification](docs/specs/agent-repository-workflow/spec.md) (in Chinese); neither the README nor Developer Guide duplicates those contracts.
+Instead, after cloning the Source Checkout, verify that you have Node.js 24 or later from the repository root and head to the [Developer Guide](docs/manuals/development.md). It walks you through preparing the development environment, picking an implementation or maintenance path, running focused and shared validation, and navigating the codebase by responsibility. For stable product contracts and long-term boundaries, refer to the [ARW long-term specification](docs/specs/agent-repository-workflow/spec.md) (in Chinese), as neither this README nor the Developer Guide duplicates those specifications.
 
 ## A final note
 
-More process makes development heavier and slower. Too little process, or no process, makes quality hard to ensure. Every project therefore needs to balance process cost against quality gains and choose the smallest path that is still sufficient for the risk of the change.
+Every workflow trades speed for certainty: more process makes development heavier and slower, while too little process makes quality hard to trust. Each project has to weigh process cost against quality gains and pick the lightest path that still covers the risk of the change.
 
-That balance will change as Agent intelligence improves. When a mechanical check no longer provides reliable protection, or natural-language review is better suited to carry responsibility, its cost and benefit should be reconsidered instead of keeping it forever because it already exists. ARW may have no practical value at all in the not-too-distant future.
+That balance will keep shifting as Agent intelligence improves. Whenever a mechanical check no longer provides real protection, or when natural-language review can carry that responsibility better, its cost and benefit should be re-evaluated rather than kept forever out of habit. In the not-too-distant future, ARW itself may no longer be needed at all.
 
 ## Further reading
+
+When you are ready to go deeper into a specific workflow or specification, continue with the guide that matches your current task:
 
 - [Distribute work across repositories and sync JIRA](docs/manuals/application-jira.md): When one JIRA request must be completed across multiple Git repositories, use this to judge fit and follow repository responsibilities, operation order, and failure recovery.
 - [Agent CLI Guide](docs/manuals/agent-cli.md): When you have decided to save and start an external Agent CLI configuration with ARW, read about configuration, argument forwarding, and process and session boundaries.
