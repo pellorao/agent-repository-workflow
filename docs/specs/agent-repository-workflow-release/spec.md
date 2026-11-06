@@ -79,6 +79,7 @@ Reviewer 能力测试不是发布门禁. 维护者需要时显式调用源码专
 | Git Bash 解析 `arw` 并报告候选版本 | 安装规范写明支持 Git Bash, 它从 Windows PATH 解析 |
 | Bootstrap 分别在系统自带 bsdtar 和 Git for Windows 自带 GNU tar 位于 `PATH` 最前时解压并安装候选 | Bootstrap 经 `PATH` 取 `tar`, GNU tar 把含 `C:` 的路径当作主机名, Bootstrap 因此使用相对文件名 |
 | 在 cmd 与 PowerShell 中经 `arw.cmd` 传入含空格, 逗号和 `&` 的参数, 命令收到的参数不变 | `arw.cmd` 的参数转发只在 Windows |
+| ARW 源码以 `core.autocrlf=true` 检出后分发文件仍为 LF (仓库根 `.gitattributes`), 能从该检出安装, 在新仓库 `workflow init` 与 `verify`, 在 agent-assisted fixture 上 `workflow update` 与 `verify`, 再卸载 | `core.autocrlf=true` 只在 Windows 的 Git 默认配置中出现 (guest 的主克隆固定 `core.autocrlf=false`) |
 
 ### Linux only
 

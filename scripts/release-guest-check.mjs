@@ -182,10 +182,13 @@ const fixtureSource = join(staging, 'fixture-source');
 const fixtureTarget = join(staging, 'fixture-target');
 mkdirSync(fixtureSource);
 step('解压 fixture', run('tar', ['-xzf', fixture, '-C', fixtureSource]));
-step('检出受管 fixture 仓库', run('git', [
+const fixtureBranch = previousVersion === undefined ? [] : ['--branch', `arw-${previousVersion}`];
+/** @param {string} destination */
+const cloneFixture = destination => run('git', [
     '-c', 'advice.detachedHead=false', 'clone', '--quiet', '-c', `core.autocrlf=${WINDOWS}`, '-c', 'core.longpaths=true',
-    ...(previousVersion === undefined ? [] : ['--branch', `arw-${previousVersion}`]), join(fixtureSource, 'agent-assisted'), fixtureTarget,
-]));
+    ...fixtureBranch, join(fixtureSource, 'agent-assisted'), destination,
+]);
+step('检出受管 fixture 仓库', cloneFixture(fixtureTarget));
 step('fixture arw workflow update', fresh('arw workflow update --non-interactive', fixtureTarget));
 step('fixture arw workflow verify', fresh('arw workflow verify', fixtureTarget));
 
@@ -251,6 +254,24 @@ const leftovers = existsSync(INSTALLATION)
     ? readdirSync(INSTALLATION, {recursive: true, withFileTypes: true}).filter(entry => !entry.isDirectory() && entry.name !== 'credential')
     : [];
 step('Installation 目录不剩文件', {ok: leftovers.length === 0, output: leftovers.map(entry => join(entry.parentPath, entry.name)).join('\n')});
+// Windows 上 Git 默认 core.autocrlf=true 检出 ARW 源码: 仓库根 .gitattributes 须使分发文件仍为 LF, 才能从这份检出安装, 并在新仓库和 fixture 上 init, update, verify.
+if (WINDOWS) {
+    const crlfSource = join(staging, 'crlf-source');
+    step('以 CRLF 检出 ARW 源码', run('git', ['clone', '--quiet', '-c', 'core.autocrlf=true', '-c', 'core.longpaths=true', ROOT, crlfSource]));
+    const crlfFiles = ['release-manifest.json', 'distribution/config.json'].filter(file => readFileSync(join(crlfSource, file), 'utf8').includes('\r'));
+    step('分发文件为 LF', {ok: crlfFiles.length === 0, output: crlfFiles.join('\n')});
+    step('从 CRLF 源码检出安装', run(process.execPath, ['install.mjs', '--non-interactive', '--register-path', 'true'], {cwd: crlfSource}));
+    const crlfInit = mkdtempSync(join(tmpdir(), 'arw-release-crlf-init-'));
+    step('CRLF 源码: 创建目标 Git 仓库', run('git', ['init', '--quiet'], {cwd: crlfInit}));
+    step('CRLF 源码: arw workflow init', fresh(`arw ${INIT_ARGUMENTS}`, crlfInit));
+    step('CRLF 源码: arw workflow verify', fresh('arw workflow verify', crlfInit));
+    const crlfFixture = join(staging, 'crlf-fixture');
+    step('CRLF 源码: 检出受管 fixture 仓库', cloneFixture(crlfFixture));
+    step('CRLF 源码: fixture arw workflow update', fresh('arw workflow update --non-interactive', crlfFixture));
+    step('CRLF 源码: fixture arw workflow verify', fresh('arw workflow verify', crlfFixture));
+    step('CRLF 源码: 卸载', run(process.execPath, [join(INSTALLATION, 'uninstall.mjs'), '--non-interactive', '--remove-config', 'true'], {cwd: crlfInit}));
+    step('CRLF 源码: 卸载后新终端不再解析 arw', fresh(locate), false);
+}
 // 最后用含空格和非 ASCII 字符的用户目录把以上全部情形重跑一次 (嵌套运行不再嵌套).
 if (process.env.ARW_NESTED_GUEST_CHECK === undefined) {
     const home = join(mkdtempSync(join(tmpdir(), 'arw-release-home-')), '用户 home');

@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0097:01",
+  "exception": {
+    "confirmedAt": "2026-11-02T00:00:00Z",
+    "reason": "用户 2026-11-06 在 decide ARW/crlfcheck-d 选定方案 A (仓库根 .gitattributes 加发布检查), Main 判定无剩余设计决定; 依据用户 2026-11-02 对此类 issue 不需要治理设计的常设确认."
+  },
+  "subject": {
+    "filePath": ".scratch/0097-crlf-source-checkout-check/issues/01-crlf-source-checkout-check.md",
+    "sha256": "315b2ef5d7ca573e03088d0dabf553d10234d39bdbef2968833fb75f4ae58a76"
+  },
+  "result": "not-applicable"
+}

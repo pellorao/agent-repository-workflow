@@ -93,5 +93,5 @@ NODE_WIN="$(wslpath -u "$(powershell.exe -NoProfile -NonInteractive -Command '(G
 | SSH 一直不可用, 或报主机密钥错误 | 检查客户机的 sshd, 账户和公钥. 主机密钥按上文核对, 不关闭校验 |
 | `新终端解析 arw` 失败 | Windows: 检查用户 `Path` 的注册表值是否包含 Installation 目录. 存储值可能以 `;` 结尾, 末尾分隔符不属于目录. Linux: 检查 `~/.profile` 中的 ARW 行, 并确认没有 `~/.bash_profile` 遮蔽它 |
 | `arw --version` 失败, 但能解析到 `arw` | 启动器调用的是 `PATH` 上的 `node`. 确认 `~/.profile` 没有把受验 node 目录挤到后面, 且该 node 满足 Guest requirements 节对 Node.js 的要求 |
-| Windows 上 checkout 缺少深层文件, 或文本换行被改写 | 脚本已用 `core.longpaths=true` 和 `core.autocrlf=false` 克隆. 若仍出现, 检查客户机 Git 版本 |
+| Windows 上 checkout 缺少深层文件, 或文本换行被改写 | 脚本已用 `core.longpaths=true` 和 `core.autocrlf=false` 克隆 (guest 检查另有一轮专门以 `core.autocrlf=true` 检出 ARW 源码, 用来确认仓库根 `.gitattributes` 使分发文件仍为 LF). 若仍出现, 检查客户机 Git 版本 |
 | Ubuntu 基线维护时下载失败 | 先检查宿主 VPN, 代理和 DNS, 再怀疑 ISO 或虚拟机监控程序 |
