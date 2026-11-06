@@ -447,7 +447,7 @@ test('prepare filters paths using staged root and nested ignore files on both pl
     const repository = await stagedRepository(t, {statuses: ['ready-for-agent']});
     await mkdir(join(repository.root, 'nested'));
     await writeFile(join(repository.root, '.gitignore'), 'root-ignored.txt\n');
-    await writeFile(join(repository.root, 'nested/.gitignore'), 'ignored.txt\n');
+    await writeFile(join(repository.root, 'nested/.gitignore'), 'ignored.txt\n!included.txt\n');
     for (const path of ['root-ignored.txt', 'nested/ignored.txt', 'nested/included.txt']) await writeFile(join(repository.root, path), 'data\n');
     await runGit(repository.root, ['add', '-f', '.gitignore', 'nested', 'root-ignored.txt']);
     const paths = async (/** @type {string} */ round) => {
@@ -472,4 +472,27 @@ test('prepare filters paths using staged root and nested ignore files on both pl
     assert.match(stagedPaths, /root-ignored\.txt/u);
     assert.match(stagedPaths, /nested\/ignored\.txt/u);
     assert.doesNotMatch(stagedPaths, /implementation\.mjs|generated\.txt|nested\/included\.txt/u);
+});
+
+
+test('non-implementation verify keeps later text errors after an unparsable issue', async t => {
+    const repository = await createRepository(t);
+    await writeIssue(repository.root, '0001-plan', '01-broken.md', issueText('unknown'));
+    await writeFile(join(repository.root, 'notes.md'), '# Notes\r\n');
+    await runGit(repository.root, ['add', '.']);
+    const result = await run(['commit-audit', 'verify', '--non-implementation'], repository);
+    assert.equal(result.result, 1);
+    assert.match(result.events[0].message, /Unknown implementation Status: unknown/u);
+    assert.match(result.events[0].message, /notes\.md[^]*LF line endings/u);
+});
+
+test('verify retains diff-tree diagnostics alongside missing Reviewer reports', async t => {
+    const repository = await stagedRepository(t, {statuses: ['ready-for-agent']});
+    const {request, round} = await prepare(repository.root, {authorizingIssueIds: ['issue:0001:01']});
+    request.tree = '0'.repeat(40);
+    await writeFile(join(round, 'request.json'), JSON.stringify(request));
+    const errors = await verifyRound(repository.root);
+    assert.match(errors, /git diff-tree[^]*failed:[^]*bad (?:tree )?object/u);
+    assert.match(errors, /code-standards-reviewer report is empty/u);
+    assert.match(errors, /requirements-reviewer report is empty/u);
 });

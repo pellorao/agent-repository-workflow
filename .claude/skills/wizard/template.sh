@@ -25,6 +25,7 @@ TOTAL_STAGES=0
 _STAGE_INDEX=0
 ENV_FILE="${ENV_FILE:-.env}"
 WRITTEN_ENV=()    # KEYs written to ENV_FILE this run
+WRITTEN_VAR=()    # variable NAMEs set this run
 WRITTEN_SECRET=() # secret NAMEs set this run
 SKIPPED=()        # things we couldn't do (e.g. gh missing)
 
@@ -138,12 +139,21 @@ ask_secret() {
 # line) and sets $KEY. Idempotent. Creates ENV_FILE at mode 0600; writes through
 # a symlink and keeps an existing file's mode.
 write_env() {
-  local key="$1" value="$2" tmp sq="'\\''"
+  local key="$1" value="$2" tmp rc=0 sq="'\\''"
   [[ -e "$ENV_FILE" ]] || (umask 077 && : > "$ENV_FILE")
   tmp=$(mktemp)
-  grep -vE "^${key}=" "$ENV_FILE" > "$tmp" || true
+  grep -vE "^${key}=" "$ENV_FILE" > "$tmp" || rc=$?
+  if (( rc > 1 )); then
+    rm -f "$tmp"
+    warn "couldn't read $ENV_FILE; value not saved"
+    return "$rc"
+  fi
   printf "%s='%s'\n" "$key" "${value//\'/$sq}" >> "$tmp"
-  cat "$tmp" > "$ENV_FILE"
+  if ! cat "$tmp" > "$ENV_FILE"; then
+    rm -f "$tmp"
+    warn "couldn't write $ENV_FILE; value not saved"
+    return 1
+  fi
   rm -f "$tmp"
   printf -v "$key" '%s' "$value"
   WRITTEN_ENV+=("$key")
@@ -170,6 +180,7 @@ set_var() {
   local name="$1" value="$2"
   if command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
     if gh variable set "$name" --body "$value" >/dev/null 2>&1; then
+      WRITTEN_VAR+=("$name")
       printf '  %s✓ set%s GitHub variable %s\n' "$GREEN" "$RESET" "$name"
       return
     fi
@@ -184,6 +195,7 @@ finish() {
   printf '\n%s%s  ✓ Setup complete%s\n' "$BOLD" "$GREEN" "$RESET"
   (( ${#WRITTEN_ENV[@]} ))    && note "wrote ${#WRITTEN_ENV[@]} value(s) to $ENV_FILE: ${WRITTEN_ENV[*]}"
   (( ${#WRITTEN_SECRET[@]} )) && note "set ${#WRITTEN_SECRET[@]} GitHub secret(s): ${WRITTEN_SECRET[*]}"
+  (( ${#WRITTEN_VAR[@]} ))    && note "set ${#WRITTEN_VAR[@]} GitHub variable(s): ${WRITTEN_VAR[*]}"
   if (( ${#SKIPPED[@]} )); then
     printf '\n'; warn "still to do by hand:"
     for s in "${SKIPPED[@]}"; do note "  - $s"; done

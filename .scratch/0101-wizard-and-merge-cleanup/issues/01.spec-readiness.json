@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0101:01",
+  "exception": {
+    "confirmedAt": "2026-11-06T20:18:11Z",
+    "reason": "用户在本轮清单中明确确认 F' 无设计决定, 无需治理设计; effort 0101 只含一个实施 issue, 不创建 spec."
+  },
+  "subject": {
+    "filePath": ".scratch/0101-wizard-and-merge-cleanup/issues/01-wizard-and-merge-cleanup.md",
+    "sha256": "248fee0b4ced187f2f16ac5e85ee9d889c2bdd0ea50ddc0a4df8a38fda984bc8"
+  },
+  "result": "not-applicable"
+}

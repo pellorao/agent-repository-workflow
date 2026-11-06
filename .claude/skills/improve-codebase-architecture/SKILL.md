@@ -36,7 +36,7 @@ disable-model-invocation: true
 
 ### 2. Present candidates as an HTML report
 
-把一个自包含的 HTML 文件写到会话工作区 (见 `docs/agents/environment.md`), 使仓库的受跟踪路径里不留任何东西. 写入 `<workspace>/architecture-review-<timestamp>.html`, 使每次运行得到新文件. 替用户打开它 (Linux 用 `xdg-open <path>`, macOS 用 `open <path>`, Windows 用 `start <path>`), 并告诉他绝对路径.
+把一个依赖 CDN 的 HTML 文件写到会话工作区 (见 `docs/agents/environment.md`), 使仓库的受跟踪路径里不留任何东西. 写入 `<workspace>/architecture-review-<timestamp>.html`, 使每次运行得到新文件. 替用户打开它 (Linux 用 `xdg-open <path>`, macOS 用 `open <path>`, Windows 用 `start <path>`), 并告诉他绝对路径.
 
 报告用 **Tailwind (CDN)** 做布局和样式, 在用图/流程/时序能可靠表达结构的地方用 **Mermaid (CDN)** 画图. 把 Mermaid 与手工制作的 CSS/SVG 视觉混用: 关系呈图状 (调用图, 依赖, 时序) 时用 Mermaid, 想要更有编辑感的东西 (质量图, 剖面, 折叠动画) 时用手工搭的 div/SVG. 每个候选都有一个 **前后对比可视化**. 要有视觉感.
 

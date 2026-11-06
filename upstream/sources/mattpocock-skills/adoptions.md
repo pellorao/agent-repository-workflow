@@ -39,3 +39,7 @@
 - `CONTEXT.md` 改名 `GLOSSARY.md` (含 `domain-modeling/CONTEXT-FORMAT.md` 改名和 `wait-what` 的 MAP 引用): ARW 代码和分发物使用 `CONTEXT.md`.
 - `code-review`, `to-spec`, `to-tickets`, `wayfinder` 中的外部跟踪器, sub-issue, 分流标签和 PR 相关改动, `domain-modeling` 的 description: 本地已改写为 ARW 流程.
 - 新 Skill `implement-spec` (多 worktree 并行实施) 和 `pr` (PR 正文模板): 与 ARW 主工作区串行实施和不开 PR 的流程不符, 加入 `exclude`.
+
+## 2026-11-07 Local modifications
+
+上游提交不变. `wizard/template.sh` 本地修复: `write_env` 区分读取失败与 `grep` 无匹配, 读取失败时不截断原文件; 检查写入失败, 不记录成功; `set_var` 把成功设置的 GitHub variable 纳入最终摘要, 失败仍记待办. `improve-codebase-architecture/SKILL.md` 将报告描述更正为依赖 CDN 的 HTML 文件, 与其 Tailwind 和 Mermaid 来源一致. 后续同步保留这三项本地修改.

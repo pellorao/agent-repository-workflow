@@ -90,6 +90,7 @@
     "lib/common/file-transaction.mjs",
     "lib/common/filesystem.mjs",
     "lib/common/git-content.mjs",
+    "lib/common/git-ignore.mjs",
     "lib/common/git-process.mjs",
     "lib/common/json.mjs",
     "lib/common/markdown-visible-text.mjs",
