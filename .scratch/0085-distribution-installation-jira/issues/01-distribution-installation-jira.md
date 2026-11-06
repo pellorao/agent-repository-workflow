@@ -39,7 +39,7 @@ Status: completed
 
 ## Blocked by
 
-- issue:0084:01
+- None - 原先要求在 effort 0084 的 issue 01 提交后执行 (跨 effort 的阻断项引用不被解析器接受), 该前置已完成.
 
 ## Validation
 
