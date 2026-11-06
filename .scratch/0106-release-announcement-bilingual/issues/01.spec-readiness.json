@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0106:01",
+  "exception": {
+    "confirmedAt": "2026-11-02T06:00:06Z",
+    "reason": "Single-issue doc change with no design decision (user standing confirmation 2026-11-02 in projects AGENTS)."
+  },
+  "subject": {
+    "filePath": ".scratch/0106-release-announcement-bilingual/issues/01-release-announcement-bilingual.md",
+    "sha256": "c7fe889b17076b1ced1f0d1b7bb7856b86663bb23aff5a7b95e3cfebf2255480"
+  },
+  "result": "not-applicable"
+}
