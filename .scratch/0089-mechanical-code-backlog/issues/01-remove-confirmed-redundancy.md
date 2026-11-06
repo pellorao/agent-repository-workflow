@@ -17,7 +17,7 @@ Status: ready-for-human
 
 ## Blocked by
 
-- 等待用户在后续轮次授权可验证候选 Host 的执行环境.
+- None - 无 issue 阻断项, 仅等待用户在后续轮次授权可验证候选 Host 的执行环境 (见 Status: ready-for-human).
 
 ## Comments
 
