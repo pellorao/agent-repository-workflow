@@ -124,15 +124,16 @@ test('invalid requests never execute, request failures stay local, and operation
         },
         async close() { return {status: 'succeeded', result: {closed: true}}; },
     };
-    const invalid = ['{\n', request('', 'list_agents'), request('unsupported', 'review'), request('array', 'list_agents', []),
+    const blank = ['\n', '\r\n', ' \t\n'];
+    const invalid = ['{\n', '\u00a0\n', request('', 'list_agents'), request('unsupported', 'review'), request('array', 'list_agents', []),
         `${JSON.stringify({id: 'extra', operation: 'list_agents', input: {}, extra: true})}\n`];
     const valid = ['spawn_agent', 'followup_task', 'send_message', 'messages', 'list_agents', 'wait_agent', 'respond', 'interrupt_agent'];
-    const input = Readable.from([...invalid, ...valid.map(operation => request(operation, operation)), request('list_agents', 'list_agents')]);
+    const input = Readable.from([...blank, ...invalid, ...valid.map(operation => request(operation, operation)), ...blank, request('list_agents', 'list_agents'), ' \t']);
     assert.equal(await runBackgroundAgent({...peer, input, runtime}), 0);
     assert.deepEqual(operations, valid);
-    assert.equal(peer.responses.length, 14);
+    assert.equal(peer.responses.length, 15);
     const failed = peer.responses.filter(response => response.ok === false);
-    assert.deepEqual(failed.map(response => response.id).sort(), [null, null, 'unsupported', 'array', 'extra', 'list_agents', 'interrupt_agent', 'followup_task'].sort());
+    assert.deepEqual(failed.map(response => response.id).sort(), [null, null, null, 'unsupported', 'array', 'extra', 'list_agents', 'interrupt_agent', 'followup_task'].sort());
     assert.equal(peer.responses.find(response => response.id === 'spawn_agent')?.ok, true);
     assert.deepEqual(peer.responses.find(response => response.id === 'followup_task'), {id: 'followup_task', ok: false,
         error: {code: 'task-failed', message: 'Environment still runs.'}});

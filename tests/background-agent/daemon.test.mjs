@@ -9,7 +9,7 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import test, {mock} from 'node:test';
 import {createBackgroundAgentDaemon} from '../../lib/background-agent/daemon.mjs';
-import {acquireBackgroundAgentMaintenance,acquireBackgroundAgentStartupLease,controlProof,createBackgroundAgentClient,sendBackgroundAgentRequest} from '../../lib/background-agent/client.mjs';
+import {acquireBackgroundAgentMaintenance,acquireBackgroundAgentStartupLease,backgroundAgentMaintenancePorts,controlProof,createBackgroundAgentClient,sendBackgroundAgentRequest} from '../../lib/background-agent/client.mjs';
 import {backgroundAgentMessageDatabasePaths} from '../../lib/background-agent/message-store.mjs';
 import {appServerProcessIdentityPath, readOperatingSystemProcessCreationTime} from '../../lib/background-agent/process-identity.mjs';
 import {createBackgroundAgentStateStore} from '../../lib/background-agent/state-store.mjs';
@@ -33,7 +33,7 @@ async function offlineMaintenance(t) {
   await writeFile(appServerProcessIdentityPath(runtimeDirectory),identity,{mode:0o600});
   const store=createBackgroundAgentStateStore({runtimeDirectory,persistenceIntervalMs:60_000});
   await store.loadAgents();
-  return {runtimeDirectory,store,identity,port:await freePort(),maintenancePort:0,
+  return {runtimeDirectory,store,identity,port:await freePort(),maintenancePorts:[0],
     observeManagerProcess:async()=>/** @type {const} */('absent')};
 }
 
@@ -72,7 +72,7 @@ test('control authentication keeps the private credential from an unrelated list
 
 test('daemon decodes a multibyte request split across TCP chunks',async()=>{
   const runtimeDirectory=await mkdtemp(join(tmpdir(),'arw-background-agent-request-utf8-'));
-  const daemon=await createBackgroundAgentDaemon({runtimeDirectory,port:0,maintenancePort:await freePort(),
+  const daemon=await createBackgroundAgentDaemon({runtimeDirectory,port:0,maintenancePorts:[await freePort()],
     dispatch:async ({input})=>({status:'succeeded',result:input}),
     list:()=>[],prepareMaintenance:async()=>({status:'busy',stoppedAgents:[]}),
   });
@@ -121,7 +121,7 @@ test('authenticated wait returns one batch after a successful output and cancell
   let delivered = false;
   let waitingReady = () => {};
   const pendingReady = new Promise(resolve => {waitingReady=()=>resolve(undefined);});
-  const daemon = await createBackgroundAgentDaemon({runtimeDirectory,port:0,maintenancePort:await freePort(),
+  const daemon = await createBackgroundAgentDaemon({runtimeDirectory,port:0,maintenancePorts:[await freePort()],
     dispatch:async ({operation,emit,signal,input}) => {
       if (operation === 'wait_agent') {
         if (input.cursor === 0) {
@@ -156,10 +156,10 @@ test('authenticated wait returns one batch after a successful output and cancell
 
 test('maintenance forwards the idle-eviction authorization separately from stop authorization',async()=>{
   const runtimeDirectory=await mkdtemp(join(tmpdir(),'arw-background-agent-maintenance-options-'));
-  const maintenancePort=await freePort();
+  const maintenancePorts=[await freePort()];
   /** @type {{stopBackgroundAgents:boolean,allowIdleEviction:boolean}[]} */
   const received=[];
-  const daemon=await createBackgroundAgentDaemon({runtimeDirectory,port:0,maintenancePort,
+  const daemon=await createBackgroundAgentDaemon({runtimeDirectory,port:0,maintenancePorts,
     dispatch:async()=>({status:'succeeded'}),list:()=>[],
     prepareMaintenance:async options=>{received.push(options);return {status:'busy',stoppedAgents:[]};},
   });
@@ -168,9 +168,9 @@ test('maintenance forwards the idle-eviction authorization separately from stop 
     const malformed=await sendBackgroundAgentRequest({port:daemon.port,message:{id:'maintenance',credential:secret,operation:'__maintenance',input:{stopBackgroundAgents:false}}});
     assert.equal(malformed.ok,false);
     assert.deepEqual(received,[]);
-    assert.equal((await acquireBackgroundAgentMaintenance({runtimeDirectory,port:daemon.port,maintenancePort})).status,'busy');
-    assert.equal((await acquireBackgroundAgentMaintenance({runtimeDirectory,port:daemon.port,maintenancePort,stopBackgroundAgents:false,allowIdleEviction:false})).status,'busy');
-    assert.equal((await acquireBackgroundAgentMaintenance({runtimeDirectory,port:daemon.port,maintenancePort,stopBackgroundAgents:true,allowIdleEviction:false})).status,'busy');
+    assert.equal((await acquireBackgroundAgentMaintenance({runtimeDirectory,port:daemon.port,maintenancePorts})).status,'busy');
+    assert.equal((await acquireBackgroundAgentMaintenance({runtimeDirectory,port:daemon.port,maintenancePorts,stopBackgroundAgents:false,allowIdleEviction:false})).status,'busy');
+    assert.equal((await acquireBackgroundAgentMaintenance({runtimeDirectory,port:daemon.port,maintenancePorts,stopBackgroundAgents:true,allowIdleEviction:false})).status,'busy');
     assert.deepEqual(received,[
       {stopBackgroundAgents:false,allowIdleEviction:true},
       {stopBackgroundAgents:false,allowIdleEviction:false},
@@ -179,11 +179,44 @@ test('maintenance forwards the idle-eviction authorization separately from stop 
   }finally{await daemon.close();await rm(runtimeDirectory,{recursive:true,force:true});}
 });
 
+test('maintenance holds the compatibility port of earlier versions and frees its own port when it cannot', async t => {
+  const runtimeDirectory=await createTemporaryDirectory(t,'arw-maintenance-ports-');
+  const [maintenance,compatibility]=backgroundAgentMaintenancePorts();
+  assert.ok(maintenance>=20000&&maintenance<30000);
+  assert.equal(compatibility,maintenance+30000);
+  const ports=[await freePort(),await freePort()];
+  // An earlier version holds only the compatibility port.
+  const earlier=await acquireBackgroundAgentStartupLease({runtimeDirectory,maintenancePorts:[ports[1]]});
+  assert.deepEqual(await acquireBackgroundAgentMaintenance({runtimeDirectory,maintenancePorts:ports}),{status:'busy',reason:'Background Agent maintenance or startup is active.',stoppedAgents:[]});
+  await earlier.release();
+  await assert.rejects(acquireBackgroundAgentStartupLease({runtimeDirectory,maintenancePorts:[ports[0],65536]}),{code:'ERR_SOCKET_BAD_PORT'});
+  await assert.rejects(acquireBackgroundAgentStartupLease({runtimeDirectory,maintenancePorts:[65536,ports[1]]}),{code:'ERR_SOCKET_BAD_PORT'});
+  // No failure left a port held, and a current holder keeps earlier versions out.
+  const current=await acquireBackgroundAgentStartupLease({runtimeDirectory,maintenancePorts:ports});
+  try {await assert.rejects(acquireBackgroundAgentStartupLease({runtimeDirectory,maintenancePorts:[ports[1]]}),/EADDRINUSE/);}
+  finally {await current.release();}
+});
+
+test('a compatibility port the OS refuses is skipped and the maintenance port alone is held', async t => {
+  const refused=1;
+  const probe=await new Promise(resolve=>{
+    const server=createServer();
+    server.once('error',error=>resolve(/** @type {NodeJS.ErrnoException} */ (error).code));
+    server.listen({host:'127.0.0.1',port:refused},()=>server.close(()=>resolve(null)));
+  });
+  if(probe!=='EACCES'){t.skip('this environment lets the process bind privileged ports');return;}
+  const runtimeDirectory=await createTemporaryDirectory(t,'arw-maintenance-refused-');
+  const maintenancePorts=[await freePort(),refused];
+  const lease=await acquireBackgroundAgentStartupLease({runtimeDirectory,maintenancePorts});
+  try {await assert.rejects(acquireBackgroundAgentStartupLease({runtimeDirectory,maintenancePorts:[maintenancePorts[0]]}),/EADDRINUSE/);}
+  finally {await lease.release();}
+});
+
 test('authenticated localhost control retains work across client disconnect and fences maintenance', async () => {
   const runtimeDirectory = await mkdtemp(join(tmpdir(), 'arw-background-agent-'));
-  const maintenancePort=await freePort();
+  const maintenancePorts=[await freePort()];
   let calls = 0;
-  const daemon = await createBackgroundAgentDaemon({runtimeDirectory, port: 0,maintenancePort,
+  const daemon = await createBackgroundAgentDaemon({runtimeDirectory, port: 0,maintenancePorts,
     dispatch: async ({ownerId, caller, operation, emit, signal}) => {
       calls += 1;
       if (operation === 'wait_agent') {
@@ -207,12 +240,12 @@ test('authenticated localhost control retains work across client disconnect and 
     await waiting.close();
     await assert.rejects(sendBackgroundAgentRequest({port: daemon.port, message: {id: 'wrong', credential: '0'.repeat(64), ownerId: 'main-2', caller, operation: 'interrupt_agent', input: {}}}),/server authentication failed/);
     assert.equal(calls, 2);
-    const lease = await acquireBackgroundAgentMaintenance({runtimeDirectory, port: daemon.port,maintenancePort,observeProcessExit:async pid => {
+    const lease = await acquireBackgroundAgentMaintenance({runtimeDirectory, port: daemon.port,maintenancePorts,observeProcessExit:async pid => {
       assert.equal(pid,process.pid);
       return true;
     }});
     assert.equal(lease.status, 'acquired');
-    await assert.rejects(acquireBackgroundAgentStartupLease({runtimeDirectory,maintenancePort}),/EADDRINUSE/);
+    await assert.rejects(acquireBackgroundAgentStartupLease({runtimeDirectory,maintenancePorts}),/EADDRINUSE/);
     if (lease.status === 'acquired') {
       await assert.rejects(sendBackgroundAgentRequest({port: daemon.port, message: {id: 'later', credential: '0'.repeat(64), ownerId: 'main-1', caller, operation: 'spawn_agent', input: {}}}));
     }
@@ -224,17 +257,17 @@ test('authenticated localhost control retains work across client disconnect and 
 
 test('maintenance observes the owning manager process exit before it acquires the control port', async () => {
   const runtimeDirectory = await mkdtemp(join(tmpdir(),'arw-background-agent-exit-'));
-  const maintenancePort=await freePort();
+  const maintenancePorts=[await freePort()];
   const moduleUrl = new URL('../../lib/background-agent/daemon.mjs',import.meta.url).href;
   const source = `import {createBackgroundAgentDaemon} from ${JSON.stringify(moduleUrl)};
-const daemon=await createBackgroundAgentDaemon({runtimeDirectory:process.argv[1],port:0,maintenancePort:${maintenancePort},dispatch:async()=>({status:'succeeded'}),list:()=>[],prepareMaintenance:async()=>({status:'ready',stoppedAgents:[]})});
+const daemon=await createBackgroundAgentDaemon({runtimeDirectory:process.argv[1],port:0,maintenancePorts:[${maintenancePorts}],dispatch:async()=>({status:'succeeded'}),list:()=>[],prepareMaintenance:async()=>({status:'ready',stoppedAgents:[]})});
 process.stdout.write(String(daemon.port)+'\\n');`;
   const child = spawn(process.execPath,['--input-type=module','-e',source,runtimeDirectory],{stdio:['ignore','pipe','pipe']});
   try {
     const [chunk] = await once(child.stdout,'data');
     const port = Number(String(chunk).trim());
     assert.ok(Number.isSafeInteger(port) && port > 0);
-    const lease = await acquireBackgroundAgentMaintenance({runtimeDirectory,port,maintenancePort});
+    const lease = await acquireBackgroundAgentMaintenance({runtimeDirectory,port,maintenancePorts});
     assert.deepEqual(lease,{status:'acquired',stoppedAgents:[]});
     if (child.exitCode === null) await once(child,'exit');
     assert.equal(child.exitCode,0);
@@ -254,7 +287,7 @@ test('list distinguishes a never-started private state directory from incomplete
     const {writeFile} = await import('node:fs/promises');
     await writeFile(join(runtimeDirectory,'messages.sqlite'),'{}\n',{mode:0o600});
     await assert.rejects(client.list(),/incomplete/);
-    const maintenance = await acquireBackgroundAgentMaintenance({runtimeDirectory,port:0,maintenancePort:await freePort()});
+    const maintenance = await acquireBackgroundAgentMaintenance({runtimeDirectory,port:0,maintenancePorts:[await freePort()]});
     assert.equal(maintenance.status,'unknown');
     if (maintenance.status === 'unknown') assert.match(maintenance.reason,/credential is missing/);
     assert.equal(launched,false);
@@ -265,7 +298,7 @@ test('maintenance admits consecutive never-started installations without creatin
   const runtimeDirectory=await mkdtemp(join(tmpdir(),'arw-maintenance-empty-'));
   try {
     for(let attempt=0;attempt<2;attempt+=1){
-      assert.deepEqual(await acquireBackgroundAgentMaintenance({runtimeDirectory,maintenancePort:0}),{status:'acquired',stoppedAgents:[]});
+      assert.deepEqual(await acquireBackgroundAgentMaintenance({runtimeDirectory,maintenancePorts:[0]}),{status:'acquired',stoppedAgents:[]});
       assert.deepEqual(await readdir(runtimeDirectory),[]);
     }
   } finally {await rm(runtimeDirectory,{recursive:true,force:true});}
@@ -276,7 +309,7 @@ test('maintenance rejects every orphaned database file without creating or chang
   try {
     for(const path of Object.values(backgroundAgentMessageDatabasePaths(runtimeDirectory))){
       await writeFile(path,'orphaned state',{mode:0o600});
-      const result=await acquireBackgroundAgentMaintenance({runtimeDirectory,maintenancePort:0});
+      const result=await acquireBackgroundAgentMaintenance({runtimeDirectory,maintenancePorts:[0]});
       assert.equal(result.status,'unknown');
       if(result.status==='unknown')assert.match(result.reason,/credential is missing/);
       assert.equal(await readFile(path,'utf8'),'orphaned state');
@@ -294,7 +327,7 @@ test('maintenance without database state preserves ended identities and rejects 
     assert.ok(createdAt);
     for(const [content,expected] of [[`${process.pid},${createdAt}`,'unknown'],['invalid identity','unknown'],[`${process.pid},0`,'acquired']]){
       await writeFile(path,content,{mode:0o600});
-      const result=await acquireBackgroundAgentMaintenance({runtimeDirectory,maintenancePort:0});
+      const result=await acquireBackgroundAgentMaintenance({runtimeDirectory,maintenancePorts:[0]});
       assert.equal(result.status,expected);
       if(result.status==='unknown')assert.match(result.reason,content==='invalid identity'?/process exit is unknown\. Process identity is invalid\./:/process exit is unknown/);
       assert.equal(await readFile(path,'utf8'),content);
@@ -402,7 +435,7 @@ test('offline maintenance preserves exit evidence after a failed recovery save a
 });
 
 /** @param {string} runtimeDirectory @param {boolean} [runtimeDirectorySecured] */
-const startCredentialDaemon=async(runtimeDirectory,runtimeDirectorySecured=false)=>createBackgroundAgentDaemon({runtimeDirectory,port:0,maintenancePort:await freePort(),runtimeDirectorySecured,
+const startCredentialDaemon=async(runtimeDirectory,runtimeDirectorySecured=false)=>createBackgroundAgentDaemon({runtimeDirectory,port:0,maintenancePorts:[await freePort()],runtimeDirectorySecured,
   dispatch:async()=>({}),list:()=>[],prepareMaintenance:async()=>({status:'ready',stoppedAgents:[]})});
 
 /** @param {import('node:test').TestContext} t @param {(...args:Parameters<typeof fsPromises.link>)=>Promise<void>} replacement */

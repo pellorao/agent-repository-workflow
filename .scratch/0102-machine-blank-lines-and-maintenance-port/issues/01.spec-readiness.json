@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0102:01",
+  "request": {
+    "digest": "e587876795bd9c6fc8b179ae98ec0a4bce9335139ba1f41081b9e410c059f10b",
+    "filePath": ".tmp/claude-code/82af6832-b3ba-4b3a-8ecc-2fe3a9de39cc/0102_01/spec-readiness/requests/request-ccc0cf06-c167-41f8-ae1c-d01bb044e599.json",
+    "id": "ccc0cf06-c167-41f8-ae1c-d01bb044e599"
+  },
+  "reviewerRole": {
+    "filePath": "docs/agents/roles/spec-readiness-reviewer.md",
+    "id": "spec-readiness-reviewer",
+    "sha256": "35d036e20f7b1f620c8254ffe234bbfbfc48430a40d341567b142638fe17f44f"
+  },
+  "inputs": [
+    {
+      "filePath": ".scratch/0102-machine-blank-lines-and-maintenance-port/spec.md",
+      "role": "governing-spec",
+      "sha256": "40b517fbabbd77302866aa25f81de8ff111d05b1a236a76ce0ef3142c6dd6978"
+    },
+    {
+      "filePath": "CONTEXT.md",
+      "role": "domain-context",
+      "sha256": "6f89aa3efc9e393170b2d9380bacf5b1b11aea0d9c614e9367384d99767bb1fb"
+    },
+    {
+      "filePath": "docs/adr/0030-use-user-wide-background-agent-management.md",
+      "role": "adr",
+      "sha256": "afffe17adcf95c931864009d198408c2d8afb97d867c1ba20cef04fc7385abd1"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow-installation/spec.md",
+      "role": "governing-spec",
+      "sha256": "9a4774d728e8c3f0ddda2d31816e799a61915107d7031e02ef1502af9d862ede"
+    },
+    {
+      "filePath": "docs/specs/agent-repository-workflow/spec.md",
+      "role": "governing-spec",
+      "sha256": "b8b97d897cd1cfeb4a8aca801800a263fd1c6c0669c5ca6df71c185a997b2723"
+    },
+    {
+      "filePath": "lib/background-agent/client.mjs",
+      "role": "architecture-evidence",
+      "sha256": "c2824622aa6ad69d7f0abed025328e9aad5fac8f57ddcbc7c28220c01f1e3d54"
+    },
+    {
+      "filePath": "lib/background-agent/daemon.mjs",
+      "role": "architecture-evidence",
+      "sha256": "716fe45b87e89ed9fc733a79a6e093492429c4e0fd1c8834abfb0f4494c25f51"
+    },
+    {
+      "filePath": "lib/background-agent/machine.mjs",
+      "role": "architecture-evidence",
+      "sha256": "236030319a9beede8064d03a6f231cf6c6c86cd95fe0dd1fd7eca1a163f22a8d"
+    }
+  ],
+  "subject": {
+    "filePath": ".scratch/0102-machine-blank-lines-and-maintenance-port/issues/01-blank-lines-and-maintenance-port.md",
+    "sha256": "0ac6cad60a72274d9f672299c2cd9fcee4b977938bf2fc2b9874a891b04f65b1"
+  },
+  "result": "satisfied"
+}
