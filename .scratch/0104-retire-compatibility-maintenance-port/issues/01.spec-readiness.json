@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0104:01",
+  "exception": {
+    "confirmedAt": "2026-11-02T00:00:00Z",
+    "reason": "用户常设确认 (2026-11-02): 不含设计决定的清理 issue 不需要治理设计; effort 0104 只含一个实施 issue, 不创建 spec. 停用时机由用户 2026-11-07 决定."
+  },
+  "subject": {
+    "filePath": ".scratch/0104-retire-compatibility-maintenance-port/issues/01-retire-compatibility-maintenance-port.md",
+    "sha256": "8b5edf60e3a07d3e18b6264bd0e24abc2a3669806476a17da763e758d8f81aed"
+  },
+  "result": "not-applicable"
+}

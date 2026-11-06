@@ -175,8 +175,7 @@ test('two concurrent cold launches whose managers exit while another manager kee
   const port=await closedPort();
   const lease=await leaseHeldPort();
   // The budget is far above the time the failing entry needs to exit, so a lease probe proves the exit was seen.
-  // Only the compatibility port is held, as by an earlier version's manager.
-  const client=createBackgroundAgentClient({runtimeDirectory,port,maintenancePorts:[await closedPort(),lease.port],messageTimeoutMs:400,entryPoint:await failingDaemon(runtimeDirectory)});
+  const client=createBackgroundAgentClient({runtimeDirectory,port,maintenancePort:lease.port,messageTimeoutMs:400,entryPoint:await failingDaemon(runtimeDirectory)});
   try {
     const results=await Promise.allSettled([1,2].map(()=>client.execute({operation:'list_agents',input:{}})));
     for(const result of results)assert.match(String(/** @type {PromiseRejectedResult} */(result).reason?.message),/timed out before delivery/);
@@ -187,7 +186,7 @@ test('two concurrent cold launches whose managers exit while another manager kee
 
 test('a manager that exits during startup is reported at once with its standard error',async()=>{
   const runtimeDirectory=await mkdtemp(join(tmpdir(),'arw-background-agent-exit-'));
-  const client=createBackgroundAgentClient({runtimeDirectory,port:await closedPort(),maintenancePorts:[await closedPort()],messageTimeoutMs:30000,entryPoint:await failingDaemon(runtimeDirectory)});
+  const client=createBackgroundAgentClient({runtimeDirectory,port:await closedPort(),maintenancePort:await closedPort(),messageTimeoutMs:30000,entryPoint:await failingDaemon(runtimeDirectory)});
   try {
     const started=Date.now();
     await assert.rejects(client.execute({operation:'list_agents',input:{}}),/^Error: Background Agent manager exited during startup \(exit code 3\): Runtime is broken\.$/);
@@ -202,7 +201,7 @@ test('a request reads the credential only after the control port accepts connect
   // Another client's manager has published its credential but not yet secured it or started listening.
   await writeFile(join(runtimeDirectory,'credential'),`${secret}\n`,{mode:0o644});
   const lease=await leaseHeldPort();
-  const client=createBackgroundAgentClient({runtimeDirectory,port,maintenancePorts:[lease.port],entryPoint:'/unused-entry.mjs'});
+  const client=createBackgroundAgentClient({runtimeDirectory,port,maintenancePort:lease.port,entryPoint:'/unused-entry.mjs'});
   /** @type {{close:()=>Promise<void>}[]} */
   const servers=[lease];
   const manager=(async()=>{

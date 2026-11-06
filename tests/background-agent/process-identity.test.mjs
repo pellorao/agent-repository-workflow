@@ -76,10 +76,10 @@ test('maintenance reports why a PowerShell failure left the process exit unknown
   const platform=/** @type {PropertyDescriptor} */ (Object.getOwnPropertyDescriptor(process,'platform'));
   Object.defineProperty(process,'platform',{value:'win32'});
   t.after(()=>Object.defineProperty(process,'platform',platform));
-  const creation=await acquireBackgroundAgentMaintenance({runtimeDirectory,maintenancePorts:[0]});
+  const creation=await acquireBackgroundAgentMaintenance({runtimeDirectory,maintenancePort:0});
   assert.deepEqual([creation.status,'reason' in creation ? creation.reason : ''],['unknown','Shared App Server process exit is unknown. Windows process creation time could not be read: Get-CimInstance failed.']);
   await writeFile(fail,'');
-  const acl=await acquireBackgroundAgentMaintenance({runtimeDirectory,maintenancePorts:[0]});
+  const acl=await acquireBackgroundAgentMaintenance({runtimeDirectory,maintenancePort:0});
   assert.deepEqual([acl.status,'reason' in acl ? acl.reason : ''],['unknown','Background Agent private state access could not be verified: Private state inheritance is enabled.']);
 });
 
