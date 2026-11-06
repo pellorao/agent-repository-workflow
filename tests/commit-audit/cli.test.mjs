@@ -67,7 +67,7 @@ test('Commit Audit CLI keeps explicit absolute Request handles', () => {
 });
 
 test('prepare names the expected input.json location when the path is wrong', async t => {
-    const repository = await stagedRepository(t, {statuses: ['in-progress']});
+    const repository = await stagedRepository(t, {statuses: ['ready-for-agent']});
     await assert.rejects(
         prepareCommitAudit({inputPath: join(repository.root, 'input.json'), platformAdapter: adapter, repositoryRoot: repository.root}),
         {message: new RegExp(`${repository.root}/\\.tmp/<directory>/input\\.json`, 'u')},
@@ -75,7 +75,7 @@ test('prepare names the expected input.json location when the path is wrong', as
 });
 
 test('prepare writes a fixed-version round for both Reviewers and follows up their threads in the next round', async t => {
-    const repository = await stagedRepository(t, {statuses: ['in-progress']});
+    const repository = await stagedRepository(t, {statuses: ['ready-for-agent']});
     const first = await prepare(repository.root, {authorizingIssueIds: ['issue:0001:01']});
     assert.deepEqual(first.request.gate1, []);
     assert.equal(first.request.gate2, null);
@@ -107,7 +107,7 @@ test('prepare writes a fixed-version round for both Reviewers and follows up the
 });
 
 test('prepare points both Reviewers at the Comments ledger of every authorizing issue', async t => {
-    const repository = await stagedRepository(t, {statuses: ['in-progress', 'in-progress']});
+    const repository = await stagedRepository(t, {statuses: ['ready-for-agent', 'ready-for-agent']});
     const {round} = await prepare(repository.root, {authorizingIssueIds: ['issue:0001:01', 'issue:0001:02']});
     for (const role of ['requirements-reviewer', 'code-standards-reviewer']) {
         const {input} = JSON.parse(await readFile(join(round, `${role}.jsonl`), 'utf8'));
@@ -255,7 +255,7 @@ test('verify --non-implementation accepts a candidate of only Agent rule and doc
 });
 
 test('verify requires a review round whose HEAD and tree match the staged candidate', async t => {
-    const repository = await stagedRepository(t, {statuses: ['in-progress']});
+    const repository = await stagedRepository(t, {statuses: ['ready-for-agent']});
     assert.match(await verifyRound(repository.root), /No Commit Audit round exists for this session\. Run `arw commit-audit prepare` again/u);
     await mkdir(join(repository.root, '.tmp', 'codex', 'audit-session', '_commit-audit', '1'), {recursive: true});
     assert.match(await verifyRound(repository.root), /no readable request\.json\. Run `arw commit-audit prepare` again/u);
@@ -275,20 +275,20 @@ test('verify requires a review round whose HEAD and tree match the staged candid
 });
 
 test('verify accepts only issue record changes and rejects Status or review subject changes of an authorizing issue', async t => {
-    const repository = await stagedRepository(t, {statuses: ['in-progress']});
+    const repository = await stagedRepository(t, {statuses: ['ready-for-agent']});
     const {round} = await prepare(repository.root, {authorizingIssueIds: ['issue:0001:01']});
     await writeReports(round);
-    const original = issueText('in-progress');
+    const original = issueText('ready-for-agent');
     await stageIssue(repository.root, `${original}\n## Validation\n\nChecked.\n\n## Comments\n\nNote.\n`);
     assert.equal(await verifyRound(repository.root), '');
-    for (const changed of [original.replace('in-progress', 'completed'), original.replace('- [ ] Complete.', '- [x] Complete.')]) {
+    for (const changed of [original.replace('ready-for-agent', 'completed'), original.replace('- [ ] Complete.', '- [x] Complete.')]) {
         await stageIssue(repository.root, changed);
         assert.match(await verifyRound(repository.root), /01-issue\.md: Authorizing issue Status or review subject changed/u);
     }
 });
 
 test('verify takes each Reviewer report from the latest non-empty round and resolves the session round for both platforms', async t => {
-    const repository = await stagedRepository(t, {statuses: ['in-progress']});
+    const repository = await stagedRepository(t, {statuses: ['ready-for-agent']});
     const {round: first} = await prepare(repository.root, {authorizingIssueIds: ['issue:0001:01']});
     await writeReports(first, ['requirements-reviewer', 'code-standards-reviewer'], ' \n');
     await writeReports(first, ['requirements-reviewer']);
@@ -308,7 +308,7 @@ test('verify takes each Reviewer report from the latest non-empty round and reso
 });
 
 test('prepare numbers a new round after the highest existing one, so verify checks the round it just created', async t => {
-    const repository = await stagedRepository(t, {statuses: ['in-progress']});
+    const repository = await stagedRepository(t, {statuses: ['ready-for-agent']});
     const {round: first} = await prepare(repository.root, {authorizingIssueIds: ['issue:0001:01']});
     await mkdir(join(dirname(first), '7'));
     const {round: second} = await prepare(repository.root, {authorizingIssueIds: ['issue:0001:01']});
@@ -318,7 +318,7 @@ test('prepare numbers a new round after the highest existing one, so verify chec
 });
 
 test('prepare summarizes staged net growth by category, skips .scratch records and numbers the next ADR', async t => {
-    const repository = await stagedRepository(t, {statuses: ['in-progress']});
+    const repository = await stagedRepository(t, {statuses: ['ready-for-agent']});
     // One more change of every kind the summary distinguishes.
     const files = {'docs/adr/0001-a.md': '# A\n', 'docs/adr/0004-b.md': '# B\n', 'docs/agents/reviewer.md': '#\n', 'docs/note.md': 'hello', 'tests/x.test.mjs': 'a\nb\nc\n'};
     for (const [path, text] of Object.entries(files)) {
@@ -336,11 +336,11 @@ test('prepare summarizes staged net growth by category, skips .scratch records a
 });
 
 test('prepare warns about a recorded net growth that differs from the measurement and about checked acceptance commands missing from Validation', async t => {
-    const repository = await stagedRepository(t, {statuses: ['in-progress']});
+    const repository = await stagedRepository(t, {statuses: ['ready-for-agent']});
     await mkdir(join(repository.root, 'tests'));
     await writeFile(join(repository.root, 'tests/x.test.mjs'), 'a\nb\nc\n', 'utf8');
     await runGit(repository.root, ['add', 'tests']);
-    await stageIssue(repository.root, issueText('in-progress').replace('- [ ] Complete.', [
+    await stageIssue(repository.root, issueText('ready-for-agent').replace('- [ ] Complete.', [
         '- [x] Run `pnpm test` and `node ok.mjs`.', '* [x] Run `node missing.mjs`.', '  + [X] Run `git diff --check`.', '- [ ] Run `arw unchecked`.', '-[x] Run `arw no-space`.',
         '```', '- [x] Run `arw fenced`.', '```',
     ].join('\n')) + [
@@ -358,14 +358,14 @@ test('prepare warns about a recorded net growth that differs from the measuremen
 });
 
 test('prepare treats a missing Validation or Acceptance criteria section as empty text', async t => {
-    const repository = await stagedRepository(t, {statuses: ['in-progress']});
-    await stageIssue(repository.root, issueText('in-progress').replace('- [ ] Complete.\n\n## Blocked by', '## Blocked by').replace('## Acceptance criteria\n\n', '- [x] Run `node a.mjs`.\n\n') + '\n## Comments\n\n- code: +1 lines\n');
+    const repository = await stagedRepository(t, {statuses: ['ready-for-agent']});
+    await stageIssue(repository.root, issueText('ready-for-agent').replace('- [ ] Complete.\n\n## Blocked by', '## Blocked by').replace('## Acceptance criteria\n\n', '- [x] Run `node a.mjs`.\n\n') + '\n## Comments\n\n- code: +1 lines\n');
     const {summary} = await prepareCommitAudit({inputPath: await writeInput(repository.root, {authorizingIssueIds: ['issue:0001:01']}), platformAdapter: adapter, repositoryRoot: repository.root});
     assert.equal(summary.split('\n').at(-1), 'next ADR number: 0001');
 });
 
 test('the prepare command keeps standard output to the round directory and writes the summary to standard error', async t => {
-    const repository = await stagedRepository(t, {statuses: ['in-progress']});
+    const repository = await stagedRepository(t, {statuses: ['ready-for-agent']});
     const environment = {CLAUDECODE: process.env.CLAUDECODE, CODEX_THREAD_ID: process.env.CODEX_THREAD_ID};
     t.after(() => Object.assign(process.env, environment));
     delete process.env.CLAUDECODE;
@@ -397,4 +397,79 @@ test('verify --non-implementation rejects non-canonical effort directories and N
     const failures = await verify();
     assert.match(failures, /duplicate canonical issue ID/u);
     assert.match(failures, /LF line endings/u);
+});
+
+
+test('prepare uses canonical issue metadata for whitespace, fences and bold Type', async t => {
+    const repository = await stagedRepository(t, {statuses: ['completed']});
+    for (const text of [
+        issueText('completed').replace('Status: completed', 'Status:  completed '),
+        issueText('completed') + '\n## Comments\n\n```text\nStatus: open\n```\n',
+    ]) {
+        await stageIssue(repository.root, text);
+        const {request} = await prepare(repository.root, {authorizingIssueIds: ['issue:0001:01']});
+        assert.deepEqual(request.gate1, ['issue:0001:01']);
+        assert.notEqual(request.gate2, null);
+    }
+    await stageIssue(repository.root, issueText('open').replace('Status: open', '**Type:** research\n\nStatus: open'));
+    await assert.rejects(prepare(repository.root, {authorizingIssueIds: ['issue:0001:01']}), /Unknown implementation Status: open/u);
+});
+
+test('verify keeps HEAD, changed-path and report errors when an authorizing issue is renamed after prepare', async t => {
+    const repository = await stagedRepository(t, {statuses: ['ready-for-agent']});
+    await prepare(repository.root, {authorizingIssueIds: ['issue:0001:01']});
+    await commitAll(repository.root, 'advance HEAD');
+    await rename(join(repository.root, '.scratch/0001-workflow/issues/01-issue.md'), join(repository.root, '.scratch/0001-workflow/issues/01-renamed.md'));
+    await writeFile(join(repository.root, 'implementation.mjs'), implementation + 'export const later = true;\n');
+    await runGit(repository.root, ['add', '-A']);
+    const errors = await verifyRound(repository.root);
+    assert.match(errors, /HEAD changed after the reviewed version/u);
+    assert.match(errors, /01-issue\.md: Staged path changed/u);
+    assert.match(errors, /01-renamed\.md: Commit Audit git show [^\n]*failed/u);
+    assert.match(errors, /implementation\.mjs: Staged path changed/u);
+    assert.match(errors, /requirements-reviewer report is empty/u);
+    assert.match(errors, /code-standards-reviewer report is empty/u);
+});
+
+test('verify accumulates canonical issue parse errors without dropping independent failures', async t => {
+    const repository = await stagedRepository(t, {statuses: ['ready-for-agent']});
+    await prepare(repository.root, {authorizingIssueIds: ['issue:0001:01']});
+    await commitAll(repository.root, 'advance HEAD');
+    await stageIssue(repository.root, issueText('open'));
+    const errors = await verifyRound(repository.root);
+    assert.match(errors, /HEAD changed after the reviewed version/u);
+    assert.match(errors, /01-issue\.md: Unknown implementation Status: open/u);
+    assert.match(errors, /01-issue\.md: Staged path changed/u);
+    assert.match(errors, /code-standards-reviewer report is empty/u);
+});
+
+test('prepare filters paths using staged root and nested ignore files on both platforms', async t => {
+    const repository = await stagedRepository(t, {statuses: ['ready-for-agent']});
+    await mkdir(join(repository.root, 'nested'));
+    await writeFile(join(repository.root, '.gitignore'), 'root-ignored.txt\n');
+    await writeFile(join(repository.root, 'nested/.gitignore'), 'ignored.txt\n');
+    for (const path of ['root-ignored.txt', 'nested/ignored.txt', 'nested/included.txt']) await writeFile(join(repository.root, path), 'data\n');
+    await runGit(repository.root, ['add', '-f', '.gitignore', 'nested', 'root-ignored.txt']);
+    const paths = async (/** @type {string} */ round) => {
+        const request = JSON.parse(await readFile(join(round, 'code-standards-reviewer.jsonl'), 'utf8'));
+        return request.input.handoff.split('纳入路径:\n')[1].split('\n预估')[0];
+    };
+    const first = await prepare(repository.root, {authorizingIssueIds: ['issue:0001:01']});
+    const originalPaths = await paths(first.round);
+    assert.match(originalPaths, /- implementation\.mjs\n/u);
+    assert.match(originalPaths, /- nested\/included\.txt/u);
+    assert.doesNotMatch(originalPaths, /generated\.txt|root-ignored\.txt|nested\/ignored\.txt/u);
+    await writeFile(join(repository.root, '.arwignore'), 'implementation.mjs\n');
+    await writeFile(join(repository.root, '.gitignore'), 'generated.txt\n');
+    await writeFile(join(repository.root, 'nested/.gitignore'), 'included.txt\n');
+    const claude = {getCurrentAgentIdentity: () => ({platform: /** @type {const} */ ('claude-code'), sessionId: 'ignore-session'})};
+    const second = await prepare(repository.root, {authorizingIssueIds: ['issue:0001:01']}, claude);
+    assert.equal(second.request.tree, first.request.tree);
+    assert.equal(await paths(second.round), originalPaths);
+    await runGit(repository.root, ['add', '.arwignore', '.gitignore', 'nested/.gitignore']);
+    const third = await prepare(repository.root, {authorizingIssueIds: ['issue:0001:01']});
+    const stagedPaths = await paths(third.round);
+    assert.match(stagedPaths, /root-ignored\.txt/u);
+    assert.match(stagedPaths, /nested\/ignored\.txt/u);
+    assert.doesNotMatch(stagedPaths, /implementation\.mjs|generated\.txt|nested\/included\.txt/u);
 });

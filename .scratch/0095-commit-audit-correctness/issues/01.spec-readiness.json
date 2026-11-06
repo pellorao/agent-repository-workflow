@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0095:01",
+  "exception": {
+    "confirmedAt": "2026-11-06T04:55:37Z",
+    "reason": "Claude 明确确认本轮 D 组为无需治理设计的授权缺陷修复."
+  },
+  "subject": {
+    "filePath": ".scratch/0095-commit-audit-correctness/issues/01-commit-audit-correctness.md",
+    "sha256": "8ff85ac57775a3a6f4f989b6647fe778a79ab40d6c1aaacf79803bae96bb3304"
+  },
+  "result": "not-applicable"
+}
