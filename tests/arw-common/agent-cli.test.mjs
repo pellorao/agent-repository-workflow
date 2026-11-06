@@ -146,7 +146,7 @@ test('agent configuration is complete, optional, and validated before Repository
             configVersion: 1,
             editor: {args: ['{file}'], command: 'code'},
         });
-        assert.deepEqual(await run(['li'], repository, {cwd: outside}), {
+        assert.deepEqual(await run(['agent', 'start', 'impl'], repository, {cwd: outside}), {
             events: [{channel: 'stderr', message: `Invalid configuration: ${diagnostic}`}],
             result: 1,
         });

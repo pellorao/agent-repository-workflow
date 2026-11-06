@@ -68,12 +68,12 @@ test('root arw entry executes while the internal arw module has no direct behavi
     assert.match(entry.stdout, /ready-for-agent\s+implementation\s+issue:0001:01\s+Entry layout/u);
 });
 
-test('configuration is validated before repository discovery', async t => {
+test('commands using configuration validate it before repository discovery', async t => {
     const repository = await createRepository(t);
     await writeConfig(repository.programDirectory, {configVersion: 1, editor: {command: './relative-editor', args: ['--file']}});
     const outside = await createTemporaryDirectory(t, 'arw-outside-');
 
-    const {events, result} = await run(['li'], repository, {cwd: outside});
+    const {events, result} = await run(['agent', 'start', 'impl'], repository, {cwd: outside});
 
     assert.equal(result, 1);
     assert.deepEqual(events, [{channel: 'stderr', message: 'Invalid configuration: editor.command must not be a relative path.'}]);
@@ -234,4 +234,47 @@ test('root arw entry recognizes invocation through a directory symlink', async t
         process.exitCode = exitCode;
         write.mock.restore();
     }
+});
+
+test('usage failures keep command-specific messages and usage without configuration', async t => {
+    const root = await createTemporaryDirectory(t, 'arw-usage-cwd-');
+    const programDirectory = await createTemporaryDirectory(t, 'arw-usage-program-');
+    const repository = {root, programDirectory};
+    for (const [alias, kind, flag] of [['lm', 'maps', '-f'], ['ls', 'specs', '--full']]) {
+        const short = await run([alias, flag, flag], repository);
+        const full = await run(['list', kind, flag, flag], repository);
+        assert.deepEqual(short, full);
+        assert.equal(short.result, 2);
+        assert.match(short.events[0].message, new RegExp(`List ${kind} accepts only --full \\| -f\\.$`, 'u'));
+    }
+    for (const [args, message] of /** @type {Array<[string[], string]>} */ ([
+        [[], 'A command is required.'],
+        [['bogus-command'], 'Unknown command or artifact.'],
+        [['li', '--unknown'], 'Unknown or repeated option: --unknown.'],
+        [['li', '--type', 'bogus'], '--type only accepts implementation, application-source, and wayfinder.'],
+        [['background-agent', '--bogus'], 'arw background-agent accepts only --wait.'],
+        [['lba', '-x'], 'Background Agent list accepts only --full | -f.'],
+        [['li', '-s', ''], '-s expects one or more comma-separated values without empty items.'],
+        [['li', '-s', 'a,,b'], '-s expects one or more comma-separated values without empty items.'],
+        [['li', '-s', 'a b'], '-s expects one or more comma-separated values without spaces.'],
+    ])) {
+        const result = await run(args, repository);
+        assert.equal(result.result, 2);
+        assert.equal(result.events.length, 1);
+        assert.equal(result.events[0].channel, 'stderr');
+        assert.ok(result.events[0].message.startsWith('Usage:\n'));
+        assert.ok(result.events[0].message.endsWith(`\n${message}`), result.events[0].message);
+    }
+});
+
+test('commands without configuration execute when config.json is missing', async t => {
+    const repository = await createRepository(t);
+    const programDirectory = await createTemporaryDirectory(t, 'arw-no-config-');
+    for (const args of [['list', 'issues'], ['text', 'check'], ['terms', 'check']]) {
+        const result = await run(args, {...repository, programDirectory});
+        assert.equal(result.result, 0, JSON.stringify(result.events));
+    }
+    const missingConfig = await run(['agent', 'start', 'impl'], {...repository, programDirectory});
+    assert.equal(missingConfig.result, 1);
+    assert.match(missingConfig.events[0].message, /Configuration file not found: config.json/u);
 });

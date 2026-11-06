@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0096:01",
+  "exception": {
+    "confirmedAt": "2026-11-06T05:19:15Z",
+    "reason": "Claude 在分流交接中明确确认 E 的五项缺陷修复无设计决定, 不需要治理设计; 本会话按用户指示继续该授权."
+  },
+  "subject": {
+    "filePath": ".scratch/0096-cli-usage-errors/issues/01-cli-usage-errors.md",
+    "sha256": "e675fb9dcda1456049aabb5f9ca7241d9e98f84125a15c4d8264263e30d34a84"
+  },
+  "result": "not-applicable"
+}

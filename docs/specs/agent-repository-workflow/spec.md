@@ -249,7 +249,7 @@ Run `arw migrate artifacts` to upgrade the entire repository before retrying.
 
 `<name>` 后没有 ARW 自有选项. 所有后续参数按原顺序传给子 CLI, 包括原样的 `--`, 不要求分隔符. Module 先使用配置的固定 `args`, 再追加本次参数.
 
-执行顺序固定为读取并完整验证全局配置, 解析公开命令, 发现最近 Git 根目录, 选择具名配置, 再直接启动可执行文件. 任一前置失败都不启动进程. 子 CLI 使用用户调用 ARW 时的当前目录, 继承 `stdin`, `stdout` 和 `stderr`, 不通过命令解释器, 不展开变量, 不解释 `resume`, `model`, `effort` 或 Role. Windows 不创建额外可见窗口.
+执行顺序固定为解析公开命令, 读取并完整验证全局配置, 发现最近 Git 根目录, 选择具名配置, 再直接启动可执行文件. 任一前置失败都不启动进程. 子 CLI 使用用户调用 ARW 时的当前目录, 继承 `stdin`, `stdout` 和 `stderr`, 不通过命令解释器, 不展开变量, 不解释 `resume`, `model`, `effort` 或 Role. Windows 不创建额外可见窗口.
 
 ARW 等待进程退出并传播正常退出码. 启动失败或没有正常数值退出码时输出稳定诊断并返回 `1`. 该启动命令不保存进程或会话登记表. 它执行外部 Main Agent CLI, 不承担共享 Reviewer 运行控制或平台投射责任.
 

@@ -393,3 +393,25 @@ test('interactive workflow init consumes a complete piped answer sequence on bot
         assert.match(result.stdout, /Select domain-documentation layout/u);
     }
 });
+
+test('workflow CLI preserves and escapes platform remediation for both platforms', async t => {
+    const repository = await createRepositoryWithMockGit(t);
+    const base = createUpdateDependencies(ORIGINAL_MANAGED_AGENTS, repository);
+    for (const platform of ['codex', 'claude-code']) {
+        const remediation = 'Repair path\\name\nthen retry\r\0\t\u001b\u0085';
+        const result = await run(WORKFLOW_INIT_ARGS.map(arg => arg === 'codex' ? platform : arg), repository, {
+            workflowDependencies: {
+                ...base,
+                adapters: {[platform]: {evaluate: async () => ({
+                    status: 'blocked',
+                    diagnostics: [{code: 'platform-blocked', phase: 2, platform, message: 'Cannot evaluate.', remediation}],
+                    managedTargets: [],
+                    repositoryOwnedSeeds: [],
+                })}},
+            },
+        });
+        assert.equal(result.result, 1, JSON.stringify(result.events));
+        assert.ok(result.events.some(event => event.channel === 'stderr'
+            && event.message === `[phase 2] platform-blocked platform=${platform}: Cannot evaluate. Repair path\\\\name\\nthen retry\\r\\0\\u0009\\u001b\\u0085`), JSON.stringify(result.events));
+    }
+});
