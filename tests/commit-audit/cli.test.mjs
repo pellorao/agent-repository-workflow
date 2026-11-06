@@ -443,11 +443,24 @@ test('verify accumulates canonical issue parse errors without dropping independe
     assert.match(errors, /code-standards-reviewer report is empty/u);
 });
 
+test('prepare leaves effort prototype and research files out of the Code Standards paths', async t => {
+    const repository = await stagedRepository(t, {statuses: ['ready-for-agent']});
+    for (const path of ['.scratch/0001-effort/prototype/draft.mjs', '.scratch/0001-effort/research/notes.md']) {
+        await mkdir(dirname(join(repository.root, path)), {recursive: true});
+        await writeFile(join(repository.root, path), 'data\n');
+    }
+    await runGit(repository.root, ['add', '.scratch']);
+    const {round} = await prepare(repository.root, {authorizingIssueIds: ['issue:0001:01']});
+    const handoff = JSON.parse(await readFile(join(round, 'code-standards-reviewer.jsonl'), 'utf8')).input.handoff;
+    assert.match(handoff, /- implementation\.mjs\n/u);
+    assert.doesNotMatch(handoff, /prototype|research\/notes/u);
+});
+
 test('prepare filters paths using staged root and nested ignore files on both platforms', async t => {
     const repository = await stagedRepository(t, {statuses: ['ready-for-agent']});
     await mkdir(join(repository.root, 'nested'));
     await writeFile(join(repository.root, '.gitignore'), 'root-ignored.txt\n');
-    await writeFile(join(repository.root, 'nested/.gitignore'), 'ignored.txt\n!included.txt\n');
+    await writeFile(join(repository.root, 'nested/.gitignore'), '*.txt\n!included.txt\n');
     for (const path of ['root-ignored.txt', 'nested/ignored.txt', 'nested/included.txt']) await writeFile(join(repository.root, path), 'data\n');
     await runGit(repository.root, ['add', '-f', '.gitignore', 'nested', 'root-ignored.txt']);
     const paths = async (/** @type {string} */ round) => {

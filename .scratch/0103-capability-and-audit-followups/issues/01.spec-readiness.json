@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0103:01",
+  "exception": {
+    "confirmedAt": "2026-11-02T00:00:00Z",
+    "reason": "用户常设确认 (2026-11-02): 不含设计决定的合并清理 issue 不需要治理设计; effort 0103 只含一个实施 issue, 不创建 spec."
+  },
+  "subject": {
+    "filePath": ".scratch/0103-capability-and-audit-followups/issues/01-capability-and-audit-followups.md",
+    "sha256": "6f539ce21edee75c3f6106a77dace7300ba7de9ea0a06d077a258b470013588d"
+  },
+  "result": "not-applicable"
+}

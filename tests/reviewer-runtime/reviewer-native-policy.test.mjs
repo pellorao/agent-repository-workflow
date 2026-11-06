@@ -67,7 +67,7 @@ test('an MCP request without turnId uses only the observed active root turn for 
 });
 
 test('Reviewer root thread config forces Codex memories off whatever the caller sets', () => {
-    const paths = {cwd: '/repo', readPaths: [], writePaths: []};
+    const paths = {cwd: '/repo', writePaths: []};
     const base = {model: 'm', modelProvider: 'openai', reasoningEffort: 'high', serviceTier: /** @type {'default'} */ ('default')};
     assert.equal(reviewerNativeSettings({...base, config: {}}, paths).config['features.memories'], false);
     assert.equal(reviewerNativeSettings({...base, config: {'features.memories': true}}, paths).config['features.memories'], false);
