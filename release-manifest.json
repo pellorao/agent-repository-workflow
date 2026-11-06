@@ -101,6 +101,7 @@
     "lib/common/text-table.mjs",
     "lib/common/url.mjs",
     "lib/common/windows-command-line.mjs",
+    "lib/common/windows-powershell.mjs",
     "lib/document-terms/document-terms-repository.mjs",
     "lib/document-terms/document-terms.mjs",
     "lib/installation/cli-prompt.mjs",

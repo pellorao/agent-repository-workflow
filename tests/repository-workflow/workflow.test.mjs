@@ -218,6 +218,20 @@ test('a CRLF checkout verifies and updates like the LF original without rewritin
     assert.deepEqual(await Promise.all(crlfPaths.map(path => readFile(join(root, path)))), before);
 });
 
+test('a CRLF Workflow Distribution (autocrlf source checkout) initializes a repository that then verifies and updates cleanly', async t => {
+    const original = await createDistribution(t);
+    const distribution = {...original, payload: original.payload.map(entry => entry.path.endsWith('.toml') ? entry : {...entry, bytes: Buffer.from(entry.bytes.toString('utf8').replaceAll('\n', '\r\n'))})};
+    const root = await createRepositoryWithMockGit(t);
+    const initialized = await initWorkflow({distribution, repositoryRoot: root});
+    assert.equal(initialized.applied, true, JSON.stringify(initialized.diagnostics));
+    await git(root, ['add', '-A']);
+    await git(root, ['commit', '-m', 'init']);
+    assert.deepEqual(await runRepositoryWorkflow({distribution, operation: 'verify', repositoryRoot: root}), {diagnostics: [], satisfied: true});
+    const updated = await runRepositoryWorkflow({distribution, operation: 'update', repositoryRoot: root});
+    assert.equal(updated.applied, true, JSON.stringify(updated.diagnostics));
+    assert.deepEqual(updated.plan?.operations, []);
+});
+
 test('verify checks configured Code Map coverage', async t => {
     const distribution = await createDistribution(t);
     const root = await createRepositoryWithMockGit(t);

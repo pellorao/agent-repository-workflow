@@ -296,7 +296,7 @@ test('maintenance without database state preserves ended identities and rejects 
       await writeFile(path,content,{mode:0o600});
       const result=await acquireBackgroundAgentMaintenance({runtimeDirectory,maintenancePort:0});
       assert.equal(result.status,expected);
-      if(result.status==='unknown')assert.match(result.reason,/process exit is unknown/);
+      if(result.status==='unknown')assert.match(result.reason,content==='invalid identity'?/process exit is unknown\. Process identity is invalid\./:/process exit is unknown/);
       assert.equal(await readFile(path,'utf8'),content);
       assert.deepEqual(await readdir(runtimeDirectory),['app-server-process']);
     }

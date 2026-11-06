@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0094:01",
+  "exception": {
+    "confirmedAt": "2026-11-02T12:00:00Z",
+    "reason": "Single issue of mechanical Windows bug fixes with no design decision; the user confirmed on 2026-11-02 that issues of this kind need no governance design."
+  },
+  "subject": {
+    "filePath": ".scratch/0094-windows-upgrade-fixes/issues/01-windows-upgrade-fixes.md",
+    "sha256": "59db50ce90b0a616687122c73ade024775513375c54b0c0e0a6082c9b6a0ea92"
+  },
+  "result": "not-applicable"
+}

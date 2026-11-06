@@ -922,6 +922,7 @@ test('installed uninstall command executes through the real CLI entry point', as
             'lib/common/text-policy.mjs',
             'lib/common/text-table.mjs',
             'lib/common/windows-command-line.mjs',
+            'lib/common/windows-powershell.mjs',
             'lib/installation/cli-prompt.mjs',
             'lib/installation/installation-contract.mjs',
             'lib/installation/uninstallation.mjs',
@@ -951,6 +952,7 @@ test('installed uninstall command executes through the real CLI entry point', as
     await copyFile(join(SOURCE_DIRECTORY, 'lib', 'common', 'text-policy.mjs'), join(installationDirectory, 'lib', 'common', 'text-policy.mjs'));
     await copyFile(join(SOURCE_DIRECTORY, 'lib', 'common', 'text-table.mjs'), join(installationDirectory, 'lib', 'common', 'text-table.mjs'));
     await copyFile(join(SOURCE_DIRECTORY, 'lib', 'common', 'windows-command-line.mjs'), join(installationDirectory, 'lib', 'common', 'windows-command-line.mjs'));
+    await copyFile(join(SOURCE_DIRECTORY, 'lib', 'common', 'windows-powershell.mjs'), join(installationDirectory, 'lib', 'common', 'windows-powershell.mjs'));
     await mkdir(join(installationDirectory, 'lib', 'installation'), {recursive: true});
     await copyFile(join(SOURCE_DIRECTORY, 'lib', 'installation', 'cli-prompt.mjs'), join(installationDirectory, 'lib', 'installation', 'cli-prompt.mjs'));
     await copyFile(join(SOURCE_DIRECTORY, 'lib', 'installation', 'installation-contract.mjs'), join(installationDirectory, 'lib', 'installation', 'installation-contract.mjs'));

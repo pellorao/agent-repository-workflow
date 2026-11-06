@@ -1,11 +1,13 @@
 import assert from 'node:assert/strict';
-import fsPromises, {mkdtemp, readFile, rm, stat, writeFile} from 'node:fs/promises';
+import fsPromises, {mkdir, mkdtemp, readFile, rm, stat, writeFile} from 'node:fs/promises';
 import {syncBuiltinESMExports} from 'node:module';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import test from 'node:test';
 import {createTemporaryDirectory} from '../helpers/cleanup.mjs';
 import {installFakeCommand} from '../helpers/process.mjs';
+import {acquireBackgroundAgentMaintenance} from '../../lib/background-agent/client.mjs';
+import {securePrivateStatePath} from '../../lib/background-agent/private-state.mjs';
 import {appServerProcessIdentityPath, parseDarwinProcessStartSecond, readProcessIdentity, readOperatingSystemProcessCreationTime, recordProcessIdentity, removeEndedProcessIdentity} from '../../lib/background-agent/process-identity.mjs';
 
 
@@ -15,6 +17,7 @@ test('private process identity distinguishes live, exited, reused PID and unknow
   const path=appServerProcessIdentityPath(runtimeDirectory);
   const identity={pid:4242,createdAt:'1700000000123456789'};
   try{
+    await securePrivateStatePath(runtimeDirectory,'directory'); // The manager makes the runtime directory private first; a Windows temporary directory inherits its ACL.
     assert.deepEqual(await readProcessIdentity({runtimeDirectory,path,readCreationTime:async()=>null}),{state:'absent',identity:null});
     await recordProcessIdentity({runtimeDirectory,path,identity});
     assert.equal(await readFile(path,'ascii'),'4242,1700000000123456789');
@@ -37,13 +40,60 @@ test('operating system creation time is read from the running process identity',
   assert.equal(await readOperatingSystemProcessCreationTime(process.pid),observed);
 });
 
-test('Windows creation time read silences PowerShell progress output and tolerates stderr noise',async t=>{
+test('Windows creation time read silences PowerShell progress output, stops on errors and drops PSModulePath',async t=>{
   const directory=await createTemporaryDirectory(t,'arw-process-identity-');
-  await installFakeCommand(t,directory,'powershell.exe','head -c 4096 /dev/zero | tr "\\0" x >&2\nprintf %s "$4" | base64 -d | tr -d "\\0" | grep -q "^.ProgressPreference=.SilentlyContinue.;" || exit 1\necho 12345\n');
+  await installFakeCommand(t,directory,'powershell.exe','head -c 4096 /dev/zero | tr "\\0" x >&2\n[ -z "$PSModulePath" ] || exit 1\nscript=$(printf %s "$4" | base64 -d | tr -d "\\0")\necho "$script" | grep -q "^.ProgressPreference=.SilentlyContinue.;" || exit 1\necho "$script" | grep -q "ErrorActionPreference=.Stop." || exit 1\necho 12345\n');
+  const platform=/** @type {PropertyDescriptor} */ (Object.getOwnPropertyDescriptor(process,'platform'));
+  Object.defineProperty(process,'platform',{value:'win32'});
+  process.env.PSModulePath='/powershell7/modules';
+  t.after(()=>{Object.defineProperty(process,'platform',platform);delete process.env.PSModulePath;});
+  assert.equal(await readOperatingSystemProcessCreationTime(1234),'12345');
+});
+
+test('a failed Windows creation time read says why and an unknown observation carries the reason',async t=>{
+  const directory=await createTemporaryDirectory(t,'arw-process-identity-reason-');
+  await installFakeCommand(t,directory,'powershell.exe','echo "ARW: The term Get-CimInstance is not recognized." >&2\nexit 1\n');
   const platform=/** @type {PropertyDescriptor} */ (Object.getOwnPropertyDescriptor(process,'platform'));
   Object.defineProperty(process,'platform',{value:'win32'});
   t.after(()=>Object.defineProperty(process,'platform',platform));
-  assert.equal(await readOperatingSystemProcessCreationTime(1234),'12345');
+  await assert.rejects(readOperatingSystemProcessCreationTime(1234),/could not be read: The term Get-CimInstance is not recognized\./);
+  Object.defineProperty(process,'platform',platform);
+  const runtimeDirectory=join(directory,'runtime');
+  const path=appServerProcessIdentityPath(runtimeDirectory);
+  await mkdir(runtimeDirectory,{mode:0o700});
+  const identity={pid:4242,createdAt:'1700000000123456789'};
+  await recordProcessIdentity({runtimeDirectory,path,identity});
+  assert.deepEqual(await readProcessIdentity({runtimeDirectory,path,readCreationTime:async()=>{throw new Error('reader failed');}}),{state:'unknown',identity,reason:'reader failed'});
+});
+
+test('maintenance reports why a PowerShell failure left the process exit unknown',async t=>{
+  const directory=await createTemporaryDirectory(t,'arw-process-identity-maintenance-');
+  const runtimeDirectory=join(directory,'runtime');
+  await mkdir(runtimeDirectory,{mode:0o700});
+  await writeFile(appServerProcessIdentityPath(runtimeDirectory),'4242,1700000000123456789',{mode:0o600});
+  const fail=join(directory,'fail-acl');
+  await installFakeCommand(t,directory,'powershell.exe',`if [ -e "${fail}" ]; then echo "ARW: Private state inheritance is enabled." >&2; exit 1; fi\nprintf %s "$4" | base64 -d | tr -d "\\0" | grep -q Win32_Process && { echo "ARW: Get-CimInstance failed." >&2; exit 1; }\nexit 0\n`);
+  const platform=/** @type {PropertyDescriptor} */ (Object.getOwnPropertyDescriptor(process,'platform'));
+  Object.defineProperty(process,'platform',{value:'win32'});
+  t.after(()=>Object.defineProperty(process,'platform',platform));
+  const creation=await acquireBackgroundAgentMaintenance({runtimeDirectory,maintenancePort:0});
+  assert.deepEqual([creation.status,'reason' in creation ? creation.reason : ''],['unknown','Shared App Server process exit is unknown. Windows process creation time could not be read: Get-CimInstance failed.']);
+  await writeFile(fail,'');
+  const acl=await acquireBackgroundAgentMaintenance({runtimeDirectory,maintenancePort:0});
+  assert.deepEqual([acl.status,'reason' in acl ? acl.reason : ''],['unknown','Background Agent private state access could not be verified: Private state inheritance is enabled.']);
+});
+
+test('an ACL check failure on the identity file leaves the observation unknown with the reason',async t=>{
+  const directory=await createTemporaryDirectory(t,'arw-process-identity-acl-reason-');
+  const runtimeDirectory=join(directory,'runtime');
+  const path=appServerProcessIdentityPath(runtimeDirectory);
+  await mkdir(runtimeDirectory,{mode:0o700});
+  await recordProcessIdentity({runtimeDirectory,path,identity:{pid:4242,createdAt:'1700000000123456789'}});
+  await installFakeCommand(t,directory,'powershell.exe','[ -n "$ARW_BACKGROUND_PRIVATE_SECURE" ] || { echo "ARW: Private state permits another identity." >&2; exit 1; }\n');
+  const platform=/** @type {PropertyDescriptor} */ (Object.getOwnPropertyDescriptor(process,'platform'));
+  Object.defineProperty(process,'platform',{value:'win32'});
+  t.after(()=>Object.defineProperty(process,'platform',platform));
+  assert.deepEqual(await readProcessIdentity({runtimeDirectory,path,readCreationTime:async()=>null}),{state:'unknown',identity:null,reason:'Background Agent private state access could not be verified: Private state permits another identity.'});
 });
 
 /** Serves the files in the returned map for the Linux process paths and reads everything else for real. @param {import('node:test').TestContext} t @param {Record<string,string>} files */
@@ -90,6 +140,8 @@ test('process identity records accept the boot-id form and the plain number form
   const path=appServerProcessIdentityPath(runtimeDirectory);
   const identity={pid:4242,createdAt:`${bootId}:2114598`};
   try{
+    await securePrivateStatePath(runtimeDirectory,'directory');
+    const put=async(/** @type {string} */ content)=>{await writeFile(path,content,{mode:0o600});await securePrivateStatePath(path,'file');};
     await recordProcessIdentity({runtimeDirectory,path,identity});
     assert.equal(await readFile(path,'ascii'),`4242,${bootId}:2114598`);
     /** @type {(string|undefined)[]} */
@@ -97,10 +149,10 @@ test('process identity records accept the boot-id form and the plain number form
     assert.deepEqual(await readProcessIdentity({runtimeDirectory,path,readCreationTime:async(pid,recorded)=>{seen.push(recorded);return identity.createdAt;}}),{state:'alive',identity});
     assert.deepEqual(seen,[identity.createdAt]);
     await rm(path);
-    await writeFile(path,'4242,1700000000123456789',{mode:0o600});
+    await put('4242,1700000000123456789');
     assert.equal((await readProcessIdentity({runtimeDirectory,path,readCreationTime:async()=>'1700000000123456789'})).state,'alive');
     for(const bad of ['4242,abc','4242,not-a-uuid:5',`4242,${bootId}:`,`4242,${bootId}`,'4242,1,2']){
-      await writeFile(path,bad,{mode:0o600});
+      await put(bad);
       assert.equal((await readProcessIdentity({runtimeDirectory,path,readCreationTime:async()=>identity.createdAt})).state,'unknown');
     }
     await assert.rejects(recordProcessIdentity({runtimeDirectory,path:join(runtimeDirectory,'other'),identity:{pid:1,createdAt:'x:1'}}),/invalid/);

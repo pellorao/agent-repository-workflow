@@ -68,3 +68,15 @@ test('Windows private state is secured and verified in one PowerShell process pe
   await writeFile(join(directory,'fail'),'');
   await assert.rejects(verifyPrivateStatePath(directory,'directory',[file,'file']),/could not be verified/);
 });
+
+test('Windows ACL child drops PSModulePath and a failed check names its cause',async t => {
+  const directory = await createTemporaryDirectory(t,'arw-private-state-reason-');
+  const log = join(directory,'env.log');
+  await installFakeCommand(t,directory,'powershell.exe',`echo "[$PSModulePath]" >> "${log}"\necho "ARW: Private state permits another identity." >&2\nexit 1\n`);
+  const platform = /** @type {PropertyDescriptor} */ (Object.getOwnPropertyDescriptor(process,'platform'));
+  Object.defineProperty(process,'platform',{value:'win32'});
+  process.env.PSModulePath = '/powershell7/modules';
+  t.after(() => {Object.defineProperty(process,'platform',platform);delete process.env.PSModulePath;});
+  await assert.rejects(verifyPrivateStatePath(directory,'directory'),/could not be verified: Private state permits another identity\./);
+  assert.equal((await readFile(log,'utf8')).trim(),'[]');
+});
