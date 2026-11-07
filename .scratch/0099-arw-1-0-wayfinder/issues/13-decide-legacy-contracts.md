@@ -1,7 +1,7 @@
 # 确定现有 ARW 合同在 1.0 中的继承范围
 
 Type: grilling
-Blocked by: issue:0099:01, issue:0099:04
+Blocked by: issue:0099:01, issue:0099:04, issue:0099:17
 
 ##### Question
 
