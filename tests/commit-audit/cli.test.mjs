@@ -357,6 +357,13 @@ test('prepare warns about a recorded net growth that differs from the measuremen
     ]);
 });
 
+test('prepare warns when a non-empty Validation has no summary block', async t => {
+    const repository = await stagedRepository(t, {statuses: ['ready-for-agent']});
+    await stageIssue(repository.root, `${issueText('ready-for-agent')}\n## Validation\n\n- Checked.\n`);
+    const {summary} = await prepareCommitAudit({inputPath: await writeInput(repository.root, {authorizingIssueIds: ['issue:0001:01']}), platformAdapter: adapter, repositoryRoot: repository.root});
+    assert.equal(summary.split('\n').at(-1), 'warning: .scratch/0001-workflow/issues/01-issue.md: Validation has no candidate summary block (code, documents, tests lines).');
+});
+
 test('prepare treats a missing Validation or Acceptance criteria section as empty text', async t => {
     const repository = await stagedRepository(t, {statuses: ['ready-for-agent']});
     await stageIssue(repository.root, issueText('ready-for-agent').replace('- [ ] Complete.\n\n## Blocked by', '## Blocked by').replace('## Acceptance criteria\n\n', '- [x] Run `node a.mjs`.\n\n') + '\n## Comments\n\n- code: +1 lines\n');
