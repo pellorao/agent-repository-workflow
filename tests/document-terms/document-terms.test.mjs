@@ -6,6 +6,7 @@ import test from 'node:test';
 import {
     checkDocumentTerms,
     createDocumentTermsChecker,
+    serializeDocumentTermsDiagnostic,
 } from '../../lib/document-terms/document-terms.mjs';
 import {commitAll, runGit} from '../helpers/git.mjs';
 import {createRepository as createGitRepository} from '../helpers/repository-fixture.mjs';
@@ -224,7 +225,11 @@ test('Document Terms Module 把单个来源失败隔离到每个适用 context',
     ]);
 
     assert.deepEqual(result.contexts.map(context => context.status), ['failed', 'passed']);
-    assert.deepEqual(result.contexts[0].diagnostics, [{code: 'source-read-failed', path: 'a/broken.md'}]);
+    assert.deepEqual(result.contexts[0].diagnostics, [{
+        code: 'source-read-failed',
+        message: 'The Markdown source could not be read; restore the file or make it readable.',
+        path: 'a/broken.md',
+    }]);
     assert.deepEqual(result.contexts[1].diagnostics, []);
 });
 
@@ -242,6 +247,25 @@ test('Document Terms Module 对无效局部术语章节只返回一项无位置�
 
         assert.deepEqual(result.contexts[0].diagnostics, [{code: 'local-terms-section-invalid', path: 'README.md'}]);
         assert.equal(result.contexts[0].summary.localTerms, 0);
+    }
+});
+
+test('Document Terms Module explains invalid global structure and unsupported sources in rendered findings', async () => {
+    const cases = [
+        {path: 'CONTEXT.md', value: '# Context\n', code: 'global-terms-section-invalid', message: 'The context document must start with its only H1 heading and contain exactly one ## Language section.'},
+        {path: 'linked.md', value: {kind: /** @type {const} */ ('symbolic-link')}, code: 'unsupported-source-entry', message: 'The text source must be a regular file, not a symbolic link or another unsupported entry.'},
+        {path: 'binary.md', value: Buffer.from([0]), code: 'unsupported-source-type', message: 'The Markdown source contains binary data; replace it with a text document.'},
+        {path: 'unreadable.md', value: {kind: /** @type {const} */ ('unreadable')}, code: 'source-read-failed', message: 'The Markdown source could not be read; restore the file or make it readable.'},
+    ];
+    for (const {path, value, code, message} of cases) {
+        const {result} = await checkContents([
+            ['CONTEXT.md', validContext()],
+            [path, value],
+        ]);
+        assert.equal(result.status, 'failed');
+        const diagnostic = result.contexts[0].diagnostics[0];
+        assert.deepEqual(diagnostic, {code, message, path});
+        assert.equal(serializeDocumentTermsDiagnostic(diagnostic), `document-terms-finding: path=${JSON.stringify(path)} code=${JSON.stringify(code)} message=${JSON.stringify(message)}\n`);
     }
 });
 

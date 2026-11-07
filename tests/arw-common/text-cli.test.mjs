@@ -125,3 +125,23 @@ test('text CLI 可逆转义动态路径', async t => {
     });
     assert.equal(result, 1);
 });
+
+test('text CLI explains unsupported text entries without reading or writing them', async t => {
+    const repository = await createRepository(t);
+    await writeFile(join(repository.root, 'target.txt'), 'bad\r\n');
+    for (const operation of ['check', 'fix']) {
+        const result = await runArw(['text', operation], {
+            cwd: repository.root,
+            programDirectory: repository.programDirectory,
+            stdout: () => assert.fail('Unsupported entries must fail.'),
+            stderr: message => assert.equal(message, '[unsupported-text-entry] target.txt: The text source must be a regular file, not a symbolic link or another unsupported entry.'),
+            textPolicyDependencies: {filesystem: {
+                async inspectPath({path}) { return {kind: path === '.arwignore' ? 'missing' : 'symbolic-link', path}; },
+                async readBytes() { assert.fail('Unsupported entries must not be read.'); },
+                async replaceFileAtomically() { assert.fail('Unsupported entries must not be written.'); },
+            }},
+        });
+        assert.equal(result, 1);
+        assert.equal(await readFile(join(repository.root, 'target.txt'), 'utf8'), 'bad\r\n');
+    }
+});

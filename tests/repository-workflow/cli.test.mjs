@@ -127,6 +127,23 @@ test('workflow update dry-run reports only operation actions and Repository-rela
     });
 });
 
+test('workflow commands explain text after the repository-owned end marker', async t => {
+    const {repository, workflowDependencies} = await createInitializedWorkflowRepository(t, ORIGINAL_MANAGED_AGENTS);
+    const agentsPath = join(repository.root, 'AGENTS.md');
+    const invalidAgents = Buffer.concat([ORIGINAL_MANAGED_AGENTS, Buffer.from('Appended rule.\n')]);
+    await writeFile(agentsPath, invalidAgents);
+    await repository.git.commitAll('append outside owned region');
+
+    for (const operation of ['verify', 'update', 'remove']) {
+        const output = await run(['workflow', operation, ...(operation === 'verify' ? [] : ['--non-interactive'])], repository, {workflowDependencies});
+        assert.equal(output.result, 1);
+        assert.ok(output.events.some(({channel, message}) => channel === 'stderr'
+            && message.includes('invalid-managed-region')
+            && message.includes('The managed region must start the file, followed by a single repository-owned region that ends the file; move any text after the repository-owned end marker inside that region.')), JSON.stringify(output.events));
+        assert.deepEqual(await readFile(agentsPath), invalidAgents);
+    }
+});
+
 test('interactive workflow update shows the concise plan before confirmation and applies its unchanged operations', async t => {
     const {repository} = await createInitializedWorkflowRepository(t, ORIGINAL_MANAGED_AGENTS);
     /** @type {Array<{channel: 'stderr' | 'stdout', message: string}>} */

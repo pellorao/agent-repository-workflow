@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0109:01",
+  "exception": {
+    "confirmedAt": "2026-11-07T18:44:21Z",
+    "reason": "用户明确确认 I 不需要治理设计, 一个 effort 只有一个实施 issue; 仅补充已指定诊断说明及测试, 不改变模块设计."
+  },
+  "subject": {
+    "filePath": ".scratch/0109-diagnostic-messages/issues/01-explain-diagnostics.md",
+    "sha256": "1e8d5e3d1508bd78b0be6269c454006d5b2f88eef71c6a512a4d562f6a134b8c"
+  },
+  "result": "not-applicable"
+}
