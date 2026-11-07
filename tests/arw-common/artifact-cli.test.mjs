@@ -275,7 +275,7 @@ test('all-statuses rejects status filters and repeated flags', async t => {
         const outcome = await run(args, repository);
 
         assert.equal(outcome.result, 2);
-        assert.match(outcome.events[0].message, /\n--all-statuses\/-a cannot be combined with --status\/-s\.$/);
+        assert.match(outcome.events[0].message, /^--all-statuses\/-a cannot be combined with --status\/-s\.\nRun `arw help` for usage\.$/);
         assert.ok(outcome.events.every(event => event.channel === 'stderr'));
     }
 
@@ -283,7 +283,7 @@ test('all-statuses rejects status filters and repeated flags', async t => {
         const outcome = await run(args, repository);
 
         assert.equal(outcome.result, 2);
-        assert.match(outcome.events[0].message, /\nUnknown or repeated option: (?:--all-statuses|-a)\.$/);
+        assert.match(outcome.events[0].message, /^Unknown or repeated option: (?:--all-statuses|-a)\.\nRun `arw help` for usage\.$/);
         assert.ok(outcome.events.every(event => event.channel === 'stderr'));
     }
 });

@@ -13,7 +13,7 @@ test('arw language inspect 固定 grammar 并传递全部路径', async t => {
     ]) {
         const output = await run(args, repository);
         assert.equal(output.result, 2);
-        assert.match(output.events[0].message, /^Usage:/u);
+        assert.match(output.events[0].message, /\nRun `arw help` for usage\.$/u);
     }
 
     let observed;

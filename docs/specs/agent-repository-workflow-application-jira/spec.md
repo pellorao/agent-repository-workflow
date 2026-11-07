@@ -404,7 +404,7 @@ arw module check-correction <local-module-issue-id>
 | `module-correction-git-read-failed` | Git 不能读取 `HEAD` 输入 |
 | `module-correction-filesystem-read-failed` | Filesystem 不能读取当前输入 |
 
-`arw` 无参数用法说明增加准确的 `arw module check-correction <local-module-issue-id>` 行. 原有标准输出为空, 用法说明与 `A command is required.` 写入标准错误, 退出码 `2` 的合同不变.
+`arw help` 的 Agent 内部命令组包含准确的 `arw module check-correction <local-module-issue-id>` 行. 无参数调用的标准输出为空, 标准错误只写入 `A command is required.` 和运行 `arw help` 的提示, 退出码为 `2`.
 
 ### Downstream changes structure
 

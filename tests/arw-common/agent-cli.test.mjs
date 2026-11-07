@@ -24,7 +24,7 @@ test('agent start parser keeps every token after the configured name', () => {
     });
     assert.throws(
         () => parseCommand(['agent', 'start']),
-        error => error instanceof UsageError && /Agent start expects a name\.$/.test(error.message),
+        error => error instanceof UsageError && /^Agent start expects a name\.\nRun `arw help` for usage\.$/.test(error.message),
     );
 });
 

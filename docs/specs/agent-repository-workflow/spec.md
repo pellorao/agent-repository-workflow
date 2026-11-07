@@ -208,7 +208,7 @@ arw --version
 
 `jira`, `application`, `module` 和 `submodule` 命名空间同样是公开命令, 由 Application 与 JIRA 长期规格 (`../agent-repository-workflow-application-jira/spec.md`) 的 Public commands, Application and Module issue association, Module correction check 和 Submodule branch switching 节拥有; `jl`, `jo`, `ssb` 分别是 `jira list`, `jira open`, `submodule switch-branch` 的命令别名. 只在源码仓库中使用的维护命令不是公开的 `arw` 操作. 开发, 安装和发布规格以及 `upstream-sync` Skill 分别列出这些命令的入口与生命周期归属.
 
-`print` 是机器可读原文读取 Interface. `open` 是用户便捷 Interface. 两者只接受一个本地 Canonical ID, 从类型前缀选择 ARW Artifact, 并拒绝有名称限定的 issue ID. 不保留类型化 `open` 或 `print`, `oi`, `om`, `os`, `tracker` 启动器, 顶层 `update` 或隐式帮助. 无参数和未知命令都是退出码 `2` 的用法错误.
+`print` 是机器可读原文读取 Interface. `open` 是用户便捷 Interface. 两者只接受一个本地 Canonical ID, 从类型前缀选择 ARW Artifact, 并拒绝有名称限定的 issue ID. 不保留类型化 `open` 或 `print`, `oi`, `om`, `os`, `tracker` 启动器, 顶层 `update` 或隐式帮助. 准确的 `arw help`, `arw --help` 和 `arw -h` 向标准输出写入完整用法并返回 `0`, 不要求配置或 Git 仓库. 用法先列日常命令, 再列 Agent 内部命令, 每组有简短标题. 无参数和未知命令都是退出码 `2` 的用法错误; 所有用法错误只向标准错误写入一行具体错误, 再写一行提示 ``Run `arw help` for usage.``, 不输出用法块.
 
 全局退出约定是:
 
@@ -625,7 +625,7 @@ Main Agent 删除或替换与当前 Workflow Distribution 冲突的仓库自有�
 
 ### Document terms
 
-`arw terms check [--strict] [--include <repository-relative-directory>]...` 是任意 Git 仓库中可用的只读命令. 不带 `--strict` 时使用 `immediate` 模式; 准确的单个 `--strict` 使用 `release` 模式. `--include` 可以出现任意多次, 每次必须紧跟一个目录, 并且可以与 `--strict` 使用任意顺序. 它不提供短别名, `fix`, 候选树参数或其他公开 `release` 操作, 不要求 Repository Profile, `arw-lock.json`, `.scratch` 或已执行 `workflow init`. CLI 从当前目录发现最近的 Git 仓库根; Git 仓库外返回退出码 `1`, 重复 `--strict`, 缺少纳入目录, 多余参数或未知参数返回完整用法说明和退出码 `2`.
+`arw terms check [--strict] [--include <repository-relative-directory>]...` 是任意 Git 仓库中可用的只读命令. 不带 `--strict` 时使用 `immediate` 模式; 准确的单个 `--strict` 使用 `release` 模式. `--include` 可以出现任意多次, 每次必须紧跟一个目录, 并且可以与 `--strict` 使用任意顺序. 它不提供短别名, `fix`, 候选树参数或其他公开 `release` 操作, 不要求 Repository Profile, `arw-lock.json`, `.scratch` 或已执行 `workflow init`. CLI 从当前目录发现最近的 Git 仓库根; Git 仓库外返回退出码 `1`, 重复 `--strict`, 缺少纳入目录, 多余参数或未知参数返回具体错误和运行 `arw help` 的提示, 退出码为 `2`.
 
 Document Terms 从仓库根目录发现术语表. 根 `CONTEXT-MAP.md` 存在时只使用 map, 不回退到根 `CONTEXT.md`; map 不存在时使用根 `CONTEXT.md`; 两者都不存在时不返回上下文, 没有可检查内容, 结果通过 (新初始化的仓库就是这种状态). `CONTEXT-MAP.md` 必须有且只有一个准确 `## Contexts` 章节. 该章节只接受以 `- [<nonempty-label>](<target>)` 开始的列表项, 链接后可以有说明文字. 目标不接受链接标题, 查询参数, 片段, 百分号转义或空白, 可以有一个会被删除的开头 `./`; 其余路径组件必须非空且不能是 `.` 或 `..`. 目标不能是绝对路径, 反斜杠路径, NUL 路径或符号链接, 必须位于仓库内, 使用准确文件名 `CONTEXT.md`, 并在规范化后唯一且存在.
 
@@ -661,7 +661,7 @@ Document Repository 对一次检查只观察一次完整 Git 可见的路径清�
 
 `arw language inspect <path>...` 是任意 Git 仓库中可用的只读命令. 它接受一个或多个仓库相对 Markdown 文件或目录. 每个显式文件必须是普通 `.md` 文件. 目录递归选择所有普通 `.md` 文件, 包括未由 Git 跟踪, 被 Git 忽略, 被 `.arwignore` 忽略或位于 `.scratch` 的文件. 递归选择始终排除 `.git`, 不跟随符号链接. 重复和重叠参数产生的文件按规范仓库相对路径去重并排序.
 
-该命令先验证并展开全部参数. 任一路径不存在, 越过仓库, 是符号链接, 显式文件不是 `.md`, 或选中文件无法安全读取为严格 UTF-8 时, 整体失败, 不输出部分表格. 全部目录展开后没有 Markdown 文件时同样失败. 这些操作失败返回退出码 `1`; 缺少路径或无效命令语法返回完整用法说明和退出码 `2`. 至少选中一份有效 Markdown 时返回退出码 `0`, 即使某份文档没有可统计字符或 Markdown 解析产生结构诊断信息. 结构诊断信息不进入该命令的失败结果, 但解析器仍只提供能够确定的可见文本流.
+该命令先验证并展开全部参数. 任一路径不存在, 越过仓库, 是符号链接, 显式文件不是 `.md`, 或选中文件无法安全读取为严格 UTF-8 时, 整体失败, 不输出部分表格. 全部目录展开后没有 Markdown 文件时同样失败. 这些操作失败返回退出码 `1`; 缺少路径或无效命令语法返回具体错误和运行 `arw help` 的提示, 退出码为 `2`. 至少选中一份有效 Markdown 时返回退出码 `0`, 即使某份文档没有可统计字符或 Markdown 解析产生结构诊断信息. 结构诊断信息不进入该命令的失败结果, 但解析器仍只提供能够确定的可见文本流.
 
 语言组成按 Unicode 码点遍历正文文本流. Han 字符计入 Chinese 且权重为 2, Unicode Latin 字母计入 English 且权重为 1, 其他 Unicode 字母计入 Other 且权重为 2. 空白, 数字, 标点, 符号和其他非字母字符不进入分母. 每项加权值除以三类总和并独立舍入到一位小数, 因而显示值不保证准确相加为 `100.0%`. 拉丁字母文字的其他自然语言也按 English 近似统计. 没有可统计字符时三项比例都没有有效值.
 

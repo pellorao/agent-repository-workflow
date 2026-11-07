@@ -42,8 +42,8 @@ test('arw terms check 固定 grammar 并拒绝无效 include', async t => {
         assert.equal(output.result, 2);
         assert.equal(output.events.length, 1);
         assert.equal(output.events[0].channel, 'stderr');
-        assert.match(output.events[0].message, /^Usage:\n/u);
-        assert.match(output.events[0].message, /arw terms check \[--strict\] \[--include <repository-relative-directory>\]\.\.\./u);
+        assert.match(output.events[0].message, /\nRun `arw help` for usage\.$/u);
+        assert.equal(output.events[0].message.split('\n').length, 2);
     }
 });
 

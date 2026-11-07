@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0108:01",
+  "exception": {
+    "confirmedAt": "2026-11-07T18:21:11Z",
+    "reason": "用户明确确认本轮 H 无设计决定, 无需治理设计, 单 effort 单 implementation issue."
+  },
+  "subject": {
+    "filePath": ".scratch/0108-cli-help/issues/01-help-and-usage.md",
+    "sha256": "dfc0667483fd9d6b491d77647de93dc472f4458937d6e57a0ee5f43a65c12ecc"
+  },
+  "result": "not-applicable"
+}

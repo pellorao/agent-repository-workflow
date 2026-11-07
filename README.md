@@ -319,7 +319,7 @@ If your staged candidate contains only investigation notes, design records, or o
 
 ## Common commands
 
-Now that you have seen how setup and the daily workflow fit together, use the tables below as a quick reference for the commands you and your Agent run at each stage. For full flag syntax, run `arw` in your terminal or check the long-term specifications. While the Main Agent always writes full command names in operating instructions, you can type the short aliases in your terminal.
+Now that you have seen how setup and the daily workflow fit together, use the tables below as a quick reference for the commands you and your Agent run at each stage. For full flag syntax, run `arw help` in your terminal or check the long-term specifications. While the Main Agent always writes full command names in operating instructions, you can type the short aliases in your terminal.
 
 ### Check version and repository configuration
 

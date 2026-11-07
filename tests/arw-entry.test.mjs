@@ -12,42 +12,7 @@ import {runSuccessfulProcess} from './helpers/process.mjs';
 import {parseCommand, UsageError} from '../lib/arw.mjs';
 
 const SOURCE_DIRECTORY = dirname(dirname(fileURLToPath(import.meta.url)));
-const NO_COMMAND_MESSAGE = [
-    'Usage:',
-    '  arw list issues [--all-statuses | --status <status>[,<status>...]] [--type <type>[,<type>...]] [--full]',
-    '  arw li [-a | -s <status>[,<status>...]] [-t <type>[,<type>...]] [-f]',
-    '  arw list maps [--full] | arw lm [-f]',
-    '  arw list specs [--full] | arw ls [-f]',
-    '  arw list background-agents [--full] | arw lba [-f]',
-    '  arw print <local-canonical-id>',
-    '  arw open <local-canonical-id>',
-    '  arw agent start <name> [agent-arguments...]',
-    '  arw migrate artifacts',
-    '  arw code-map verify',
-    '  arw text check | arw text fix',
-    '  arw terms check [--strict] [--include <repository-relative-directory>]...',
-    '  arw language inspect <repository-relative-path>...',
-    '  arw jira list [--limit <positive-integer>] [--full] | arw jl [--limit <positive-integer>] [-f]',
-    '  arw jira open <issue-key> | arw jo <issue-key>',
-    '  arw jira print <issue-key>',
-    '  arw submodule switch-branch <branch> | arw ssb <branch>',
-    '  arw module check-correction <local-module-issue-id>',
-    '  arw application sync',
-    '  arw application associate <local-application-issue-id> <qualified-module-issue-id>',
-    '  arw jira accept <spec-id> | arw jira complete <spec-id>',
-    '  arw spec-readiness prepare --issue issue:NNNN:NN [--input <temp-json-path>]',
-    '  arw spec-readiness generate --issue issue:NNNN:NN --input <draft-path>',
-    '  arw spec-readiness promote --input <generated-path>',
-    '  arw spec-readiness verify --issue issue:NNNN:NN [--subject-only]',
-    '  arw commit-audit prepare --input <absolute-input-path>',
-    '  arw commit-audit verify [--non-implementation]',
-    '  arw workflow init [--non-interactive (--reuse-profile | --platform <platform>... --domain-layout <layout> --code-map-root [<root>]... --code-map-include [<glob>]... --code-map-exclude [<glob>]...) --transform-existing-agent-docs <true|false> --orphan-code-map-readmes <delete|demote>]',
-    '  arw workflow update [--non-interactive] [--dry-run] [--transform-existing-agent-docs <true|false>]',
-    '  arw workflow verify',
-    '  arw workflow remove [--non-interactive --platform-agent-configs <retain|delete> --arwignore <retain|delete> --code-maps <retain|delete> --mixed-agent-documents <retain|delete>]',
-    '  arw --version',
-    'A command is required.',
-].join('\n');
+const NO_COMMAND_MESSAGE = 'A command is required.\nRun `arw help` for usage.';
 
 test('root arw entry executes while the internal arw module has no direct behavior', async t => {
     const repository = await createRepository(t);
@@ -161,6 +126,25 @@ test('background list commands distinguish confirmed manager absence from unavai
     }
 });
 
+test('help aliases show grouped usage without configuration or a repository', async t => {
+    const root = await createTemporaryDirectory(t, 'arw-help-cwd-');
+    const programDirectory = await createTemporaryDirectory(t, 'arw-help-program-');
+    let help;
+    for (const flag of ['help', '--help', '-h']) {
+        const result = await run([flag], {root, programDirectory});
+        assert.equal(result.result, 0);
+        assert.equal(result.events.length, 1);
+        assert.equal(result.events[0].channel, 'stdout');
+        const message = result.events[0].message;
+        assert.match(message, /^Usage:\nEveryday commands:\n/u);
+        assert.match(message, /arw workflow verify[\s\S]*Agent-internal commands:[\s\S]*arw spec-readiness prepare[\s\S]*arw commit-audit verify/u);
+        assert.match(message, /Agent-internal commands:\n  arw background-agent \[--wait\]/u);
+        assert.ok(!message.includes('Unknown command or artifact.'));
+        if (help !== undefined) assert.equal(message, help);
+        help = message;
+    }
+});
+
 test('invalid command shapes return usage exit code', async t => {
     const repository = await createRepository(t);
     const noCommand = await run([], repository);
@@ -175,7 +159,7 @@ test('invalid command shapes return usage exit code', async t => {
     assert.equal(missingId.result, 2);
     assert.equal(pathId.result, 2);
     assert.deepEqual(noCommand.events, [{channel: 'stderr', message: NO_COMMAND_MESSAGE}]);
-    assert.match(unknownCommand.events[0].message, /\nUnknown command or artifact\.$/);
+    assert.match(unknownCommand.events[0].message, /^Unknown command or artifact\.\nRun `arw help` for usage\.$/);
     assert.ok(noCommand.events.every(event => event.channel === 'stderr'));
     assert.ok(unknownCommand.events.every(event => event.channel === 'stderr'));
     assert.ok(unknownOption.events.every(event => event.channel === 'stderr'));
@@ -236,7 +220,7 @@ test('root arw entry recognizes invocation through a directory symlink', async t
     }
 });
 
-test('usage failures keep command-specific messages and usage without configuration', async t => {
+test('usage failures keep command-specific messages and a help hint without configuration', async t => {
     const root = await createTemporaryDirectory(t, 'arw-usage-cwd-');
     const programDirectory = await createTemporaryDirectory(t, 'arw-usage-program-');
     const repository = {root, programDirectory};
@@ -245,12 +229,16 @@ test('usage failures keep command-specific messages and usage without configurat
         const full = await run(['list', kind, flag, flag], repository);
         assert.deepEqual(short, full);
         assert.equal(short.result, 2);
-        assert.match(short.events[0].message, new RegExp(`List ${kind} accepts only --full \\| -f\\.$`, 'u'));
+        assert.equal(short.events[0].message, `List ${kind} accepts only --full | -f.\nRun ` + '`arw help` for usage.');
     }
     for (const [args, message] of /** @type {Array<[string[], string]>} */ ([
         [[], 'A command is required.'],
         [['bogus-command'], 'Unknown command or artifact.'],
+        [['help', 'extra'], 'Unknown command or artifact.'],
+        [['--help', 'extra'], 'Unknown command or artifact.'],
+        [['-h', 'extra'], 'Unknown command or artifact.'],
         [['li', '--unknown'], 'Unknown or repeated option: --unknown.'],
+        [['commit-audit', 'prepare', 'bad\nargument\rvalue'], 'Unexpected argument: bad\\nargument\\rvalue.'],
         [['li', '--type', 'bogus'], '--type only accepts implementation, application-source, and wayfinder.'],
         [['background-agent', '--bogus'], 'arw background-agent accepts only --wait.'],
         [['lba', '-x'], 'Background Agent list accepts only --full | -f.'],
@@ -262,8 +250,7 @@ test('usage failures keep command-specific messages and usage without configurat
         assert.equal(result.result, 2);
         assert.equal(result.events.length, 1);
         assert.equal(result.events[0].channel, 'stderr');
-        assert.ok(result.events[0].message.startsWith('Usage:\n'));
-        assert.ok(result.events[0].message.endsWith(`\n${message}`), result.events[0].message);
+        assert.equal(result.events[0].message, `${message}\nRun ` + '`arw help` for usage.');
     }
 });
 
