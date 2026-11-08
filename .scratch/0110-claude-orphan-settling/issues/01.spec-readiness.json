@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0110:01",
+  "exception": {
+    "confirmedAt": "2026-11-08T18:03:44Z",
+    "reason": "用户在本轮 triage 明确确认 J 仅修复现有规范要求, 无新设计决定, 单 issue effort, 不需要治理设计."
+  },
+  "subject": {
+    "filePath": ".scratch/0110-claude-orphan-settling/issues/01-settle-orphan-turns.md",
+    "sha256": "81ba66816fa5a04d07efd979c5c8503c37dd18ef9d84192072de4202bba52e7c"
+  },
+  "result": "not-applicable"
+}

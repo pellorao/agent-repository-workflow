@@ -1081,6 +1081,55 @@ test('cold startup checks each Claude run by its own turn process instead of the
   await restored.close();
 });
 
+for(const operation of ['overview','list_agents','wait_agent'])test(`Claude orphan ending after startup settles through ${operation}`,async t=>{
+  const fake=await harness(t);
+  fake.stateStore.upsertAgent({runId:'orphan',ownerId:'main-1',role:'generic',ownerTitle:null,ownerSessionPath:null,
+    threadId:'orphan-thread',turnId:'turn',sessionPath:'/native/orphan.jsonl',settings:{...settings,modelProvider:'anthropic'},
+    cwd:fake.directory,readPaths:[],writePaths:[],instructions:'instructions',recoveryPath:null,state:'running',taskState:'working',
+    stateVersion:1,lastUsedAtMs:1000,taskStartedAtMs:900,taskFinishedAtMs:null,knownThreadIds:['orphan-thread'],providerWork:null});
+  await fake.manager.close();
+  let unresolved=['orphan-thread'];
+  /** @type {Map<ReturnType<typeof setTimeout>,{handler:()=>void,delay:number}>} */
+  const timers=new Map();
+  const clock={...fake.clock,setTimeout:/** @type {typeof setTimeout} */((/** @type {()=>void} */ handler,/** @type {number} */ delay)=>{
+    const timer=fake.clock.setTimeout(handler,delay);timers.set(timer,{handler,delay});return timer;
+  }),clearTimeout:/** @type {typeof clearTimeout} */(timer=>{timers.delete(/** @type {ReturnType<typeof setTimeout>} */(timer));fake.clock.clearTimeout(timer);})};
+  const restored=await createBackgroundAgentManager({nativeSessions:{...fake.native.nativeSessions,unresolvedProcesses:async()=>unresolved},
+    maxInstances:2,stateStore:createBackgroundAgentStateStore({runtimeDirectory:fake.directory,clock:fake.clock}),clock});
+  const query=(/** @type {string} */ operation,/** @type {Record<string,unknown>} */ input={})=>
+    restored.execute({ownerId:'main-1',controllerId:'main-1',operation,input});
+  const initial=result(await query('list_agents',{runId:'orphan'}));
+  assert.equal(initial.state,'unknown');
+  assert.equal(initial.taskState,'working');
+  assert.equal(result(await query('list_agents')).agents.length,1);
+  if(operation==='wait_agent'){
+    const cancelled=new AbortController();
+    const cancellation=restored.execute({ownerId:'main-1',controllerId:'main-1',operation,
+      input:{runId:'orphan',cursor:initial.cursor,timeout_ms:10_000},signal:cancelled.signal});
+    await tick();cancelled.abort();
+    assert.equal(result(await cancellation).cancelled,true);
+    assert.equal(timers.size,0);
+  }
+  const pending=operation==='wait_agent'?query(operation,{runId:'orphan',cursor:initial.cursor,timeout_ms:10_000}):null;
+  if(pending){
+    await tick();
+    const poll=[...timers.values()].find(timer=>timer.delay===1000);assert.ok(poll);poll.handler();
+    await tick();
+    assert.equal(restored.owned('orphan','main-1','main-1').state,'unknown');
+  }
+  unresolved=[];
+  if(pending){const poll=[...timers.values()].find(timer=>timer.delay===1000);assert.ok(poll);poll.handler();}
+  else if(operation==='overview')assert.equal(result(await query('list_agents')).agents.length,0);
+  const ended=result(await (pending??query('list_agents',{runId:'orphan',cursor:initial.cursor})));
+  assert.equal(ended.state,'exited');
+  assert.equal(ended.taskState,'unknown');
+  assert.ok(ended.cursor>initial.cursor);
+  assert.equal(restored.owned('orphan','main-1','main-1').taskFinishedAtMs,1000);
+  assert.equal(fake.native.openCount,0);
+  assert.equal(timers.size,0);
+  await restored.close();
+});
+
 test('released proxy cannot bypass manager and callerAccess reloads the persisted run',async t=>{
   const fake=await harness(t,{maxInstances:1});
   const first=result(await fake.start());
