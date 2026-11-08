@@ -42,7 +42,7 @@ Main Agent 照规则执行某一步很可能失败时 (如要一个 Reviewer 审
 
 ## Agent Writes
 
-Subagent 只写 Main Agent 分配的范围, Git 写入只由与用户沟通的 Main Agent 执行. 写入任何文件或执行 Git 写入前, 读取 `docs/agents/agent-writes.md`.
+Subagent 只写 Main Agent 分配的范围, Git 写入只由与用户沟通的 Main Agent 执行. 写入任何文件或执行 Git 写入前, 读取 `docs/agents/agent-writes.md`. 独立 Reviewer 只写 Main Agent 指定的报告路径, 该写入由 Reviewer 角色规则授权, 不受此读取要求约束.
 
 ## Output Text
 
