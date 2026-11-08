@@ -422,6 +422,8 @@ Under the hood, a Reviewer Role is a temporary Agent spawned by the active workf
 
 ### Use a third-party model for Claude Reviewers
 
+Claude turns inherit the environment of the client that started the background-agent manager, so `ANTHROPIC_API_KEY`, `CLAUDE_CONFIG_DIR`, and login state follow that client rather than the requesting Main, with role `env` overrides applied afterward.
+
 When you use Claude Code, any Reviewer whose `modelProvider` is set to `"anthropic"` runs through headless `claude -p`. If you want that Reviewer to use a third-party model that serves an Anthropic-compatible API, add an `env` object to the role in the `config.json` inside your ARW installation directory. ARW injects those environment variables into every `claude -p` turn:
 
 ```json

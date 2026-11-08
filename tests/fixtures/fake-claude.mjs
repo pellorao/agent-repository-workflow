@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Stand-in for `claude -p --input-format stream-json --output-format stream-json`; FAKE_CLAUDE_MODE selects ready, hang, fail or ask.
+// Stand-in for `claude -p --input-format stream-json --output-format stream-json`; FAKE_CLAUDE_MODE selects ready, hang, fail, fail-result, fail-success-result, fail-signal, fail-empty or ask.
 // Stdin user messages are handled in order: each is echoed and answered with one result; a `report: <path>` line writes that report.
 // `ask` holds the first message on a permission request until the manager answers it. The process exits when stdin ends.
 import {appendFileSync, mkdirSync, writeFileSync} from 'node:fs';
@@ -15,10 +15,14 @@ const emit = (/** @type {object} */ event) => process.stdout.write(`${JSON.strin
 log({args, cwd: process.cwd(), baseUrl: process.env.ANTHROPIC_BASE_URL, runId: process.env.ARW_BACKGROUND_AGENT_RUN_ID});
 emit({type: 'system', subtype: 'init'});
 const mode = process.env.FAKE_CLAUDE_MODE;
-if (mode === 'fail') {
+if (mode === 'fail' || mode === 'fail-result' || mode === 'fail-success-result') {
+    if (mode === 'fail-result') emit({type: 'result', is_error: true, result: 'Not logged in. Please run /login'});
+    if (mode === 'fail-success-result') emit({type: 'result', is_error: false, result: 'Review completed.'});
     process.stderr.write('model unavailable\n');
     process.exit(1);
 }
+if (mode === 'fail-empty') process.exit(0);
+if (mode === 'fail-signal') process.kill(process.pid, 'SIGTERM');
 if (mode === 'hang') setInterval(() => {}, 1000);
 /** @type {string[]} */ const queue = [];
 /** @type {(() => void)|null} */ let wake = null;

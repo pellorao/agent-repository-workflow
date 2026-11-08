@@ -420,6 +420,8 @@ Main Agent
 
 ### 让 Claude Reviewer 使用第三方模型
 
+Claude 回合继承启动后台管理进程的客户端环境, 因此 `ANTHROPIC_API_KEY`, `CLAUDE_CONFIG_DIR` 和登录状态来自该客户端, 而非请求审核的 Main, 角色 `env` 随后覆盖相应变量.
+
 在 Claude Code 环境下, 当某个 Reviewer 的 `modelProvider` 设为 `"anthropic"` 时, ARW 会通过无头模式 `claude -p` 运行它. 如果你想让它接入兼容 Anthropic API 的第三方模型服务, 可以在 ARW 安装目录下的用户级 `config.json` 中为对应角色添加 `env` 字段; 之后每轮启动 `claude -p` 时都会自动注入这些环境变量:
 
 ```json

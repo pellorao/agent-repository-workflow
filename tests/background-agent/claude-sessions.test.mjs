@@ -22,8 +22,9 @@ const fixture = async (t, environment = {}) => {
     const log = join(directory, 'calls.jsonl');
     await writeFile(join(directory, 'config.json'), JSON.stringify({configVersion: 3, editor: {command: 'code', args: ['{file}']}, reviewEditor: {command: 'code', args: ['{file}']},
         jira: {listLimit: 50}, reviewers: {'requirements-reviewer': {model: 'haiku', modelProvider: 'anthropic', env: {ANTHROPIC_BASE_URL: 'https://models.example'}}}}));
-    const sessions = createClaudeSessions({executable, runtimeDirectory,
-        environment: {...process.env, ...environment, FAKE_CLAUDE_LOG: log, CLAUDE_CONFIG_DIR: directory}});
+    /** @type {NodeJS.ProcessEnv} */
+    const processEnvironment = {...process.env, ...environment, FAKE_CLAUDE_LOG: log, CLAUDE_CONFIG_DIR: directory};
+    const sessions = createClaudeSessions({executable, runtimeDirectory, environment: processEnvironment});
     t.after(() => sessions.close());
     /** @type {Array<() => void>} */
     const waiters = [];
@@ -31,7 +32,7 @@ const fixture = async (t, environment = {}) => {
         writePaths: [join(directory, 'reports')], runId: 'run-1', onNotification: () => {for (const wake of waiters.splice(0)) wake();}});
     const changed = () => new Promise(resolve => {waiters.push(() => resolve(undefined));});
     const calls = async () => (await readFile(log, 'utf8')).trim().split('\n').map(line => JSON.parse(line));
-    return {directory, runtimeDirectory, sessions, open, changed, calls};
+    return {directory, runtimeDirectory, sessions, open, changed, calls, processEnvironment};
 };
 
 /** @param {Awaited<ReturnType<Awaited<ReturnType<typeof fixture>>['open']>>} session @param {string} threadId */
@@ -154,14 +155,22 @@ test('interrupting a Claude turn ends its process before the turn is reported', 
     assert.deepEqual(await readdir(f.runtimeDirectory), []);
 });
 
-test('a failed Claude process marks its turn failed', async t => {
-    const f = await fixture(t, {FAKE_CLAUDE_MODE: 'fail'});
-    const session = await f.open();
-    const {threadId} = await session.start({instructions: 'Reviewer rules.'});
-    await session.startTurn({threadId, handoff: 'Review it.'});
-    await settle(f, session, threadId, 'failed');
-    assert.equal((await root(session, threadId)).finalResponse, null);
-});
+for (const [mode, message] of [['fail', 'Claude process exited with code 1.'], ['fail-result', 'Not logged in. Please run /login'],
+    ['fail-success-result', 'Claude process exited with code 1.'], ['fail-signal', 'Claude process ended with signal SIGTERM.'], ['fail-empty', 'Claude process ended without a successful result.']]) {
+    test(`a failed Claude process preserves its reason (${mode}) and clears it on the next turn`, async t => {
+        const f = await fixture(t, {FAKE_CLAUDE_MODE: mode});
+        const session = await f.open();
+        const {threadId} = await session.start({instructions: 'Reviewer rules.'});
+        await session.startTurn({threadId, handoff: 'Review it.'});
+        await settle(f, session, threadId, 'failed');
+        assert.equal((await root(session, threadId)).finalResponse, null);
+        assert.deepEqual((await root(session, threadId)).turnError, {message});
+        delete f.processEnvironment.FAKE_CLAUDE_MODE;
+        await session.startTurn({threadId, handoff: 'Try again.'});
+        assert.equal((await root(session, threadId)).turnError, null);
+        await settle(f, session, threadId, 'idle');
+    });
+}
 
 test('a Claude turn whose process identity cannot be recorded ends its process and fails', async t => {
     const f = await fixture(t);

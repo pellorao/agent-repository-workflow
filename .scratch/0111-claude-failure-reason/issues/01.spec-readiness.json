@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0111:01",
+  "exception": {
+    "confirmedAt": "2026-11-08T18:48:50Z",
+    "reason": "用户明确授权分流 K 项: 既有规范已要求报告运行故障, 无新增设计决定, 本 effort 仅一个实施 issue, 无需治理设计."
+  },
+  "subject": {
+    "filePath": ".scratch/0111-claude-failure-reason/issues/01-preserve-claude-failure-reason.md",
+    "sha256": "345121c6dd498712479d407c4230170d0c96ab5cf9b29dd9196e8fde5a044d3b"
+  },
+  "result": "not-applicable"
+}

@@ -685,6 +685,22 @@ test('an unexpected extra Agent invalidates the result while ended historical me
     await runtime.close();
 });
 
+test('native turn failures preserve the diagnostic reason and the fixed prefix', async () => {
+    for (const reason of ['Not logged in. Please run /login', 'Claude process exited with code 1.', null]) {
+        const fixture = createReviewerRuntimeFixture();
+        const {runtime, observed} = await start(fixture);
+        const root = fixture.native.members.get(/** @type {string} */ (observed.threadId));
+        assert.ok(root);
+        root.state = 'failed';
+        root.turnStatus = 'failed';
+        root.turnError = reason === null ? null : {message: reason};
+        const ended = succeeded(await runtime.inspect({runId: observed.runId}));
+        assert.equal(ended.completion?.status, 'incomplete');
+        assert.equal(ended.completion?.reason, `The native Reviewer turn failed.${reason === null ? '' : ` ${reason}`}`);
+        await runtime.close();
+    }
+});
+
 test('an explicit incomplete final retires without a report', async () => {
     const fixture = createReviewerRuntimeFixture();
     const {runtime,observed} = await start(fixture);
