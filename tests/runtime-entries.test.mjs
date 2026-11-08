@@ -79,5 +79,5 @@ test('Node.js 24 emits no recommendation for direct installation entries', async
 
     assert.equal(installer.exitCode, 2);
     assert.equal(installer.stdout, '');
-    assert.equal(installer.stderr, 'Unknown or repeated option: --unknown.\n');
+    assert.equal(installer.stderr, 'Unknown or repeated option: --unknown.\nRun node install.mjs --help for usage.\n');
 });

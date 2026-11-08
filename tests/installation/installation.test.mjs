@@ -1687,6 +1687,7 @@ test('installer rejects unsupported and incomplete argument shapes before writin
 
     for (const args of cases) {
         const home = await createHome(t);
+        /** @type {string[]} */
         const messages = [];
         const result = await runInstaller(args, {
             environment: {HOME: home, USERPROFILE: home},
@@ -1698,7 +1699,7 @@ test('installer rejects unsupported and incomplete argument shapes before writin
 
         assert.equal(result, 2, args.join(' '));
         assert.deepEqual(await readdir(home), []);
-        assert.ok(messages.length > 0);
+        assert.match(messages.join('\n'), /\nRun node install\.mjs --help for usage\.$/);
     }
 });
 
@@ -1762,4 +1763,27 @@ test('real Installer installs current Source Checkout bytes without Git evidence
     assert.equal(version.stderr, '');
     assert.match(await readFile(join(installation, 'lib', 'arw-common', 'text-policy.mjs'), 'utf8'), /local checkout byte marker/);
     await assert.rejects(readFile(join(installation, 'package.json')), {code: 'ENOENT'});
+});
+
+test('help lists each accepted option without performing any installation operation', async () => {
+    for (const flag of ['--help', '-h']) {
+        /** @type {string[]} */ const output = [];
+        const code = await runInstaller([flag], {
+            stdout: text => output.push(text),
+            stderr: text => assert.fail(text),
+            prompt: async () => assert.fail('Help must not prompt.'),
+            createFilesystem: async () => assert.fail('Help must not access installation files.'),
+            acquireMaintenance: async () => assert.fail('Help must not acquire maintenance.'),
+        });
+        assert.equal(code, 0);
+        assert.equal(output.length, 1);
+        assert.match(output[0], /^Usage: node install\.mjs \[options\]/);
+        const optionLines = output[0].split('\n').filter(line => line.startsWith('  --'));
+        assert.deepEqual(optionLines.map(line => line.trim().split(/\s{2,}/)[0]), ['--help, -h', '--non-interactive', '--register-path true|false', '--reinitialize-config true|false', '--release-tag <tag>']);
+    }
+    /** @type {string[]} */ const errors = [];
+    assert.equal(await runInstaller(['--help', '--non-interactive'], {
+        stdout: text => assert.fail(text), stderr: text => errors.push(text),
+    }), 2);
+    assert.equal(errors.join('\n'), 'Unknown or repeated option: --help.\nRun node install.mjs --help for usage.');
 });

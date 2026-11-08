@@ -174,7 +174,7 @@ Whether you are implementing a feature or maintaining distribution scripts, you 
 Files at the repository root wire up the CLI, installer, toolchain configuration, and top-level Agent rules:
 
 - `arw.mjs`, `arw`, and `arw.cmd` are product entry points run directly from the source repository.
-- `install.mjs` and `uninstall.mjs` are installation entry points run from a cloned checkout.
+- `install.mjs` and `uninstall.mjs` are installation entry points run from a cloned checkout; passing only `--help` or `-h` prints usage and each accepted option to stdout and exits with `0`, while argument errors retain their message and exit code `2` and add a line pointing to `--help`.
 - `package.json`, `pnpm-lock.yaml`, and `tsconfig.json` respectively hold the product version and development commands, the actual development dependency tree, and strict JavaScript check configuration.
 - `config.install.json`, `release-manifest.json`, and `release-validation.json` respectively serve initial global configuration, installation payload, and release validation.
 - `AGENTS.md` and `CONTEXT.md` respectively provide the repository's Agent entry rules and durable domain vocabulary.

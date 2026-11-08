@@ -810,7 +810,7 @@ test('interactive confirmation and uninstaller usage follow the explicit command
             stdout: () => {},
         });
         assert.equal(invalid, 2, args.join(' '));
-        assert.match(errors.join('\n'), /Usage: node uninstall\.mjs/);
+        assert.match(errors.join('\n'), /\nRun node uninstall\.mjs --help for usage\.$/);
         assert.ok((await readdir(invalidInstallation)).includes('manifest.json'));
     }
 });
@@ -973,4 +973,27 @@ test('uninstallation removes an empty background Agent state directory with the 
 
     assert.equal((await runNonInteractive(home, ['--remove-config', 'true'])).result, 0);
     await assert.rejects(readdir(installationDirectory), {code: 'ENOENT'});
+});
+
+test('help lists each accepted option without performing any installation operation', async () => {
+    for (const flag of ['--help', '-h']) {
+        /** @type {string[]} */ const output = [];
+        const code = await runUninstaller([flag], {
+            stdout: text => output.push(text),
+            stderr: text => assert.fail(text),
+            prompt: async () => assert.fail('Help must not prompt.'),
+            createFilesystem: async () => assert.fail('Help must not access installation files.'),
+            acquireMaintenance: async () => assert.fail('Help must not acquire maintenance.'),
+        });
+        assert.equal(code, 0);
+        assert.equal(output.length, 1);
+        assert.match(output[0], /^Usage: node uninstall\.mjs \[options\]/);
+        const optionLines = output[0].split('\n').filter(line => line.startsWith('  --'));
+        assert.deepEqual(optionLines.map(line => line.trim().split(/\s{2,}/)[0]), ['--help, -h', '--non-interactive', '--remove-config true|false', '--stop-background-agents true|false']);
+    }
+    /** @type {string[]} */ const errors = [];
+    assert.equal(await runUninstaller(['--help', '--non-interactive'], {
+        stdout: text => assert.fail(text), stderr: text => errors.push(text),
+    }), 2);
+    assert.equal(errors.join('\n'), 'Unknown or repeated option: --help.\nRun node uninstall.mjs --help for usage.');
 });

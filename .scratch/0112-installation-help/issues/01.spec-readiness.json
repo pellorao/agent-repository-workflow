@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0112:01",
+  "exception": {
+    "confirmedAt": "2026-11-08T18:48:50Z",
+    "reason": "用户已明确授权分流 L 项的帮助输出变化及文档句子, 并确认无需新增治理设计, 单 effort 单实施 issue."
+  },
+  "subject": {
+    "filePath": ".scratch/0112-installation-help/issues/01-add-installation-help.md",
+    "sha256": "4e60c586d14cdd6f627339a9849ffe929e0baf79ebed4007668fa0a70c54470a"
+  },
+  "result": "not-applicable"
+}
