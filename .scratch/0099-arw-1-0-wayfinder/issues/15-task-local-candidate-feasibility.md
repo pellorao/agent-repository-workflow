@@ -6,3 +6,13 @@ Blocked by: issue:0099:02, issue:0099:05
 ##### Question
 
 用一批取自 ARW 公开仓库的带标签分流, 预检和输出检查案例 (约 100 到 200 条, 标签为高智能 Agent 或人工给出的正确判断), 在本机实测选定本地候选的判断准确率, 置信度分布, 单次延迟与显存占用; 用同一批案例对托管 Jev 测速度与准确率作为基准, 另可加入其他托管替代方案; 得出本地运行是否可行的事实. 托管服务只接收 ARW 公开仓库中的案例, 私有内容只给本地候选; 托管 API 凭据由用户放在仓库外的本地私有文件, 只由脚本引用, 不进入 Git, 日志, 报告和提示词, 这一步作为用户动手步骤先说明再做. 本地运行需要 GPU, 由 Main Agent 按本机资源规则另行排期, 下载和写盘量先报批.
+
+## Comments
+
+11-09 (worker): 不用 GPU 的案例集做法与首批进度. 实验要回答的指标与转正门槛见 [定义 Jev 类模型的评测与转正条件](11-define-evaluation-and-graduation.md), 调用接口见 [定义 Engine 调用 Jev 类模型的接入方式](16-define-judge-model-integration.md).
+
+- 来源只取 ARW 公开 GitHub 仓库 (`pellorao/agent-repository-workflow`, 已核对为 PUBLIC) 在固定提交上的内容, 不含本 effort; 因此托管基准与本地候选可以用同一批案例.
+- 每条案例: 类别 (分流, 预检, 输出检查), 一道 `choice` 或 `noul` 题 (`instructions` 与 `criteria`), `state` 文本, 标签, 标签来源 (仓库事实, 高智能 Agent, 人工), 来源提交与路径, 字符数, 哈希. 按类别分层, 40% 作校准集, 60% 作测试集; 另记输入长度与是否含路径和规则文本, 用于看长度与无关内容的影响.
+- 标签优先用仓库事实, 不需要人判: (1) 分流 "实施 issue 是否含设计决定" 用该 issue 的 Spec Readiness 记录 (`result` 为 `not-applicable` 即不含); (2) 预检用 `tests/fixtures/reviewer-capability/**` 四个场景 `expected.json` 中已标注的案例: 问题案例 109 条, 无问题案例 159 条 (11-09 计数), 均为英文合成材料. 问题案例的 `expectation` 描述真实缺陷, 无问题案例的 `expectation` 说明一处看似可疑的地方为什么没问题; 因此每条要写成一道 "这段内容是否存在下述问题" 的 `noul` 题, 无问题案例的 "下述问题" 按 `expectation` 与 `findingTerms` 写成那个诱饵问题, `state` 取 `evidence` 或 `placements` 所指行的上下文. 标签直接来自 fixture, 写题由 Agent 完成, 不改变标签. 仓库事实给不出标签的 (输出检查 "交付说明是否覆盖每条验收标准", Wayfinder issue 的类型) 由不低于 Main Agent 的 Agent 标注, 人工抽查 10%, 标注者拿不准的案例不收.
+- 首批 (仓库事实标签, 不用 GPU): 脚本 `~/projects/.tasks/ARW/v1/caseset/build.py` 在 `9cfd2b3` 上生成 71 条分流案例 (含设计决定 17, 不含 54; `state` 中位数 892 字符, 最长 3617), 写在任务目录的 `data/caseset/` (不进 Git). 只收 effort 0020 起的记录: 0001 到 0019 的 59 条全部走了就绪审核, 当时还没有 not-applicable 例外, 标签不反映判断. 为防泄题, 去掉了 `## What to build` 中提到 spec, 就绪审核或设计决定的行 (48 条有被去掉的行), 这可能也去掉了判断所需的内容, 要在抽查中确认. 标签是当时 Main Agent 的判断, 不是事后核实的真值, 类别也不平衡.
+- 待办: 预检约 50 条 (Reviewer 能力测试 fixture), 输出检查约 40 条 (Agent 标注), 合计达到 150 条左右; 抽查已生成案例的文本需要读取其他 effort 的内容, 按 `issue-tracking` 的 Effort reading scope 先由 Main Agent 取得用户授权. 脚本只输出计数, 本轮没有读取案例原文.
