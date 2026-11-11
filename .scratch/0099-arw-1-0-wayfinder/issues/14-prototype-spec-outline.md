@@ -1,7 +1,7 @@
 # 整理 ARW 1.0 规范的结构与验收场景
 
 Type: prototype
-Blocked by: issue:0099:06, issue:0099:07, issue:0099:08, issue:0099:09, issue:0099:10, issue:0099:11, issue:0099:13, issue:0099:16, issue:0099:18
+Blocked by: issue:0099:06, issue:0099:07, issue:0099:08, issue:0099:09, issue:0099:10, issue:0099:11, issue:0099:13, issue:0099:16, issue:0099:18, issue:0099:19
 
 ##### Question
 
