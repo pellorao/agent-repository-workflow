@@ -432,3 +432,22 @@ test('workflow CLI preserves and escapes platform remediation for both platforms
             && event.message === `[phase 2] platform-blocked platform=${platform}: Cannot evaluate. Repair path\\\\name\\nthen retry\\r\\0\\u0009\\u001b\\u0085`), JSON.stringify(result.events));
     }
 });
+
+test('workflow init platform errors list supported platforms', async () => {
+    /** @type {string[]} */ const diagnostics = [];
+    const result = await runArw(WORKFLOW_INIT_ARGS.map(arg => arg === 'codex' ? 'unsupported' : arg), {
+        stderr: message => diagnostics.push(message), stdout: () => assert.fail('Invalid platform must fail.'),
+    });
+    assert.equal(result, 2);
+    assert.match(diagnostics.join('\n'), /--platform must be one of: codex, claude-code\./);
+});
+
+test('workflow init rejects inapplicable choices with removal instructions', async t => {
+    for (const [option, value] of [['--transform-existing-agent-docs', 'false'], ['--orphan-code-map-readmes', 'delete']]) {
+        const repository = await createRepositoryWithMockGit(t);
+        const result = await run([...WORKFLOW_INIT_ARGS, option, value], repository, {workflowDependencies: createUpdateDependencies(ORIGINAL_MANAGED_AGENTS, repository)});
+        assert.equal(result.result, 2);
+        assert.ok(result.events.some(event => event.message.includes(`Remove ${option}.`)), JSON.stringify(result.events));
+        await assert.rejects(access(join(repository.root, 'arw-lock.json')));
+    }
+});

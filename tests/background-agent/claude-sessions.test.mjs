@@ -142,14 +142,16 @@ test('a running Claude turn takes instructions and pending permission requests t
 });
 
 test('interrupting a Claude turn ends its process before the turn is reported', async t => {
-    const f = await fixture(t, {FAKE_CLAUDE_MODE: 'hang'});
+    const f = await fixture(t, {FAKE_CLAUDE_MODE: 'usage-hang'});
     const session = await f.open();
     const {threadId} = await session.start({instructions: 'Reviewer rules.'});
     const {turnId} = await session.startTurn({threadId, handoff: 'Review it.'});
     assert.deepEqual(await session.idleFacts({rootThreadId: threadId}), {safe: false, known: true, reason: 'The Claude turn is running.'});
+    while (!(await session.snapshot({rootThreadId: threadId})).clientRequests?.length) await f.changed();
     await session.interruptGroup({rootThreadId: threadId, turnId});
     const member = await root(session, threadId);
     assert.equal(member.state, 'interrupted');
+    assert.deepEqual(member.usage, {inputTokens: 16, cachedInputTokens: 5, cacheWriteInputTokens: 1, outputTokens: 3, reasoningOutputTokens: 0, totalTokens: 19});
     assert.equal(member.finalResponse, null);
     assert.equal((await session.idleFacts({rootThreadId: threadId})).safe, true);
     assert.deepEqual(await readdir(f.runtimeDirectory), []);

@@ -199,12 +199,14 @@ arw text check
 arw text fix
 arw terms check [--strict] [--include <repository-relative-directory>]...
 arw language inspect <path>...
-arw workflow init [--non-interactive (--reuse-profile | --platform <platform>... --domain-layout <layout> --code-map-root [<root>]... --code-map-include [<glob>]... --code-map-exclude [<glob>]...) --transform-existing-agent-docs <true|false> --orphan-code-map-readmes <delete|demote>]
+arw workflow init [--non-interactive (--reuse-profile | --platform <platform>... --domain-layout <layout> --code-map-root [<root>]... --code-map-include [<glob>]... --code-map-exclude [<glob>]...) [--transform-existing-agent-docs <true|false>] [--orphan-code-map-readmes <delete|demote>]]
 arw workflow update [--non-interactive] [--dry-run] [--transform-existing-agent-docs <true|false>]
 arw workflow verify
 arw workflow remove [--non-interactive --platform-agent-configs <retain|delete> --arwignore <retain|delete> --code-maps <retain|delete> --mixed-agent-documents <retain|delete>]
 arw --version
 ```
+
+`arw workflow init` 的 `--transform-existing-agent-docs` 和 `--orphan-code-map-readmes` 仅在适用时必填, 不适用时省略.
 
 `jira`, `application`, `module` 和 `submodule` 命名空间同样是公开命令, 由 Application 与 JIRA 长期规格 (`../agent-repository-workflow-application-jira/spec.md`) 的 Public commands, Application and Module issue association, Module correction check 和 Submodule branch switching 节拥有; `jl`, `jo`, `ssb` 分别是 `jira list`, `jira open`, `submodule switch-branch` 的命令别名. 只在源码仓库中使用的维护命令不是公开的 `arw` 操作. 开发, 安装和发布规格以及 `upstream-sync` Skill 分别列出这些命令的入口与生命周期归属.
 

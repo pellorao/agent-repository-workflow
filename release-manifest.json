@@ -93,6 +93,7 @@
     "lib/common/git-ignore.mjs",
     "lib/common/git-process.mjs",
     "lib/common/json.mjs",
+    "lib/common/markdown-fences.mjs",
     "lib/common/markdown-visible-text.mjs",
     "lib/common/path-pattern.mjs",
     "lib/common/process-warnings.mjs",

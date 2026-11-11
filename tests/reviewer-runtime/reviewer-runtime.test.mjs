@@ -108,6 +108,8 @@ test('a provisional missing report stays live, then a native completion retires 
     await retired;
     assert.deepEqual(retiredRuns, [accepted.runId]);
     assert.equal(runtime.holdsRun(accepted.runId), false);
+    failed(await runtime.execute({operation: 'interrupt_agent', input: {runId: accepted.runId, turnId: active.turnId}}), 'turn-mismatch');
+    failed(await runtime.execute({operation: 'interrupt_agent', input: {runId: 'never-started', turnId: active.turnId}}), 'run-not-found');
     assert.equal(fixture.native.sessions[0].attached, false);
     const managed = await managedBinding(fixture, active, 'running');
     const cold = succeeded(await runtime.inspect({runId: accepted.runId,managed}));

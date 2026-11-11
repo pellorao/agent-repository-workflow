@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0117:01",
+  "exception": {
+    "confirmedAt": "2026-11-11T18:18:40Z",
+    "reason": "用户明确指定 Issue P 无设计决定, 无 spec, 单 issue effort, Spec Readiness not-applicable. 仅实施本轮明确列出的行为修复."
+  },
+  "subject": {
+    "filePath": ".scratch/0117-backlog-behavior-fixes/issues/01-behavior-fixes.md",
+    "sha256": "51c3170c279e22c02f7a17e2ce41c4b2f0d9837584334411f785ad41078081ed"
+  },
+  "result": "not-applicable"
+}

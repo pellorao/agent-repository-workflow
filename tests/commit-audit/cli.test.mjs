@@ -198,6 +198,7 @@ test('verify --non-implementation accepts planning records and rejects other or 
     await writeArtifact(repository.root, '0001-plan', 'spec.md', '# Spec\n\nMore.\n');
     await mkdir(join(repository.root, '.scratch', '0001-plan', 'research'), {recursive: true});
     await writeFile(join(repository.root, '.scratch', '0001-plan', 'research', 'notes.txt'), 'notes\n', 'utf8');
+    await writeFile(join(repository.root, '.scratch', '0001-plan', 'research', 'image.png'), Buffer.from([0x89, 0x50, 0x4e, 0x47, 13, 10, 0x1a, 10, 0]));
     await runGit(repository.root, ['add', '.']);
     assert.equal((await verify()).result, 0);
 

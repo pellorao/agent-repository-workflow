@@ -182,6 +182,21 @@ test('start returns an accepted message before native root creation or task deli
   assert.equal(fake.native.openCount,1);
 });
 
+test('spawn rejects incomplete recovery settings before accepting a task', async t => {
+  const fake = await harness(t);
+  for (const key of ['serviceTier', 'config']) {
+    const incomplete = {...settings};
+    delete incomplete[/** @type {'serviceTier'|'config'} */ (key)];
+    const reply = await fake.start('main-1', incomplete);
+    assert.equal(reply.status, 'failed');
+    if (reply.status !== 'failed') assert.fail('Expected invalid settings to fail.');
+    assert.match(reply.error.message, /serviceTier and config/);
+  }
+  assert.equal(fake.native.openCount, 0);
+  const valid = result(await fake.start());
+  await waitDelivered(fake.stateStore, valid.messageId);
+});
+
 test('preparation and local validation fail definitely, while an attempted native turn remains unknown',async t=>{
   /** @type {Array<{options:NonNullable<Parameters<typeof harness>[1]>,expected:'failed'|'unknown',attempted:boolean}>} */
   const cases=[
@@ -194,6 +209,16 @@ test('preparation and local validation fail definitely, while an attempted nativ
     const accepted=result(await fake.start());
     await waitFailedDelivery(fake.stateStore,accepted.messageId,expected);
     assert.equal(fake.native.turnInputs.length,attempted?1:0);
+    let observed = result(await fake.execute(accepted.runId,'list_agents'));
+    for(let attempt=0;attempt<50 && observed.state!=='exited';attempt++){
+      await tick();
+      observed=result(await fake.execute(accepted.runId,'list_agents'));
+    }
+    assert.equal(typeof observed.providerError?.message, 'string');
+    assert.equal(observed.state, 'exited');
+    assert.equal(observed.taskState, 'ended');
+    const waited=result(await fake.execute(accepted.runId,'wait_agent',{cursor:observed.cursor}));
+    assert.equal(waited.state,'exited');
   }
 });
 

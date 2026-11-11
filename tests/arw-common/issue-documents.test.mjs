@@ -2,12 +2,14 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
+    findUnfencedLineIndexes,
     hasLegacyIssueShape,
     isIssueBlocked,
     isIssueExecutable,
     migrateIssueDocuments,
     readDownstreamChanges,
     readIssueSubject,
+    readIssueMetadata,
     readIssueDocuments as readIssueDocumentsImplementation,
     replaceDownstreamChanges,
 } from '../../lib/arw-common/issue-documents.mjs';
@@ -616,4 +618,15 @@ test('legacy issue shape ignores Type and bold field lines inside fenced code', 
     assert.equal(hasLegacyIssueShape(legacy), true);
     assert.equal(hasLegacyIssueShape(fenced), true);
     assert.equal(hasLegacyIssueShape('# Modern\n\nStatus: completed\n\n```text\nType: task\n**Status:** open\n```\n'), false);
+});
+
+test('nested fences preserve subject boundaries, metadata and checked task markers', () => {
+    const example = '````md\n```\n## Comments\n~~~\nStatus: completed\n- [x] Example.\n`````info\n````';
+    const subject = `## What to build\n\n${example}\n\n## Acceptance criteria\n\n${example}\n- [x] Real.\n\n`;
+    const text = `# Implement\n\nStatus: ready-for-agent\n\n${subject}## Comments\n\nActual comments.\n`;
+    const read = readIssueSubject({issuePath: '.scratch/0001-work/issues/01-task.md', text});
+    assert.equal(read.subjectContent, subject);
+    assert.equal(read.subjectIdentityContent, subject.replace('- [x] Real.', '- [ ] Real.'));
+    assert.deepEqual(findUnfencedLineIndexes(text.split('\n'), line => line === '## Comments'), [text.split('\n').lastIndexOf('## Comments')]);
+    assert.equal(readIssueMetadata(text).statusValue, 'ready-for-agent');
 });

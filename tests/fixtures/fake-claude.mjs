@@ -61,7 +61,11 @@ while (queue.length || !ended) {
     emit({type: 'stream_event', event: {type: 'message_start', message: {id: `msg-${sessionId}-${prompt.length}`, usage: {input_tokens: 10, cache_read_input_tokens: 5, cache_creation_input_tokens: 1}}}});
     emit({type: 'stream_event', event: {type: 'content_block_delta', delta: {type: 'text_delta', text: '{'}}});
     emit({type: 'stream_event', event: {type: 'message_delta', usage: {output_tokens: 3}}});
-    emit({type: 'assistant', message: {content: [{type: 'text', text: '{"status":"ready"}'}]}});
+    if (mode === 'usage-hang') {
+        emit({type: 'control_request', request_id: 'usage-ready', request: {subtype: 'can_use_tool', tool_name: 'Bash', input: {command: 'git status'}}});
+        continue;
+    }
+    emit({type: 'assistant', message: {id: `msg-${sessionId}-${prompt.length}`, usage: {input_tokens: 10, cache_read_input_tokens: 5, cache_creation_input_tokens: 1, output_tokens: 3}, content: [{type: 'text', text: '{"status":"ready"}'}]}});
     emit({type: 'result', subtype: 'success', is_error: false, result: '{"status":"ready"}',
         usage: {input_tokens: 10, cache_read_input_tokens: 5, cache_creation_input_tokens: 1, output_tokens: 3}});
 }

@@ -10,7 +10,7 @@ name: arw-commands
 ## Commands
 
 ```text
-arw workflow init [--non-interactive (--reuse-profile | --platform <platform>... --domain-layout <layout> --code-map-root [<root>]... --code-map-include [<glob>]... --code-map-exclude [<glob>]...) --transform-existing-agent-docs <true|false> --orphan-code-map-readmes <delete|demote>]
+arw workflow init [--non-interactive (--reuse-profile | --platform <platform>... --domain-layout <layout> --code-map-root [<root>]... --code-map-include [<glob>]... --code-map-exclude [<glob>]...) [--transform-existing-agent-docs <true|false>] [--orphan-code-map-readmes <delete|demote>]]
 arw workflow update [--non-interactive] [--dry-run] [--transform-existing-agent-docs <true|false>]
 arw workflow verify
 arw workflow remove [--non-interactive --arwignore <retain|delete> --code-maps <retain|delete> --mixed-agent-documents <retain|delete> --platform-agent-configs <retain|delete>]
@@ -35,6 +35,8 @@ arw commit-audit prepare --input <absolute-input-path>
 arw commit-audit verify [--non-implementation]
 arw --version
 ```
+
+`--transform-existing-agent-docs` 和 `--orphan-code-map-readmes` 仅在适用时必填, 不适用时省略.
 
 非交互 `arw workflow init` 要么用 `--reuse-profile`, 要么给出完整 Profile 替换: `--platform`, `--domain-layout` 和三个 `--code-map-*` 必须一起给出, 选项不带值表示空列表, 例如:
 
