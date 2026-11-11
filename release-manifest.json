@@ -69,6 +69,7 @@
     "lib/background-agent/message-store.mjs",
     "lib/background-agent/model-catalog.mjs",
     "lib/background-agent/native-measurement.mjs",
+    "lib/background-agent/native-session.mjs",
     "lib/background-agent/presentation.mjs",
     "lib/background-agent/private-state.mjs",
     "lib/background-agent/process-identity.mjs",

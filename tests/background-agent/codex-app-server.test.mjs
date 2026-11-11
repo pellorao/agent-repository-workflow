@@ -10,9 +10,9 @@ import {cloneJsonValue} from '../../lib/common/json.mjs';
 import {securePrivateStatePath} from '../../lib/background-agent/private-state.mjs';
 import {createTemporaryDirectory} from '../helpers/cleanup.mjs';
 
-/** @typedef {import('../../lib/background-agent/codex-app-server.mjs').NativeSettings} NativeSettings */
-/** @typedef {import('../../lib/background-agent/codex-app-server.mjs').NativeNotification} NativeNotification */
-/** @typedef {import('../../lib/background-agent/codex-app-server.mjs').NativeSpawnOptions} NativeSpawnOptions */
+/** @typedef {import('../../lib/background-agent/native-session.mjs').NativeSettings} NativeSettings */
+/** @typedef {import('../../lib/background-agent/native-session.mjs').NativeNotification} NativeNotification */
+/** @typedef {import('../../lib/background-agent/native-session.mjs').NativeSpawnOptions} NativeSpawnOptions */
 
 const rootId = 'root-native-id';
 const cwd = '/scenes/current';

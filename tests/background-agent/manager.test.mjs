@@ -35,16 +35,16 @@ function nativeHarness({blockedStart=false,unsafeIdle=false,failStart=false,inco
   const resumedThreads=[];
   /** @type {string[]} */
   const turnInputs=[];
-  /** @type {import('../../lib/background-agent/codex-app-server.mjs').NativeSettings[]} */
+  /** @type {import('../../lib/background-agent/native-session.mjs').NativeSettings[]} */
   const openedSettings=[];
-  /** @type {Array<import('../../lib/background-agent/codex-app-server.mjs').NativeProviderConnection|undefined>} */
+  /** @type {Array<import('../../lib/background-agent/native-session.mjs').NativeProviderConnection|undefined>} */
   const openedProviderConnections=[];
   /** @type {(() => void)|null} */
   let releaseStart=null;
   const startGate=blockedStart?new Promise(resolve=>{releaseStart=()=>resolve(undefined);}):Promise.resolve();
-  /** @type {Map<string,{id:string,ended:boolean,active:boolean,turnId:string|null,turnCount:number,onNotification:(notification:import('../../lib/background-agent/codex-app-server.mjs').NativeNotification)=>void}>} */
+  /** @type {Map<string,{id:string,ended:boolean,active:boolean,turnId:string|null,turnCount:number,onNotification:(notification:import('../../lib/background-agent/native-session.mjs').NativeNotification)=>void}>} */
   const roots=new Map();
-  const nativeSessions=/** @type {import('../../lib/background-agent/codex-app-server.mjs').NativeSessions} */ ({
+  const nativeSessions=/** @type {import('../../lib/background-agent/native-session.mjs').NativeSessions} */ ({
     async ensureServer({onPreviousExit}={}){
       if(serverExited){
         if(!onPreviousExit)throw new Error('Earlier App Server exit requires provider recovery before restart.');

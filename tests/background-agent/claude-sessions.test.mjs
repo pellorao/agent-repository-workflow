@@ -77,7 +77,12 @@ test('a Claude turn runs one restricted stream-json process and later turns resu
         const index = created.args.indexOf(flag) + 1;
         assert.deepEqual(created.args.slice(index, index + values.length), values, flag);
     }
-    assert.equal(created.args.at(-1), `Edit(/${join(f.directory, 'reports')}/**)`);
+    const permissions = first.contexts[0].permissionsRules;
+    const args = /** @type {string[]} */ (created.args);
+    assert.deepEqual(args.flatMap((value, index) => value === '--add-dir' ? [args[index + 1]] : []),
+        permissions.filter(rule => rule.path !== f.directory).map(rule => rule.path));
+    assert.deepEqual(args.filter(value => value.startsWith('Edit(')),
+        permissions.filter(rule => rule.access === 'write').map(rule => `Edit(/${rule.path}/**)`));
     assert.ok(created.args.includes(`Bash(git -C ${f.directory} ls-tree:*)`));
     assert.ok(['--safe-mode', '--replay-user-messages', '--include-partial-messages'].every(flag => created.args.includes(flag)));
     assert.equal(resumed.args[resumed.args.indexOf('--resume') + 1], threadId);

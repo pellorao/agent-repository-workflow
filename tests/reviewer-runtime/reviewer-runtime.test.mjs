@@ -778,8 +778,8 @@ test('an unexpected native service exit keeps persisted Reviewer end unknown and
     const clock=createReviewerTestClock();
     const scripted=createScriptedReviewerSessions();
     /** @type {number|null} */ let exitedAt=null;
-    /** @type {((notification:import('../../lib/background-agent/codex-app-server.mjs').NativeNotification)=>void)|null} */ let notify=null;
-    /** @type {import('../../lib/background-agent/codex-app-server.mjs').NativeSessions} */
+    /** @type {((notification:import('../../lib/background-agent/native-session.mjs').NativeNotification)=>void)|null} */ let notify=null;
+    /** @type {import('../../lib/background-agent/native-session.mjs').NativeSessions} */
     const nativeSessions={
         async ensureServer(){},async observeServer(){return exitedAt===null?'running':'ended';},
         async close(){return{environmentState:'exited',previousProcessState:'ended'};},
@@ -787,7 +787,7 @@ test('an unexpected native service exit keeps persisted Reviewer end unknown and
             notify=input.onNotification;
             const session=await scripted.nativeSessions.open(input);
             const startedAt=clock.now();
-            return /** @type {import('../../lib/background-agent/codex-app-server.mjs').NativeSession} */(new Proxy(session,{get(target,property,receiver){
+            return /** @type {import('../../lib/background-agent/native-session.mjs').NativeSession} */(new Proxy(session,{get(target,property,receiver){
                 if(property==='snapshot')return async(/** @type {Parameters<typeof target.snapshot>[0]} */ request)=>{
                     const facts=await target.snapshot(request);
                     return {...facts,environmentState:exitedAt===null?facts.environmentState:/** @type {const} */('exited'),
@@ -816,7 +816,7 @@ test('an unexpected native service exit keeps persisted Reviewer end unknown and
     clock.advance(200);exitedAt=clock.now();
     scripted.backgroundTerminals.set(/** @type {string} */(active.threadId),new Set(['unverified-tool']));
     clock.advance(300);assert.ok(notify);
-    /** @type {(notification:import('../../lib/background-agent/codex-app-server.mjs').NativeNotification)=>void} */(notify)({type:'exited',reason:'Native service exited.'});
+    /** @type {(notification:import('../../lib/background-agent/native-session.mjs').NativeNotification)=>void} */(notify)({type:'exited',reason:'Native service exited.'});
     const ended=succeeded(await runtime.inspect({runId:accepted.runId}));
     assert.equal(ended.state,'failed');assert.equal(ended.completion?.status,'incomplete');
     assert.equal(ended.measurement?.wallClockMs,null);assert.equal(ended.measurement?.workDuration.durationMs,200);

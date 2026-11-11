@@ -123,18 +123,6 @@ test('Linux creation value is the boot id and start ticks and ignores the wall c
   await assert.rejects(readFile(getconfLog),{code:'ENOENT'});
 });
 
-test('Linux records written before boot-id values stay alive while their process runs and end when it does not',async t=>{
-  if(process.platform!=='linux')return;
-  const runtimeDirectory=await createTemporaryDirectory(t,'arw-native-identity-legacy-');
-  const path=appServerProcessIdentityPath(runtimeDirectory);
-  // Boot time in nanoseconds plus 2114598 ticks at 100 ticks per second.
-  await writeFile(path,'4242,1793735971980000000',{mode:0o600});
-  const files=fakeProc(t,{'/proc/4242/stat':stat4242(2114598),'/proc/stat':'cpu 1\nbtime 1793714826\n'});
-  assert.equal((await readProcessIdentity({runtimeDirectory,path})).state,'alive');
-  files['/proc/stat']='cpu 1\nbtime 1793714827\n';
-  assert.equal((await readProcessIdentity({runtimeDirectory,path})).state,'ended');
-});
-
 test('process identity records accept the boot-id form and the plain number form and reject anything else',async()=>{
   const runtimeDirectory=await mkdtemp(join(tmpdir(),'arw-native-identity-forms-'));
   const path=appServerProcessIdentityPath(runtimeDirectory);

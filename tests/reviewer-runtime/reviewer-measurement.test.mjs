@@ -7,7 +7,7 @@ import {
     checkpointReviewerMeasurement,createReviewerMeasurement, observeReviewerMeasurement, reviewerMeasurementResult,
 } from '../../lib/reviewer-runtime/reviewer-measurement.mjs';
 
-/** @typedef {import('../../lib/background-agent/codex-app-server.mjs').NativeMember} NativeMember */
+/** @typedef {import('../../lib/background-agent/native-session.mjs').NativeMember} NativeMember */
 /** @param {string} threadId @param {number | null} value @returns {NativeMember} */
 const member = (threadId, value) => ({
     threadId, parentThreadId: threadId === 'root' ? null : 'root', hasConversationHistory: true, state: 'idle', turnId: 'turn',

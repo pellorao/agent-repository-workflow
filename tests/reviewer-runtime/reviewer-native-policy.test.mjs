@@ -15,7 +15,7 @@ test('Reviewer declines each native interaction without interrupting its active 
     for (const [method, expected, needsSteer] of cases) {
         /** @type {{operation:string, input:Record<string,unknown>}[]} */
         const calls = [];
-        const session = /** @type {import('../../lib/background-agent/codex-app-server.mjs').NativeSession} */ (/** @type {unknown} */ ({
+        const session = /** @type {import('../../lib/background-agent/native-session.mjs').NativeSession} */ (/** @type {unknown} */ ({
             async respond(/** @type {Record<string,unknown>} */ input) {calls.push({operation:'respond',input});return {accepted:true};},
             async rejectRequest(/** @type {Record<string,unknown>} */ input) {calls.push({operation:'rejectRequest',input});return {accepted:true};},
             async steer(/** @type {Record<string,unknown>} */ input) {calls.push({operation:'steer',input});return {turnId:'active-turn'};},
@@ -44,7 +44,7 @@ test('Reviewer declines each native interaction without interrupting its active 
 
 test('Reviewer does not answer an interaction without a verifiable active turn', async () => {
     let answered = false;
-    const session = /** @type {import('../../lib/background-agent/codex-app-server.mjs').NativeSession} */ (/** @type {unknown} */ ({
+    const session = /** @type {import('../../lib/background-agent/native-session.mjs').NativeSession} */ (/** @type {unknown} */ ({
         async snapshot() {return {factsComplete:false,members:[]};},
         async respond() {answered=true;return {accepted:true};},
         async rejectRequest() {answered=true;return {accepted:true};},
@@ -56,7 +56,7 @@ test('Reviewer does not answer an interaction without a verifiable active turn',
 test('an MCP request without turnId uses only the observed active root turn for its reason', async () => {
     /** @type {{operation:string,input:Record<string,unknown>}[]} */
     const calls=[];
-    const session = /** @type {import('../../lib/background-agent/codex-app-server.mjs').NativeSession} */ (/** @type {unknown} */ ({
+    const session = /** @type {import('../../lib/background-agent/native-session.mjs').NativeSession} */ (/** @type {unknown} */ ({
         async snapshot() {return {factsComplete:true,members:[{threadId:'reviewer-root',state:'active',turnId:'observed-turn'}]};},
         async respond(/** @type {Record<string,unknown>} */ input) {calls.push({operation:'respond',input});return {accepted:true};},
         async steer(/** @type {Record<string,unknown>} */ input) {calls.push({operation:'steer',input});return {turnId:'observed-turn'};},

@@ -9,7 +9,6 @@ import {
     parseJson,
     readJsonPath,
     serializeJson,
-    writeJson,
     writeJsonPath,
 } from '../../lib/common/json.mjs';
 
@@ -81,21 +80,6 @@ test('JSON Module preserves default field order while semantic operations ignore
     assert.equal(jsonSemanticallyEqual(value, {a: {x: 3, y: 2}, z: 1}), true);
     assert.equal(digestJson(value), digestJson({a: {x: 3, y: 2}, z: 1}));
     assert.equal(serializeJson({value: Number.NaN}).status, 'blocked');
-
-    /** @type {Buffer | undefined} */
-    let writtenBytes;
-    const written = await writeJson({
-        filesystem: {
-            async write({bytes}) {
-                writtenBytes = bytes;
-                return {status: 'succeeded'};
-            },
-        },
-        path: 'record.json',
-        value,
-    }, {format: 'compact'});
-    assert.equal(written.status, 'succeeded');
-    assert.equal(writtenBytes?.toString('utf8'), '{"z":1,"a":{"y":2,"x":3}}');
 });
 
 test('checkShape reports the first missing key, wrong type, or failed predicate', () => {

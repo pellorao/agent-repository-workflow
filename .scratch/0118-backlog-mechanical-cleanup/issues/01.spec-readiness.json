@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0118:01",
+  "exception": {
+    "confirmedAt": "2026-11-11T18:58:58Z",
+    "reason": "用户明确授权本轮单 issue effort 的机械清理不需要治理设计."
+  },
+  "subject": {
+    "filePath": ".scratch/0118-backlog-mechanical-cleanup/issues/01-mechanical-cleanup.md",
+    "sha256": "06e801dcc1a944aaf24ca25cfbe5484edea7a467093bb6547cb3171ce0de3471"
+  },
+  "result": "not-applicable"
+}

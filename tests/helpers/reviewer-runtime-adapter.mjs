@@ -4,12 +4,12 @@ import {cloneJsonValue} from '../../lib/common/json.mjs';
 import {createUsage} from '../../lib/background-agent/usage.mjs';
 import {createScriptedScopedFilesystemFactory} from './scripted-filesystem.mjs';
 
-/** @typedef {import('../../lib/background-agent/codex-app-server.mjs').NativeMember} NativeMember */
-/** @typedef {import('../../lib/background-agent/codex-app-server.mjs').NativeSession} NativeSession */
-/** @typedef {import('../../lib/background-agent/codex-app-server.mjs').NativeSessions} NativeSessions */
-/** @typedef {import('../../lib/background-agent/codex-app-server.mjs').NativeSnapshot} NativeSnapshot */
-/** @typedef {import('../../lib/background-agent/codex-app-server.mjs').NativeSettings} NativeSettings */
-/** @typedef {import('../../lib/background-agent/codex-app-server.mjs').NativeNotification} NativeNotification */
+/** @typedef {import('../../lib/background-agent/native-session.mjs').NativeMember} NativeMember */
+/** @typedef {import('../../lib/background-agent/native-session.mjs').NativeSession} NativeSession */
+/** @typedef {import('../../lib/background-agent/native-session.mjs').NativeSessions} NativeSessions */
+/** @typedef {import('../../lib/background-agent/native-session.mjs').NativeSnapshot} NativeSnapshot */
+/** @typedef {import('../../lib/background-agent/native-session.mjs').NativeSettings} NativeSettings */
+/** @typedef {import('../../lib/background-agent/native-session.mjs').NativeNotification} NativeNotification */
 /** @typedef {Awaited<ReturnType<import('../../lib/background-agent/manager.mjs').ManagedNativeSessions['open']>>} ManagedNativeSession */
 /** @typedef {import('../../lib/background-agent/manager.mjs').ManagedObservation} ManagedObservation */
 /** @typedef {{runId:string, notifications:ManagedObservation['notifications'], cursor:number, finished:boolean, waiters:Set<() => void>}} ScriptedQueue */

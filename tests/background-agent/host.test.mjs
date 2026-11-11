@@ -13,8 +13,8 @@ import {createScriptedReviewerSessions} from '../helpers/reviewer-runtime-adapte
 import {createTemporaryDirectory} from '../helpers/cleanup.mjs';
 import {strataTiers, writeStrataInstallation} from '../helpers/strata-installation.mjs';
 
-/** @typedef {import('../../lib/background-agent/codex-app-server.mjs').NativeSessions} NativeSessions */
-/** @typedef {import('../../lib/background-agent/codex-app-server.mjs').NativeUserMessage} NativeUserMessage */
+/** @typedef {import('../../lib/background-agent/native-session.mjs').NativeSessions} NativeSessions */
+/** @typedef {import('../../lib/background-agent/native-session.mjs').NativeUserMessage} NativeUserMessage */
 
 /** @param {import('../../lib/background-agent/machine.mjs').RuntimeResult} response */
 const succeeded = response => {
@@ -46,7 +46,7 @@ const scriptedNativeSessions = () => {
             const record = (/** @type {string} */ threadId, /** @type {string} */ turnId, /** @type {string} */ text) => {
                 userMessages.push({itemId: `native-input-${++nextItem}`, threadId, turnId, text, recordSequence: nextItem});
             };
-            return /** @type {import('../../lib/background-agent/codex-app-server.mjs').NativeSession} */ (new Proxy(session, {
+            return /** @type {import('../../lib/background-agent/native-session.mjs').NativeSession} */ (new Proxy(session, {
                 get(target, property, receiver) {
                     if (property === 'startTurn') return async (/** @type {{threadId:string,handoff:string}} */ request) => {
                         const result = await target.startTurn(request);
