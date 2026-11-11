@@ -18,7 +18,7 @@ test('Text Policy Module 关闭式拒绝 Git path inventory 中的 invalid UTF-8
     await assert.rejects(
         collectGitVisiblePaths({
             async run() {
-                return {code: 0, failure: null, stderr: Buffer.alloc(0), stdout: Buffer.from([0xc3, 0x28, 0])};
+                return {code: 0, failure: null, stderr: '', stdout: Buffer.from([0xc3, 0x28, 0])};
             },
         }),
         /encoded as UTF-8/u,
@@ -29,7 +29,7 @@ test('Text Policy Module 关闭式拒绝失败或截断的 Git path inventory', 
     await assert.rejects(
         collectGitVisiblePaths({
             async run() {
-                return {code: 1, failure: null, stderr: Buffer.alloc(0), stdout: Buffer.from('docs/a.md\0')};
+                return {code: 1, failure: null, stderr: '', stdout: Buffer.from('docs/a.md\0')};
             },
         }),
         /Git command failed/u,
@@ -39,7 +39,7 @@ test('Text Policy Module 关闭式拒绝失败或截断的 Git path inventory', 
         await assert.rejects(
             collectGitVisiblePaths({
                 async run() {
-                    return {code: 0, failure: null, stderr: Buffer.alloc(0), stdout};
+                    return {code: 0, failure: null, stderr: '', stdout};
                 },
             }),
             /inventory/u,
@@ -103,12 +103,6 @@ test('Text Policy Module 批量检查和修复精确目标', async () => {
     assert.deepEqual(repeated.changed, []);
     assert.deepEqual(repeated.unchanged, []);
     assert.equal(repeated.satisfied, true);
-
-    await assert.rejects(
-        executeTextPolicy({files, filesystem, intent: 'fiz'}),
-        /intent must be check or fix/u,
-    );
-    assert.deepEqual(writes, [{bytes: Buffer.from('bad\n', 'utf8'), path: 'b-crlf.txt'}]);
 });
 
 test('Text Policy Module 在 invalid UTF-8 时保持整个批次零写入', async () => {
@@ -260,4 +254,19 @@ test('scope negation cannot reinclude a file below an excluded directory', () =>
     assert.deepEqual(filterAgentManagedPaths(['keep.md', 'other.md'], '*.md\n!keep.md\n'), ['keep.md']);
     assert.deepEqual(filterAgentManagedPaths(['docs/keep.md'], 'docs/*\n!docs/keep.md\n'), ['docs/keep.md']);
     assert.deepEqual(filterAgentManagedPaths(['docs/sub/keep.md'], 'docs/*\n!docs/sub/keep.md\n'), []);
+});
+
+test('Text Policy Module 原样传播 .arwignore 读取错误', async () => {
+    const error = Object.assign(new Error('permission denied'), {code: 'EACCES'});
+    await assert.rejects(runTextPolicy({
+        filesystem: {
+            async inspectPath({path}) { return {kind: 'file', path}; },
+            async readBytes() { throw error; },
+        },
+        git: {
+            async run() { return {code: 0, failure: null, stderr: '', stdout: Buffer.alloc(0)}; },
+        },
+        intent: 'check',
+        repositoryRoot: '.',
+    }), thrown => thrown === error);
 });

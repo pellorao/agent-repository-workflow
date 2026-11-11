@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0116:01",
+  "exception": {
+    "confirmedAt": "2026-11-11T08:58:30Z",
+    "reason": "用户在本轮分流记录中明确授权 Issue N 无治理设计, 一个 effort 一个实施 issue; 唯一行为变化为 .arwignore 读取错误直接传播."
+  },
+  "subject": {
+    "filePath": ".scratch/0116-text-policy-cleanup/issues/01-text-policy-cleanup.md",
+    "sha256": "6e5452b407bb5a619d724e8a0263366bbdaf4f433756ff84169c10157aeceecb"
+  },
+  "result": "not-applicable"
+}
