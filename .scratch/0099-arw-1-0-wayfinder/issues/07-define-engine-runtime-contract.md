@@ -14,11 +14,12 @@ Engine 提供与用户对话的入口, 并按用户选择的 Main Agent 模型�
 
 ### Engine process and roles
 
-- Engine 是每个用户一个的常驻进程, 由现有用户级后台管理进程扩展而来, 共用它的安装目录, 私有 SQLite 状态库, 两个 harness 的会话层 (Codex App Server 线程, 每回合一个 `claude -p` 进程, 同一 `NativeSessions` 接口), 容量与崩溃识别 (PID 加进程创建时间). 理由: 这些正是 Engine 驱动所需的会话控制, 已在两个 harness 上对等实现; 另起进程会复制状态库, 容量和恢复. 代价: 一个进程故障影响该用户所有仓库的流程, 与现在后台 Agent 的情况相同.
-- 对话入口是 Engine 的客户端, 不持有流程状态, 可以断开再连接; 同时可以有多个入口连接 (例如两个终端).
-- 开工条件: Engine 启动后先执行判断模型的开启脚本 (见 [确定本地判断模型服务的运行责任](18-decide-local-judge-server-ownership.md)), 判断模型通过就绪检查后才接受新流程; 未就绪时入口只显示缺什么, 怎样配置, 不开始任何流程.
+- Engine 是每个用户一个的常驻进程, 由现有用户级后台管理进程扩展而来, 共用它的安装目录, 私有 SQLite 状态库, 两个 harness 的会话层 (Codex App Server 线程, 每回合一个 `claude -p` 进程, 同一 `NativeSessions` 接口), 容量与崩溃识别 (PID 加进程创建时间). 理由: 这些正是 Engine 驱动所需的会话控制, 已在两个 harness 上对等实现; 另起进程会复制状态库, 容量和恢复. 代价: Engine 故障会同时中断对话入口, 全部运行中的回合和判断调用; 流程状态按步持久化, 重启后可以恢复 (见下). 扩展要改写现行合同中 "管理进程不调用模型", "只监听本机回环地址", "后台 Agent 归属启动它的 Main 会话" 等条款, 见 11-12 的 Comments.
+- 对话入口是 Engine 的客户端, 不持有流程状态, 可以断开再连接; 同时可以有多个入口连接 (例如两个浏览器). 监听分两类: 现有的本机回环控制通道照旧, 只给本机命令行用; 另加一个 HTTPS 入口供网页使用, 未配对的请求除配对接口外一律拒绝, 配对与设备凭据见 [确定 Engine 对话入口的形态](19-decide-conversation-entry-form.md). 远程入口要求 Engine 在用户登录时自动启动, 不能只在第一次本机请求时启动; 这是新增的安装行为, Windows 与 Linux 做法不同, 写进安装规格.
+- 开工条件: 第一个流程 (新建或待恢复) 需要判断模型时, Engine 执行判断模型的开启脚本 (见 [确定本地判断模型服务的运行责任](18-decide-local-judge-server-ownership.md)), 判断模型通过就绪检查后流程才开始; 未就绪时入口只显示缺什么, 怎样配置, 不开始任何流程. 没有流程运行超过配置的时长后, 按开启脚本的约定释放判断模型. 不在 Engine 进程启动时就开启, 因为 Engine 常驻到关机, 否则判断模型会长期占用显卡.
 - 角色: 用户选定的 Main Agent 模型在其 harness 中作为一个由 Engine 驱动的 "对话会话", 负责与用户的自由对话和流程中分给它的高智能步骤 (理解需求, 起草 issue, 处置 Reviewer 发现等); 它不再自己读规则推进流程. worker 与 Reviewer 是 Engine 按流程启动的其他会话. 现行 "Main Agent 是与用户沟通者" 的身份定义改由 Engine 加对话会话承担, 怎样改写术语归 [确定现有 ARW 合同在 1.0 中的继承范围](13-decide-legacy-contracts.md).
-- Git 写入只由 Engine 执行 (暂存, 提交, 恢复), 作为流程中的确定性步骤; Agent 会话不做 Git 写入, 由 harness 权限 (现有会话层已支持的按路径写入范围与只读 Git 命令) 限制, Engine 在每个 Agent 步骤后核对 `HEAD` 与暂存区未被会话改变, 变了即停在可恢复状态. 这延续现行 "Git 写入只由与用户沟通的一方执行" 的意图: 1.0 中与用户沟通并负责流程的是 Engine.
+- Git 写入只由 Engine 执行 (暂存, 提交, 恢复, 合并), 作为流程中的确定性步骤; Agent 会话不做 Git 写入. 这延续现行 "Git 写入只由与用户沟通的一方执行" 的意图: 1.0 中与用户沟通并负责流程的是 Engine. 保证方式是检测而不是阻止: 两个 harness 上 worker 一类会话沿用用户自己的原生权限, ARW 给的写入范围只增不减 (现行 ADR 0033 的决定), 而且能运行 `node`, 测试命令的会话总能间接执行 Git, 所以 Engine 在每个 Agent 步骤后核对 `HEAD` 的符号引用与提交, 全部引用, 按内容比较的索引 (`git ls-files -s` 的摘要, 不比索引文件字节), `.git/config` 与 hooks 目录, 有变化即停在可恢复状态; 是否另加不覆盖用户设置的窄范围拒绝规则, 待 decide (见 11-12 的 Comments). Engine 与各会话的只读 Git 调用设 `GIT_OPTIONAL_LOCKS=0`, 以免 `git status` 写回索引造成误报或与 Engine 争抢索引锁. 恢复基线记在 Engine 自有引用下 (见 [定义分流判断的复核与回退合同](08-define-routing-review-and-rollback.md)), 会话执行 `git reset --hard` 也毁不掉它.
+- 提交步骤要有授权来源: 用户在流程中的请求, 或用户配置的自动提交. Engine 提交时会执行仓库的 hooks; hook 改动了文件时按流程定义的分支处理. 合并冲突由 Engine 执行合并, 冲突文件交给 Agent 步骤编辑, 再由 Engine 暂存并完成合并.
 - "ARW 不自主发起 Agent 编码工作" 改为: Engine 只在用户发起或批准的流程中启动 Agent 会话; 流程内的下一步由 Engine 按流程定义推进, 不再逐步请用户确认, 用户批准点仍是流程中的等待用户步骤.
 
 ### Flow state and next action
@@ -27,7 +28,7 @@ Engine 提供与用户对话的入口, 并按用户选择的 Main Agent 模型�
 - 下一动作由流程定义, 当前状态和上一步结果唯一决定. Agent 与判断模型只能通过本步输出 schema 中列出的字段或选项影响分支, 不能跳步或加步; 流程定义没有覆盖的情况一律转为等待用户. 这取代现行 "按触发点读规则, 由 Main Agent 记住顺序", 规则正文怎样拆成程序检查和本步短指令见地图 Not yet specified.
 - 流程实例状态写在 Engine 的私有状态库 (新增表, 与现有 `agents`, `messages` 同库), 字段至少有: 实例 ID, 流程定义名与版本, 仓库根, 关联 Artifact (effort 与 issue 的 Canonical ID), 当前步骤, 实例状态 (`running`, `waiting-user`, `waiting-subflow`, `waiting-writer`, `stopped`, `done`, `cancelled`), 父实例 (栈), 每步起止时间, 结果摘要, 所用会话与回合身份. 每步结束时先持久化再执行下一步.
 - 仓库中的 Artifact (issue, spec, 就绪与审计记录) 仍是交付结果的权威; Engine 状态只是执行进度的权威. 两者不一致时 (例如用户手工改了 issue `Status`), 以仓库为准, 实例停下并请用户确认.
-- 实例绑定启动时的流程定义版本. Engine 升级前要求没有正在执行的步骤; 停在等待状态的实例在新版本中找得到同名步骤时继续, 否则停下报告用户.
+- 实例绑定启动时的流程定义版本. Engine 升级时先停止接受新步骤, 等执行中的步骤结束; 网页客户端断线后自动重连; 停在等待状态的实例在新版本中找得到同名步骤时继续, 否则停下报告用户.
 
 ### Agent sessions
 
@@ -71,4 +72,13 @@ Engine 提供与用户对话的入口, 并按用户选择的 Main Agent 模型�
 - 批准请求: harness 会话发出的批准请求先按流程定义给该步的权限策略由 Engine 应答 (例如只读步骤拒绝写入); 策略之外的请求作为待答事项交给用户.
 - 对话连续性由 Engine 拥有: Engine 保存每个对话的记录 (用户消息, 回复, 流程事件摘要) 和当前对话会话绑定 (harness, 模型, 会话 ID). 用户消息默认交给当前对话会话.
 - 用户在对话中换 Main Agent 模型: 同一 harness 内在原会话继续并改用新模型 (Codex 按回合, Claude Code 按回合进程指定模型; Codex 线程的模型提供方在创建时固定, 换提供方要 `thread/fork`); 跨 harness 时新建目标 harness 的会话, Engine 用自己的对话记录和进行中实例的状态生成交接消息作为新会话的首条输入, 原会话保留, 切回时继续原会话并补上期间的交接. 不迁移原生会话记录, 因为两个 harness 的记录格式不同且都不承诺可导入.
-- 入口的形态, 流式展示, 批准请求的呈现, 通知方式见 [确定 Engine 对话入口的形态](19-decide-conversation-entry-form.md).
+- 入口形态由用户 11-11 定为 Engine 自带的网页, 局域网和远程设备也能连接, 首版不设账号密码, 设备第一次连接用一次性授权码配对后凭设备凭据访问, 见 [确定 Engine 对话入口的形态](19-decide-conversation-entry-form.md). 因此 Engine 对外监听网络连接, 入口的 TLS 与设备配对属于 Engine 的必备部分.
+
+## Comments
+
+11-12: 本答案中 "Engine 由现有用户级后台管理进程扩展" 和 "Git 写入只由 Engine 执行" 两项原是 worker 的架构判断, 已交一个与 Main Agent 同级模型的 Agent 只读独立复核 (ARW HEAD `79e2497`, 与 `9fb4b5d` 相比 `lib/background-agent/`, `docs/specs/`, `docs/adr/` 与 `docs/agents/agent-writes.md` 均未变). 结论:
+
+- 扩展现有管理进程: 支持. 另起独立 Engine 进程会复制状态库, 容量与恢复; Engine 作为库无法持有写入者令牌与长驻会话; 每仓库一个进程与全局容量和共享 App Server 冲突; 单独的 TLS 网关进程要多管一个进程的生命周期, 首版不采用. 按复核意见补了故障域, 判断模型的开启时机, 两类监听, 登录时自启和升级的写法.
+- Git 写入只由 Engine 执行: 方向支持 (由对话会话在 Engine 批准下执行 Git 会让提交内容不确定; 只把提交交给 Engine 而暂存留给会话, 会话就能改动恢复基线和审核候选). 但原文 "由 harness 权限限制" 与事实不符: Claude 后端只给 Reviewer 加只读 Git 与工具限制, 其他角色用默认工具, 写入路径只追加放行 (`lib/background-agent/claude-sessions.mjs`); Codex 后端没有把 `writePaths` 传给线程 (`lib/background-agent/codex-app-server.mjs` 的 `threadParams`); 这是 ADR 0033 有意的决定. 已改为以检测保证, 是否另加窄范围拒绝规则待用户决定.
+- 1.0 规范要改写的现行合同: ADR 0013 (Git 写入与恢复归 Main Agent, 由 Main 暂存基线, 不增加运行锁与调度器), `docs/agents/agent-writes.md` (Prepare the baseline, Assign and hand off 中 "不引入文件锁或任务领取命令", Git and recovery), ADR 0023 (Main Agent 负责暂存), ADR 0017 (注明 "只改工作树不改索引" 只限 workflow 操作), ADR 0030 (管理进程不调用模型, 只监听回环地址, 后台 Agent 归属 Main 会话), ADR 0033 与长期规格 Seams and Adapters 节 (不收窄原生设置), 长期规格 Machine entry 节的归属与信任模型, `CONTEXT.md` 中 Main Agent 的定义, 安装规格 Background Agent management 节 (只绑定 `127.0.0.1`, 按需启动), `docs/agents/parallel-implementation.md`. 做法: 在 `arw-1.0` 分支写一份新 ADR 部分取代 ADR 0013 中 Git, 恢复, 基线与锁的部分 (单文件单写入者与 Reviewer 独立性保留), 在 0013, 0030, 0033 的状态行注明被取代的范围; 归属见 [确定现有 ARW 合同在 1.0 中的继承范围](13-decide-legacy-contracts.md).
+- 未核实, 留给规范与实施验证: Codex 的权限配置能否在可写目录中单独把 `.git` 设为只读; Windows 上 Claude Code 的 Bash 限制; WSL NAT 网络模式下局域网设备能否连入; Windows 防火墙对非回环监听的提示; 会话启动的后台进程在步骤核对之后才写 Git 的可能.
