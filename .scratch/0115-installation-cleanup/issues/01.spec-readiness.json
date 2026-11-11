@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0115:01",
+  "exception": {
+    "confirmedAt": "2026-11-11T08:46:06Z",
+    "reason": "用户明确授权 Issue M 无设计决定, 无 spec, 每个 issue 单独 effort, 使用 Exception workflow."
+  },
+  "subject": {
+    "filePath": ".scratch/0115-installation-cleanup/issues/01-installation-cleanup.md",
+    "sha256": "23a4099ebd008fd8dcc4d75cf23d1f111aa84206e121a25ebf22e6105312f426"
+  },
+  "result": "not-applicable"
+}

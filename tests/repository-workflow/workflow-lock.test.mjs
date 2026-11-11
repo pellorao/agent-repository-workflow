@@ -7,7 +7,7 @@ import {
     createWorkflowLock,
     parseWorkflowLock,
     serializeWorkflowLock,
-    verifyManagedContent,
+    verifyManagedTargets,
 } from '../../lib/repository-workflow/workflow-lock.mjs';
 
 const sha256 = (/** @type {Buffer<ArrayBuffer> | import("crypto").BinaryLike} */ value) => createHash('sha256').update(value).digest('hex');
@@ -137,12 +137,12 @@ test('verifies managed files and only the managed span of baseline-major documen
         },
     ];
 
-    assert.deepEqual(await verifyManagedContent({lock, repositoryState}), {diagnostics: [], satisfied: true});
+    assert.deepEqual(await verifyManagedTargets({lock, repositoryState}), {diagnostics: [], satisfied: true});
     repositoryState.files['docs/mixed.md'].bytes = Buffer.from(document.replace('custom', 'changed by repository'));
-    assert.deepEqual(await verifyManagedContent({lock, repositoryState}), {diagnostics: [], satisfied: true});
+    assert.deepEqual(await verifyManagedTargets({lock, repositoryState}), {diagnostics: [], satisfied: true});
 
     repositoryState.files['managed.md'].bytes = Buffer.from('drift\n');
-    const drifted = await verifyManagedContent({lock, repositoryState});
+    const drifted = await verifyManagedTargets({lock, repositoryState});
     assert.equal(drifted.satisfied, false);
     assert.deepEqual(drifted.diagnostics, [{code: 'managed-content-drift', path: 'managed.md'}]);
 });
