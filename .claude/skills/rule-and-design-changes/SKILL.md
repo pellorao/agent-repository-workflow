@@ -1,5 +1,5 @@
 ---
-description: 修改 Agent 指令 (`AGENTS.md`, `docs/agents/**`, Skill), 长期规范, ADR, 上下文文档或保存持久设计的规范与 PRD 前使用: 先取得用户对改动内容的确认 (Reviewer 提出的 spec 修改改由 Main Agent 与独立 subagent 共同决定), 并按文档责任编写.
+description: 修改 Agent 指令 (`AGENTS.md`, `docs/agents/**`, Skill), 长期规范, ADR, 上下文文档或保存持久设计的规范与 PRD 前使用: 先取得用户对改动内容的确认, 并按文档责任编写.
 name: rule-and-design-changes
 ---
 

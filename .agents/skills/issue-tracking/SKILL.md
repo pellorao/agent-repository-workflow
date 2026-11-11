@@ -7,16 +7,7 @@ name: issue-tracking
 
 本地跟踪器把每个 ARW Artifact 存储在最近的 Git 工作树根目录下的 `.scratch` 中, 永远不回退到外层仓库. Artifact 的文档语言遵循 `docs/agents/writing.md`; 保留精确的跟踪器字段, 状态值, 命令, 路径, 标识符和已建立的名称.
 
-## Artifact model
-
-- effort 使用 `.scratch/<NNNN>-<effort-slug>/`, `NNNN` 从 `0001` 到 `9999`. 新 effort 使用当前最大编号加 1; `9999` 已被占用时停止.
-- 实施 issue, Application Source Issue 和 Wayfinder issue 各使用一个 `.scratch/<NNNN>-<effort-slug>/issues/<NN>-<issue-slug>.md`, `NN` 从 `01` 到 `99`.
-- 可选的 `.scratch/<NNNN>-<effort-slug>/spec.md` 是行为合同, 不是 effort 要求清单. 只有 Wayfinder effort 具有 `map.md`.
-- 已注册的 ARW Artifact 类型是 `issue`, `map` 和 `spec`; 审计和就绪 JSON 是工作流记录. Local Canonical ID 是 `issue:<NNNN>:<NN>`, `map:<NNNN>` 和 `spec:<NNNN>`; Application 工作流可以使用限定引用 `issue:<application-or-module-name>:<NNNN>:<NN>`.
-- 编号是稳定身份. 普通工作流中不删除, 重新编号, 更改类型或重用已提交的 issue, map 或 spec 身份; 编号不变时可以更改 slug. 描述性 slug 只出现在已注册目录和 issue 文件名及其精确路径中; 派生目录, 伴随文件, 记录键和持久身份字段只使用编号. issue 只通过适用终态退役.
-- 受独立治理的旧 effort 清理只能删除最旧的连续编号前缀, 保留较新 effort 和当前最大值, 使编号无法重用. 读取不从已清理的 effort 回退到 Git 历史.
-- 不为仅仅相关的工作重用已完成的 effort. 只有新工作精确修复原 issue 已要求的行为时才重新打开它; 否则使用下一个 effort 编号创建新 effort, issue 从 `01` 开始.
-- 一个 effort 只承载一个主要目标; 不相关的目标另建 effort. 按 `docs/agents/agent-writes.md` 的 Issue concurrency 节为减少审核轮次合并实施的小 issue 不受此限.
+新建 effort, issue, map, spec, 分配或更改编号, 或处理 Wayfinder map 时, 先读 `./artifact-model.md` (编号模型与 Wayfinding).
 
 ## Issue structure
 
@@ -50,14 +41,10 @@ name: issue-tracking
 `## Validation` 保存当前验收项对应的实际命令, 测试, 文件位置和结果; `## Comments` 在 issue 底部保存讨论, 审核事件和已取得的结论. 这两章整章是记录:
 
 - 它们不承载实施要求, 验收条件或授权例外, 不成为独立通过的权威. 有效要求和替代决定写入 `## What to build` 或 `## Acceptance criteria`; 已开始实施后只涉及措辞, 重复或一致性的处置不改这两章, 按 `../spec-readiness/SKILL.md` 的 Authorization timing 节记入 `## Comments`. 正式验收以某审核通过为条件时, 必须先取得该事实.
-- 它们的变化不改变审核对象身份, 不触发 Spec Readiness, Code Standards 或要求符合审核的语义复审. 记台账也不需要再开一轮. 修改后机械核对准确章节范围, 文本和证据定位, 确认没有其他实现, 要求, 输入或授权变化. 提交审核运行中先改工作树, 暂存时点见 `commit` Skill. `Status` 和验收勾选不属于此例外.
+- 它们的变化不改变审核对象身份, 不触发 Spec Readiness, Code Standards 或要求符合审核的语义复审. 修改后机械核对准确章节范围, 文本和证据定位, 确认没有其他实现, 要求, 输入或授权变化. 提交审核运行中先改工作树, 暂存时点见 `commit` Skill. `Status` 和验收勾选不属于此例外.
 - 链接不扩大 Reviewer 读取权限, 成功声明不替代独立判断. 新失败和反证仍须处理, 删除记录不消除已知失败.
 - 其他工作流对记录中结构化信息的解析, 同步, 关联和纠错合同不变.
 
 ## Effort reading scope
 
 Agent 恰好有一个当前 effort, 可以读取其完整目录. 读取另一个 effort 前, Main Agent 说明精确的 effort 和目的并取得用户明确授权; 授权覆盖同一根会话中的 Main Agent 及其子 Agent, 切换 effort 时清除. 该规则管辖 Agent 读取的内容, 不管辖程序内部读取; 但调用程序来返回另一个 effort 的内容同样属于 Agent 读取. 检查路径, Git 状态, 文件模式和哈希无需授权. 这些规则不授予写入或外部操作权限.
-
-## Wayfinding
-
-Wayfinder map 包含 `Destination`, `Notes`, `Decisions so far`, `Not yet specified` 和 `Out of scope`. `Blocked by:` 中的全部标识符都引用已解决的 issue 时, 下级 issue 解除阻塞. 工作前领取一个最前沿 issue, 每个 Agent 会话最多解决一个, 附加 `## Answer`, 并更新 map 中的决定指针.

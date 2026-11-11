@@ -1,0 +1,5 @@
+# 修复与复审
+
+实施提交流程第 5 步. 报告有问题需要修复或处置时使用.
+
+修复后暂存 (审核运行期间也可以暂存) 并用同一 `input.json` 再次 `prepare`; 新一轮自动沿原线程复审, 只交付相邻版本变化和该 Reviewer 的前轮报告 (`docs/agents/reviewer.md` 的 Re-review 节). 某个 Reviewer 的输入没有受影响时只运行另一个的 `.jsonl`, 保留其结果. 复审报告中写明仍成立且本轮变化没有解决它的旧问题, 若已在台账记录处置, 不再重新分流. 处置台账: 不修复的问题记入问题所属授权 issue (无法归属时记入排序第一的) 的 `## Comments`, 每条一行 `台账: <文件和行或章节> <转入后续 issue|记录不修|冲突裁决> <理由>`, 定位精确到句子或行且只覆盖所列问题 (过宽的条目会让 Reviewer 漏报邻近的真实问题), 并在 `prepare` 前暂存 (只在因其他原因再开一轮时适用); `prepare` 把全部授权 issue 的 `## Comments` 交给 Reviewer, Reviewer 一侧的处理见 `docs/agents/reviewer.md` 的 Re-review 节. 轮次按同一次提交尝试 (同一授权范围) 中 `prepare` 的次数计, 第 3 轮起只为行为缺陷开修复轮 (无论由谁引入, 拿不准按行为缺陷处理), 措辞, 重复和文档去重类问题记 "记录不修" 后不再修. Code Standards 与要求符合审核的结论互相冲突时, 包括后一轮要求改回前一轮按另一个 Reviewer 所做的修复, Main Agent 按 effort spec 裁决并记 "冲突裁决", 不直接改回. 修复会改变 effort spec 或授权 issue 已写明的事实 (接口, 位置, 数据流, 失败结果, 行为, 输出, 持久状态, 范围或验收含义) 时, 同一修复中改写这些文字 (spec 按 `../rule-and-design-changes/SKILL.md` 的 Reviewer-proposed changes 节, issue subject 按 `../spec-readiness/SKILL.md` 的 Authorization timing 节), 或把修复收窄到 spec 允许的范围; 不做该修复时记 "冲突裁决". 台账不用于驳回 Reviewer 的问题, 认为问题无效仍走质疑规则.

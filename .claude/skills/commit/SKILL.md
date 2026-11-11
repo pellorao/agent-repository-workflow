@@ -1,5 +1,5 @@
 ---
-description: 用户要求 Git 提交后使用: 对已暂存候选分类, 执行实施 issue 提交 (要求符合审核与 Code Standards 两个并行 Reviewer, Gate 1 和 Gate 2 范围) 或非实施机械提交, 并编写提交说明. 完成或解决 issue 本身不触发.
+description: 用户要求 Git 提交后使用: 对已暂存候选分类, 执行实施 issue 提交或非实施机械提交, 并编写提交说明. 完成或解决 issue 本身不触发.
 name: commit
 ---
 

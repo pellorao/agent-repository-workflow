@@ -7,13 +7,7 @@
 
 ## Delegation and reuse
 
-各运行环境的 Main Agent 在不影响工作质量的前提下尽量把工作委派给合适的 subagent, 自己集中负责协调, 决策和必须亲自执行的操作. 适合独立交付的研究, 原型, 实现和文档编写默认交给 subagent 直接完成. 与用户沟通的 Main Agent 需要停下来向用户提问时, 已委派的独立工作仍可推进, 减少等待对整体进度的影响. 出现以下情况时可以自行执行:
-
-- 需要频繁与用户互动.
-- 无法合理拆分.
-- 工作很小, 交接成本明显更高.
-
-与用户沟通的 Main Agent 可以转发少量用户沟通, 不阻止普通任务委派. Reviewer 输入缺失或工作阻塞时, 按 `./reviewer.md` 的 Communication and observation 节交付不完整状态, 不向用户或与用户沟通的 Main Agent 提问. 用户的新消息改变已委派工作的依据, 授权或顺序时, 与用户沟通的 Main Agent 及时通知受影响的 subagent.
+各运行环境的 Main Agent 在不影响工作质量的前提下尽量把工作委派给合适的 subagent, 自己集中负责协调, 决策和必须亲自执行的操作. 与用户沟通的 Main Agent 需要停下来向用户提问时, 已委派的独立工作仍可推进, 减少等待对整体进度的影响. 与用户沟通的 Main Agent 可以转发少量用户沟通, 不阻止普通任务委派. Reviewer 输入缺失或工作阻塞时, 按 `./reviewer.md` 的 Communication and observation 节交付不完整状态, 不向用户或与用户沟通的 Main Agent 提问. 用户的新消息改变已委派工作的依据, 授权或顺序时, 与用户沟通的 Main Agent 及时通知受影响的 subagent.
 
 各运行环境的 Main Agent 可以把会污染自身上下文, 无谓地大量占用上下文, 或不值得使用自身智力和努力程度处理的工作委派出去. 委派后, 该 Main Agent 负责协调, 由受派 Agent 完成执行过程; 同领域复用则保留已经获得的理解.
 

@@ -1,5 +1,5 @@
 ---
-description: 沿实施标准和要求符合两个独立审查轴审核一个 Git 比较. 用于分支, 拉取请求, 提交区间和进行中的变更审查, 包括提交前对已暂存变更的 Code Standards 审查.
+description: 沿实施标准和要求符合两个独立审查轴审核一个 Git 比较. 用于分支, 拉取请求, 提交区间和进行中的变更审查; 提交审核走 `commit` Skill.
 name: code-review
 ---
 
@@ -70,7 +70,7 @@ Not reviewed: no governing requirements were supplied.
 
 ### 4. Run both axes independently
 
-Reviewer 身份由审查轴固定的 `input.role` 值和完整排序的授权 issue ID 集合组成. Standards 使用 `code-standards-reviewer`, Requirements 使用 `requirements-reviewer`; Requirements 的身份另含比较区间, 与提交审核的线程分开. 复审和问题处理按 `./result-reuse.md` 进行.
+Reviewer 身份由审查轴固定的 `input.role` 值和完整排序的授权 issue ID 集合组成. Standards 使用 `code-standards-reviewer`, Requirements 使用 `requirements-reviewer`; Requirements 与提交审核的线程靠不同的 `stateDirectory` 分开 (提交审核用审核轮目录, 本流程用会话工作区). 复审和问题处理按 `./result-reuse.md` 进行.
 
 每个轴的每轮审查按 `docs/agents/reviewer.md` 的 Report 节使用新的空 `reportPath`, 不把上一轮报告复用为新草稿.
 

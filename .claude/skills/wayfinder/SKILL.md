@@ -8,7 +8,7 @@ disable-model-invocation: true
 
 目的地因 effort 而异, 命名目的地是绘图的第一步, 它决定每个 issue 的形态. 它可以是待移交并迭代的 spec, 规划开始前要锁定的决定, 或数据结构迁移这类就地完成的改动. 地图与领域无关.
 
-地图, issue 的字段, 阻断, 领取, 回答位置和终态都遵循 `issue-tracking` Skill 的 Wayfinding 规则, 本 Skill 不重复; 创建或更新地图或 issue 前先读它.
+地图, issue 的字段, 阻断, 领取, 回答位置和终态都遵循 `issue-tracking` Skill 的 `artifact-model.md` 中 Wayfinding 一节的规则, 本 Skill 不重复; 创建或更新地图或 issue 前先读它.
 
 ## Plan, don't do
 

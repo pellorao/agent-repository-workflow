@@ -1,5 +1,5 @@
 ---
-description: Main Agent 启动, 跟进, 等待, 中断或恢复独立 Reviewer (Code Standards, 要求符合审核, Spec Readiness) 时使用: 固定审核版本, 准备报告路径, 调用 `arw background-agent` 机器接口, 处理长时间运行和暂停通知. Reviewer 自身不使用.
+description: Main Agent 启动, 跟进, 等待, 中断或恢复独立 Reviewer (Code Standards, 要求符合审核, Spec Readiness) 时使用. Reviewer 自身不使用.
 name: reviewer-launch
 ---
 

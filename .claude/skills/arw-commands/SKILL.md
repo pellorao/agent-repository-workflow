@@ -13,7 +13,7 @@ name: arw-commands
 arw workflow init [--non-interactive (--reuse-profile | --platform <platform>... --domain-layout <layout> --code-map-root [<root>]... --code-map-include [<glob>]... --code-map-exclude [<glob>]...) --transform-existing-agent-docs <true|false> --orphan-code-map-readmes <delete|demote>]
 arw workflow update [--non-interactive] [--dry-run] [--transform-existing-agent-docs <true|false>]
 arw workflow verify
-arw workflow remove [--non-interactive --arwignore <retain|delete> --code-maps <retain|delete> --mixed-agent-documents <retain|delete>]
+arw workflow remove [--non-interactive --arwignore <retain|delete> --code-maps <retain|delete> --mixed-agent-documents <retain|delete> --platform-agent-configs <retain|delete>]
 arw code-map verify
 arw text check
 arw text fix
