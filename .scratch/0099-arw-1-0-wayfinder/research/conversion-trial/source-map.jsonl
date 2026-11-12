@@ -1,0 +1,92 @@
+{"note": "转换范围内每个段落的类别. 段落去向不在这里重复, 由各节点的 src 反查 (check.py 计算). 段落按 check.py 的切分规则 (空行, 标题, 每个列表项各为一段, 表格整体一段); hash 是段落文本 SHA-256 的前 12 位, 由 check.py --fill 写入. class: F 流程, C 程序检查, S 本步短指令, Fj 判断, K3 原样交 Reviewer, D 删除, E 进 Engine 代码而不进 graph, O 属于另一个 graph, N 非规范文字.", "base": "distribution/", "scope": ["skills/commit/SKILL.md", "skills/commit/implementation-workflow.md", "skills/commit/fix-rounds.md", "skills/commit/non-implementation-workflow.md", "skills/reviewer-launch/SKILL.md", "skills/reviewer-launch/capacity-priority.md", "skills/reviewer-launch/machine-operations.md", "skills/code-review/result-reuse.md", "baseline/docs/agents/subagent-findings.md"]}
+{"para": "skills/commit/SKILL.md#1", "class": "F", "hash": "c2f692598ee6", "note": "完成 issue 本身不触发, 成为入口授权"}
+{"para": "skills/commit/SKILL.md#2", "class": "F", "hash": "f63d1b9983e6", "note": "按写入链暂存; 共享文件的语义归属在 1.0 中只剩混合文件交用户"}
+{"para": "skills/commit/SKILL.md#3", "class": "C", "hash": "79255707563e"}
+{"para": "skills/commit/SKILL.md#4", "class": "C", "hash": "d205eb10f077"}
+{"para": "skills/commit/SKILL.md#5", "class": "F", "hash": "56f0e30e6538", "note": "授权范围外内容不进候选"}
+{"para": "skills/commit/SKILL.md#6", "class": "S", "hash": "3179c3110fa9"}
+{"para": "skills/commit/SKILL.md#7", "class": "F", "hash": "5cfde35c29e5", "note": "由结构保证: 失败结果没有通往提交的边"}
+{"para": "skills/commit/implementation-workflow.md#1", "class": "F", "hash": "c67f6e3d2f65", "note": "authorizingIssueIds 改由实例关联的 Artifact 给出"}
+{"para": "skills/commit/implementation-workflow.md#2", "class": "S", "hash": "3289f6e911cf", "note": "最后一句 (审暂存树不审私有索引) 由 commitAudit.prepare 保证"}
+{"para": "skills/commit/implementation-workflow.md#3", "class": "F", "hash": "cf542f3e6aa8"}
+{"para": "skills/commit/implementation-workflow.md#4", "class": "F", "hash": "d79e629ff3d8", "note": "抽查一句按 D15 删除"}
+{"para": "skills/commit/implementation-workflow.md#5", "class": "F", "hash": "b562134b57c0"}
+{"para": "skills/commit/implementation-workflow.md#6", "class": "F", "hash": "f59af52dc215", "note": "先勾选再 prepare 成为 ia-records 先于 ia-freeze 的顺序"}
+{"para": "skills/commit/implementation-workflow.md#7", "class": "F", "hash": "1da2823fb652", "note": "处置集合进 dispositions.validate; 与 spec-readiness 的措辞类处置不一致, 见报告"}
+{"para": "skills/commit/implementation-workflow.md#8", "class": "C", "hash": "6a9172240dd8"}
+{"para": "skills/commit/implementation-workflow.md#9", "class": "C", "hash": "10c20fd370cc"}
+{"para": "skills/commit/implementation-workflow.md#10", "class": "C", "hash": "943eed0e82d8"}
+{"para": "skills/commit/implementation-workflow.md#11", "class": "K3", "hash": "305076015f7e", "note": "检索与核对由 Role 文档拥有, 只确认由要求符合审核执行"}
+{"para": "skills/commit/implementation-workflow.md#12", "class": "C", "hash": "653003f7a201"}
+{"para": "skills/commit/implementation-workflow.md#13", "class": "C", "hash": "994ee00db3d7", "note": "现行 prepare 两次 (先出摘要再抄回 Validation) 改为 ia-measure 先给摘要"}
+{"para": "skills/commit/implementation-workflow.md#14", "class": "F", "hash": "6edc5d2c8f01"}
+{"para": "skills/commit/implementation-workflow.md#15", "class": "F", "hash": "cd6971bdff9f", "note": "Main Agent 的分工改为节点写入属性; Reviewer 只读由 report-only 给出"}
+{"para": "skills/commit/fix-rounds.md#1", "class": "F", "hash": "2aeb7717cd4e"}
+{"para": "skills/commit/fix-rounds.md#2", "class": "F", "hash": "a739c6c6cd94", "note": "一段 1055 字符含约 10 条规则, 段落哈希粒度太粗, 见报告"}
+{"para": "skills/commit/non-implementation-workflow.md#1", "class": "C", "hash": "ccddcd423162"}
+{"para": "skills/commit/non-implementation-workflow.md#2", "class": "C", "hash": "2a698a165f21"}
+{"para": "skills/commit/non-implementation-workflow.md#3", "class": "C", "hash": "f63f6c5f8bd6"}
+{"para": "skills/commit/non-implementation-workflow.md#4", "class": "C", "hash": "240e02753313"}
+{"para": "skills/commit/non-implementation-workflow.md#5", "class": "F", "hash": "ababebc63833", "note": "无 issue 授权的改动不与 issue 改动同提交: 进 commit.classify"}
+{"para": "skills/commit/non-implementation-workflow.md#6", "class": "C", "hash": "6f157cbd1114"}
+{"para": "skills/commit/non-implementation-workflow.md#7", "class": "C", "hash": "dcfb684be6dd"}
+{"para": "skills/commit/non-implementation-workflow.md#8", "class": "C", "hash": "b4edd2bbc3a3"}
+{"para": "skills/commit/non-implementation-workflow.md#9", "class": "F", "hash": "a52e66e0f343", "note": "由结构保证"}
+{"para": "skills/reviewer-launch/SKILL.md#1", "class": "D", "hash": "35b81dfbc8e0", "note": "Main Agent 准备审核的分工说明, 1.0 无对应角色"}
+{"para": "skills/reviewer-launch/SKILL.md#2", "class": "D", "hash": "e79aa85b4aad"}
+{"para": "skills/reviewer-launch/SKILL.md#3", "class": "D", "hash": "c7efa87507ad", "note": "Agent 操作 arw background-agent 的平台说明 (21)"}
+{"para": "skills/reviewer-launch/SKILL.md#4", "class": "D", "hash": "db903faa7e67", "note": "同上; haiku 回退按 09 删除"}
+{"para": "skills/reviewer-launch/SKILL.md#5", "class": "D", "hash": "575fe59b09ff"}
+{"para": "skills/reviewer-launch/SKILL.md#6", "class": "C", "hash": "85a1360f20e0"}
+{"para": "skills/reviewer-launch/SKILL.md#7", "class": "F", "hash": "0c56a37b22b3"}
+{"para": "skills/reviewer-launch/SKILL.md#8", "class": "C", "hash": "f63a66dc4960", "note": "回执, provider-program 消息等进 Engine 会话层"}
+{"para": "skills/reviewer-launch/SKILL.md#9", "class": "D", "hash": "5429f7890059", "note": "Main 每轮抽查按 D15 取消"}
+{"para": "skills/reviewer-launch/SKILL.md#10", "class": "F", "hash": "5ddc69ac9fd1"}
+{"para": "skills/reviewer-launch/SKILL.md#11", "class": "D", "hash": "6d50141e350a", "note": "按需读取指针 (13)"}
+{"para": "skills/reviewer-launch/SKILL.md#12", "class": "D", "hash": "8717a637e448"}
+{"para": "skills/reviewer-launch/SKILL.md#13", "class": "D", "hash": "ea9d19a93eaa"}
+{"para": "skills/reviewer-launch/SKILL.md#14", "class": "D", "hash": "acbd62d81d11"}
+{"para": "skills/reviewer-launch/SKILL.md#15", "class": "F", "hash": "25d5438dc671", "note": "成为 Reviewer 节点的 timeBudget 属性 (09), 不是边"}
+{"para": "skills/reviewer-launch/SKILL.md#16", "class": "E", "hash": "35bc722008b0", "note": "Reviewer 运行中的累计早退暂停通知是步骤内的异步事件, graph 的结果值表达不了, 进 Engine 会话层"}
+{"para": "skills/reviewer-launch/capacity-priority.md#1", "class": "E", "hash": "51b0d13cd853", "note": "只剩 priority: gate 属性; 名额预留与排队是 Engine 调度代码"}
+{"para": "skills/reviewer-launch/machine-operations.md#1", "class": "D", "hash": "cf41c72e1cf0", "note": "21: Engine 直接用会话层"}
+{"para": "skills/reviewer-launch/machine-operations.md#2", "class": "D", "hash": "5c8653d8e9e5"}
+{"para": "skills/reviewer-launch/machine-operations.md#3", "class": "D", "hash": "d7ff43f73cf3"}
+{"para": "skills/reviewer-launch/machine-operations.md#4", "class": "E", "hash": "538732066634", "note": "空报告不是有效结果: commitAudit.collect"}
+{"para": "skills/reviewer-launch/machine-operations.md#5", "class": "D", "hash": "71083e8aa082"}
+{"para": "skills/code-review/result-reuse.md#1", "class": "C", "hash": "1e55c373ef54"}
+{"para": "skills/code-review/result-reuse.md#2", "class": "C", "hash": "1f9a8ea09622", "note": "09 改为按冻结输入集合机械判断"}
+{"para": "skills/code-review/result-reuse.md#3", "class": "C", "hash": "e4f8ee903e8b", "note": "新的失败或反证: 机械部分只能看检查结果, 语义部分丢失"}
+{"para": "skills/code-review/result-reuse.md#4", "class": "F", "hash": "5f0ad3c529a8"}
+{"para": "skills/code-review/result-reuse.md#5", "class": "D", "hash": "4159b0c54516", "note": "审核期间提前处置需要 parallel 内并发的作者步骤, 本试转换未转"}
+{"para": "skills/code-review/result-reuse.md#6", "class": "S", "hash": "7ff70711839c"}
+{"para": "baseline/docs/agents/subagent-findings.md#1", "class": "S", "hash": "e10c3bf70cdd"}
+{"para": "baseline/docs/agents/subagent-findings.md#2", "class": "O", "hash": "47bb5870eb38", "note": "code-review graph"}
+{"para": "baseline/docs/agents/subagent-findings.md#3", "class": "O", "hash": "b28b2aeea11e"}
+{"para": "baseline/docs/agents/subagent-findings.md#4", "class": "O", "hash": "2870f4128b6f"}
+{"para": "baseline/docs/agents/subagent-findings.md#5", "class": "O", "hash": "c44a94ad8bb0"}
+{"para": "baseline/docs/agents/subagent-findings.md#6", "class": "O", "hash": "13bc5f574a6c"}
+{"para": "baseline/docs/agents/subagent-findings.md#7", "class": "O", "hash": "686291caeeff"}
+{"para": "baseline/docs/agents/subagent-findings.md#8", "class": "O", "hash": "ad5a06ea36d1"}
+{"para": "baseline/docs/agents/subagent-findings.md#9", "class": "O", "hash": "82e083dbed08"}
+{"para": "baseline/docs/agents/subagent-findings.md#10", "class": "O", "hash": "2f1bec4864fe"}
+{"para": "baseline/docs/agents/subagent-findings.md#11", "class": "O", "hash": "539b1e3ff9e7"}
+{"para": "baseline/docs/agents/subagent-findings.md#12", "class": "O", "hash": "3f304603ac1a"}
+{"para": "baseline/docs/agents/subagent-findings.md#13", "class": "O", "hash": "360c3453c3e5"}
+{"para": "baseline/docs/agents/subagent-findings.md#14", "class": "S", "hash": "1bd7c183580f"}
+{"para": "baseline/docs/agents/subagent-findings.md#15", "class": "S", "hash": "ed860d9c732e"}
+{"para": "baseline/docs/agents/subagent-findings.md#16", "class": "S", "hash": "6ceb0cb22c48"}
+{"para": "baseline/docs/agents/subagent-findings.md#17", "class": "S", "hash": "0a276c439f0a"}
+{"para": "baseline/docs/agents/subagent-findings.md#18", "class": "F", "hash": "0876fdb6ec63", "note": "不覆盖授权结果由结构保证 (没有绕过 Reviewer 节点的边)"}
+{"para": "baseline/docs/agents/subagent-findings.md#19", "class": "S", "hash": "7598c00a8a3b"}
+{"para": "baseline/docs/agents/subagent-findings.md#20", "class": "S", "hash": "24ec6387a00e"}
+{"para": "baseline/docs/agents/subagent-findings.md#21", "class": "S", "hash": "9f5a9addf3f4"}
+{"para": "baseline/docs/agents/subagent-findings.md#22", "class": "F", "hash": "57fe99bb66ce", "note": "\"含新的具体错误\" 是语义条件, challenge.next 只能机械拦住重复理由"}
+{"para": "baseline/docs/agents/subagent-findings.md#23", "class": "N", "hash": "903ea500e7cc", "note": "仓库自有区域占位 None."}
+{"external": "skills/issue-tracking/SKILL.md#Issue record sections", "note": "implementation-commit/records, close-and-commit/verify: 记录章节的变化不触发复审, 由 commitAudit.verify 机械核对"}
+{"external": "skills/spec-readiness/SKILL.md#Authorization timing", "note": "handle-findings/dispose (已开始实施后措辞类不改 subject), handle-findings/wording (21 的单向判断题), close-and-commit/subject-verify"}
+{"external": "skills/implement/SKILL.md#Entry 第 5 步", "note": "specReadiness.verifySubjectOnly 跳过行为保持重构例外与无记录的 issue"}
+{"external": "skills/validation/SKILL.md#Required checks, Coverage", "note": "audit-round/full-checks, candidate-checks/precheck, candidate-checks/callbacks; 证据写法进 implementation-commit/records"}
+{"external": "baseline/docs/agents/reviewer.md#Re-review, Review handoff, Report", "note": "K3 原样交 Reviewer; 其中空报告检查进 commitAudit.collect, 复审交付内容由 Engine 组装 (audit-round/rev-req 的 inputs)"}
+{"external": "baseline/docs/agents/roles/requirements-reviewer.md", "note": "K3 原样交 Reviewer"}
+{"external": "skills/rule-and-design-changes/SKILL.md#Reviewer-proposed changes", "note": "spec-change-decision (按 09 改为独立会话共同决定)"}

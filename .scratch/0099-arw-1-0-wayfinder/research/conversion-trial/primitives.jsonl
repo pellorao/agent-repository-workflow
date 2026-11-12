@@ -1,0 +1,26 @@
+{"note": "试转换所需的 Engine 原语, 只列接口. status: existing = 现有 lib 中已有同等操作, split = 现有操作要拆开或改成返回结果值, new = 需要新写. barrier = 08 的屏障. 子流程不在本试转换范围内的 (如 spec-readiness) 以 kind=external-flow 登记."}
+{"primitive": "commit.authorization", "params": ["autoCommit", "requested"], "results": ["authorized", "needs-user"], "status": "new", "source": "07 提交步骤要有授权来源"}
+{"primitive": "candidate.stageInstance", "params": ["writeScope"], "results": ["staged", "mixed-file", "empty"], "status": "new", "source": "07 Git 写入只由 Engine; 10 写入链归属"}
+{"primitive": "commit.classify", "params": [], "results": ["non-implementation", "implementation", "unclassifiable", "multi-effort"], "status": "split", "source": "lib/commit-audit 的 verify --non-implementation 分类部分"}
+{"primitive": "checks.run", "params": ["checkIds", "commands"], "results": ["pass", "fail"], "status": "split", "source": "arw text check, arw terms check, arw code-map verify, verify --non-implementation 的机械检查, 仓库测试命令"}
+{"primitive": "commit.nonImplementationReviewScope", "params": ["reviewSystemGlobs"], "results": ["review-required", "maybe", "none"], "status": "new", "source": "无, 由规则 non-implementation-workflow 的例外段落得出"}
+{"primitive": "review.freezeComparison", "params": [], "results": ["frozen"], "status": "split", "barrier": true, "source": "reviewer-launch/other-reviews.md 的手工固定, 改为程序"}
+{"primitive": "git.commit", "params": ["message"], "results": ["committed", "hook-failed", "hook-modified"], "status": "new", "barrier": true, "source": "07 提交与 hooks; 提交后释放写入者令牌 (10)"}
+{"primitive": "instance.flag", "params": ["name"], "results": ["set", "unset"], "status": "new", "source": "无, graph 不带条件表达式的代价"}
+{"primitive": "instance.setFlag", "params": ["name"], "results": ["done"], "status": "new", "source": "同上"}
+{"primitive": "instance.once", "params": ["key"], "results": ["first", "again"], "status": "new", "source": "同上, key 按审核轮区分"}
+{"primitive": "commitAudit.authorizingScope", "params": [], "results": ["ok", "out-of-scope"], "status": "split", "source": "prepare 中 Gate 1 覆盖与单一 effort 检查"}
+{"primitive": "commitAudit.measure", "params": [], "results": ["measured"], "status": "split", "source": "prepare 标准错误中的净增摘要与下一个 ADR 编号"}
+{"primitive": "tests.measureCallbacks", "params": ["thresholdMs", "policy"], "results": ["ok", "accepted-over", "over-threshold"], "status": "new", "source": "validation Skill 的 Coverage 节单回调阈值"}
+{"primitive": "commitAudit.precheck", "params": ["checkIds"], "results": ["pass", "warnings"], "status": "split", "source": "prepare 的 warning: 行加 text/terms/code-map 检查"}
+{"primitive": "review.cutUnits", "params": ["roles"], "results": ["units", "none"], "status": "new", "source": "09 预检单元 (diff hunk, What to build 条目, 验收标准)"}
+{"primitive": "commitAudit.prepare", "params": [], "results": ["frozen", "error"], "status": "existing", "barrier": true, "source": "arw commit-audit prepare"}
+{"primitive": "round.next", "params": ["scope"], "results": ["counted"], "status": "new", "source": "fix-rounds 的轮次计数 (现由 Main 数 prepare 次数)"}
+{"primitive": "commitAudit.axesToRun", "params": [], "results": ["both", "requirements-only", "standards-only"], "status": "new", "source": "09 按冻结输入集合机械复用轴结果"}
+{"primitive": "commitAudit.collect", "params": [], "results": ["all-clear", "findings", "checks-failed", "incomplete"], "status": "new", "source": "reviewer-launch Review rounds 第 2 步, Review handoff 的空报告检查"}
+{"primitive": "dispositions.validate", "params": [], "results": ["ok", "invalid"], "status": "new", "kind": "output-check", "source": "fix-rounds 的台账格式与第 3 轮规则, implementation-workflow 第 7 步的处置集合"}
+{"primitive": "dispositions.has", "params": ["kind"], "results": ["yes", "no"], "status": "new", "source": "无, 为单向判断题选择输入"}
+{"primitive": "challenge.next", "params": [], "results": ["requirements", "standards", "done"], "status": "new", "source": "subagent-findings 的 Reviewer challenges 节"}
+{"primitive": "commitAudit.verify", "params": [], "results": ["pass", "needs-round", "error"], "status": "split", "source": "arw commit-audit verify, 错误列表改为结果值"}
+{"primitive": "specReadiness.verifySubjectOnly", "params": [], "results": ["pass", "fail"], "status": "existing", "source": "arw spec-readiness verify --subject-only, 加 git diff --quiet 与跳过无记录 issue"}
+{"kind": "external-flow", "flow": "spec-readiness", "params": ["issueId", "mode"], "returns": ["satisfied", "cancelled"]}

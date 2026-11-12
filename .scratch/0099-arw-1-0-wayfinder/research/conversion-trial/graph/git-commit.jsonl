@@ -1,0 +1,3 @@
+{"flow": "git-commit", "desc": "Engine 执行 `git commit` (08 的屏障, 提交后释放写入者令牌). 仓库 hook 失败或改动了文件时交回调用方.", "entry": "commit", "returns": {"committed": "已提交", "hook-failed": "hook 拒绝, 需要修正", "restage": "用户整理 hook 的改动后重新暂存", "stopped": "用户停止"}}
+{"id": "commit", "type": "program", "desc": "用状态中最近一次起草的提交说明提交.", "primitive": "git.commit", "args": {"message": "$state.commitMessage"}, "next": {"committed": "return:committed", "hook-failed": "return:hook-failed", "hook-modified": "ask-hook"}, "barrier": true}
+{"id": "ask-hook", "type": "waitUser", "desc": "现行规则没有写 hook 改文件的情形, 这是转换时补的.", "next": {"retry": "return:restage", "stop": "return:stopped"}, "question": "提交时仓库 hook 改动了文件. 检查改动后重试, 或停止.", "options": ["retry", "stop"], "context": ["$state.hookChanges"]}

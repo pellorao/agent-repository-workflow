@@ -1,0 +1,10 @@
+{"kind": "param", "name": "autoCommit", "from": "user-config", "type": "boolean", "desc": "用户是否开启自动提交."}
+{"kind": "param", "name": "validation.commands", "from": "arw.config.json", "type": "string[]", "desc": "实施提交的完整仓库测试命令."}
+{"kind": "param", "name": "validation.nonImplementationCommands", "from": "arw.config.json", "type": "string[]", "desc": "非实施提交的补充检查命令."}
+{"kind": "param", "name": "validation.callbackThresholdMs", "from": "arw.config.json", "type": "integer", "default": 100, "desc": "单个测试回调耗时阈值."}
+{"kind": "param", "name": "validation.callbackOverThreshold", "from": "arw.config.json", "type": "enum", "values": ["ask-user", "accept"], "default": "ask-user", "desc": "超阈值案例逐例问用户, 还是一律接受 (本仓库的 Baseline 例外)."}
+{"kind": "param", "name": "reviewSystemGlobs", "from": "graph-constant", "type": "string[]", "value": ["docs/agents/reviewer.md", "docs/agents/roles/**", "docs/specs/**", "docs/adr/**"], "desc": "命中即视为改动审核系统或长期规范的路径."}
+{"kind": "work", "name": "author", "session": "reuse-instance-work", "desc": "产出候选的那项工作的原会话 (实施 issue 的 worker 会话, 或发起非实施提交的工作的会话)."}
+{"kind": "work", "name": "review:requirements", "session": "reuse-by-role-and-issue-set", "role": "requirements-reviewer", "desc": "要求符合 Reviewer; 同一授权 issue 集合的复审回到同一会话."}
+{"kind": "work", "name": "review:standards", "session": "reuse-by-role-and-issue-set", "role": "code-standards-reviewer", "desc": "Code Standards Reviewer; 复审回到同一会话."}
+{"kind": "work", "name": "spec-second-opinion", "session": "new", "tier": "not-below-author", "desc": "判断 spec 修改的独立会话, 智能档不低于作者."}

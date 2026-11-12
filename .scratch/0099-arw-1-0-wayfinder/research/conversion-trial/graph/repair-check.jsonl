@@ -1,0 +1,3 @@
+{"flow": "repair-check", "desc": "开下一轮之前, 对本轮修过的每条发现问判断模型 \"修复是否没解决\" (09 提示类); 阈值以上的退回作者, 每轮最多一次.", "entry": "once", "returns": {"clear": "开下一轮", "flagged": "退回作者补修"}}
+{"id": "once", "type": "program", "desc": "每轮只问一次.", "primitive": "instance.once", "args": {"key": "fixcheck:$state.round"}, "next": {"first": "ask-judge", "again": "return:clear"}}
+{"id": "ask-judge", "type": "judgment", "desc": "\"已解决\" 不替代 Reviewer 复审.", "next": {"flagged": "return:flagged", "clear": "return:clear"}, "kind": "noul", "category": "repair-check", "forEach": "$state.fixedFindings", "aggregate": {"flagged": "any above threshold", "clear": "none above threshold or empty"}, "template": "这次修复是否没有解决发现 {finding}?", "state": ["$item.finding", "$item.diff"], "options": ["flagged", "clear"]}

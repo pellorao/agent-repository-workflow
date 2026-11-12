@@ -1,0 +1,3 @@
+{"flow": "obtain-authorization", "desc": "提交要有授权来源 (07): 用户在流程中的请求, 或用户配置的自动提交; 完成 issue 本身不触发提交.", "entry": "check", "returns": {"granted": "可以提交", "declined": "用户不提交"}}
+{"id": "check", "type": "program", "desc": "有用户请求或自动提交配置即通过.", "primitive": "commit.authorization", "args": {"autoCommit": "$param.autoCommit", "requested": "$state.userRequestedCommit"}, "next": {"authorized": "return:granted", "needs-user": "ask"}, "src": ["skills/commit/SKILL.md#1"]}
+{"id": "ask", "type": "waitUser", "desc": "没有授权来源时问用户.", "next": {"commit": "return:granted", "stop": "return:declined"}, "question": "是否提交本实例的改动?", "options": ["commit", "stop"], "context": ["$state.instanceSummary"], "src": ["skills/commit/SKILL.md#1"]}
