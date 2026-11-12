@@ -25,7 +25,7 @@ Blocked by: issue:0099:05, issue:0099:07, issue:0099:08
 
 1. 确定性检查 (Engine 程序): 现有 `prepare` 的机械预检与 `warning:` 行 (含 Spec Readiness 自检中可机械判定的部分, Commit Audit 的体积摘要与 Validation 摘要核对), `commit-audit verify --non-implementation` 的检查, `arw text check` 和仓库配置的快速检查. 有问题时交 worker 修复后重做, 不启动 Reviewer. 现行 "warning 不是关卡, 但要先处理再启动 Reviewer" 由此成为流程分支. 耗时长的测试照现行可以与审核并行, 未完成的检查不提供通过事实, 失败进入修复循环.
 2. 提示 (判断): 预检与输出检查, 用法见 Judgments in the review loop 节.
-3. 冻结 (Engine 程序, 是 08 的屏障): 先等候选依赖的全部判断已复核且未被推翻, 再固定本轮输入. Spec Readiness 是 subject, Input 与规则副本的快照; Commit Audit 由 Engine 暂存后以 `git write-tree` 取得 `tree`, 连同 `base`; 非提交 Code Review 是不可变比较. 同时由 Engine 生成本轮审核单元清单 (见 Coverage 节).
+3. 冻结 (Engine 程序, 是 08 的屏障): 先等候选依赖的全部判断已复核且未被推翻, 再固定本轮输入. Spec Readiness 是 subject, Input 与规则副本的快照 (Spec Readiness Reviewer 只读检索仓库的例外保留, 但检索的是本轮视图的树 (`git grep <模式> <树>`), 不是工作树, 以免读到其他实例的未提交改动, 见 [定义并行流程的读取与写入隔离](10-define-parallel-flow-isolation.md)); Commit Audit 由 Engine 暂存后以 `git write-tree` 取得 `tree`, 连同 `base`; 非提交 Code Review 是不可变比较. 同时由 Engine 生成本轮审核单元清单 (见 Coverage 节).
 4. 正式审核 (Agent 步骤): 首轮新建会话, 复审沿原会话交付相邻版本差异, 前轮报告与处置台账 (现行 Re-review 节不变). 输出绑定报告 (格式不变) 和覆盖清单.
 5. 覆盖核对 (Engine 程序): 见 Coverage 节.
 6. 处置与抽查 (worker 会话的一个 Agent 步骤): 见 Spot checks and dispositions 节.
