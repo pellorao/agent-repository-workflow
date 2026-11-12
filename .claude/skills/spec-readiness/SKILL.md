@@ -11,7 +11,7 @@ Spec Readiness 针对每个实施 issue 运行 (交付只含非实施分类内�
 
 - Spec Readiness 在 spec 和 issue 设计定稿时审核一次, 不在报告完成或提交审核时重复. 首次修改本 issue 的实现文件前 (行为保持重构例外的 issue 除外) 须取得 `satisfied` 或例外记录 (`implement` Skill 的 Entry 检查完整 `verify`; 例外记录可以按 `./exception-workflow.md` 补生成). 记录只授权开始实施; 开始实施后的设计改动由提交审核核对.
 - 不通过时修正后复审: 重新执行 `prepare -> review -> generate -> promote`, Reviewer 按 `docs/agents/reviewer.md` 的 Re-review 节只看改动部分及其影响范围. 开始实施前, 治理 Input 字节, Reviewer Role 或 subject 变化后旧记录不授权新版本, 须做增量复审, 不由 Main Agent 自行判断改动是否相关. `architecture-evidence` 是 issue 本身会修改的实现事实, 不受字节检查.
-- 已开始实施后, 提交审核提出的只涉及措辞, 重复或一致性 (不改变范围, 行为或验收含义) 的问题不修改 subject: 在 issue 的 `## Comments` 记录处置, 由提交审核的要求符合审核对照 spec 与实现核对, 不重跑本工作流. 改变范围, 行为或验收含义的真实变化仍修改 subject 并做增量复审. 判断由 Main Agent 作出, 拿不准时按真实变化处理.
+- 已开始实施后, 提交审核提出的只涉及 issue subject 措辞, 重复或一致性 (不改变范围, 行为或验收含义) 的问题不修改 subject: 任何轮次都在 issue 的 `## Comments` 按 `../commit/fix-rounds.md` 的处置台账记 `台账: ... 记录不修 ...`, 由提交审核的要求符合审核对照 spec 与实现核对, 不重跑本工作流. 改变范围, 行为或验收含义的真实变化仍修改 subject 并做增量复审. 判断由 Main Agent 作出, 拿不准时按真实变化处理.
 - "已开始实施" 只按规则判断, 不由引擎判断: 当前分支已有本 issue 授权的实施提交, 或工作树已有本 issue 的实现改动. 已开始实施后 Input 与 Reviewer Role 的字节变化不再阻断, 中断后恢复实施也不重跑完整 `verify`. 实现文件指该 issue 交付的所有已跟踪文件 (代码, 测试, 文档, 规则, 含它的治理 Input), 不含 `.scratch` 中该 issue 的 issue 文件与就绪记录.
 - `arw spec-readiness verify --issue issue:<NNNN>:<NN>` 在开始实施前运行完整核对 (补生成的例外记录在生成后运行); 实施提交前 (含让 issue 进入终态的收尾提交; 行为保持重构例外的 issue 除外) 运行 `verify --subject-only`, 只核对 subject; 除实施提交外不为收尾或已完成的 issue 另行验证. 都必须取得退出码 `0`; `1` 表示记录缺失, 格式错误, 过期, 语义未满足或对该 issue 无效, `2` 表示命令用法无效. 缺失, 过期或 `gap` 结果阻断实施和提交, 不阻断不依赖该结果的其他工作.
 

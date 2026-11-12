@@ -28,6 +28,19 @@ test('precheck warns about out-of-range references, missing paths and criteria w
     ]);
 });
 
+test('precheck warns about criteria conditioned on post-commit facts or other reviews', async t => {
+    const root = await createTemporaryDirectory(t, 'precheck-');
+    const criteria = '- [ ] 观察: Commit Audit 通过.\n- [ ] 观察: 提交号已记录.\n- [ ] 观察: Spec Readiness 通过.\n- [ ] 观察: 审核结果为通过.\n- [ ] 观察: 审核全部通过.\n- [ ] 观察: Spec Readiness 已通过.\n- [ ] 观察: 输出含 ok.\n- [ ] 观察: Reviewer 角色文档检查通过.\n- [ ] 观察: 审核脚本输出通过.';
+    assert.deepEqual(await precheckSpecReadiness({repositoryRoot: root, subject: {content: subjectOf('做事.', criteria), filePath: 'issue.md'}, texts: []}), [
+        'warning: issue.md: 验收项以提交后的事实或其他审核的结果为条件, 应移入预期验证: - [ ] 观察: Commit Audit 通过.',
+        'warning: issue.md: 验收项以提交后的事实或其他审核的结果为条件, 应移入预期验证: - [ ] 观察: 提交号已记录.',
+        'warning: issue.md: 验收项以提交后的事实或其他审核的结果为条件, 应移入预期验证: - [ ] 观察: Spec Readiness 通过.',
+        'warning: issue.md: 验收项以提交后的事实或其他审核的结果为条件, 应移入预期验证: - [ ] 观察: 审核结果为通过.',
+        'warning: issue.md: 验收项以提交后的事实或其他审核的结果为条件, 应移入预期验证: - [ ] 观察: 审核全部通过.',
+        'warning: issue.md: 验收项以提交后的事实或其他审核的结果为条件, 应移入预期验证: - [ ] 观察: Spec Readiness 已通过.',
+    ]);
+});
+
 test('precheck stays silent for a clean subject', async t => {
     const root = await createTemporaryDirectory(t, 'precheck-');
     assert.deepEqual(await precheckSpecReadiness({repositoryRoot: root, subject: {content: subjectOf('做事.', '- [ ] 观察: 通过.'), filePath: 'issue.md'}, texts: []}), []);

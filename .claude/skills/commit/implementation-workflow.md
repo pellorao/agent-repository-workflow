@@ -8,7 +8,7 @@
 4. 两个 Reviewer 正常结束 (`ready`) 后, 按 `docs/agents/subagent-findings.md` 独立核对报告中的每个问题, 并按 `../reviewer-launch/SKILL.md` 抽查. Reviewer 返回 `incomplete` 时本轮结束, Main Agent 处理其原因后重新 `prepare`.
 5. 报告有问题需要修复或处置时, 读取 `./fix-rounds.md` 并按其执行 (复审, 台账, 轮次规则, 冲突裁决); 没有问题时跳过.
 6. 按 `../issue-tracking/SKILL.md` 的 Issue record sections 节规则统一暂存收尾记录, 用 `git diff <受审 tree> $(git write-tree)` 核对最终暂存树相对受审版本只有记录差异. 只有记录差异 (Validation, Comments, 含新增的台账) 不需要复审, 记完直接提交. `arw commit-audit verify` 也机械核对这一点: 授权 issue 的 `Status` 和 What to build, Acceptance criteria 两段 (含验收勾选) 在 `prepare` 之后不得再改, 所以先勾选验收再 `prepare`; 失败时按提示重新 `prepare` 并复审.
-7. 提交门槛是两个 Reviewer 正常结束且报告中的问题都已处理 (修正, 按质疑规则证明无效, 按 `docs/agents/subagent-findings.md` 的 Triage by origin 节记入后续 issue, 或按台账记 "记录不修" 或 "冲突裁决", 前者仅限第 3 轮起的措辞, 重复和文档去重类问题). 只修改代码的修复不使 Spec Readiness 记录失效, 不重跑就绪审核. 未完成 issue 的问题只在确属计划中尚未完成的工作时保留. 运行 `arw commit-audit verify` 并取得空错误列表.
+7. 提交门槛是两个 Reviewer 正常结束且报告中的问题都已处理 (修正, 按质疑规则证明无效, 按 `docs/agents/subagent-findings.md` 的 Triage by origin 节记入后续 issue, 或按台账记 "记录不修" 或 "冲突裁决", 前者对实施开始后只涉及 issue subject 措辞, 重复或一致性的问题任何轮次都可用, 其余措辞, 重复和文档去重类问题仅限第 3 轮起). 只修改代码的修复不使 Spec Readiness 记录失效, 不重跑就绪审核. 未完成 issue 的问题只在确属计划中尚未完成的工作时保留. 运行 `arw commit-audit verify` 并取得空错误列表.
 8. 对每个授权 issue 先确认其 issue 文件没有未暂存修改 (`git diff --quiet -- <issue 文件>`), 再运行 `arw spec-readiness verify --subject-only --issue issue:<NNNN>:<NN>` 并取得 `0` (只核对 subject, 治理 Input 和 Reviewer Role 的变化不阻断), 然后提交. 按 `../implement/SKILL.md` 的 Entry 节的行为保持重构例外实施, 没有就绪记录的 issue 跳过 `verify`. 提交后建议用户运行 `/retro` 复盘本次工作.
 
 ## Commit Audit

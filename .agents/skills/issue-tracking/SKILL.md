@@ -19,7 +19,7 @@ name: issue-tracking
 
 已发布的 Module 实施 issue 的受保护内容存在真实问题, 导致已同意的范围无法继续时, 说明问题并请求用户授权精确修正. 获准后只遵循 `../application-workflow/references/module-correction.md`, 不更改或建议更改已关联的 Application issue.
 
-验收标准不包含以 Commit Audit 通过或提交本身为条件的条目; 这些由 `commit` 工作流保证, 写入预期验证.
+验收标准不包含以提交及其后才产生的事实 (Commit Audit 通过, 提交本身, 提交号, 推送) 或其他审核的结果为条件的条目; 这些由 `commit` 工作流保证, 写入预期验证.
 
 ## Triage labels
 
@@ -42,7 +42,7 @@ name: issue-tracking
 
 `## Validation` 保存当前验收项对应的实际命令, 测试, 文件位置和结果; `## Comments` 在 issue 底部保存讨论, 审核事件和已取得的结论. 这两章整章是记录:
 
-- 它们不承载实施要求, 验收条件或授权例外, 不成为独立通过的权威. 有效要求和替代决定写入 `## What to build` 或 `## Acceptance criteria`; 已开始实施后只涉及措辞, 重复或一致性的处置不改这两章, 按 `../spec-readiness/SKILL.md` 的 Authorization timing 节记入 `## Comments`. 正式验收以某审核通过为条件时, 必须先取得该事实.
+- 它们不承载实施要求, 验收条件或授权例外, 不成为独立通过的权威. 有效要求和替代决定写入 `## What to build` 或 `## Acceptance criteria`; 已开始实施后只涉及措辞, 重复或一致性的处置不改这两章, 按 `../spec-readiness/SKILL.md` 的 Authorization timing 节, 用 `../commit/fix-rounds.md` 的 `台账:` 格式记入 `## Comments`.
 - 它们的变化不改变审核对象身份, 不触发 Spec Readiness, Code Standards 或要求符合审核的语义复审. 修改后机械核对准确章节范围, 文本和证据定位, 确认没有其他实现, 要求, 输入或授权变化. 提交审核运行中先改工作树, 暂存时点见 `commit` Skill. `Status` 和验收勾选不属于此例外.
 - 链接不扩大 Reviewer 读取权限, 成功声明不替代独立判断. 新失败和反证仍须处理, 删除记录不消除已知失败.
 - 其他工作流对记录中结构化信息的解析, 同步, 关联和纠错合同不变.

@@ -8,4 +8,4 @@ Reviewer 当作审查标准读取的通用指令 (根 `AGENTS.md`, `issue-tracki
 
 | 提交 | 文件:行 | 改了哪条检查 | 登记日期 |
 |---|---|---|---|
-| 本轮提交 | `.agents/skills/issue-tracking/SKILL.md:21` | 作者侧禁止以 Commit Audit 通过或提交本身为验收条件, 改写入预期验证; Main 裁定本轮登记待测, 不触发能力 A/B | 2026-11-13 |
+| 本轮提交 | `.agents/skills/issue-tracking/SKILL.md:22` | 作者侧禁止以提交及其后事实或其他审核结果为验收条件, 改写入预期验证, 要求符合审核把这类验收项写成 issue 问题 (`roles/requirements-reviewer.md`); Main 裁定本轮登记待测, 不触发能力 A/B | 2026-11-13 |

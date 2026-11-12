@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0121:01",
+  "exception": {
+    "confirmedAt": "2026-11-02T00:00:00Z",
+    "reason": "用户 2026-11-02 对无设计决定、单 effort 单 issue 的这类 issue 的常设确认, 本 issue 为 G05/G06 机械修复."
+  },
+  "subject": {
+    "filePath": ".scratch/0121-rule-conflict-fixes/issues/01-g05-g06-rule-conflicts.md",
+    "sha256": "75274ca8764f1f71419b2e7f825c56f7e5fba01a37774a9490346d99c35615ba"
+  },
+  "result": "not-applicable"
+}

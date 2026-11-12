@@ -530,7 +530,7 @@ Main Agent 在仓库 `.tmp/` 下写一个 `input.json`, 只包含同一 effort �
 
 要求符合审核的 Reviewer 接收 Request 路径, 只用 `git diff <base> <tree>`, `git show <tree>:<path>` 和 `git ls-tree` 读取受审版本, 把发现的要求问题逐条写入 `review.txt` (每条写明位置, 影响和修正方向), 没有问题时写 `No problems.`, 然后只返回 `ready | incomplete`. `incomplete` 结束本轮并交回 Main Agent.
 
-提交门槛是两个 Reviewer 正常结束且报告中的问题都已处理 (修正, 证明无效, 转入后续 issue, 或按提交工作流的台账规则记 "记录不修" 或 "冲突裁决"; 第 3 轮起只为行为缺陷开修复轮, 措辞, 重复和文档去重类问题记 "记录不修"). Main Agent 独立核对每个问题, 每轮自选一两处 Reviewer 应当检查的要求或代码位置抽查; 发现漏检时该轮结果作废并重审. ARW 不生成或提升审核记录.
+提交门槛是两个 Reviewer 正常结束且报告中的问题都已处理 (修正, 证明无效, 转入后续 issue, 或按提交工作流的台账规则记 "记录不修" 或 "冲突裁决"; 第 3 轮起只为行为缺陷开修复轮, 措辞, 重复和文档去重类问题记 "记录不修"; 实施开始后只涉及 issue subject 措辞, 重复或一致性的问题任何轮次都可记 "记录不修"). Main Agent 独立核对每个问题, 每轮自选一两处 Reviewer 应当检查的要求或代码位置抽查; 发现漏检时该轮结果作废并重审. ARW 不生成或提升审核记录.
 
 `authorizingIssueIds` 使用本地数字 Canonical ID. Gate 1 覆盖本次新进入终态的 issue, 它们必须在授权范围内. Gate 2 在当前 effort 的每个实施 issue 都处于终态时适用, 文档是 `git diff --name-only <since> <tree>` 中属于 `docs/adr/`, `docs/specs/` 下的 Markdown 或当前 `.scratch/<NNNN>-<slug>/` 下 `spec.md`, `PRD.md` 的路径; `since` 由 `lib/arw-common` 的 effort 起点推导给出, 不存储基线. diff 为空时没有文档, Gate 2 无需审核. 不存在 `gate2Exception`, 输入含未知键时 `prepare` 拒绝. 每次实施提交的 Gate 1 另含差异回归检查, 其流程由 `requirements-reviewer` 角色拥有.
 
