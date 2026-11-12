@@ -50,7 +50,7 @@ Main Agent 改写为: 用户选定模型, 由 Engine 驱动的对话会话, 负�
 
 - 顺序, 门禁与跳过条件进入流程定义和程序检查 (`implement` 的 Entry, `spec-readiness`, `commit`, `reviewer-launch`, `issue-tracking` 的字段生命周期, `agent-writes.md`, `subagent-allocation.md`); 其中要靠语义判断的条件 (如 "这项改动是否需要用户决定") 写成流程定义中的判断题, 按 [定义分流判断的复核与回退合同](08-define-routing-review-and-rollback.md) 执行.
 - 单步判断方法变成随流程定义版本化的本步短指令 (`subagent-findings.md`, Reviewer 发现的处置).
-- Reviewer Role 正文保留为完整文档; 通用方法继续作为 Skill (`tdd`, `diagnosing-bugs`, `codebase-design`, `domain-modeling`, `research`, `prototype`, `writing-for-agents` 等); 写作与输出规则保留为常读规则.
+- Reviewer Role 正文保留为文档 (其中可机械判定的检查项移成 09 第 1 步的程序检查); 通用方法继续作为 Skill (`tdd`, `diagnosing-bugs`, `codebase-design`, `domain-modeling`, `research`, `prototype`, `writing-for-agents` 等); 写作与输出规则保留为常读规则.
 - 只服务旧机制的内容删除. 仓库自有区域原样保留.
 
 仍向仓库分发规则: 保留锁, 受管区域与投影机制, 分发内容缩减为常读的写作与输出规则, 一条 "ARW 流程只经 Engine 运行" 的声明, 方法类 Skill 和 Reviewer Role 文档; 顺序与门禁类 Skill 和文档由 `workflow update` 删除. 现有 update 已能删除不再分发的受管文件, 并把其中的仓库自有区域迁入 `AGENTS.md` (`lib/repository-workflow/workflow.mjs` 约 L1185-1200), 改动最小, 仓库自有规则也继续随 Git 版本化, 由 harness 原生加载. 用户绕过 Engine 直接在仓库中打开 Codex 或 Claude Code 时, 会话可以做普通协助, 不执行 issue 实施, 就绪或提交审核流程. 未采用: 全部规则随 Engine 安装, 在开会话时注入 (要改写仓库工作流和开发两份长期规格, 直接打开的会话失去原生 Skill, 团队规则不再随 Git 版本化).
@@ -75,7 +75,7 @@ ARW 源码仓库不运行 `workflow update`, 它的升级就是 `arw-1.0` 分支
 
 ### Interfaces
 
-- 09: 就绪记录的新模式, Reviewer Role 的改写, "每轮抽查一两处" 的去向 (已取消, D15), haiku 回退规则的去向.
+- 09: 就绪记录的新模式, Reviewer Role 的改写 (可机械判定的检查项移到 09 第 1 步的确定性检查, Role 只留需判断的部分), "每轮抽查一两处" 的去向 (已取消, D15), haiku 回退规则的去向.
 - [定义并行流程的读取与写入隔离](10-define-parallel-flow-isolation.md): 临时工作区由 Engine 提供身份; `docs/agents/parallel-implementation.md` 的 worktree 规则并入 10.
 - [整理 ARW 1.0 规范的结构与验收场景](14-prototype-spec-outline.md): 大纲要有 "从 0.x 升级" 一章, 验收场景至少包括: 有未提交工作时升级被拒; 0.x 运行时在 v3 锁仓库上失败; v2 锁仓库上 Engine 不开工; 按 Failure recovery 节手工回退; 跨版本的 Application 关联仍可同步.
 - 未核实的推断, 留给规范与实施验证: 0.x 管理进程遇到 1.0 新增的 SQLite 表时的行为; 用户是否在脚本或 CI 中调用门禁命令; 跨版本时 Application 关联只靠 Artifact 格式不变即可工作.
