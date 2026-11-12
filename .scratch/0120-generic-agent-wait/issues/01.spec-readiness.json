@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0120:01",
+  "exception": {
+    "confirmedAt": "2026-11-12T18:17:14Z",
+    "reason": "用户本轮明确确认 Issue T 无剩余设计决定, 单 effort 单 issue 使用 not-applicable 例外."
+  },
+  "subject": {
+    "filePath": ".scratch/0120-generic-agent-wait/issues/01-wait-and-acceptance.md",
+    "sha256": "c639e7887f2d3175384e7eb3cd6bbab47c7be8807a15d0764c34e5f86aacc199"
+  },
+  "result": "not-applicable"
+}

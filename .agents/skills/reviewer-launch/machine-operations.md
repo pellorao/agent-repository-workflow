@@ -14,3 +14,5 @@
 - 回执超时或连接失败时, 不自动重发: 用 `messages` 查询发给该 Reviewer 的最近消息, 再决定等待, 重发或报告结果不确定. 查不到记录不能单独证明发送失败.
 - `--wait` 命令在输出 `<id>:done` 前返回 (读到回执后工具超时或进程被终止) 不表示审核结束, 审核仍在运行; 工具会话丢失后重新连接同理: 用回执中的 `runId` 调 `list_agents` 取 `cursor` 观察, 再按需 `wait_agent` 续等, 直到 `completion` 非空. 原线程或原有路径与设置无法恢复时明确失败, 不静默新建线程.
 - 从 `completion` 取得结果后读取绑定报告. 空报告或残留草稿不是有效结果; 收尾失败时按具体原因处理.
+
+- 普通 Agent 的 `spawn_agent` 须提供含 `model`, `modelProvider`, `reasoningEffort`, `serviceTier` 和 `config` 的 `settings`; 缺失或无效时返回 `background-agent-operation-failed`, 消息为 `Background Agent settings require model, modelProvider, reasoningEffort, serviceTier and config.`. `--wait` 在普通 Agent 的任务回合结束时返回 `<id>:done`.

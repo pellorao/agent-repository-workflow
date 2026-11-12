@@ -19,6 +19,8 @@ name: issue-tracking
 
 已发布的 Module 实施 issue 的受保护内容存在真实问题, 导致已同意的范围无法继续时, 说明问题并请求用户授权精确修正. 获准后只遵循 `../application-workflow/references/module-correction.md`, 不更改或建议更改已关联的 Application issue.
 
+验收标准不包含以 Commit Audit 通过或提交本身为条件的条目; 这些由 `commit` 工作流保证, 写入预期验证.
+
 ## Triage labels
 
 读取或更新分流状态时使用以下值:

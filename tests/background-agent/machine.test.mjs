@@ -221,6 +221,40 @@ test('--wait follows each accepted Reviewer task until a completion or a program
     assert.equal(io.responses.length, 5);
 });
 
+test('--wait ends an ordinary task once and keeps waiting for Reviewer completion after turn end', async () => {
+    for (const operation of ['spawn_agent', 'followup_task']) {
+        for (const reviewer of [false, true]) {
+            const io = capture();
+            let waits = 0;
+            const message = {messageId: 'm', source: 'agent', text: 'Finished turn.'};
+            const code = await runBackgroundAgent({
+                ...io,
+                input: Readable.from([request('a', operation)]),
+                runtime: {
+                    async execute() {return {status: 'succeeded', result: {runId: 'run'}};},
+                    async wait() {
+                        assert.ok(++waits <= (reviewer ? 2 : 1), 'an ended ordinary turn must not spin');
+                        return {status: 'succeeded', result: {
+                            cursor: waits, state: 'idle', taskState: 'ended', providerError: 'detail',
+                            notifications: waits === 1 ? [{type: 'message', ...message}] : [],
+                            ...(reviewer ? {completion: waits === 1 ? null : {status: 'ready', reportPath: '/r'}} : {}),
+                        }};
+                    },
+                    async close() {return {status: 'succeeded', result: null};},
+                },
+                waitForCompletion: true,
+            });
+            assert.equal(code, 0);
+            assert.equal(waits, reviewer ? 2 : 1);
+            assert.equal(io.responses.length, 2);
+            assert.deepEqual(io.responses.at(-1), {id: 'a:done', ok: true, result: {
+                runId: 'run', state: 'idle', completion: reviewer ? {status: 'ready', reportPath: '/r'} : null,
+                messages: [message], providerError: 'detail',
+            }});
+        }
+    }
+});
+
 test('`--wait` keeps waiting after a stray cancelled wait result and ends on the real completion', async () => {
     const io = capture();
     const updates = [{cursor: 2, cancelled: true}, {cursor: 3, state: 'idle', completion: {status: 'ready', reportPath: '/r'}}];
@@ -245,7 +279,7 @@ test('`--wait` reports `reviewer-not-ready` when the run exits without a complet
         input: Readable.from([request('a', 'spawn_agent')]),
         runtime: {
             async execute() {return /** @type {RuntimeResult} */ ({status: 'succeeded', result: {runId: 'run'}});},
-            async wait() {return /** @type {RuntimeResult} */ ({status: 'succeeded', result: {cursor: 2, state: 'exited', providerError: 'crashed'}});},
+            async wait() {return /** @type {RuntimeResult} */ ({status: 'succeeded', result: {cursor: 2, state: 'exited', taskState: 'ended', providerError: 'crashed'}});},
             async close() {return {status: 'succeeded', result: null};},
         },
         waitForCompletion: true,
@@ -254,4 +288,20 @@ test('`--wait` reports `reviewer-not-ready` when the run exits without a complet
     const {id, ok, error} = /** @type {{id: string, ok: boolean, error: {code: string, message: string}}} */ (io.responses.at(-1));
     assert.deepEqual({id, ok, code: error.code}, {id: 'a:done', ok: false, code: 'reviewer-not-ready'});
     assert.match(error.message, /exited.*crashed/);
+});
+
+test('--wait preserves a failed wait response for an ordinary task', async () => {
+    const io = capture();
+    const error = {code: 'wait-failed', message: 'Connection lost.'};
+    assert.equal(await runBackgroundAgent({
+        ...io,
+        input: Readable.from([request('a', 'spawn_agent')]),
+        runtime: {
+            async execute() {return {status: 'succeeded', result: {runId: 'run'}};},
+            async wait() {return {status: 'failed', error};},
+            async close() {return {status: 'succeeded', result: null};},
+        },
+        waitForCompletion: true,
+    }), 0);
+    assert.deepEqual(io.responses.at(-1), {id: 'a:done', ok: false, error});
 });
