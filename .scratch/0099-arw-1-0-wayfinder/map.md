@@ -37,7 +37,7 @@
 
 - 现有约 19 万字符的 Skill 与规则正文逐份的去向: 归类原则已定 (见 [确定现有 ARW 合同在 1.0 中的继承范围](issues/13-decide-legacy-contracts.md): 大部分内置进 Engine, 其中多数机械执行, 少数由判断模型触发), 每份文件转为流程定义, 程序检查, 本步短指令, 保留的 Skill 或删除, 在规范正文中逐份确定.
 - 安装与配置: 配置时的硬件探测与判断模型选择, 推理运行时与模型文件由谁安装和固定版本, 开启脚本的内容与依赖, 怎样让同机其他显卡占用者让出显卡 (运行责任已定, 见 [确定本地判断模型服务的运行责任](issues/18-decide-local-judge-server-ownership.md)); Claude Code 与 Codex 版本漂移后兼容端点失效的应对. 取决于运行合同.
-- 审核循环中范围类判断 (按修复范围限定复审或复用另一轴) 是否启用, 以及放宽方向同步交高智能 Agent 还是作为 08 的例外, 取决于高智能请求数与墙钟的实测, 见 [定义 Reviewer 与正式关卡在 Engine 下的执行协议](issues/09-define-reviewer-protocol.md).
+- 审核循环中范围类判断 (按修复范围限定复审或复用另一轴) 是否启用, 以及放宽方向同步交高智能 Agent 还是作为 08 的例外: 历史统计中第 2 轮起的非记录类发现有 13 到 20% 落在上轮修复改动之外, 机械限定会漏掉它们, 范围类题在判断模型上尚无可用阈值; 是否启用取决于回放预测与端到端实测, 见 [定义 Reviewer 与正式关卡在 Engine 下的执行协议](issues/09-define-reviewer-protocol.md) 与 [本地 Jev 类候选的可行性小实验](issues/15-task-local-candidate-feasibility.md).
 - 规范正文的编写顺序与分工, 取决于规范大纲.
 
 ## Out of scope
