@@ -10,7 +10,7 @@ Blocked by: issue:0099:07, issue:0099:08
 
 ## Answer
 
-11-13 worker 分析, 交 Main Agent 综合. 依据: [定义 Engine 驱动流程的运行合同](07-define-engine-runtime-contract.md) (每仓库一个写入者令牌, 子实例继承, 会话一视同仁, Git 写入只由 Engine 执行), [定义分流判断的复核与回退合同](08-define-routing-review-and-rollback.md) (投机写入, 上限与屏障, 私有引用下的恢复快照, 回退只撤本实例的投机写入), [定义 Reviewer 与正式关卡在 Engine 下的执行协议](09-define-reviewer-protocol.md) (冻结候选, 按冻结输入机械判断失效), [定义 Engine 调用 Jev 类模型的接入方式](16-define-judge-model-integration.md) 的调用记录, 以及 ARW HEAD `8637e9c` 的 `docs/agents/agent-writes.md` (Issue concurrency 节), `docs/agents/environment.md`, `docs/agents/parallel-implementation.md`, `docs/agents/reviewer.md` (Review versions and concurrency 节), `lib/commit-audit/commit-audit.mjs` (Reviewer 只用 `git show <tree>:<path>` 读取受审版本) 和 `lib/spec-readiness/spec-readiness.mjs` (subject 身份是登记路径加内容摘要). 原问题中的 "worker" 按 07 的会话一视同仁理解为流程实例: 隔离按实例是否持有令牌区分, 不按会话角色区分. 标为 "待用户确认" 的两处按建议写, 选项见 Comments.
+11-13 worker 分析, 交 Main Agent 综合. 依据: [定义 Engine 驱动流程的运行合同](07-define-engine-runtime-contract.md) (每仓库一个写入者令牌, 子实例继承, 会话一视同仁, Git 写入只由 Engine 执行), [定义分流判断的复核与回退合同](08-define-routing-review-and-rollback.md) (投机写入, 上限与屏障, 私有引用下的恢复快照, 回退只撤本实例的投机写入), [定义 Reviewer 与正式关卡在 Engine 下的执行协议](09-define-reviewer-protocol.md) (冻结候选, 按冻结输入机械判断失效), [定义 Engine 调用 Jev 类模型的接入方式](16-define-judge-model-integration.md) 的调用记录, 以及 ARW HEAD `8637e9c` 的 `docs/agents/agent-writes.md` (Issue concurrency 节), `docs/agents/environment.md`, `docs/agents/parallel-implementation.md`, `docs/agents/reviewer.md` (Review versions and concurrency 节), `lib/commit-audit/commit-audit.mjs` (Reviewer 只用 `git show <tree>:<path>` 读取受审版本) 和 `lib/spec-readiness/spec-readiness.mjs` (subject 身份是登记路径加内容摘要). 原问题中的 "worker" 按 07 的会话一视同仁理解为流程实例: 隔离按实例是否持有令牌区分, 不按会话角色区分.
 
 ### What the premises already settle
 
@@ -34,7 +34,7 @@ Engine 中的视图一律是 Git 树对象或提交: 内容按对象 ID 固定, 
 - 等待令牌时, 不写已跟踪内容的步骤照常推进: 研究, 分析, 起草 issue 或 spec, 对草稿运行判断与 Spec Readiness. 草稿写在实例临时工作区, 步骤输出标明它将落到的仓库路径.
 - 落盘: 取得令牌后, Engine 比较基准提交与当前 `HEAD` 在本实例输入路径上的差异 (草稿目标路径, 冻结输入, 步骤消息给出的路径). 没有交集时直接把草稿写到目标路径, 作为本实例第一个写入步骤 (照 08 先建恢复快照). 有交集时, 已冻结结果按 09 的失效规则机械处理 (例如实施开始前 Spec Readiness 的 Input 变化使记录失效, 做增量复审), 再由一个 Agent 步骤拿着交集的 diff 核对并修改草稿, 然后落盘. 就绪记录绑定 issue 的登记路径与 subject 内容摘要, 不绑定内容当时所在的位置, 所以对草稿得出的就绪结论在逐字节落盘后仍然有效.
 - 写入链内部可以同时运行多个写入步骤, 前提是流程定义给出的写入范围互不包含 (Engine 按路径包含关系检查), 与现行 `docs/agents/agent-writes.md` 的 Assign and hand off 节一致. 回退多个步骤时, 每个路径恢复为被回退步骤中最早覆盖它的那份恢复快照.
-- 持有令牌的实例等待用户时继续持有令牌, 同仓库其他实例只能先做不写已跟踪内容的步骤 (待用户确认). Engine 记下每个实例处于 `waiting-writer` 的时长, 计入 [定义 Jev 类模型的评测与转正条件](11-define-evaluation-and-graduation.md) 的墙钟数据, 供以后判断是否值得改为让出令牌.
+- 持有令牌的实例等待用户时继续持有令牌, 同仓库其他实例只能先做不写已跟踪内容的步骤 (用户 11-13 定, 理由见 Comments). Engine 记下每个实例处于 `waiting-writer` 的时长, 计入 [定义 Jev 类模型的评测与转正条件](11-define-evaluation-and-graduation.md) 的墙钟数据, 供以后判断是否值得改为让出令牌.
 
 ### Reversal across instances
 
@@ -62,7 +62,7 @@ Engine 中的视图一律是 Git 树对象或提交: 内容按对象 ID 固定, 
 
 ### Worktrees
 
-`docs/agents/parallel-implementation.md` 的并行实施 (用户开启后每个 issue 一个 Git worktree, 再合并回主分支) 按 [确定现有 ARW 合同在 1.0 中的继承范围](13-decide-legacy-contracts.md) 并入本 issue. 建议 1.0 不提供 (待用户确认). 07 定为每仓库一个令牌; 改为按工作树发令牌, 合并冲突, 合并后的完整验证, 跨工作树的视图与推翻都要另立规则. 本 issue 的草稿与落盘已让研究, 起草和 Spec Readiness 与实施并行, 剩下串行的只有实施与提交审核. 先用 `waiting-writer` 时长衡量串行造成的等待, 等待显著时再按数据决定是否加回.
+`docs/agents/parallel-implementation.md` 的并行实施 (用户开启后每个 issue 一个 Git worktree, 再合并回主分支) 按 [确定现有 ARW 合同在 1.0 中的继承范围](13-decide-legacy-contracts.md) 并入本 issue. 1.0 不提供 (用户 11-13 定, 理由见 Comments). 07 定为每仓库一个令牌; 改为按工作树发令牌, 合并冲突, 合并后的完整验证, 跨工作树的视图与推翻都要另立规则. 本 issue 的草稿与落盘已让研究, 起草和 Spec Readiness 与实施并行, 剩下串行的只有实施与提交审核. 先用 `waiting-writer` 时长衡量串行造成的等待, 等待显著时再按数据决定是否加回.
 
 ### Scenarios
 
@@ -85,7 +85,7 @@ Engine 中的视图一律是 Git 树对象或提交: 内容按对象 ID 固定, 
 
 ## Comments
 
-11-13: 待用户确认的两处 (Main Agent 交用户决定, 答复后改写本答案相应部分):
+11-13: 用户定下原先待确认的两处, 本答案已改为定稿.
 
-- 并行实施 (每个 issue 一个 worktree) 是否保留. 选项: 保留, 令牌改为每个工作树一个, Engine 创建, 合并和删除 worktree, 合并冲突交 Agent 步骤, 合并后重跑完整验证; 不保留 (本答案采用), 并行只靠非持有实例的准备与草稿, 按 `waiting-writer` 时长决定以后是否加回.
-- 持有令牌的实例等待用户时是否让出令牌. 选项: 继续持有 (本答案采用), 规则最少, 已冻结的审核候选不受影响, 代价是用户不在时同仓库其他实例停在 `waiting-writer`; 让出, Engine 把未提交改动存为私有引用下的快照, 工作区恢复到 `HEAD`, 令牌交给下一个实例, 用户答复后重新排队并把快照合并到新的 `HEAD` 上, 代价是合并冲突要 Agent 步骤处理, `HEAD` 变化还使已冻结的 Commit Audit 候选重审, 高智能请求数与墙钟两项都可能变差.
+- 并行实施 (每个 issue 一个 worktree) 不保留, 选 B. 用户倾向 B, 并请 Main Agent 比较哪种更简单. Main Agent 判断 B 更简单也更稳: 每个仓库只有一个写入令牌, 没有 worktree 的建立, 合并和删除, 没有合并冲突, 也不必另定跨 worktree 的视图与推翻规则; 保留则要在 B 的全部机制之上再加这些, 合并后还要重跑完整验证, 出错面更大. 以后按 `waiting-writer` 时长数据再决定是否加回.
+- 持有令牌的实例等待用户时继续持有令牌 (选项 A), 规则最少, 已冻结的审核候选不受影响, 代价是用户不在时同仓库其他实例停在 `waiting-writer`. 未采用的让出方案: Engine 把未提交改动存为私有引用下的快照, 工作区恢复到 `HEAD`, 令牌交给下一个实例, 用户答复后重新排队并把快照合并到新的 `HEAD` 上; 代价是合并冲突要 Agent 步骤处理, `HEAD` 变化还使已冻结的 Commit Audit 候选重审, 高智能请求数与墙钟都可能变差. 以后同样按 `waiting-writer` 时长数据再看.
