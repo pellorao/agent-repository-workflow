@@ -2,7 +2,7 @@
 
 ## Destination
 
-一份可独立阅读, 足以指导后续实现的 ARW 1.0 完整规范 (Engine 运行合同, Jev 类模型的分流与复核, Reviewer 协议, 评测与转正, 并行流程隔离, 现有合同的取舍, 验收场景), 经独立审查; 附可行性结论, 写明哪些已经验证, 哪些仍有风险. 本 effort 到规范审查通过为止; 用户 11-08 定下规范通过后在单独分支上完整实现全部工作流, 定期合入 main, 全部实现后再合并回 main, 这一实施不属于本 effort.
+一份可独立阅读, 足以指导后续实现的 ARW 1.0 完整规范 (Engine 运行合同, 规则到 graph 的转换, Jev 类模型的分流与复核, Reviewer 协议, 评测与转正, 并行流程隔离, 现有合同的取舍, 验收场景), 经独立审查; 附可行性结论, 写明哪些已经验证, 哪些仍有风险. 本 effort 到规范审查通过为止; 用户 11-08 定下规范通过后在单独分支上完整实现全部工作流, 定期合入 main, 全部实现后再合并回 main, 这一实施不属于本 effort.
 
 ## Notes
 
@@ -33,6 +33,7 @@
 - [确定现有 ARW 合同在 1.0 中的继承范围](issues/13-decide-legacy-contracts.md): 交付格式 (`.scratch` Artifact, Canonical ID, issue 格式) 与门禁语义 (Spec Readiness, Commit Audit, Reviewer 独立性) 原样保留, 执行机制改写, 旧握手与路径只作需求证据; 门禁与写入类命令从公开命令中删除, 改由 Engine 提供; Agent 要读的规则大幅减少, 大部分内置进 Engine, 其中多数机械执行, 少数由判断模型触发, 仓库仍经锁与受管区域分发缩减后的规则; 已采用的仓库在静止点一次性升级, 未完成的实施 issue 重跑 Spec Readiness; 锁升到 `lockSchemaVersion: 3` 使 0.x 关闭式失败; 保存 0.x 配置副本, 支持一次手工回退.
 - [测量当前 ARW 流程的耗时分布](issues/12-research-flow-time-baseline.md): 本机近期实施交付中审核关卡耗时最多 (Claude Code 一侧等待 Reviewer 占 50%, Codex 一侧提交审核与 Spec Readiness 共 84%), 模型生成其次, 测试与命令约 12%; 每个实施 issue 中位数约 15 到 25 分钟; 提交审核通常 2 到 5 轮, 预检的收益主要在减少轮次.
 - [确定判断模型与兼容端点的安装与配置](issues/20-decide-installation-and-configuration.md): 显式配置命令探测显卡 (只用整卡显存, 按进程不可见) 并按候选目录 (按 ARW 案例准确率排序, 固定运行时构建与模型文件的 SHA-256) 从高到低选第一个装得下且实测够快的本机候选, 否则机构内部端点, 公开端点需明确开启; 首版只收 llama.cpp 提供的 GGUF 判断模型, 由配置命令经用户确认后下载并校验; 生成的 Node.js 开启脚本有 `start` 与 `stop`, 只绑回环地址 (Engine 在 WSL 时判断模型在 Windows 侧, 需一次性管理员放行规则), 只让出登记的显卡占用者, Strata 经其 lease 让出且不抢占; harness 版本变化时对兼容端点角色先自检, 失败即停在可恢复状态. 四处待用户确认.
+- [定义规则到 graph 的转换与 Engine 按 graph 执行](issues/22-define-rule-to-graph-conversion.md): 高智能模型在 ARW 源码仓库中按一个不分发的 Skill 把转换范围内的规则转成 graph 数据, 源映射和 Engine 代码中的新原语, 随 Engine 发布; graph 是声明式数据, 节点为程序 (调用原语), 判断 (一道 `choice` 或 `noul` 题), Agent (本步短指令与输出 schema), 等待用户, 子流程和终止, 每个结果值恰好一条边, 写入, 屏障, 正式关卡等属性由 Engine 机械使用; Engine 加载时静态校验, 实例绑定 graph 哈希后解释执行, 由此细化 07 的 "流程定义写在代码中"; 转换须过静态校验, 源映射完整, 独立会话写的分支夹具, 变异检查, 历史回放和常规 Spec Readiness 与 Commit Audit; 规则源是唯一权威, 段落哈希过期检查迫使规则改动后在同一提交中增量重新转换. 三处待用户确认.
 
 ## Not yet specified
 
