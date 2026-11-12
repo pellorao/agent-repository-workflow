@@ -25,7 +25,7 @@ Engine 提供与用户对话的入口, 并按用户选择的 Main Agent 模型�
 
 ### Flow state and next action
 
-- 每个工作流 (规划, 实施, Spec Readiness, Code Review, 提交与 Commit Audit, Application/JIRA, 源码仓库维护等) 在 Engine 代码中有一个流程定义: 一组具名步骤和步骤间的转移. 步骤只有四类: 确定性操作 (Engine 代码执行, 如 `prepare`, 测试命令, Git 写入), 判断 (向判断模型提一组 `choice` 或 `noul` 题), Agent 步骤 (给指定角色的会话一条只含本步指令的消息, 用输出 schema 约束结果), 等待用户.
+- 每个工作流 (规划, 实施, Spec Readiness, Code Review, 提交与 Commit Audit, Application/JIRA, 源码仓库维护等) 有一个流程定义: 随 Engine 发布的 graph 数据 (由规则转换而来, 见 [定义规则到 graph 的转换与 Engine 按 graph 执行](22-define-rule-to-graph-conversion.md)), 加 Engine 代码中的原语; 内容是一组具名步骤和步骤间的转移. 步骤只有四类: 确定性操作 (Engine 代码执行, 如 `prepare`, 测试命令, Git 写入), 判断 (向判断模型提一组 `choice` 或 `noul` 题), Agent 步骤 (给指定角色的会话一条只含本步指令的消息, 用输出 schema 约束结果), 等待用户.
 - 下一动作由流程定义, 当前状态和上一步结果唯一决定. Agent 与判断模型只能通过本步输出 schema 中列出的字段或选项影响分支, 不能跳步或加步; 流程定义没有覆盖的情况一律转为等待用户. 这取代现行 "按触发点读规则, 由 Main Agent 记住顺序", 规则正文的归类见 13, 逐份去向见地图 Not yet specified.
 - 流程实例状态写在 Engine 的私有状态库 (新增表, 与现有 `agents`, `messages` 同库), 字段至少有: 实例 ID, 流程定义名与版本, 仓库根, 关联 Artifact (effort 与 issue 的 Canonical ID), 当前步骤, 实例状态 (`running`, `waiting-user`, `waiting-subflow`, `waiting-writer`, `stopped`, `done`, `cancelled`), 父实例 (栈), 每步起止时间, 结果摘要, 所用会话与回合身份. 每步结束时先持久化再执行下一步.
 - 仓库中的 Artifact (issue, spec, 就绪与审计记录) 仍是交付结果的权威; Engine 状态只是执行进度的权威. 两者不一致时 (例如用户手工改了 issue `Status`), 以仓库为准, 实例停下并请用户确认.
@@ -87,3 +87,5 @@ Engine 提供与用户对话的入口, 并按用户选择的 Main Agent 模型�
 11-13: 用户 11-12 对 "是否只为 worker 会话收紧原生权限" 的答复 (原话): "以 engine 为主之后, main agent 和 subagent 的界限可能没有原来那么清晰了. engine 要负责所有的 agent 的简单判断 (内部会交给判断模型). 所以不存在 man 和 sub 的处理方式不同的问题." 据此 Answer 改为 Engine 对所有 Agent 会话一视同仁 (Engine process and roles 节), 简单判断都经 Engine 交判断模型, 不再出现 "worker 一类会话" 的提法. 原问题中的三个做法 (只检测; 用 ARW 的权限配置强制; 检测加不覆盖用户设置的窄范围拒绝规则) 在 "所有会话统一" 的前提下仍是一项取舍, 改为对所有会话 (含对话会话) 提出, 交用户决定; 不论选哪一项, 每步后的检测都是唯一的保证.
 
 11-13 (D14 答复): 用户问清背景后选 C: 每步后的检测是唯一保证, 另加不覆盖用户设置的窄范围拒绝 (Claude `--disallowedTools Edit(.git/**)`, Codex `.git` 只读), 对所有 Agent 会话一视同仁. 上面 11-12 "待用户决定" 与 11-13 第一条的三选一取舍因此已定, 本答案相应处已改. 同日核实 (任务 v1-verify) 的结果: Codex 可按路径把 `.git` 设为只读, 已证实 (Windows 原生沙箱是否同样生效文档未写); Windows 上 Claude Code 无沙箱, 拒绝规则不覆盖间接写入, 有风险; 后台进程在步骤核对之后写 Git, 有风险, 已按上面的检测时机补充处理. WSL NAT 下局域网连入与 Windows 防火墙提示两项属 19, 20 的安装规格, 不在本 issue.
+
+11-13: D20 (用户选 A) 细化本答案: 流程定义不再写在 Engine 代码中, 而是随 Engine 发布的 graph 数据加 Engine 代码中的原语 (程序节点只调用原语), 实例绑定 graph 哈希. 步骤四类, 转移唯一确定等其余合同不变, 细节见 22.

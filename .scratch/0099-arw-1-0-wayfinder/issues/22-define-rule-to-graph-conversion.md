@@ -10,7 +10,7 @@ Blocked by: issue:0099:07, issue:0099:08, issue:0099:09, issue:0099:10, issue:00
 
 ## Answer
 
-11-13 worker 分析, 交 Main Agent 综合. 依据: 用户 11-13 的原话 (见 Comments), 07 的步骤四类与实例状态, [定义分流判断的复核与回退合同](08-define-routing-review-and-rollback.md) 的三路与屏障, [定义 Reviewer 与正式关卡在 Engine 下的执行协议](09-define-reviewer-protocol.md) 与 [定义并行流程的读取与写入隔离](10-define-parallel-flow-isolation.md) 的 Interfaces 中已写下的 graph 节点属性, 13 的规则归类, [定义 Engine 调用 Jev 类模型的接入方式](16-define-judge-model-integration.md) 的题型, [定义 Jev 类模型的评测与转正条件](11-define-evaluation-and-graduation.md) 的题目模板版本, [本地 Jev 类候选的可行性小实验](15-task-local-candidate-feasibility.md) 11-13 Comments 中的四项目标与估算, 以及 ARW HEAD `78aa110` 的 `scripts/generate-install-arw.mjs --check` (派生文件过期检查的现有做法). 三处方向性取舍按建议写, 待用户确认, 选项见 Comments.
+11-13 worker 分析, 交 Main Agent 综合. 依据: 用户 11-13 的原话 (见 Comments), 07 的步骤四类与实例状态, [定义分流判断的复核与回退合同](08-define-routing-review-and-rollback.md) 的三路与屏障, [定义 Reviewer 与正式关卡在 Engine 下的执行协议](09-define-reviewer-protocol.md) 与 [定义并行流程的读取与写入隔离](10-define-parallel-flow-isolation.md) 的 Interfaces 中已写下的 graph 节点属性, 13 的规则归类, [定义 Engine 调用 Jev 类模型的接入方式](16-define-judge-model-integration.md) 的题型, [定义 Jev 类模型的评测与转正条件](11-define-evaluation-and-graduation.md) 的题目模板版本, [本地 Jev 类候选的可行性小实验](15-task-local-candidate-feasibility.md) 11-13 Comments 中的四项目标与估算, 以及 ARW HEAD `78aa110` 的 `scripts/generate-install-arw.mjs --check` (派生文件过期检查的现有做法). 三处方向性取舍已由用户 11-13 (D20) 按建议确认, 选项与答复见 Comments.
 
 ### Goals served
 
@@ -21,7 +21,7 @@ Blocked by: issue:0099:07, issue:0099:08, issue:0099:09, issue:0099:10, issue:00
 
 ### Conversion inputs and outputs
 
-转换只在 ARW 源码仓库中进行 (待用户确认 1): 维护者让高智能模型按一个 Source Checkout Skill (暂名 `rule-graph`, 不分发) 转换, 产物随 Engine 发布. 已采用的仓库不运行转换; 仓库自有规则按 13 仍是文本, 由 harness 原生加载.
+转换只在 ARW 源码仓库中进行 (用户 11-13 确认, D20): 维护者让高智能模型按一个 Source Checkout Skill (暂名 `rule-graph`, 不分发) 转换, 产物随 Engine 发布. 已采用的仓库不运行转换; 仓库自有规则按 13 仍是文本, 由 harness 原生加载.
 
 输入:
 
@@ -40,7 +40,7 @@ Blocked by: issue:0099:07, issue:0099:08, issue:0099:09, issue:0099:10, issue:00
 
 ### Graph shape
 
-graph 是有向图, 允许环 (修复循环, 审核轮次). graph 本身是声明式数据, 不含代码 (待用户确认 2). 顶层有: 名称, 内容哈希 (即版本), 入口节点, 参数 (取自 Repository Profile 或用户配置的值, 如仓库的测试命令), 节点表, 边表.
+graph 是有向图, 允许环 (修复循环, 审核轮次). graph 本身是声明式数据, 不含代码 (用户 11-13 确认, D20). 顶层有: 名称, 内容哈希 (即版本), 入口节点, 参数 (取自 Repository Profile 或用户配置的值, 如仓库的测试命令), 节点表, 边表.
 
 节点类型:
 
@@ -87,7 +87,7 @@ graph 是有向图, 允许环 (修复循环, 审核轮次). graph 本身是声�
 
 ### Rule changes and consistency
 
-规则源是唯一权威, graph 与源映射是派生物 (待用户确认 3). 维护者只改规则源, 不手改 graph; 这与现有 `scripts/generate-install-arw.mjs --check` 对派生文件的做法相同, 区别是派生由模型而不是脚本完成, 所以一致性靠哈希检查而不是重新生成后比较.
+规则源是唯一权威, graph 与源映射是派生物 (用户 11-13 确认, D20). 维护者只改规则源, 不手改 graph; 这与现有 `scripts/generate-install-arw.mjs --check` 对派生文件的做法相同, 区别是派生由模型而不是脚本完成, 所以一致性靠哈希检查而不是重新生成后比较.
 
 - 过期检查 (确定性, 加入 Source Checkout 验证): 重算转换范围内每个规范段落的哈希并与源映射比较; 有段落新增, 删除或改动而 graph 没有重新转换时失败, 并列出这些段落.
 - 增量重新转换: 按 Skill 只把变化的段落连同源锚点指向的节点交给转换者, 输出 graph 补丁, 新的源映射和需要的新原语; 夹具作者同时补改对应夹具; 然后跑 Verification 节各层 (回放只跑受影响的 graph). 规则, graph, 源映射与夹具在同一提交中改动, 所以任何提交上规则源与 graph 都一致.
@@ -115,8 +115,10 @@ graph 是有向图, 允许环 (修复循环, 审核轮次). graph 本身是声�
 
 11-13: 用户原话 (聊天, 答复判断模型 POC 时): "机械程序是用高智能模型写的, 高智能模型会根据 ARW 之后提供的 skill, 把规则转为机械程序和判断模型调用, 然后 engine 就把这个转换后的数据 (基本上是一个 graph) 作为自己工作的依据." 同日用户定下 1.0 的四项目标 (高智能请求数, 整体墙钟, Agent 上下文中规则与流程的占比, 规则与流程上的误判率), 阈值都待实验后定, 见 15 的 11-13 Comments. 本 issue 由此新建: 13 定了 "规则大部分内置进 Engine" 的方向和归类, 但没有定义转换机制, 产物形态与一致性.
 
-11-13: 待用户确认的三处 (Main Agent 交用户决定, 答复后改写本答案相应部分):
+11-13: 原待用户确认的三处 (已由用户 11-13 D20 全部按本答案采用的一项确认, 见下一条):
 
 - 1 转换在哪里运行. 选项: A 只在 ARW 源码仓库运行, 产物随 Engine 发布, 已采用仓库的自有规则仍是文本 (本答案采用); B 在 A 之外, 已采用仓库也可以把自有规则转成扩展 graph, 由 Engine 从仓库加载 (要定公开的 graph 格式与兼容责任, 还要让 Engine 执行仓库提供的原语, 增加信任边界); C 每台机器安装或更新时现场转换 (结果不确定, 无法在发布前审核和测试).
 - 2 graph 与机械程序的形式. 选项: X graph 是声明式数据, 程序节点只调用 Engine 代码中的原语, 边上不写表达式 (本答案采用; 可以静态校验, 做变异检查, 按节点计量和统计误判, 转换差异可读); Y graph 节点内嵌生成的代码片段 (无法静态校验, 生成的代码绕开原语的单元测试结构); Z 不设 graph 数据, 转换直接产出 Engine 代码中的流程定义 (07 原文; 校验每个结果都有去向要分析代码, 源锚点与过期检查难做).
 - 3 权威来源. 选项: P 规则源文本是唯一权威, graph 与源映射是派生物, 由哈希过期检查保持一致 (本答案采用; 人读和改的是文本, 审核对照文本差异, Upstream Sync 仍可作用于文本); Q graph 成为权威, 规则文本删除或由 graph 生成说明 (只有一个来源, 但维护者要直接改 JSON, 审核者也只能读 JSON, 高智能模型写规则的能力用不上).
+
+11-13: D20 答复 (用户, 状态页 11-13 07:13): 选 A, 三处都按推荐: (1) 转换只在 ARW 源码仓库里做, graph 随 Engine 发布; (2) graph 是声明式数据, 程序节点只调用 Engine 原语; (3) 规则文本是唯一权威, graph 是派生物, 靠哈希检查保持一致. 答案中三处 "待用户确认" 已改为定稿. 由 (2) 细化 07 的 "流程定义写在 Engine 代码中", 07 已相应改写.
