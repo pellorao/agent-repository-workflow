@@ -34,10 +34,10 @@
 - [测量当前 ARW 流程的耗时分布](issues/12-research-flow-time-baseline.md): 本机近期实施交付中审核关卡耗时最多 (Claude Code 一侧等待 Reviewer 占 50%, Codex 一侧提交审核与 Spec Readiness 共 84%), 模型生成其次, 测试与命令约 12%; 每个实施 issue 中位数约 15 到 25 分钟; 提交审核通常 2 到 5 轮, 预检的收益主要在减少轮次.
 - [确定判断模型与兼容端点的安装与配置](issues/20-decide-installation-and-configuration.md): 显式配置命令探测显卡 (只用整卡显存, 按进程不可见) 并按候选目录 (按 ARW 案例准确率排序, 固定运行时构建与模型文件的 SHA-256) 从高到低选第一个装得下且实测够快的本机候选, 否则机构内部端点, 公开端点需明确开启; 首版只收 llama.cpp 提供的 GGUF 判断模型, 由配置命令经用户确认后下载并校验; 生成的 Node.js 开启脚本有 `start` 与 `stop`, 只绑回环地址 (Engine 在 WSL 时判断模型在 Windows 侧, 需一次性管理员放行规则), 只让出登记的显卡占用者, Strata 经其 lease 让出且不抢占; harness 版本变化时对兼容端点角色先自检, 失败即停在可恢复状态. 四处已由用户 11-13 确认.
 - [定义规则到 graph 的转换与 Engine 按 graph 执行](issues/22-define-rule-to-graph-conversion.md): 高智能模型在 ARW 源码仓库中按一个不分发的 Skill 把转换范围内的规则转成 graph 数据, 源映射和 Engine 代码中的新原语, 随 Engine 发布; graph 是声明式数据, 节点为程序 (调用原语), 判断 (一道 `choice` 或 `noul` 题), Agent (本步短指令与输出 schema), 等待用户, 子流程和终止, 每个结果值恰好一条边, 写入, 屏障, 正式关卡等属性由 Engine 机械使用; Engine 加载时静态校验, 实例绑定 graph 哈希后解释执行, 由此细化 07 的 "流程定义写在代码中"; 转换须过静态校验, 源映射完整, 独立会话写的分支夹具, 变异检查, 历史回放和常规 Spec Readiness 与 Commit Audit; 规则源是唯一权威, 段落哈希过期检查迫使规则改动后在同一提交中增量重新转换. 三处已由用户 11-13 确认.
+- [确定现有规则正文迁入 Engine 的逐份去向](issues/21-decide-rule-migration.md): 分发的 156391 字符中, 流程定义 21%, 判断节点 0.6%, 程序检查 10%, 本步短指令 9% (合计 40% 进入转换范围, 不再分发), 保留的方法类 Skill 40%, 常读规则 3%, 原样交给 Reviewer 的文档 11%, 删除 5.5% (逐段写明理由); 9 个流程类 Skill 与 6 份 `docs/agents/` 文档不再分发, 根 `AGENTS.md` 缩到约 1.3K 字符; 一次实施流程读到的规则约少 70%, worker 读入内容中规则文档的占比由 31% 估计降到约 12% 到 13%, Reviewer 由 13% 降到约 9% 到 10% (待 E2 实测); 协作者经 Engine 创建, 机械参数移入 `arw.config.json`, 四个分叉的流程类 Skill 退出 Upstream Sync 三处待用户确认.
 
 ## Not yet specified
 
-- 现有约 19 万字符的 Skill 与规则正文逐份的去向: 归类原则已定 (见 [确定现有 ARW 合同在 1.0 中的继承范围](issues/13-decide-legacy-contracts.md): 大部分内置进 Engine, 其中多数机械执行, 少数由判断模型触发), 每份文件转为流程定义, 程序检查, 本步短指令, 保留的 Skill 或删除, 在规范正文中逐份确定.
 - 审核循环中范围类判断 (按修复范围限定复审或复用另一轴) 是否启用, 以及放宽方向同步交高智能 Agent 还是作为 08 的例外: 历史统计中第 2 轮起的非记录类发现有 13 到 20% 落在上轮修复改动之外, 机械限定会漏掉它们, 范围类题在判断模型上尚无可用阈值; 是否启用取决于回放预测与端到端实测, 见 [定义 Reviewer 与正式关卡在 Engine 下的执行协议](issues/09-define-reviewer-protocol.md) 与 [本地 Jev 类候选的可行性小实验](issues/15-task-local-candidate-feasibility.md).
 - 规范正文的编写顺序与分工, 取决于规范大纲.
 
