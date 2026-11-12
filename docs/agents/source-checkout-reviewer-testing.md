@@ -8,4 +8,3 @@ Reviewer 当作审查标准读取的通用指令 (根 `AGENTS.md`, `issue-tracki
 
 | 提交 | 文件:行 | 改了哪条检查 | 登记日期 |
 |---|---|---|---|
-| `4e285e8` | `AGENTS.md` Agent Writes 节 | 豁免 Reviewer 写报告前读 `agent-writes.md` (原先 Reviewer 因此返回 `incomplete`; 补登记: 提交时根 `AGENTS.md` 中的 Reviewer 行为规则尚不在测试范围内) | 2026-11-12 |
