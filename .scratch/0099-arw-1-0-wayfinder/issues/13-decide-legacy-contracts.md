@@ -26,7 +26,7 @@ Blocked by: issue:0099:01, issue:0099:04, issue:0099:17
 
 ### Spec Readiness
 
-保留: 术语定义 (`CONTEXT.md` 中的定义不涉及 Main Agent), 首次写实现前取得就绪, 审核对象范围与身份规范化, 失效规则, `not-applicable` 例外须用户确认, 行为保持重构例外 (ADR 0037) 与紧急修复例外, `prepare` 的三项机械预检. 改写: `prepare`, `generate`, `promote`, `verify` 成为 Engine 的确定性步骤, 原由 Main Agent 做的 "只提升生成字节" 与 "每轮抽查一两处" 改由流程定义分配, 具体归 09.
+保留: 术语定义 (`CONTEXT.md` 中的定义不涉及 Main Agent), 首次写实现前取得就绪, 审核对象范围与身份规范化, 失效规则, `not-applicable` 例外须用户确认, 行为保持重构例外 (ADR 0037) 与紧急修复例外, `prepare` 的三项机械预检. 改写: `prepare`, `generate`, `promote`, `verify` 成为 Engine 的确定性步骤, 原由 Main Agent 做的 "只提升生成字节" 改由流程定义分配, 具体归 09; "每轮抽查一两处" 取消, 不另设 (D15, 见 09).
 
 ### Commit Audit
 
@@ -34,7 +34,7 @@ Blocked by: issue:0099:01, issue:0099:04, issue:0099:17
 
 ### Reviewer constraints
 
-保留: 独立会话, 不建子 Agent, 关闭 memories, 不带作者对话, 三个角色键与全局加仓库的配置, 绑定报告与 `No problems.`, `ready | incomplete`, Jev 类模型不当 Reviewer. 改写: "单 Agent 完成全部检查" 与逐单元拆分的关系归 09. "由 Claude Code 中的 Main Agent 调用时改用 `haiku`" 的回退规则失去依据, 改为按角色显式配置模型 (归安装与配置).
+保留: 独立会话, 不建子 Agent, 关闭 memories, 不带作者对话, 三个角色键与全局加仓库的配置, 绑定报告与 `No problems.`, `ready | incomplete`, Jev 类模型不当 Reviewer. "单 Agent 完成全部检查" 原样保留, 不逐单元拆分, 不另设覆盖清单或抽查 (D15, 见 09). "由 Claude Code 中的 Main Agent 调用时改用 `haiku`" 的回退规则失去依据, 改为按角色显式配置模型 (归安装与配置).
 
 ### Installation and update
 
@@ -42,7 +42,7 @@ Blocked by: issue:0099:01, issue:0099:04, issue:0099:17
 
 ### Terms and ADRs
 
-Main Agent 改写为: 用户选定模型, 由 Engine 驱动的对话会话, 负责自由对话和分给它的高智能步骤; Engine 对它和其他 Agent 会话一视同仁 (07), 它不负责推进流程, 分配写入范围, 执行 Git 写入, 也不作流程中的简单判断. 新增 Engine 术语. ADR 0013 由新 ADR 取代: Engine 发放每仓库一个的写入者令牌, 并执行 Git 写入; 被取代的范围和需要同步注明的 ADR 0030, 0033 见 07 的 Comments. ADR 0006, 0023, 0034 中由 Main Agent 承担的职责相应修订. Spec Readiness, Workflow Distribution, Managed Content, Repository Profile, Application Leader/Member 的定义保留. Upstream Sync 只适用于继续以 Skill 形式分发的上游 Skill; 上游分叉的流程类 Skill (`implement`, `code-review`, `wayfinder`, `to-tickets`) 转成 Engine 代码后不再受 Upstream Sync 覆盖, 这是长期维护责任的变化, 在规范中写明.
+Main Agent 改写为: 用户选定模型, 由 Engine 驱动的对话会话, 负责自由对话和分给它的高智能步骤; Engine 对它和其他 Agent 会话一视同仁 (07), 它不负责推进流程, 分配写入范围, 执行 Git 写入, 也不作流程中的简单判断. 新增 Engine 术语. ADR 0013 由新 ADR 取代: Engine 发放每仓库一个的写入者令牌, 并执行 Git 写入; 被取代的范围和需要同步注明的 ADR 0030, 0033 见 07 的 Comments. ADR 0006, 0023, 0034 中由 Main Agent 承担的职责相应修订. Spec Readiness, Workflow Distribution, Managed Content, Repository Profile, Application Leader/Member 的定义保留. 1.0 删除 Upstream Sync 流程 (用户 11-13 D21, 见 21): 以后同步上游是普通任务, 照上游改动修改我们的 Skill 再转换或生成, 这是长期维护责任的变化, 在规范中写明.
 
 ### Rules move into the Engine
 
@@ -75,7 +75,7 @@ ARW 源码仓库不运行 `workflow update`, 它的升级就是 `arw-1.0` 分支
 
 ### Interfaces
 
-- 09: 就绪记录的新模式, Reviewer Role 的改写, "每轮抽查一两处" 的归属, haiku 回退规则的去向.
+- 09: 就绪记录的新模式, Reviewer Role 的改写, "每轮抽查一两处" 的去向 (已取消, D15), haiku 回退规则的去向.
 - [定义并行流程的读取与写入隔离](10-define-parallel-flow-isolation.md): 临时工作区由 Engine 提供身份; `docs/agents/parallel-implementation.md` 的 worktree 规则并入 10.
 - [整理 ARW 1.0 规范的结构与验收场景](14-prototype-spec-outline.md): 大纲要有 "从 0.x 升级" 一章, 验收场景至少包括: 有未提交工作时升级被拒; 0.x 运行时在 v3 锁仓库上失败; v2 锁仓库上 Engine 不开工; 按 Failure recovery 节手工回退; 跨版本的 Application 关联仍可同步.
 - 未核实的推断, 留给规范与实施验证: 0.x 管理进程遇到 1.0 新增的 SQLite 表时的行为; 用户是否在脚本或 CI 中调用门禁命令; 跨版本时 Application 关联只靠 Artifact 格式不变即可工作.
