@@ -10,14 +10,14 @@ Blocked by: issue:0099:05, issue:0099:07, issue:0099:08
 
 ## Answer
 
-11-13 worker 分析, 交 Main Agent 综合. 依据: [确定 Jev 类模型在流程中的职责边界](05-decide-jev-role-boundary.md) (判断模型不担任正式 Reviewer, 预检与输出检查不替代正式审核结论), [定义 Engine 驱动流程的运行合同](07-define-engine-runtime-contract.md) (步骤四类, 会话一视同仁, Git 写入只由 Engine 执行), [定义分流判断的复核与回退合同](08-define-routing-review-and-rollback.md) (三路, 单向题, 屏障, 正式关卡不是判断), [定义 Jev 类模型的评测与转正条件](11-define-evaluation-and-graduation.md), [确定现有 ARW 合同在 1.0 中的继承范围](13-decide-legacy-contracts.md) (门禁语义原样保留, 就绪记录模式, "抽查一两处" 与 haiku 回退归本 issue), 以及 ARW HEAD `005d4a3` 的长期规格 `docs/specs/agent-repository-workflow/spec.md` (Reviewer workflow, Spec Readiness, Commit Audit 节), `docs/agents/reviewer.md`, 三个 Reviewer Role, `reviewer-launch`, `spec-readiness`, `code-review`, `commit` Skill 和 `lib/spec-readiness/spec-readiness.mjs` (`SCHEMA_VERSION = 7`). 10-25 讨论中用户关于 "逐方法喂给高智能 Agent" 与 "每轴保留一个拥有完整上下文的高智能 Agent, Engine 分批提供检查项并核对覆盖" 的表述, 已于 11-13 按当前规则核对, 只作待用户重新确认的候选. 用户 11-13 定下 1.0 的四项主要目标 (见 Comments): 减少同一流程中高智能模型的请求数, 缩短整体墙钟, 降低上下文中规则与流程所占比例, 降低规则与流程的误判率, 阈值都由实验确定; 本答案按这四项衡量各做法, 不写固定阈值. 原标为 "待用户确认" 的两处中, 审核内判断一处用户 11-13 已按建议答复 (见 Comments); 覆盖做法 (D15) 仍待用户确认, 选项见 Comments.
+11-13 worker 分析, 交 Main Agent 综合. 依据: [确定 Jev 类模型在流程中的职责边界](05-decide-jev-role-boundary.md) (判断模型不担任正式 Reviewer, 预检与输出检查不替代正式审核结论), [定义 Engine 驱动流程的运行合同](07-define-engine-runtime-contract.md) (步骤四类, 会话一视同仁, Git 写入只由 Engine 执行), [定义分流判断的复核与回退合同](08-define-routing-review-and-rollback.md) (三路, 单向题, 屏障, 正式关卡不是判断), [定义 Jev 类模型的评测与转正条件](11-define-evaluation-and-graduation.md), [确定现有 ARW 合同在 1.0 中的继承范围](13-decide-legacy-contracts.md) (门禁语义原样保留, 就绪记录模式, "抽查一两处" 与 haiku 回退归本 issue), 以及 ARW HEAD `005d4a3` 的长期规格 `docs/specs/agent-repository-workflow/spec.md` (Reviewer workflow, Spec Readiness, Commit Audit 节), `docs/agents/reviewer.md`, 三个 Reviewer Role, `reviewer-launch`, `spec-readiness`, `code-review`, `commit` Skill 和 `lib/spec-readiness/spec-readiness.mjs` (`SCHEMA_VERSION = 7`). 10-25 讨论中用户关于 "逐方法喂给高智能 Agent" 与 "每轴保留一个拥有完整上下文的高智能 Agent, Engine 分批提供检查项并核对覆盖" 的表述, 已被用户 11-13 的答复取代: Reviewer 与其他 Agent 没有区别, 不特别对待, 不做覆盖清单, 逐单元送入或每轮抽查 (D15, 见 Comments). 用户 11-13 定下 1.0 的四项主要目标 (见 Comments): 减少同一流程中高智能模型的请求数, 缩短整体墙钟, 降低上下文中规则与流程所占比例, 降低规则与流程的误判率, 阈值都由实验确定; 本答案按这四项衡量各做法, 不写固定阈值. 原标为 "待用户确认" 的两处都已由用户 11-13 答复 (审核内判断 D16, 覆盖做法 D15, 见 Comments).
 
 ### Gates and sessions
 
 - 正式关卡沿用 13 保留的语义: Spec Readiness (一个 `spec-readiness-reviewer`), 实施提交的 Commit Audit (Gate 1, 2 由 `requirements-reviewer`, Gate 3 由 `code-standards-reviewer`, 两者并行), 非提交的 Code Review 比较, 以及改动审核系统或长期合同的非实施提交 (一个 `requirements-reviewer`, 最多一轮). 关卡结论 (问题列表或 `No problems.`, `satisfied` 或 `gap`) 只来自正式 Reviewer.
 - 正式关卡不是判断: Engine 不对关卡结论做 08 的复核, 推翻或回退; 判断模型不担任 Reviewer, 不产生, 核对或推翻关卡结论.
-- Reviewer 仍是独立的高智能会话: 不带作者对话, 关闭 memories, 不建子 Agent, 一个角色身份 (角色加排序后的 issue 集合) 一个会话, 复审沿原会话继续, 与现行 Communication and sessions 节相同. 07 的 "会话一视同仁" 对 Reviewer 同样适用: 启动, 恢复, Git 写入检测与其他会话相同, 区别只在角色给出的模型, 本步指令和权限 (只读, 只写报告与覆盖清单).
-- 审核中的其他工作都是 07 的四类步骤: 确定性检查, 冻结和覆盖核对是 Engine 程序; 预检, 输出检查和修复后的核对题是判断; 处置发现, 抽查与修复是 worker 会话的 Agent 步骤; 需要用户决定的发现是等待用户.
+- Reviewer 是 graph 中的普通 Agent 步骤, 与其他 Agent 没有区别 (用户 11-13, D15): 启动, 恢复, 模型选择, 会话沿用, 输出核对与 Git 写入检测都按 07 对所有 Agent 工作的同一规则. 审核本来就是由别人来看, 所以一个 Reviewer 角色对一组 issue 的审核 (角色加排序后的 issue 集合, 与现行 Communication and sessions 节相同) 是与被审工作分开的一项工作, 有自己的会话: 不带作者对话, 关闭 memories, 不建子 Agent; 首轮新建, 各轮复审回到这个会话. 本步指令和权限由节点给出 (只读, 只写报告).
+- 审核中的其他工作都是 07 的四类步骤: 确定性检查与冻结是 Engine 程序; 预检, 输出检查和修复后的核对题是判断; 处置发现与修复是产出候选的那项工作的 Agent 步骤, 回到它的原会话 (实施是实施 issue 的 worker 会话, Spec Readiness 是起草 subject 的会话), 下文称原 worker 会话; 需要用户决定的发现是等待用户.
 
 ### Steps of a gate round
 
@@ -25,56 +25,47 @@ Blocked by: issue:0099:05, issue:0099:07, issue:0099:08
 
 1. 确定性检查 (Engine 程序): 现有 `prepare` 的机械预检与 `warning:` 行 (含 Spec Readiness 自检中可机械判定的部分, Commit Audit 的体积摘要与 Validation 摘要核对), `commit-audit verify --non-implementation` 的检查, `arw text check` 和仓库配置的快速检查. 有问题时交 worker 修复后重做, 不启动 Reviewer. 现行 "warning 不是关卡, 但要先处理再启动 Reviewer" 由此成为流程分支. 耗时长的测试照现行可以与审核并行, 未完成的检查不提供通过事实, 失败进入修复循环.
 2. 提示 (判断): 预检与输出检查, 用法见 Judgments in the review loop 节.
-3. 冻结 (Engine 程序, 是 08 的屏障): 先等候选依赖的全部判断已复核且未被推翻, 再固定本轮输入. Spec Readiness 是 subject, Input 与规则副本的快照 (Spec Readiness Reviewer 只读检索仓库的例外保留, 但检索的是本轮视图的树 (`git grep <模式> <树>`), 不是工作树, 以免读到其他实例的未提交改动, 见 [定义并行流程的读取与写入隔离](10-define-parallel-flow-isolation.md)); Commit Audit 由 Engine 暂存后以 `git write-tree` 取得 `tree`, 连同 `base`; 非提交 Code Review 是不可变比较. 同时由 Engine 生成本轮审核单元清单 (见 Coverage 节).
-4. 正式审核 (Agent 步骤): 首轮新建会话, 复审沿原会话交付相邻版本差异, 前轮报告与处置台账 (现行 Re-review 节不变). 输出绑定报告 (格式不变) 和覆盖清单.
-5. 覆盖核对 (Engine 程序): 见 Coverage 节.
-6. 处置与抽查 (worker 会话的一个 Agent 步骤): 见 Spot checks and dispositions 节.
-7. 修复 (worker 会话) 后做修复核对题, 再回到第 1 步开下一轮. 轮次规则 (第 3 轮起只为行为缺陷开修复轮, 台账三类处置, 冲突裁决) 由 Engine 按轮次计数和处置输出机械执行; "是否行为缺陷" 仍由处置步骤的 Agent 判断, 拿不准按行为缺陷.
-8. 收尾 (Engine 程序): Spec Readiness 依次 `generate`, `promote`, `verify`, 生成路径由 Engine 直接传给提升步骤, 现行 "Main Agent 只提升生成字节" 不再需要; Commit Audit 机械核对最终暂存树相对受审 `tree` 只有记录章节差异, 再运行 `verify` 与 `verify --subject-only` 后提交 (提交是 08 的屏障).
+3. 冻结 (Engine 程序, 是 08 的屏障): 先等候选依赖的全部判断已复核且未被推翻, 再固定本轮输入. Spec Readiness 是 subject, Input 与规则副本的快照 (Spec Readiness Reviewer 只读检索仓库的例外保留, 但检索的是本轮视图的树 (`git grep <模式> <树>`), 不是工作树, 以免读到其他实例的未提交改动, 见 [定义并行流程的读取与写入隔离](10-define-parallel-flow-isolation.md)); Commit Audit 由 Engine 暂存后以 `git write-tree` 取得 `tree`, 连同 `base`; 非提交 Code Review 是不可变比较.
+4. 正式审核 (Agent 步骤): 首轮新建 Reviewer 会话, 复审回到原 Reviewer 会话, 交付相邻版本差异, 前轮报告与处置台账 (现行 Re-review 节不变). 输出绑定报告 (格式不变). 报告与其他 Agent 步骤的输出一样只经通用检查: Engine 按输出 schema 核对格式 (07), 以及 graph 为该步配置的判断模型输出检查 (首版不为 Reviewer 报告设题); 不另设覆盖核对或抽查 (D15).
+5. 处置 (原 worker 会话的一个 Agent 步骤): 见 Dispositions 节.
+6. 修复 (原 worker 会话) 后做修复核对题, 再回到第 1 步开下一轮. 轮次规则 (第 3 轮起只为行为缺陷开修复轮, 台账三类处置, 冲突裁决) 由 Engine 按轮次计数和处置输出机械执行; "是否行为缺陷" 仍由处置步骤的 Agent 判断, 拿不准按行为缺陷.
+7. 收尾 (Engine 程序): Spec Readiness 依次 `generate`, `promote`, `verify`, 生成路径由 Engine 直接传给提升步骤, 现行 "Main Agent 只提升生成字节" 不再需要; Commit Audit 机械核对最终暂存树相对受审 `tree` 只有记录章节差异, 再运行 `verify` 与 `verify --subject-only` 后提交 (提交是 08 的屏障).
 
 Reviewer 等待: 现行 "等到 30 分钟向用户报告并询问, 不自行停止" 保留为 Reviewer 步骤的超时处理, 取代 07 中 Agent 步骤超时后中断的通用做法, 因为中断 Reviewer 会丢弃整轮审核.
 
 ### Coverage
 
-目标是每项标准和每处改动都被检查, 同时不拆散 Reviewer 的上下文. 下面是建议做法, 待用户确认.
-
-- 审核单元由 Engine 程序从冻结输入生成, 不由模型决定: Code Standards 是纳入路径的每个 diff hunk (同一文件相邻 hunk 间隔不超过 20 行时合并, 首版默认, 可调); 要求符合审核是每个授权 issue 的 What to build 条目与每条验收标准, Gate 2 每个治理文档 hunk, 以及差异回归检查的每个改动文件 (`tests/` 与 Markdown 以外); Spec Readiness 是 subject 中 What to build 的每个条目与每条验收标准. 检查项是各 Role 列出的检查: Spec Readiness 的五个已注册检查, Code Standards 的适用 Agent 指令逐项, 设计异味与通用设计检查, 要求符合审核的逐项核对与差异回归检查.
-- 不以方法为单元: ARW 的目标仓库不限语言, 程序无法对任意语言可靠地切出方法, 而 hunk 与语言无关, 可以确定性生成. 代价是一个 hunk 可能跨方法或只含方法的一部分, Reviewer 仍按 Role 读取关联上下文.
-- Reviewer 在同一回合内写报告并写一份覆盖清单 (JSON, 绑定路径与报告同目录): 每个单元一项 "已检查", 每个检查项一项 "已应用" 或 "不适用" 并附一句理由. 不要求逐 "单元 x 检查项" 作答. 问题仍只写在报告中, 清单不写结论, 也不是通过证据.
-- Engine 核对清单: 缺项, 列出不存在的单元或格式不符时, 在同一会话发一条后续消息, 只列缺项, 要求补查并按需更新报告; 第二次仍缺项时本轮按 `incomplete` 处理. 复审时清单只需覆盖相邻差异涉及的单元, 受影响的单元和前轮未完成的检查项, 其余沿用前轮覆盖, 与现行 Re-review 一致.
-- 上下文: 每个 Reviewer 仍由一个会话看完整候选, 不按单元拆成多个会话, 也不按批次分多个回合送入; 只有缺项时才多一个回合. 与逐单元或分批送入相比, 高智能请求和墙钟都只在缺项时增加.
-- 清单证明逐项过目, 不证明判断质量; 质量由抽查和 Reviewer benchmark 守护. 覆盖清单改变 `docs/agents/reviewer.md` 的 Report 节和三个 Role 的 Output 节, 规范落地时按 Reviewer 能力验证做前后对比.
+按用户 11-13 的答复 (D15), Reviewer 不另设覆盖机制, 沿用现行 "单 Agent 完成全部检查": 每个 Reviewer 在自己的会话中看完整冻结候选, 按 Role 完成全部检查, 不按单元拆成多个会话, 不分批送入, 不写覆盖清单, Engine 不核对覆盖. 这样上下文不被拆散, 每轮只有一个审核回合 (运行层错误与输出不符 schema 的重答除外). 审核质量 (含漏检) 由 Reviewer benchmark 的盲评分与真实缺陷检出跟踪 (11), 不在每轮流程中检查; 依据是 ARW `.scratch` 中 13 次 Main Agent 每轮抽查都没有发现漏检.
 
 ### Freezing and invalidation
 
 - 冻结在每轮第 3 步. 冻结前的步骤可以改候选, 冻结后本轮输入不变; worker 可以在审核进行中继续修复已核实的问题 (写工作区, 不改冻结的 `tree` 与快照), 修复进入下一轮. 冻结是屏障, 所以不会审核一个之后可能因判断被推翻而回退的候选.
 - 结果失效一律由 Engine 程序判断, 不再由会话判断 "改动是否相关":
-  - 一轮结果只属于其冻结输入. Reviewer 返回 `incomplete`, 运行层错误, 覆盖核对第二次失败, 抽查发现漏检, 都使该轮作废.
+  - 一轮结果只属于其冻结输入. Reviewer 返回 `incomplete`, 运行层错误, 或输出按 07 重答后仍不符 schema, 都使该轮作废.
   - 轴结果复用: Engine 按每个轴的冻结输入集合比较 (Code Standards: 去掉记录章节后的候选与规则副本; 要求符合审核: 再加治理要求与授权 issue 的 subject). 集合有任何变化即该轴增量复审, 不变则复用. 现行 "只改治理要求时保留 Standards" 由此机械得出; 现行由 Main Agent 判断依赖的做法取消, 代价是偶尔多跑一次本可复用的轴. 用判断放宽复用见 Judgments in the review loop 节的范围类.
   - Spec Readiness 记录: subject 变化 (验收勾选的规范化除外) 即失效; 实施开始前 Input 或 Role 字节变化也失效, 开始后只核对 subject. "实施是否已开始" 改由 Engine 按实例状态 (本 issue 的实施步骤是否已执行) 判定, 不再从分支与工作树推断.
   - Commit Audit: 最终暂存树相对受审 `tree` 只有记录章节差异时结果有效, 否则重开一轮 (现行 `verify` 已机械检查).
   - 判断被推翻: 冻结前已由屏障排除; 抽样复核阶段未被抽中的判断视为已复核 (08), 不使结果失效.
   - 流程定义或 Engine 升级不使已完成的轮次失效; 进行中的轮次按 07 绑定启动时的版本完成.
 
-### Spot checks and dispositions
+### Dispositions
 
-- 每轮 Reviewer 返回 `ready` 且覆盖核对通过后, Engine 为每个 Reviewer 随机选一个审核单元 (种子记入步骤记录); Commit Audit 另从差异回归检查的单元中选一个作回归抽查. 由程序选择, 取代现行 "Main Agent 每轮自选一两处", 因为会话一视同仁后没有独立于流程的 Main Agent, 而且程序选择没有作者一方的偏向.
-- 抽查与处置合为 worker 会话的同一个 Agent 步骤, 不另开会话: 逐条核对报告中的问题 (沿用 `docs/agents/subagent-findings.md` 的核对与按来源分流), 给出每条的处置 (修复, 按质疑规则判为无效并附证据, 或台账三类之一), 并对所选单元按全部检查项检查一遍, 输出漏检 (单元, 检查项, 证据) 或 "无". 合并的理由: worker 已有候选的上下文, 不增加高智能会话与回合. 代价: 抽查者是作者一方, 与现行由 Main Agent 抽查相同.
-- 有漏检时该轮作废, 该 Reviewer 沿原会话重审并完成全部检查, 漏检单元作为重审理由交给它; 漏检本身按问题处置.
+- 现行 "Main Agent 每轮自选一两处抽查" 取消, 不由程序选单元代替 (用户 11-13, D15): 会话一视同仁后没有独立于流程的 Main Agent, 而 Reviewer 的输出与其他 Agent 步骤一样只经通用检查.
+- 处置是原 worker 会话的一个 Agent 步骤, 不另开会话: 逐条核对报告中的问题 (沿用 `docs/agents/subagent-findings.md` 的核对与按来源分流), 给出每条的处置 (修复, 按质疑规则判为无效并附证据, 或台账三类之一). 由原会话处置是因为它已有候选的上下文与提示缓存, 不增加高智能会话与回合. 代价: 处置者是作者一方, 现行由非作者的 Main Agent 核对发现.
 - 需要用户决定的发现 (`subagent-findings.md` 中质疑有效性或影响不足以重跑关卡的情形) 转为等待用户. Reviewer 要求修改 spec 时, 现行 "Main Agent 与一个独立 subagent 共同决定" 改为处置步骤与一个独立会话的 Agent 步骤共同决定, 两者不一致时等待用户.
 
 ### Judgments in the review loop
 
 审核循环中的高智能请求和墙钟主要来自正式 Reviewer 每轮的思考与工具调用, 其次是处置与修复, 所以判断模型要对四项目标有贡献, 只能减少审核轮数或缩小复审. 判断模型在审核中只有两类用法, 都不产生关卡结论.
 
-提示类: 结论只决定是否先把一个可能的问题交给 worker, 不改变关卡的输入范围或结论. 包括冻结前的预检 (每个审核单元 x Role 中有明确检查项的条目, 一题一个 `noul`), 输出检查 (仅 Commit Audit, 每条验收标准一题 "交付说明与 diff 是否覆盖"), 以及修复后的核对题 "这次修复是否解决了发现 X". 收益: 在 Reviewer 之前修掉问题, 或在修复不完整时省掉一轮复审; 一轮复审的成本是 Reviewer 的全部请求与等待时间, 加一次处置.
+提示类: 结论只决定是否先把一个可能的问题交给 worker, 不改变关卡的输入范围或结论. 包括冻结前的预检 (Engine 从候选机械切出的每个单元 (diff hunk, What to build 条目, 验收标准) x Role 中有明确检查项的条目, 一题一个 `noul`; 单元只用于出题, 不交给 Reviewer), 输出检查 (仅 Commit Audit, 每条验收标准一题 "交付说明与 diff 是否覆盖"), 以及修复后的核对题 "这次修复是否解决了发现 X". 收益: 在 Reviewer 之前修掉问题, 或在修复不完整时省掉一轮复审; 一轮复审的成本是 Reviewer 的全部请求与等待时间, 加一次处置.
 
 - 阈值以上的 "有问题", "未覆盖" 或 "未解决": 交 worker 核实后修复或判为无效. 写入由 worker 核实后的结论决定, 不是 08 的投机写入, 不受上限与屏障约束.
 - 阈值以下, 影子阶段或已停用: 不提示, 也不同步交高智能 Agent, 因为正式 Reviewer 本来就检查同一项, 同步作答只会增加请求与等待. 这是对 08 第 2 路的细化 (用户 11-13 确认, D16).
 - 不做 08 的盲答异步复核: 正结论由 worker 的核实校对, 负结论由之后正式 Reviewer 在同一单元同一检查项上的报告校对. 11 的统计按这两个来源计, 不额外调用高智能 Agent; 提示类不直接触发不可撤销的动作, 不计有害分歧, 转正与停用按阈值以上提示被 worker 判为无效的比例, 以及请求数与墙钟有无收益判断, 其余按 11 的阶段. 这一点同样已由用户 11-13 确认 (D16).
 - "已解决" 不替代 Reviewer 对发现 X 的判断, Reviewer 仍在复审中核对 X, 守住 05 的边界.
 
-范围类: 结论决定正式关卡审什么, 例如 "这次修复是否只碰了与发现相关的单元", 据此把复审的影响范围与覆盖清单限定到这些单元, 或判定另一个轴的冻结输入虽有变化但不受影响而复用其结果. 收益: 减少复审中 Reviewer 的读取与工具调用, 或省掉一个轴的一轮, 请求数与墙钟都受益. 风险: 答错会少审一部分改动, 按 08 属于单向题. 三种做法:
+范围类: 结论决定正式关卡审什么, 例如 "这次修复是否只碰了与发现相关的单元", 据此把复审的影响范围限定到这些单元, 或判定另一个轴的冻结输入虽有变化但不受影响而复用其结果. 收益: 减少复审中 Reviewer 的读取与工具调用, 或省掉一个轴的一轮, 请求数与墙钟都受益. 风险: 答错会少审一部分改动, 按 08 属于单向题. 三种做法:
 
 - 不用范围类, 复审范围由 Reviewer 按现行 Re-review 自行追踪.
 - 保守方向 (不限定) 直接生效, 放宽方向按 08 同步交高智能 Agent 作答. 这与 08 兼容; 同步作答本身是一次高智能请求和一段等待, 只有省下的复审请求与时间明显更多时才有收益.
@@ -88,32 +79,32 @@ Reviewer 等待: 现行 "等到 30 分钟向用户报告并询问, 不自行停�
 
 ### Readiness record and model settings
 
-- 就绪记录升到模式版本 8, 字段与版本 7 相同, 两处语义变化: `request.filePath` 指向 Engine 提供的实例临时工作区 (不再含平台会话 ID); 记录只由 Engine 在覆盖核对与抽查都通过后生成并提升. 版本号变化使 0.x 的版本 7 记录不再授权 (13 要求升级时未完成的实施 issue 重跑 Spec Readiness), 0.x 运行时也不接受版本 8 记录. 覆盖清单与抽查不进记录字段: 它们只决定能否生成记录, 证据留在 Engine 的步骤记录中.
-- 删除 haiku 回退规则: 现行 `reviewer-launch` 中 "未选择 `anthropic` 的 Reviewer 设置在 Claude Code 中默认用 `haiku` 和 `high`" 取决于由哪个 harness 中的 Main Agent 启动审核. 1.0 由 Engine 启动审核, 每个 Reviewer 角色按全局加仓库两级配置取模型, Engine 按模型选 harness (07), 不按调用方改模型; 默认值属于安装与配置 (地图 Not yet specified). 判断模型的配置在另一节 (16), 不能被选作 Reviewer 模型.
+- 就绪记录升到模式版本 8, 字段与版本 7 相同, 两处语义变化: `request.filePath` 指向 Engine 提供的实例临时工作区 (不再含平台会话 ID); 记录只由 Engine 在 Reviewer 返回 `No problems.` 且输出通过通用检查后生成并提升. 版本号变化使 0.x 的版本 7 记录不再授权 (13 要求升级时未完成的实施 issue 重跑 Spec Readiness), 0.x 运行时也不接受版本 8 记录.
+- 删除 haiku 回退规则: 现行 `reviewer-launch` 中 "未选择 `anthropic` 的 Reviewer 设置在 Claude Code 中默认用 `haiku` 和 `high`" 取决于由哪个 harness 中的 Main Agent 启动审核. 1.0 由 Engine 启动审核, Reviewer 工作的模型与其他 Agent 工作一样按 07 的 Model choice 节在工作开始时选定, 之后各轮复审不换; Engine 按模型选 harness, 不按调用方改模型. 判断模型的配置在另一节 (16), 不能被选作 Agent 模型.
 
 ### Scenarios
 
-1. 预检拦下问题: Code Standards 预检对 hunk H 的 "错误处理有对应的现实失败场景" 答 "不满足" (高于阈值); worker 核实后删掉多余的 `try`/`catch`; 冻结, 两个 Reviewer 都 `No problems.`, 抽查无漏检, 提交. 省掉的是一轮复审的请求与等待; 若 worker 判为无效, 只多一次核实.
-2. Reviewer 漏掉单元: Code Standards 的覆盖清单缺 2 个 hunk; Engine 在同一会话列出这 2 个单元要求补查, Reviewer 补查后更新清单, 本轮继续.
-3. 抽查发现漏检: worker 在随机选中的单元发现一处未报告的问题; 该轮作废, Reviewer 沿原会话重审, 漏检作为问题进入修复.
+1. 预检拦下问题: Code Standards 预检对 hunk H 的 "错误处理有对应的现实失败场景" 答 "不满足" (高于阈值); worker 核实后删掉多余的 `try`/`catch`; 冻结, 两个 Reviewer 都 `No problems.`, 提交. 省掉的是一轮复审的请求与等待; 若 worker 判为无效, 只多一次核实.
+2. 多轮审核沿用会话: Commit Audit 第 1 轮 `requirements-reviewer` 报出 2 个问题; 处置与修复都在实施该 issue 的原 worker 会话中进行, 第 2 轮复审回到原 `requirements-reviewer` 会话, 两边都不换模型, 复用各自的提示缓存; Engine 的步骤记录显示每项工作自始至终只有一个会话身份.
+3. Reviewer 输出格式不符: Reviewer 的报告缺少输出 schema 要求的字段; Engine 按 07 在同一会话要求重答, 重答合格后进入处置; 两次重答仍不合格时该轮作废, 实例停在可恢复状态.
 4. 修复不完整: 修复后核对题对发现 X 答 "未解决" (高于阈值); worker 回到 X 补修, 再冻结下一轮, 省掉一轮注定不过的复审. 答 "已解决" 但实际未解决时, Reviewer 在复审中照常报出 X, 成本与不用判断时相同.
 5. 实施开始后 spec Input 变化: Engine 由实例状态知道实施已开始, 只核对 subject, 就绪记录仍有效; 设计变化由提交审核的要求符合审核核对.
 
 ### Interfaces
 
 - 05: 判断模型只做提示类与范围类判断, 不产生关卡结论.
-- 07: 审核步骤都是四类步骤; Reviewer 步骤的超时处理例外如上; 步骤记录增加高智能请求数与 token.
+- 07: 审核步骤都是四类步骤; Reviewer 是普通 Agent 步骤, 模型选择, 会话沿用 (复审回到原 Reviewer 会话, 处置与修复回到原 worker 会话) 与输出核对都按 07; Reviewer 步骤的超时处理例外如上; 步骤记录增加高智能请求数与 token.
 - 08: 冻结与提交是屏障; 提示类细化第 2 路并改用 worker 与 Reviewer 校对 (用户 11-13 确认); 范围类是单向题, 首版不启用, 放宽方向的例外按实测再定.
 - 11: 提示类的转正与停用依据如上; 四项目标的对照数据来自 Engine 的计量 (含上下文中规则与流程的占比, 判断的误判率).
-- 13: 就绪记录版本 8, haiku 回退删除, "单 Agent 完成全部检查" 保留并加覆盖清单, 抽查由 Engine 选择.
-- 规则转为 Engine 工作依据 (用户 11-13: 由高智能模型按 ARW 提供的 Skill 把规则转成机械程序与判断模型调用, 产物基本是一张 graph): 关卡的步骤顺序, 单元生成, 覆盖核对, 轮次与失效规则是 graph 中的程序节点与转移; 预检题由转换从 Role 的检查项生成, 是标为提示类的判断节点, 范围类节点标为单向; 关卡节点标为正式关卡, Engine 不对其做 08 复核; Reviewer Role 与 `docs/agents/reviewer.md` 不转换, 作为完整文档交给 Reviewer.
+- 13: 就绪记录版本 8, haiku 回退删除, "单 Agent 完成全部检查" 原样保留 (不加覆盖清单), "Main Agent 每轮抽查一两处" 取消 (D15).
+- 规则转为 Engine 工作依据 (用户 11-13: 由高智能模型按 ARW 提供的 Skill 把规则转成机械程序与判断模型调用, 产物基本是一张 graph): 关卡的步骤顺序, 预检单元的切分, 轮次与失效规则是 graph 中的程序节点与转移; 预检题由转换从 Role 的检查项生成, 是标为提示类的判断节点, 范围类节点标为单向; Reviewer 是普通 Agent 节点, 与其他 Agent 节点的区别只在节点数据 (所属工作, 默认模型档位, 本步指令, 只读权限), 其中产生关卡结论的节点标为正式关卡, Engine 不对其做 08 复核; Reviewer Role 与 `docs/agents/reviewer.md` 不转换, 作为完整文档交给 Reviewer.
 - 14: 验收场景至少包括上面 5 个情景, 以及就绪记录版本 7 在 1.0 中不授权.
 
 ## Comments
 
 11-13: 用户对判断模型 POC 的答复改了 1.0 的目标. 原话 (节选): "判断模型要解决的问题, 主要是减少高智能模型的调用次数, 减少的原因是规则判断大部分用机械程序和判断模型替代. ... 机械程序是用高智能模型写的, 高智能模型会根据 ARW 之后提供的 skill, 把规则转为机械程序和判断模型调用, 然后 engine 就把这个转换后的数据 (基本上是一个 graph) 作为自己工作的依据." 同日用户补充: 整体流程墙钟的减少也是主要目标, 只省费用不省时间会使判断模型的价值大打折扣; 并且审核本身也要加速 (Reviewer 上下文里的规则与流程同样交给机械程序和判断模型, 不只影响 main agent); 判断模型有误判率, 要用本地模型与公开的高质量模型在同一套题上测试, 以此判断本地模型的可行性. 因此目标共四项: 高智能请求数, 整体墙钟, 上下文中规则与流程占比, 规则与流程误判率; 阈值都不预先定, 先做实验再定. 本答案因此按这四项衡量审核循环中的判断, 不再以 "缩短关键路径 30%" 为门槛.
 
-11-13: 待用户确认的两处 (Main Agent 交用户决定, 答复后改写本答案相应部分; 第二处已答复, 见下一条):
+11-13: 待用户确认的两处 (Main Agent 交用户决定, 答复后改写本答案相应部分; 两处都已答复, 见后面 D16 与 D15 两条):
 
 - 覆盖做法. 选项: 每个单元交一个独立会话 (上下文被拆散, 请求成倍增加, 不建议); 同一会话按批次多回合送入单元并逐 "单元 x 检查项" 作答 (接近 10-25 用户 "逐方法喂给高智能 Agent" 的设想, 漏检最少, 但请求与墙钟随单元数增长); 同一回合写覆盖清单, Engine 核对后只为缺项追加回合 (本答案采用).
 - 审核内判断与 08 的关系. 提示类在阈值以下不同步交高智能 Agent, 并以 worker 核实和 Reviewer 报告代替盲答异步复核 (本答案采用); 范围类先不启用, 按实测在 "同步交高智能" 与 "08 例外" 之间选择.
@@ -121,3 +112,5 @@ Reviewer 等待: 现行 "等到 30 分钟向用户报告并询问, 不自行停�
 离线评估 (见 [本地 Jev 类候选的可行性小实验](15-task-local-candidate-feasibility.md) 的 Comments) 中, 当前候选在规则级预检上选不出可用阈值, 输出检查在测试集阈值以上覆盖 0.25, 精度 1.00; 所以首版提示类大概率只有输出检查能越过离线评测, 预检停在影子阶段, 按本答案不产生额外请求.
 
 11-13: D16 答复 (用户, 状态页 11-13 07:04): "按你推荐的来". 即审核内判断的两处都按本答案: 提示类在阈值以下不提示, 也不同步交高智能 Agent, 以 worker 核实和 Reviewer 报告代替盲答异步复核; 范围类首版不启用, 接口按第二种做法设计, 是否启用或改用第三种等 `v1-pocreq` 的 E2, E3, E4 实测. 相应 "待用户确认" 已改为定稿. 覆盖做法 (D15) 仍待用户确认. 另按用户 11-13 的四项目标 (高智能请求数, 整体墙钟, 上下文中规则与流程占比, 规则与流程误判率) 改写了 "两项目标" 的说法, 设计不变.
+
+11-13: D15 答复. 用户原话: "说实话我已经忘了之前和 codex 沟通时, 是如何设计 reviewer 的工作流程了. 我现在的看法是, reviewer 和其他 agent 没有任何区别, 不需要特别对待. 你基于这个决定, 再问我问题." Main Agent 据此改问剩下的一处, 用户在状态页 (11-13 07:22) 选 A: 取消 Main Agent 每轮抽查, 不改为所有 Agent 步骤的通用抽查; Reviewer 输出只经通用检查 (Engine 核对格式, 判断模型输出检查), 审核质量靠 Reviewer benchmark 跟踪. 依据是 ARW `.scratch` 中 13 次 Main Agent 抽查都没有发现漏检. 同日用户接着说: "做各个工作的 agent 的唯一区别, 就是先要判断某个工作适合什么模型, 然后就交给它一直做, 中途尽量不换模型, 充分利用模型的缓存." 据此本答案改为: Reviewer 是 graph 中的普通 Agent 步骤, 仍是与被审工作分开的会话 (审核本来就是别人来看); 删去 Coverage 节原有的审核单元清单, 覆盖清单与缺项追加回合, 删去由 Engine 随机选单元并由 worker 复查的抽查 (原 Spot checks and dispositions 节只保留处置), 每轮步骤由 8 步减为 7 步, 原情景 2, 3 (漏掉单元, 抽查发现漏检) 换成多轮审核沿用会话与 Reviewer 输出格式不符两个情景; 写明复审回到原 Reviewer 会话, 处置与修复回到原 worker 会话, 模型选择按 07 的 Model choice 节 (其中两处取舍待用户确认, 见 07 的 Comments). 原 "覆盖做法" 的三个选项都不再采用. 预检仍按单元出题, 但单元只用于出题, 不交给 Reviewer, 也不核对覆盖.
