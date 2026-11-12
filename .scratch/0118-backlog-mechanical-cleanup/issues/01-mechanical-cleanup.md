@@ -15,7 +15,7 @@ Status: completed
 ## Acceptance criteria
 
 - [x] 12 项逐一确认并清理或说明放弃原因, 用户可见行为与退出码完全一致.
-- [ ] 完整 Source Checkout 验证及 Commit Audit 通过并提交.
+- [x] 完整 Source Checkout 验证及 Commit Audit 通过并提交 (提交 `850d1b6`).
 - [x] 完成记录包含删除依据及代码, 测试, issue 与文档的预估和实际变更量.
 
 ## Blocked by
@@ -74,7 +74,7 @@ next ADR number: 0041
 
 本轮按用户指定单 issue effort 分组. 此 issue 仅适用行为保持重构例外, 不安排 Spec Readiness 审核.
 
-前置 issue:0117:01 已由提交 `9b5ec0d` 完成. 原跨 effort 阻断字段不符合跟踪器格式, 已改为无阻断. 用户本轮明确确认无需治理设计并要求 not-applicable 例外流程, 本次确认记录时间为 2026-11-11T18:58:58Z.
+前置 issue:0117:01 已由提交 `21b3fe1` 完成. 原跨 effort 阻断字段不符合跟踪器格式, 已改为无阻断. 用户本轮明确确认无需治理设计并要求 not-applicable 例外流程, 本次确认记录时间为 2026-11-11T18:58:58Z.
 
 
 

@@ -25,7 +25,7 @@ Status: completed
 
 - [x] 八项逐一确认并修复或按授权条件放弃, 清单外行为保持不变.
 - [x] 回归测试覆盖上述独立边界, 完整 Source Checkout 验证通过.
-- [ ] 取得本 issue 的 Spec Readiness 例外记录, 通过 Commit Audit 并提交.
+- [x] 取得本 issue 的 Spec Readiness 例外记录, 通过 Commit Audit 并提交 (提交 `21b3fe1`).
 - [x] 完成记录说明每项结果及按代码, 测试, issue 与文档拆分的变更量.
 
 ## Blocked by
