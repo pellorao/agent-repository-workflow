@@ -42,16 +42,17 @@ Blocked by: issue:0099:01, issue:0099:04, issue:0099:17
 
 ### Terms and ADRs
 
-Main Agent 改写为: 用户选定模型, 由 Engine 驱动的对话会话, 负责自由对话和分给它的高智能步骤; Engine 对它和其他 Agent 会话一视同仁 (07), 它不负责推进流程, 分配写入范围, 执行 Git 写入, 也不作流程中的简单判断. 新增 Engine 术语. ADR 0013 由新 ADR 取代: Engine 发放每仓库一个的写入者令牌, 并执行 Git 写入; 被取代的范围和需要同步注明的 ADR 0030, 0033 见 07 的 Comments. ADR 0006, 0023, 0034 中由 Main Agent 承担的职责相应修订. Spec Readiness, Workflow Distribution, Managed Content, Repository Profile, Application Leader/Member 的定义保留. 1.0 删除 Upstream Sync 流程 (用户 11-13 D21, 见 21): 以后同步上游是普通任务, 照上游改动修改我们的 Skill 再转换或生成, 这是长期维护责任的变化, 在规范中写明.
+Main Agent 改写为: 用户选定模型, 由 Engine 驱动的对话会话, 负责自由对话和分给它的高智能步骤; Engine 对它和其他 Agent 会话一视同仁 (07), 它不负责推进流程, 分配写入范围, 执行 Git 写入, 也不作流程中的简单判断. 新增 Engine 术语. ADR 0013 由新 ADR 取代: Engine 发放每仓库一个的写入者令牌, 并执行 Git 写入; 被取代的范围和需要同步注明的 ADR 0030, 0033 见 07 的 Comments. ADR 0006, 0023, 0034 中由 Main Agent 承担的职责相应修订. Spec Readiness, Workflow Distribution, Managed Content, Repository Profile, Application Leader/Member 的定义保留. 1.0 删除 Upstream Sync 流程 (用户 11-13 D21, 见 21): 以后同步上游是普通任务, 照上游改动修改我们的 Skill, 落在已迁入 graph 的流程内容时直接改 graph (D26, 见 22), 这是长期维护责任的变化, 在规范中写明.
 
 ### Rules move into the Engine
 
-方向: Agent 要读的规则大幅减少, 大部分规则内置进 Engine; 内置规则中多数由 Engine 机械执行 (流程定义与程序检查), 少数由 Engine 在需要时向判断模型提题触发. 根 `AGENTS.md` 的 Workflow Triggers 节, 以及压缩后重读规则的要求, 一并删除. 规则正文按职责归类:
+方向: Agent 要读的规则大幅减少, 大部分规则内置进 Engine; 内置规则中多数由 Engine 机械执行 (流程定义与程序检查), 要靠语义的少数由正在干活的 Agent 步骤作为输出 schema 的必填字段回答 (D24; 用户 11-12 原说 "少数由判断模型触发", 判断模型现在只做可选提示). 内置的方式是 [定义规则到 graph 的转换与 Engine 按 graph 执行](22-define-rule-to-graph-conversion.md): 一次性迁移成 graph, 之后 graph 为权威 (D26). 根 `AGENTS.md` 的 Workflow Triggers 节, 以及压缩后重读规则的要求, 一并删除. 规则正文按职责归类:
 
-- 顺序, 门禁与跳过条件进入流程定义和程序检查 (`implement` 的 Entry, `spec-readiness`, `commit`, `reviewer-launch`, `issue-tracking` 的字段生命周期, `agent-writes.md`, `subagent-allocation.md`); 其中要靠语义判断的条件 (如 "这项改动是否需要用户决定") 写成流程定义中的判断题, 按 [定义分流判断的复核与回退合同](08-define-routing-review-and-rollback.md) 执行.
+- 顺序, 门禁与跳过条件进入流程定义和程序检查 (`implement` 的 Entry, `spec-readiness`, `commit`, `reviewer-launch`, `issue-tracking` 的字段生命周期, `agent-writes.md`, `subagent-allocation.md`); 其中要靠语义判断的条件 (如 "这项改动是否需要用户决定") 写成 Agent 步骤输出 schema 的必填分支字段, 没有可用 Agent 步骤处走保守分支, 见 [定义分流判断的复核与回退合同](08-define-routing-review-and-rollback.md).
 - 单步判断方法变成随流程定义版本化的本步短指令 (`subagent-findings.md`, Reviewer 发现的处置).
 - Reviewer Role 正文保留为文档 (其中可机械判定的检查项移成 09 第 1 步的程序检查); 通用方法继续作为 Skill (`tdd`, `diagnosing-bugs`, `codebase-design`, `domain-modeling`, `research`, `prototype`, `writing-for-agents` 等); 写作与输出规则保留为常读规则.
-- 只服务旧机制的内容删除. 仓库自有区域原样保留.
+- 只服务旧机制的内容删除. 仓库自有区域原样保留 (机械参数移到配置是一处例外, 见 21 决定 B).
+- 例外: ARW 源码仓库自身的规则和流程 (根 `AGENTS.md` 与几份 `docs/agents/` 文档的仓库自有区域, 仅供源码检出的 Skill) 同样按 21 归类, 转换范围内的转成 graph, 这些 graph 只在 ARW 源码检出中加载, 不随 Engine 分发 (用户 11-13, 见 22 的 Source checkout graphs 节). 其他已采用仓库的自有规则仍是文本.
 
 仍向仓库分发规则: 保留锁, 受管区域与投影机制, 分发内容缩减为常读的写作与输出规则, 一条 "ARW 流程只经 Engine 运行" 的声明, 方法类 Skill 和 Reviewer Role 文档; 顺序与门禁类 Skill 和文档由 `workflow update` 删除. 现有 update 已能删除不再分发的受管文件, 并把其中的仓库自有区域迁入 `AGENTS.md` (`lib/repository-workflow/workflow.mjs` 约 L1185-1200), 改动最小, 仓库自有规则也继续随 Git 版本化, 由 harness 原生加载. 用户绕过 Engine 直接在仓库中打开 Codex 或 Claude Code 时, 会话可以做普通协助, 不执行 issue 实施, 就绪或提交审核流程. 未采用: 全部规则随 Engine 安装, 在开会话时注入 (要改写仓库工作流和开发两份长期规格, 直接打开的会话失去原生 Skill, 团队规则不再随 Git 版本化).
 
@@ -59,7 +60,7 @@ Main Agent 改写为: 用户选定模型, 由 Engine 驱动的对话会话, 负�
 
 一次性升级, 不设共存. 顺序: 安装 1.0; 在每个仓库运行 `arw workflow update`, 或由 Engine 首次打开仓库时引导运行. 预检: 锁为 v2; 没有旧 issue 或 `PRD.md` 格式 (否则先 `arw migrate artifacts`); 工作区和索引干净 (被忽略的 `.tmp` 除外), 没有运行中的后台 Agent. 更新内容: 改写受管内容, 删除不再分发的文件并迁移其中的仓库自有区域, 最后写入新锁 (见 Version gate 节). 用户确认计划后, Engine 把升级作为一次非实施提交写入, 每个仓库的升级只占这一个提交. 之后运行升级后审核流程: 找出与 1.0 冲突的仓库自有规则; 有缺口时恰好创建一个补全 issue, 沿用现行 Post-init handoff 规则.
 
-进行中的工作在静止点进入 1.0: 正在实施, 已暂存待审或审核中的工作先在 0.x 完成或放弃; 旧审核轮不迁移; 未进入终态的实施 issue 在 1.0 下重跑 Spec Readiness, 可以做增量复审; Wayfinder issue, map, spec 和 Application Source Issue 直接沿用. 理由: 现行规则规定 Reviewer Role 字节变化后就绪记录失效 (完整 `verify`), 1.0 必然改写 Role, 重跑就绪是在执行现行规则, 不是新增成本. 未采用: Engine 从 Artifact, 工作区和暂存区推断并接管流程实例 (只用一次的重建逻辑, 而且未提交改动的归属和恢复基线都无法证明); 接受 0.x 的 `satisfied` 记录, 已开工的 issue 只核对 subject (Engine 无法可靠判断哪些已开工, 要逐个问用户).
+进行中的工作在静止点进入 1.0: 正在实施, 已暂存待审或审核中的工作先在 0.x 完成或放弃; 旧审核轮不迁移; 未进入终态的实施 issue 在 1.0 下重跑 Spec Readiness, 可以做增量复审; Wayfinder issue, map, spec 和 Application Source Issue 直接沿用. 理由: 现行规则规定 Reviewer Role 字节变化后就绪记录失效 (完整 `verify`), 1.0 必然改写 Role (拆出可机械判定的检查项, 09), 就绪记录也升到版本 8 (09), 0.x 的记录本来就不能沿用, 重跑就绪是在执行现行规则, 不是新增成本. 未采用: Engine 从 Artifact, 工作区和暂存区推断并接管流程实例 (只用一次的重建逻辑, 而且未提交改动的归属和恢复基线都无法证明); 接受 0.x 的 `satisfied` 记录, 已开工的 issue 只核对 subject (Engine 无法可靠判断哪些已开工, 要逐个问用户).
 
 ARW 源码仓库不运行 `workflow update`, 它的升级就是 `arw-1.0` 分支合并回 main, 合并时 main 上进行中的工作同样按静止点处理.
 
@@ -85,3 +86,5 @@ ARW 源码仓库不运行 `workflow update`, 它的升级就是 `arw-1.0` 分支
 11-12: 一个与 Main Agent 同级模型的 Agent 已按 ARW HEAD `79e2497` 起草分析, 原则是交付格式原样保留, 执行机制改写, 门禁语义保留, 只为旧机制存在的握手, 路径与手册只作需求证据. 五项方向性取舍交用户决定后写 `## Answer`: 公开命令面怎样改 (门禁命令是否从公开命令中删除), 1.0 是否仍向仓库分发规则以及直接打开 harness 时怎样, 进行中的工作怎样进入 1.0 (建议静止点升级, 未完成的实施 issue 重跑 Spec Readiness), 多机或多成员时的版本门槛 (建议锁升到 `lockSchemaVersion: 3`), 升级失败后能否退回 0.x (建议保留 0.x 配置副本并支持一次手工回退). 其中依赖 07 的两项架构判断已于同日经独立复核保留, 见 07 的 Comments.
 
 11-13: 用户 11-12 对五项取舍全部选择建议做法, 并补充规则分发的方向 (大部分规则内置进 Engine). 按 11-12 的分析草稿写入 `## Answer`, 各项的未采用做法与理由一并记在对应节中; 07 的两项架构判断已保留, 草稿中 "若被推翻" 的分支不再保留. 术语一节按 07 的 "会话一视同仁" 改写.
+
+11-14 (任务 v1-d26ans): 按 D24, D26 与用户 11-13 "arw 源码仓库中的也要改" 同步: Rules move into the Engine 节的 "少数由判断模型触发" 与 "判断题按 08" 改为 Agent 输出 schema 的必填分支字段; 加一条例外, ARW 源码仓库自身的规则同样转成 graph, 只在源码检出中加载; 静止点的理由补上 Role 拆出机械检查项与就绪记录升到版本 8 (09); Upstream Sync 之后的同步改为直接改 graph.

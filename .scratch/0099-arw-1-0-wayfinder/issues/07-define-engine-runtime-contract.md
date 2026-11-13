@@ -25,7 +25,7 @@ Engine 提供与用户对话的入口, 并按用户选择的 Main Agent 模型�
 
 ### Flow state and next action
 
-- 每个工作流 (规划, 实施, Spec Readiness, Code Review, 提交与 Commit Audit, Application/JIRA, 源码仓库维护等) 有一个流程定义: 随 Engine 发布的 graph 数据 (由规则转换而来, 见 [定义规则到 graph 的转换与 Engine 按 graph 执行](22-define-rule-to-graph-conversion.md)), 加 Engine 代码中的原语; 内容是一组具名步骤和步骤间的转移. 步骤只有四类: 确定性操作 (Engine 代码执行, 如 `prepare`, 测试命令, Git 写入), 判断 (可选的提示: 判断模型配置了且该类提示已启用时提一组 `choice` 或 `noul` 题, 结果只决定是否把一条提示交给 Agent 核实, 否则结果为不提示; 见 08), Agent 步骤 (给指定角色的会话一条只含本步指令的消息, 用输出 schema 约束结果), 等待用户.
+- 每个工作流 (规划, 实施, Spec Readiness, Code Review, 提交与 Commit Audit, Application/JIRA, 源码仓库维护等) 有一个流程定义: 随 Engine 发布的 graph 数据 (由规则一次性迁移而来, 之后 graph 本身是权威, D26; 源码仓库维护的 graph 只在 ARW 源码检出中加载; 见 [定义规则到 graph 的转换与 Engine 按 graph 执行](22-define-rule-to-graph-conversion.md)), 加 Engine 代码中的原语; 内容是一组具名步骤和步骤间的转移. 步骤只有四类: 确定性操作 (Engine 代码执行, 如 `prepare`, 测试命令, Git 写入), 判断 (可选的提示: 判断模型配置了且该类提示已启用时提一组 `choice` 或 `noul` 题, 结果只决定是否把一条提示交给 Agent 核实, 否则结果为不提示; 见 08), Agent 步骤 (给指定角色的会话一条只含本步指令的消息, 用输出 schema 约束结果), 等待用户.
 - Agent 步骤宜粗不宜细 (批判审读一.4): Engine 每次把控制交回 Agent 至少多一个请求和约 8 秒步骤延迟 (E2 中三个小流程的 worker 请求反而增加了), 步骤切太细会吃掉节省. 只在 Engine 必须介入处切分: 冻结, 门禁, Git 写入, 等用户. 例如 "实施并修到测试通过" 是一个 Agent 步骤, Engine 在步骤结束后再做机械核对; 不把实施, 跑测试, 读结果, 修复各写成一步.
 - 下一动作由流程定义, 当前状态和上一步结果唯一决定. Agent 与判断模型只能通过本步输出 schema 中列出的字段或选项影响分支, 不能跳步或加步; 流程定义没有覆盖的情况一律转为等待用户. 这取代现行 "按触发点读规则, 由 Main Agent 记住顺序", 规则正文的归类见 13, 逐份去向见地图 Not yet specified.
 - 流程实例状态写在 Engine 的私有状态库 (新增表, 与现有 `agents`, `messages` 同库), 字段至少有: 实例 ID, 流程定义名与版本, 仓库根, 关联 Artifact (effort 与 issue 的 Canonical ID), 当前步骤, 实例状态 (`running`, `waiting-user`, `waiting-subflow`, `waiting-writer`, `stopped`, `done`, `cancelled`), 父实例 (栈), 每步起止时间, 结果摘要, 所用会话与回合身份. 每步结束时先持久化再执行下一步.
@@ -110,3 +110,5 @@ Engine 提供与用户对话的入口, 并按用户选择的 Main Agent 模型�
 11-13 (D22 答复, 任务 v1-critfix): 用户原话见任务目录 README 的 D22. (1) 选模型改为两段, 判断模型输出参数, 机械映射表对到模型和推理强度, 判断模型未配置时由写概要的一步输出参数, 校准题列为待测项 (见 Model choice 节). (2) 压缩后沿用原会话和原模型. (3) 作者判 "无效" 的处置和证据带回原 Reviewer 会话下一轮复审, Reviewer 仍坚持则交用户 (见 09 Dispositions). (4) 任何 Agent 提议改 spec 由处置步骤加一个独立会话共同决定 (见 Agent sessions 节). 另: 等 Agent 超时先问用户不中断, 推广到所有 Agent 步骤 (Agent sessions 节的超时). 同日按批判审读加了 Agent 步骤宜粗的原则 (Flow state 节), 核实 Codex 能否按线程终止命令子进程 (Git 写入一条, 结论: 实验接口可列出并终止, 脱离进程除外, 列为已知风险), 并写明跨实例 Reviewer 会话的工作区 (见 10).
 
 11-14 (D24 答复, 任务 v1-d24ans): 用户 11-13 选 A, 判断模型改为可选, 不配也完整工作, 配了只做提示, 推翻 11-11 "判断模型是必需组件". 本答案相应改写: 原 "开工条件" (判断模型就绪后流程才开始, 未就绪时不开始任何流程, 空闲后释放) 改为 "判断模型可选" 一条, "Engine 不开工" 的失败点删去; 流程中的简单判断不再都交判断模型, 改为正在干活的 Agent 步骤输出 schema 的必填字段, 没有 Agent 步骤处走保守分支 (Engine process and roles 节, Flow state 节的判断步骤); 选档参数一律由写任务概要的一步输出 (与 D22(1) 原意 "由判断模型输出参数" 的差别已在 Model choice 节写明); 用户消息归类不再用判断模型; 删去 "被推翻的判断正是交给哪个角色时新建会话"; 恢复基线改称恢复点, 只在用户停止实例后手动使用, 不做任何自动回退 (08). 11-12 Comments 中 "简单判断都经 Engine 交判断模型" 与 11-13 Comments 中选档三选项是当时的记录, 以本条为准.
+
+11-14 (任务 v1-d26ans): 按用户 11-13 D26, graph 由规则一次性迁移而来, 之后 graph 本身是权威, 不再由规则重新转换; 源码仓库维护流程的 graph 只在 ARW 源码检出中加载. 第 28 行的来源说明相应改写, 其余合同不变, 细节见 22.

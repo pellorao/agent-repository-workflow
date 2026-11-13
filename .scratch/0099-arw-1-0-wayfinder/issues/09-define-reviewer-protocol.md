@@ -16,14 +16,14 @@ Blocked by: issue:0099:05, issue:0099:07, issue:0099:08
 
 - 正式关卡沿用 13 保留的语义: Spec Readiness (一个 `spec-readiness-reviewer`), 实施提交的 Commit Audit (Gate 1, 2 由 `requirements-reviewer`, Gate 3 由 `code-standards-reviewer`, 两者并行), 非提交的 Code Review 比较, 以及改动审核系统或长期合同的非实施提交 (一个 `requirements-reviewer`, 最多一轮). 关卡结论 (问题列表或 `No problems.`, `satisfied` 或 `gap`) 只来自正式 Reviewer.
 - 正式关卡不是判断: Engine 不对关卡结论做复核或推翻; 判断模型不担任 Reviewer, 不产生, 核对或推翻关卡结论.
-- Reviewer 是 graph 中的普通 Agent 步骤, 与其他 Agent 没有区别 (用户 11-13, D15): 启动, 恢复, 模型选择, 会话沿用, 输出核对与 Git 写入检测都按 07 对所有 Agent 工作的同一规则. 审核本来就是由别人来看, 所以一个 Reviewer 角色对一组 issue 的审核 (角色加排序后的 issue 集合, 与现行 Communication and sessions 节相同) 是与被审工作分开的一项工作, 有自己的会话: 不带作者对话, 关闭 memories, 不建子 Agent; 首轮新建, 各轮复审回到这个会话. 本步指令和权限由节点给出 (只读, 只写报告).
+- Reviewer 是 graph 中的普通 Agent 步骤, 与其他 Agent 没有区别 (用户 11-13, D15): 启动, 恢复, 模型选择, 会话沿用, 输出核对与 Git 写入检测都按 07 对所有 Agent 工作的同一规则. 审核本来就是由别人来看, 所以一个 Reviewer 角色对一组 issue 的审核 (角色加排序后的 issue 集合, 与现行 Communication and sessions 节相同) 是与被审工作分开的一项工作, 有自己的会话: 不带作者对话, 关闭 memories, 不建子 Agent; 首轮新建, 各轮复审回到这个会话. 本步指令和权限由节点给出 (只读, 只写报告). Reviewer 与其他 Agent 一样可以经 Engine 问用户, 答复后回到同一步继续 (22, Main Agent 11-14 定), 取代现行 `docs/agents/reviewer.md` 中 Reviewer 不与用户沟通的规定; Reviewer 仍不向作者会话索取信息.
 - 审核中的其他工作都是 07 的四类步骤: 确定性检查与冻结是 Engine 程序; 预检, 输出检查和修复后的核对题是判断; 处置发现与修复是产出候选的那项工作的 Agent 步骤, 回到它的原会话 (实施是实施 issue 的 worker 会话, Spec Readiness 是起草 subject 的会话), 下文称原 worker 会话; 需要用户决定的发现是等待用户.
 
 ### Steps of a gate round
 
 流程定义中每个关卡按以下顺序执行; 某步得到问题时回到修复, 不跳步.
 
-1. 确定性检查 (Engine 程序): 现有 `prepare` 的机械预检与 `warning:` 行 (含 Spec Readiness 自检中可机械判定的部分, Commit Audit 的体积摘要与 Validation 摘要核对), `commit-audit verify --non-implementation` 的检查, `arw text check` 和仓库配置的快速检查. Reviewer Role 中可机械判定的检查项 (体积预算是否超出, 格式, 记录章节是否齐全等) 迁移时移到本步作为确定性检查, 由 Engine 程序执行, Role 只保留需要判断的部分 (批判审读四.2); 逐项清单在 21 归类 Reviewer 文档时列出. 有问题时交 worker 修复后重做, 不启动 Reviewer. 现行 "warning 不是关卡, 但要先处理再启动 Reviewer" 由此成为流程分支. 耗时长的测试照现行可以与审核并行, 未完成的检查不提供通过事实, 失败进入修复循环.
+1. 确定性检查 (Engine 程序): 现有 `prepare` 的机械预检与 `warning:` 行 (含 Spec Readiness 自检中可机械判定的部分, Commit Audit 的体积摘要与 Validation 摘要核对), `commit-audit verify --non-implementation` 的检查, `arw text check` 和仓库配置的快速检查. Reviewer Role 中可机械判定的检查项 (体积预算是否超出, 格式, 记录章节是否齐全等) 迁移时移到本步作为确定性检查, 由 Engine 程序执行, Role 只保留需要判断的部分 (批判审读四.2); 21 按节估计三个 Role 合计约 1000 字符, 逐项清单在迁移时列出. 有问题时交 worker 修复后重做, 不启动 Reviewer. 现行 "warning 不是关卡, 但要先处理再启动 Reviewer" 由此成为流程分支. 耗时长的测试照现行可以与审核并行, 未完成的检查不提供通过事实, 失败进入修复循环.
 2. 提示 (判断): 预检与输出检查, 用法见 Judgments in the review loop 节.
 3. 冻结 (Engine 程序): 固定本轮输入. Spec Readiness 是 subject, Input 与规则副本的快照 (Spec Readiness Reviewer 只读检索仓库的例外保留, 但检索的是本轮视图的树 (`git grep <模式> <树>`), 不是工作树, 以免读到其他实例的未提交改动, 见 [定义并行流程的读取与写入隔离](10-define-parallel-flow-isolation.md)); Commit Audit 由 Engine 暂存后以 `git write-tree` 取得 `tree`, 连同 `base`; 非提交 Code Review 是不可变比较.
 4. 正式审核 (Agent 步骤): 首轮新建 Reviewer 会话, 复审回到原 Reviewer 会话, 交付审核包 (见 Review packet 节), 内含相邻版本差异, 前轮报告与处置台账 (现行 Re-review 节不变). 输出绑定报告 (格式不变). 报告与其他 Agent 步骤的输出一样只经通用检查: Engine 按输出 schema 核对格式 (07), 以及 graph 为该步配置的判断模型输出检查 (首版不为 Reviewer 报告设题); 不另设覆盖核对或抽查 (D15).
@@ -54,7 +54,7 @@ Reviewer 等待: 现行 "等到 30 分钟向用户报告并询问, 不自行停�
 - 结果失效一律由 Engine 程序判断, 不再由会话判断 "改动是否相关":
   - 一轮结果只属于其冻结输入. Reviewer 返回 `incomplete`, 运行层错误, 或输出按 07 重答后仍不符 schema, 都使该轮作废.
   - 轴结果复用: Engine 按每个轴的冻结输入集合比较 (Code Standards: 去掉记录章节后的候选与规则副本; 要求符合审核: 再加治理要求与授权 issue 的 subject). 集合有任何变化即该轴增量复审, 不变则复用. 现行 "只改治理要求时保留 Standards" 由此机械得出; 现行由 Main Agent 判断依赖的做法取消, 代价是偶尔多跑一次本可复用的轴. 用判断放宽复用首版不做, 见 Judgments in the review loop 节的范围类.
-  - Spec Readiness 记录: subject 变化 (验收勾选的规范化除外) 即失效; 实施开始前 Input 或 Role 字节变化也失效, 开始后只核对 subject. "实施是否已开始" 改由 Engine 按实例状态 (本 issue 的实施步骤是否已执行) 判定, 不再从分支与工作树推断.
+  - Spec Readiness 记录: subject 变化 (验收勾选的规范化除外) 即失效; 实施开始前 Input 或 Role 字节变化也失效 (Role 身份含从 Role 移出的机械检查项, 见 Readiness record and model settings 节), 开始后只核对 subject. "实施是否已开始" 改由 Engine 按实例状态 (本 issue 的实施步骤是否已执行) 判定, 不再从分支与工作树推断.
   - Commit Audit: 最终暂存树相对受审 `tree` 只有记录章节差异时结果有效, 否则重开一轮 (现行 `verify` 已机械检查).
   - 流程定义或 Engine 升级不使已完成的轮次失效; 进行中的轮次按 07 绑定启动时的版本完成.
 
@@ -83,7 +83,7 @@ Reviewer 等待: 现行 "等到 30 分钟向用户报告并询问, 不自行停�
 
 ### Readiness record and model settings
 
-- 就绪记录升到模式版本 8, 字段与版本 7 相同, 两处语义变化: `request.filePath` 指向 Engine 提供的实例临时工作区 (不再含平台会话 ID); 记录只由 Engine 在 Reviewer 返回 `No problems.` 且输出通过通用检查后生成并提升. 版本号变化使 0.x 的版本 7 记录不再授权 (13 要求升级时未完成的实施 issue 重跑 Spec Readiness), 0.x 运行时也不接受版本 8 记录.
+- 就绪记录升到模式版本 8, 字段与版本 7 相同, 三处语义变化: `request.filePath` 指向 Engine 提供的实例临时工作区 (不再含平台会话 ID); 记录只由 Engine 在 Reviewer 返回 `No problems.` 且输出通过通用检查后生成并提升; `reviewerRole` 的 `sha256` 覆盖 Role 文档加 Spec Readiness 关卡第 1 步确定性检查所在的 graph 子流程文件 (`filePath` 与 `id` 仍指 Role 文档), 因为可机械判定的检查项移出 Role 后, 只改这些检查同样改变审核标准, 不计入就会让就绪记录在审核标准变化后仍然有效. 版本号变化使 0.x 的版本 7 记录不再授权 (13 要求升级时未完成的实施 issue 重跑 Spec Readiness), 0.x 运行时也不接受版本 8 记录.
 - 删除 haiku 回退规则: 现行 `reviewer-launch` 中 "未选择 `anthropic` 的 Reviewer 设置在 Claude Code 中默认用 `haiku` 和 `high`" 取决于由哪个 harness 中的 Main Agent 启动审核. 1.0 由 Engine 启动审核, Reviewer 工作的模型与其他 Agent 工作一样按 07 的 Model choice 节在工作开始时选定, 之后各轮复审不换; Engine 按模型选 harness, 不按调用方改模型. 判断模型的配置在另一节 (16), 不能被选作 Agent 模型.
 
 ### Scenarios
@@ -120,3 +120,5 @@ Reviewer 等待: 现行 "等到 30 分钟向用户报告并询问, 不自行停�
 11-13: D15 答复. 用户原话: "说实话我已经忘了之前和 codex 沟通时, 是如何设计 reviewer 的工作流程了. 我现在的看法是, reviewer 和其他 agent 没有任何区别, 不需要特别对待. 你基于这个决定, 再问我问题." Main Agent 据此改问剩下的一处, 用户在状态页 (11-13 07:22) 选 A: 取消 Main Agent 每轮抽查, 不改为所有 Agent 步骤的通用抽查; Reviewer 输出只经通用检查 (Engine 核对格式, 判断模型输出检查), 审核质量靠 Reviewer benchmark 跟踪. 依据是 ARW `.scratch` 中 13 次 Main Agent 抽查都没有发现漏检. 同日用户接着说: "做各个工作的 agent 的唯一区别, 就是先要判断某个工作适合什么模型, 然后就交给它一直做, 中途尽量不换模型, 充分利用模型的缓存." 据此本答案改为: Reviewer 是 graph 中的普通 Agent 步骤, 仍是与被审工作分开的会话 (审核本来就是别人来看); 删去 Coverage 节原有的审核单元清单, 覆盖清单与缺项追加回合, 删去由 Engine 随机选单元并由 worker 复查的抽查 (原 Spot checks and dispositions 节只保留处置), 每轮步骤由 8 步减为 7 步, 原情景 2, 3 (漏掉单元, 抽查发现漏检) 换成多轮审核沿用会话与 Reviewer 输出格式不符两个情景; 写明复审回到原 Reviewer 会话, 处置与修复回到原 worker 会话, 模型选择按 07 的 Model choice 节 (其中两处取舍待用户确认, 见 07 的 Comments). 原 "覆盖做法" 的三个选项都不再采用. 预检仍按单元出题, 但单元只用于出题, 不交给 Reviewer, 也不核对覆盖.
 
 11-14 (D24 答复与两处遗留, 任务 v1-d24ans): 用户 11-13 选 A, 判断模型可选, 配了只做提示, 08 的复核, 屏障与回退随之删除. 本答案相应改写: 冻结与提交不再是 08 的屏障, 删去 "判断被推翻" 的失效条; 提示类在判断模型未配置或未按 11 启用时一律不出, 启用与停用改按 11 的 "离线评测过门槛就启用, 线上记无效率, 超门槛停用"; 范围类首版不启用, 原 D16 预留的 "放宽方向同步交高智能 Agent" 接口与 "08 例外" 做法依附已删的机制, 一并删去, 以后要缩小复审另开 issue (地图 Not yet specified 的对应条随之移出). 另两处: (1) 只为核对判为无效的发现而开的复审轮是否计入轮次 (v1-critfix 留下的待决点), Main Agent 定为计入, 循环有界, 规则简单, 写进第 6 步与 Dispositions 节; (2) 第 6 步的轮次规则原样照搬了 0.x 的 "第 3 轮起记录不修", 0.x 已在 ARW 提交 `b42278c` (effort 0121, G05) 修好: 实施开始后只涉及 issue subject 措辞, 重复或一致性的问题任何轮次都可记 "记录不修" 且不改 subject, 第 6 步按修好后的现行 `.agents/skills/commit/fix-rounds.md` 改写.
+
+11-14 (任务 v1-d26ans, 承接 v1-critfix 的遗留): Role 拆出可机械判定的检查项后, 就绪记录的 Role 身份要把这些检查计入, 否则只改检查项不会使记录失效; 版本 8 的语义变化由两处改为三处 (`reviewerRole.sha256` 覆盖 Role 文档加关卡第 1 步检查所在的 graph 子流程文件), Freezing and invalidation 节相应注明. 另按 22 (Main Agent 定): Reviewer 可以经 Engine 问用户, 取代 `reviewer.md` 的禁止.
