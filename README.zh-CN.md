@@ -317,7 +317,7 @@ Main Agent 会先核对完成证据并锁定准确的 staged candidate, 然后�
 
 ## 常用命令
 
-熟悉了从初始化到提交的完整链路后, 你可以把下面的分类表格当作日常速查表. 需要查看完整参数语法时, 直接在终端运行已安装的 `arw help` 查看用法 或查阅对应的长期规格说明即可. Main Agent 在编写操作指令时始终使用完整的规范命令, 而你在终端手动操作时可以使用表中列出的短别名.
+熟悉了从初始化到提交的完整链路后, 你可以把下面的分类表格当作日常速查表. 需要查看完整参数语法时, 直接在终端运行已安装的 `arw help` 查看用法, 或查阅对应的长期规格说明即可. Main Agent 在编写操作指令时始终使用完整的规范命令, 而你在终端手动操作时可以使用表中列出的短别名.
 
 ### 检查版本和仓库配置
 
@@ -420,9 +420,9 @@ Main Agent
 
 ### 让 Claude Reviewer 使用第三方模型
 
-Claude 回合继承启动后台管理进程的客户端环境, 因此 `ANTHROPIC_API_KEY`, `CLAUDE_CONFIG_DIR` 和登录状态来自该客户端, 而非请求审核的 Main, 角色 `env` 随后覆盖相应变量.
+在 Claude Code 环境下, 当某个 Reviewer 的 `modelProvider` 设为 `"anthropic"` 时, ARW 会通过无头模式 `claude -p` 运行它. 每个 Claude 回合都会继承启动后台管理进程的客户端环境, 因此 `ANTHROPIC_API_KEY`, `CLAUDE_CONFIG_DIR` 和登录状态来自该客户端, 而非请求审核的 Main Agent.
 
-在 Claude Code 环境下, 当某个 Reviewer 的 `modelProvider` 设为 `"anthropic"` 时, ARW 会通过无头模式 `claude -p` 运行它. 如果你想让它接入兼容 Anthropic API 的第三方模型服务, 可以在 ARW 安装目录下的用户级 `config.json` 中为对应角色添加 `env` 字段; 之后每轮启动 `claude -p` 时都会自动注入这些环境变量:
+如果你想让它接入兼容 Anthropic API 的第三方模型服务, 可以在 ARW 安装目录下的用户级 `config.json` 中为对应角色添加 `env` 字段. 之后每轮启动 `claude -p` 时, ARW 都会在继承环境之上注入角色 `env` 并覆盖相应变量:
 
 ```json
 "reviewers": {

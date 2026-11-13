@@ -174,7 +174,7 @@ node scripts/reviewer-capability.mjs pool build|prompt|split|override ...
 仓库根目录下的文件负责连接公开 CLI, 安装程序, 工具链配置和顶层 Agent 规则:
 
 - `arw.mjs`, `arw` 和 `arw.cmd` 是从源码仓库直接运行的产品入口.
-- `install.mjs` 和 `uninstall.mjs` 是从克隆检出副本运行的安装入口; 单独传入 `--help` 或 `-h` 会向标准输出打印用法和逐行选项并以 `0` 退出, 参数错误保留原消息和退出码 `2`, 并追加一行指向 `--help` 的提示.
+- `install.mjs` 和 `uninstall.mjs` 是从克隆检出副本运行的安装入口. 单独传入 `--help` 或 `-h` 会向标准输出打印用法和逐行选项并以 `0` 退出; 参数错误时则保留原消息和退出码 `2`, 并追加一行指向 `--help` 的提示.
 - `package.json`, `pnpm-lock.yaml` 和 `tsconfig.json` 分别保存产品版本及开发命令, 实际开发依赖树和严格 JavaScript 检查配置.
 - `config.install.json`, `release-manifest.json` 和 `release-validation.json` 分别服务初始全局配置, 安装载荷和发布验证.
 - `AGENTS.md` 与 `CONTEXT.md` 分别提供仓库 Agent 入口规则和持久领域词汇.
