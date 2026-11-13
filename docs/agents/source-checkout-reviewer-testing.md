@@ -1,6 +1,6 @@
 # Source Checkout Reviewer 能力测试
 
-Reviewer 能力测试在维护者显式调用 `$reviewer-capability` Skill 时进行; 改动 `AGENTS.md` 所列 Reviewer 规则 (其中 Reviewer 运行时指原生工具, 权限, 沙盒, 上下文, 默认模型与设置) 时, 也视同维护者已调用: 用受影响角色的能力场景对比改动前后, 接受或拒绝按 `reviewer-capability` Skill 的 A/B 判定规则. 速度提升很大, 而该规则拒绝或候选均值低于对照时, 交用户决定. Reviewer 运行时改动频繁时可以减轻测试: 只用受影响角色的一个场景, 或把几次改动合并为一次测试 (对比最早一次改动前与最后一次改动后). 只删除重复表述或改为引用, 不改变任何规则含义的改动不做能力测试.
+Reviewer 能力测试在维护者显式调用 `$reviewer-capability` Skill 时进行; 改动 `AGENTS.md` 所列 Reviewer 规则 (其中 Reviewer 运行时指原生工具, 权限, 沙盒, 上下文, 默认模型与设置) 时, 也视同维护者已调用: 用受影响角色的能力场景对比改动前后, 接受或拒绝按 `reviewer-capability` Skill 的 A/B 判定规则. 速度提升很大, 而该规则拒绝或候选均值低于对照时, 交用户决定. Reviewer 运行时改动频繁时可以减轻测试: 只用受影响角色的一个场景, 或把几次改动合并为一次测试 (对比最早一次改动前与最后一次改动后). 只删除重复表述或改为引用, 不改变任何规则含义的改动不做能力测试. 改动的文件没有任何 Reviewer 在审核时读取的 (如只改 Main Agent 侧复审处置的 `commit` Skill 文件), 不做能力 A/B (Reviewer 输入不变, A/B 两组相同).
 
 ## 待测项
 
@@ -9,3 +9,4 @@ Reviewer 当作审查标准读取的通用指令 (根 `AGENTS.md`, `issue-tracki
 | 提交 | 文件:行 | 改了哪条检查 | 登记日期 |
 |---|---|---|---|
 | 本轮提交 | `.agents/skills/issue-tracking/SKILL.md:22` | 作者侧禁止以提交及其后事实或其他审核结果为验收条件, 改写入预期验证, 要求符合审核把这类验收项写成 issue 问题 (`roles/requirements-reviewer.md`); Main 裁定本轮登记待测, 不触发能力 A/B | 2026-11-13 |
+| 本轮提交 | `.agents/skills/issue-tracking/SKILL.md:24` | 作者侧要求自然语言分类验收项列有限正反例, 不写开放条件; Spec Readiness Reviewer 读取该节, 属新增检查项; 本轮登记待测, 不触发能力 A/B | 2026-11-14 |

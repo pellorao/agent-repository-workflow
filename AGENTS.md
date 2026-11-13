@@ -94,7 +94,7 @@ ARW 必须在 Codex 和 Claude Code 中都完整可用, 包括 `arw background-a
 # Source Checkout Workflow Triggers
 
 - 处理 Source Checkout 旧结构迁移时, 读取 `docs/agents/source-checkout-issue-workflow.md`.
-- 改动 Reviewer 规则 (Reviewer 角色指令, `docs/agents/reviewer.md`, Reviewer 交接与 Request 内容, 各 Skill 与根 `AGENTS.md` 中约束 Reviewer 行为或复审处置的规则, Reviewer 运行时) 前, 以及维护者显式调用 `$reviewer-capability` Skill 时, 读取 `docs/agents/source-checkout-reviewer-testing.md`.
+- 改动 Reviewer 规则 (Reviewer 角色指令, `docs/agents/reviewer.md`, Reviewer 交接与 Request 内容, 各 Skill 与根 `AGENTS.md` 中约束 Reviewer 行为或复审处置的规则, Reviewer 运行时) 前, 以及维护者显式调用 `$reviewer-capability` Skill 时, 读取 `docs/agents/source-checkout-reviewer-testing.md` (所改文件没有任何 Reviewer 在审核时读取的, 不做能力 A/B, 见该文件首段).
 - 增删或改变 Reviewer 当作审查标准读取的通用指令 (根 `AGENTS.md`, `issue-tracking` 等) 所含检查项的改动后, 读取 `docs/agents/source-checkout-reviewer-testing.md` 登记待测项.
 - Upstream Sync (采用上游 Skill 新版本) 只在维护者显式调用 `$upstream-sync` Skill 时进行.
 - 研究或修改受支持的 Agent 平台标准, Projection 配置, Skill 引用规则或目标路径前, 读取 `.agents/skills/platform-standards/SKILL.md`.
