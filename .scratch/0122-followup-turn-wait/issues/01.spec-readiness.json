@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "issueId": "issue:0122:01",
+  "exception": {
+    "confirmedAt": "2026-11-13T18:07:59Z",
+    "reason": "用户明确授权 T2 为本轮唯一 issue, 无新的设计决定, 不需要治理设计, 单 issue effort 使用 not-applicable 例外."
+  },
+  "subject": {
+    "filePath": ".scratch/0122-followup-turn-wait/issues/01-followup-turn-wait.md",
+    "sha256": "aa8074284dfc7ab09bb2acd52a1d6208c7594427fb319b420f65c2afd0042fa9"
+  },
+  "result": "not-applicable"
+}

@@ -949,6 +949,111 @@ test('an active-turn message delayed past that turn fails and cannot enter a lat
   assert.equal(fake.stateStore.getMessage(delayed.messageId)?.deliveryStatus,'failed');
 });
 
+for(const delayed of [false,true])test(`followup_task wait observes the new turn with delayed dispatch ${delayed}`,async t=>{
+  const fake=await harness(t);
+  const started=result(await fake.start());
+  await waitDelivered(fake.stateStore,started.messageId);
+  fake.native.finish(started.runId);
+  await tick();
+  assert.equal(result(await fake.execute(started.runId,'wait_agent',{cursor:0,timeout_ms:3600000})).taskState,'ended');
+  const entry=fake.manager.owned(started.runId,'main-1','main-1');
+  assert.ok(entry.native);
+  fake.clock.now=()=>2000;
+  const startTurn=entry.native.startTurn;
+  /** @type {()=>void} */ let release=()=>{};
+  const gate=new Promise(resolve=>{release=()=>resolve(undefined);});
+  if(delayed)entry.native.startTurn=async input=>{await gate;return startTurn(input);};
+  const followup=result(await fake.execute(started.runId,'followup_task',{handoff:'next task'}));
+  // The CLI starts its follow-up wait at cursor zero, even after an earlier turn ended.
+  const accepted=result(await fake.execute(started.runId,'wait_agent',{cursor:0,timeout_ms:3600000}));
+  if(delayed){
+    const listed=result(await fake.manager.execute({ownerId:'main-1',controllerId:'main-1',operation:'list_agents',input:{}}));
+    assert.equal(listed.agents[0].taskElapsedMs,0);
+  }
+  let delivered=false;
+  const dispatchWait=delayed?fake.execute(started.runId,'wait_agent',{cursor:accepted.cursor,timeout_ms:3600000})
+    .then(reply=>{delivered=true;return result(reply);}):null;
+  if(delayed){await tick();assert.equal(delivered,false);}
+  release();
+  assert.notEqual(accepted.taskState,'ended');
+  if(dispatchWait)assert.equal((await dispatchWait).taskState,'working');
+  await waitDelivered(fake.stateStore,followup.messageId);
+  const working=result(await fake.execute(started.runId,'wait_agent',{cursor:0,timeout_ms:3600000}));
+  assert.equal(working.taskState,'working');
+  let returned=false;
+  const waiting=fake.execute(started.runId,'wait_agent',{cursor:working.cursor,timeout_ms:3600000})
+    .then(reply=>{returned=true;return result(reply);});
+  await tick();
+  assert.equal(returned,false);
+  fake.native.finish(started.runId);
+  assert.equal((await waiting).taskState,'ended');
+});
+
+for(const failure of ['preparation','dispatch'])test(`failed followup_task ${failure} leaves no working task`,async t=>{
+  const fake=await harness(t,{unsafeIdle:failure==='preparation'});
+  const started=result(await fake.start());
+  await waitDelivered(fake.stateStore,started.messageId);
+  fake.native.finish(started.runId);
+  await tick();
+  const entry=fake.manager.owned(started.runId,'main-1','main-1');
+  assert.ok(entry.native);
+  if(failure==='dispatch')entry.native.startTurn=async()=>{throw new Error('Native reply was lost.');};
+  const followup=result(await fake.execute(started.runId,'followup_task',{
+    handoff:'next task',...(failure==='preparation'?{instructions:'changed instructions'}:{}),
+  }));
+  await waitFailedDelivery(fake.stateStore,followup.messageId,failure==='preparation'?'failed':'unknown');
+  await entry.work.catch(()=>{});
+  const observed=result(await fake.execute(started.runId,'wait_agent',{cursor:0,timeout_ms:3600000}));
+  assert.equal(observed.taskState,failure==='preparation'?'ended':'unknown');
+});
+
+test('a failed queued followup cannot finish a newer accepted task',async t=>{
+  const fake=await harness(t,{unsafeIdle:true});
+  const started=result(await fake.start());
+  await waitDelivered(fake.stateStore,started.messageId);
+  fake.native.finish(started.runId);
+  await tick();
+  const entry=fake.manager.owned(started.runId,'main-1','main-1');
+  assert.ok(entry.native);
+  /** @type {()=>void} */ let releaseWork=()=>{},releaseTurn=()=>{};
+  entry.work=new Promise(resolve=>{releaseWork=()=>resolve(undefined);});
+  const gate=new Promise(resolve=>{releaseTurn=()=>resolve(undefined);});
+  const startTurn=entry.native.startTurn;
+  entry.native.startTurn=async input=>{await gate;return startTurn(input);};
+  const failed=result(await fake.execute(started.runId,'followup_task',{handoff:'fails',instructions:'changed'}));
+  const next=result(await fake.execute(started.runId,'followup_task',{handoff:'newer task'}));
+  releaseWork();
+  await waitFailedDelivery(fake.stateStore,failed.messageId,'failed');
+  const observed=result(await fake.execute(started.runId,'wait_agent',{cursor:0,timeout_ms:3600000}));
+  releaseTurn();
+  assert.notEqual(observed.taskState,'ended');
+  await waitDelivered(fake.stateStore,next.messageId);
+  fake.native.finish(started.runId);
+  await tick();
+  assert.equal(result(await fake.execute(started.runId,'wait_agent',{cursor:0,timeout_ms:3600000})).taskState,'ended');
+});
+
+test('accepted followup waits for restoration instead of reporting the old exit',async t=>{
+  const fake=await harness(t);
+  const started=result(await fake.start());
+  await waitDelivered(fake.stateStore,started.messageId);
+  fake.native.finish(started.runId);
+  await tick();
+  result(await fake.execute(started.runId,'unload_agent'));
+  const entry=fake.manager.owned(started.runId,'main-1','main-1');
+  /** @type {()=>void} */ let release=()=>{};
+  entry.work=new Promise(resolve=>{release=()=>resolve(undefined);});
+  const followup=result(await fake.execute(started.runId,'followup_task',{handoff:'restore next task',instructions:'changed'}));
+  const observed=result(await fake.execute(started.runId,'wait_agent',{cursor:0,timeout_ms:3600000}));
+  release();
+  assert.notEqual(observed.state,'exited');
+  assert.notEqual(observed.taskState,'ended');
+  await waitDelivered(fake.stateStore,followup.messageId);
+  fake.native.finish(started.runId);
+  await tick();
+  assert.equal(result(await fake.execute(started.runId,'wait_agent',{cursor:0,timeout_ms:3600000})).taskState,'ended');
+});
+
 test('followup_task restores an evicted root using the original native thread',async t=>{
   const fake=await harness(t,{maxInstances:1});
   const first=result(await fake.start());
