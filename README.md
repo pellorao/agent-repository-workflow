@@ -412,8 +412,8 @@ Main Agent
 |-- before implementation: spec-readiness-reviewer
 |-- implementation and validation: Main Agent and subagents with assigned write scopes
 `-- after the user explicitly requests an implementation commit
-    |-- code-standards-reviewer
-    `-- requirements-reviewer
+    |-- requirements-reviewer
+    `-- code-standards-reviewer
 ```
 
 Each Reviewer judges only its bound inputs: it never chooses work scope, makes important decisions for the user, edits implementation files, or creates a commit. While the Main Agent can verify the evidence and impact of a Reviewer finding, it cannot override a Spec Readiness or Commit Audit authorization result with its own judgment.

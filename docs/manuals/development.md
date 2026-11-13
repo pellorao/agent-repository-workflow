@@ -28,7 +28,6 @@ Use the table below to match your goal to its maintenance route and primary sour
 | Adopt an external Skill Package update | [Upstream Sync](#upstream-sync) | Source configuration and the `$upstream-sync` Skill |
 | Change a Reviewer Role, independent execution, or Reviewer capability validation | [Reviewer configuration and capability validation](#reviewer-configuration-and-capability-validation) | Canonical Role, user configuration, and Reviewer capability rules |
 | Validate cross-operating-system installation or maintain the test environment | [Cross-operating-system validation environment](#cross-operating-system-validation-environment) | Active issue and the `$release` Skill |
-| Prepare the initial GitHub source migration | [Initial GitHub migration](#initial-github-migration) | Approved migration instructions and the latest source file snapshot |
 | Validate or publish a stable release | [Stable release](#stable-release) | Release long-term specification and the `$release` Skill |
 
 When an Agent works in this repository, it starts from the root `AGENTS.md` and follows the triggered workflow rules there; this manual only routes you to the right content and entry points. If your task spans more than one route in the table, check the authoritative source and entry point for each route before you begin.
@@ -67,7 +66,8 @@ Once your baseline passes, check the applicable long-term specification to see w
 | Repository workflows and Workflow Distribution payloads | `lib/repository-workflow/` and `lib/workflow-distribution/` |
 | Installation, bootstrap script, and uninstall | Root `install.mjs`, `uninstall.mjs`, and `lib/installation/` |
 | Platform projections and platform environments | `lib/arw-common/platform-adapter.mjs` and `lib/arw-common/platform-environment.mjs` |
-| Source Checkout releases and Reviewer capabilities | `lib/release/` |
+| Source Checkout releases and Reviewer capabilities | `lib/release/`, `lib/reviewer-capability/`, `lib/reviewer-capability-setup.mjs`, and `lib/reviewer-capability-view.mjs` |
+| Multi-repository Application and JIRA workflow | `lib/application-jira/` and the [multi-repository and JIRA manual](application-jira.md) |
 | Text, terminology, and language analysis | The relevant shared capabilities in `lib/document-terms/`, `lib/common/`, and `lib/arw-common/` |
 
 Tests mirror this layout under `tests/` by the same lasting responsibilities. When adding or updating tests, target the closest boundary that observes a public result rather than tying test structure to a one-time issue name or a private helper.
@@ -80,6 +80,7 @@ After editing code and tests, verify your changes. The [validation rules (Chines
 pnpm typecheck
 pnpm test
 node scripts/check-workflow-distribution.mjs
+node scripts/project-claude-skills.mjs --check
 node --check <changed-javascript-file>
 node arw.mjs text check
 node arw.mjs terms check --include .scratch/<NNNN>-<effort-slug>/
@@ -155,12 +156,6 @@ node scripts/reviewer-capability.mjs pool build|prompt|split|override ...
 
 Local unit tests cannot prove that installers, PATH registration, and `arw workflow init` behave properly across clean operating systems. To verify those end-to-end on real Windows and Linux systems, follow the VM validation procedure in the source-only `$release` Skill (`.agents/skills/release/`, Chinese), which defines the VM configuration, guest requirements, and snapshot discipline. During a run, `scripts/release-vm.mjs` restores a clean VMware snapshot, copies the candidate Git bundle into the guest over SSH, executes `scripts/release-guest-check.mjs` inside the guest, and restores the snapshot again when finished.
 
-### Initial GitHub migration
-
-Before publishing releases on GitHub, the initial source migration exports the latest `master` file snapshot along with approved local changes into a fresh GitHub `main` branch with no prior commit ancestors, leaving old branches, tags, and Git history behind. Preparing local files or reading migration instructions does not perform the push: you manually export the final snapshot, create the new root commit, configure the GitHub `origin`, push only `main`, set `main` as the default branch, and verify the remote file tree. Follow the specific one-time migration instructions for the exact commands, and if the remote contains unexpected files or history, stop and inspect it rather than overwriting it.
-
-This one-time source transfer is separate from a version release and creates neither a Git tag nor a GitHub Release. Although the [GitHub migration target](https://github.com/pellorao/agent-repository-workflow) is public, the initial migration itself is always performed manually by the user.
-
 ### Stable release
 
 Once code, distributions, and cross-platform checks are ready, use this route to validate and publish a stable version. An Agent runs the release workflow only when a maintainer explicitly invokes the release Skill (`$release` in Codex, `/release` in Claude Code). That Skill coordinates the local checks, VM validation, Git tagging, GitHub Release creation with the `arw.tar.gz` asset, and verification of the public Bootstrap script, all governed by the [release long-term specification (Chinese)](../specs/agent-repository-workflow-release/spec.md).
@@ -189,6 +184,7 @@ Unlike the root entry points, direct children of `scripts/` are maintenance tool
 | `scripts/generate-install-arw.mjs` | Generate or check the separately downloadable bootstrap script |
 | `scripts/install-arw.mjs` | Separately downloadable bootstrap script that starts installation from a fixed release source |
 | `scripts/pack-release.mjs` | Pack the installation payload into the release archive `arw.tar.gz`, which `$release` uploads as a release asset |
+| `scripts/project-claude-skills.mjs` | Generate `.claude/skills/` from `.agents/skills/`, or check with `--check` that they match |
 | `scripts/release-guest-check.mjs` | In a disposable test system, check install, PATH registration, `arw workflow init`, and uninstall |
 | `scripts/release-vm.mjs` | Run the guest check in a VMware VM and restore its snapshot |
 | `scripts/reviewer-capability.mjs` | Reviewer capability suite entry: build a scenario repository, score a report, build and use blind pools |

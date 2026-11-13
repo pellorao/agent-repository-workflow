@@ -28,7 +28,6 @@
 | 采用外部 Skill Package 更新 | [Upstream Sync](#upstream-sync) | 来源配置和 `$upstream-sync` Skill |
 | 修改 Reviewer Role, 独立运行或验证 Reviewer 能力 | [Reviewer 配置和能力验证](#reviewer-配置和能力验证) | 规范 Role, 用户配置和 Reviewer 能力规则 |
 | 验证跨操作系统安装或维护受验环境 | [跨操作系统验证环境](#跨操作系统验证环境) | 活动 issue 和 `$release` Skill |
-| 准备首次 GitHub 源码迁移 | [首次 GitHub 迁移](#首次-github-源码迁移) | 已批准的迁移说明和最新源码文件快照 |
 | 验证并发布稳定版本 | [稳定版本发布](#稳定版本发布) | 发布长期规格和 `$release` Skill |
 
 当 Agent 在本仓库中执行工作时, 会从根 `AGENTS.md` 进入适用规则; 本手册只帮助维护者选择内容路线和操作入口, 不描述 Agent 工作流. 如果一个任务横跨表中的多条路线, 动手前先分别确认每条路线的权威来源和起始入口.
@@ -67,7 +66,8 @@ pnpm test
 | 仓库工作流和工作流分发载荷 | `lib/repository-workflow/`, `lib/workflow-distribution/` |
 | 安装, 引导脚本和卸载 | 根 `install.mjs`, `uninstall.mjs`, `lib/installation/` |
 | 平台投射和平台环境 | `lib/arw-common/platform-adapter.mjs`, `lib/arw-common/platform-environment.mjs` |
-| 源码仓库发布和 Reviewer 能力 | `lib/release/` |
+| 源码仓库发布和 Reviewer 能力 | `lib/release/`, `lib/reviewer-capability/`, `lib/reviewer-capability-setup.mjs`, `lib/reviewer-capability-view.mjs` |
+| 多仓库 Application 与 JIRA 工作流 | `lib/application-jira/` 与 [多仓库与 JIRA 手册](application-jira.zh-CN.md) |
 | 文本, 术语和语言分析 | `lib/document-terms/`, `lib/common/`, `lib/arw-common/` 中对应公共能力 |
 
 测试在 `tests/` 下按相同的长期责任对应组织. 新增或修改测试时, 选择能够直接观察公开结果的最近测试边界, 不要依赖一次性 issue 名称或私有辅助程序的结构来定义长期行为.
@@ -80,6 +80,7 @@ pnpm test
 pnpm typecheck
 pnpm test
 node scripts/check-workflow-distribution.mjs
+node scripts/project-claude-skills.mjs --check
 node --check <changed-javascript-file>
 node arw.mjs text check
 node arw.mjs terms check --include .scratch/<NNNN>-<effort-slug>/
@@ -155,12 +156,6 @@ node scripts/reviewer-capability.mjs pool build|prompt|split|override ...
 
 仅靠本机单元测试无法证明安装程序, PATH 登记和 `arw workflow init` 在干净的真实操作系统上都能正常工作. 要在真实 Windows 与 Linux 系统中完成端到端验证, 使用源码仓库专用的 `$release` Skill (`.agents/skills/release/`), 其中规定了 VM 配置, 受验系统要求和快照纪律. 执行验证时, `scripts/release-vm.mjs` 会先还原干净的 VMware 快照, 经 SSH 传入候选 Git bundle, 在 guest 中运行 `scripts/release-guest-check.mjs`, 跑完后再次还原快照.
 
-### 首次 GitHub 源码迁移
-
-在向 GitHub 发布版本之前, 首次源码迁移会以最新 `master` 文件快照和已批准的本地修改为基础, 在 GitHub 上建立一条没有旧提交祖先的新 `main` 分支, 不上传旧分支, tag 或历史提交. 本地准备就绪或写好迁移说明并不代表已经完成推送: 必须由用户手动导出最终快照, 创建根提交, 配置 GitHub `origin`, 只推送 `main`, 将其设为默认分支, 并核对远端文件树. 实际执行的命令应遵循针对这次迁移提供的一次性说明; 如果发现远端出现非预期内容, 应立即停下核对, 不要覆盖它.
-
-这项一次性源码迁移不同于版本发布, 不会创建 tag 或 GitHub Release. 尽管 [GitHub 迁移目标](https://github.com/pellorao/agent-repository-workflow)是公开仓库, 首次源码迁移仍由用户手动执行.
-
 ### 稳定版本发布
 
 当代码, 分发载荷和跨平台验证都准备就绪后, 使用这条路线验证并发布稳定版本. Agent 只在维护者显式调用发布 Skill (Codex 中为 `$release`, Claude Code 中为 `/release`) 时才会执行发布流程; 本地检查, VM 验证, 创建 tag, 上传带 `arw.tar.gz` 资产的 GitHub Release 以及公开 Bootstrap 验证都由该 Skill 统筹完成. 完整的发布合同由 [发布长期规格](../specs/agent-repository-workflow-release/spec.md) 拥有.
@@ -189,6 +184,7 @@ node scripts/reviewer-capability.mjs pool build|prompt|split|override ...
 | `scripts/generate-install-arw.mjs` | 生成或核对可单独下载的引导脚本 |
 | `scripts/install-arw.mjs` | 可单独下载并从固定发布来源启动安装的引导脚本 |
 | `scripts/pack-release.mjs` | 把安装载荷打成发布压缩包 `arw.tar.gz`, 由 `$release` 上传为 release 资产 |
+| `scripts/project-claude-skills.mjs` | 由 `.agents/skills/` 生成 `.claude/skills/`, 或用 `--check` 检查两者是否一致 |
 | `scripts/release-guest-check.mjs` | 在可丢弃的受验系统中检查安装, PATH 登记, `arw workflow init` 和卸载 |
 | `scripts/release-vm.mjs` | 在 VMware VM 中运行 guest 检查并还原快照 |
 | `scripts/reviewer-capability.mjs` | Reviewer 能力套件入口: 搭建场景仓库, 给报告计分, 组盲池并记录裁决 |
