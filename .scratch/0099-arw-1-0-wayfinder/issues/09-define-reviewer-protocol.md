@@ -23,11 +23,11 @@ Blocked by: issue:0099:05, issue:0099:07, issue:0099:08
 
 流程定义中每个关卡按以下顺序执行; 某步得到问题时回到修复, 不跳步.
 
-1. 确定性检查 (Engine 程序): 现有 `prepare` 的机械预检与 `warning:` 行 (含 Spec Readiness 自检中可机械判定的部分, Commit Audit 的体积摘要与 Validation 摘要核对), `commit-audit verify --non-implementation` 的检查, `arw text check` 和仓库配置的快速检查. Reviewer Role 中可机械判定的检查项 (体积预算是否超出, 格式, 记录章节是否齐全等) 迁移时移到本步作为确定性检查, 由 Engine 程序执行, Role 只保留需要判断的部分 (批判审读四.2); 21 按节估计三个 Role 合计约 1000 字符, 逐项清单在迁移时列出. 有问题时交 worker 修复后重做, 不启动 Reviewer. 现行 "warning 不是关卡, 但要先处理再启动 Reviewer" 由此成为流程分支. 耗时长的测试照现行可以与审核并行, 未完成的检查不提供通过事实, 失败进入修复循环.
+1. 确定性检查 (Engine 程序): 现有 `prepare` 的机械预检与 `warning:` 行 (含 Spec Readiness 自检中可机械判定的部分, Commit Audit 的体积摘要与 Validation 摘要核对), `commit-audit verify --non-implementation` 的检查, `arw text check` 和仓库配置的快速检查. Reviewer Role 中可机械判定的检查项 (体积预算是否超出, 格式, 记录章节是否齐全等) 迁移时移到本步作为确定性检查, 由 Engine 程序执行, Role 只保留需要判断的部分 (批判审读四.2); 21 按节估计三个 Role 合计约 1000 字符, 逐项清单在迁移时列出. 有问题时交 worker 修复后重做, 不启动 Reviewer. 现行 "warning 不是关卡, 但要先处理再启动 Reviewer" 由此成为流程分支. 耗时长的测试照现行可以与审核并行, 未完成的检查不提供通过事实, 失败进入修复循环. 记录类事实由 Engine 生成并写入, 不只是核对 (墙钟研究 11-14, 任务 v1-walltime: 46 个已交付 issue 的 34 个额外审核轮次中有 6 轮由完成记录的体积或实测量, 验证结果, `Status` 与验收勾选触发, 约占活动时间的 3.7%, 都能在首轮前机械消除): Commit Audit 每轮第 1 步由 Engine 把 `prepare` 实测的代码, 测试, 文档量, 各验证命令已有的结果, 授权 issue 的 `Status` 与验收勾选写进完成记录, 其中 `Status` 按流程结果, 验收勾选取自 worker 实施步骤输出 schema 中逐条验收标准的必填字段 (语义判断由 Agent 步骤作答, D24, 见 07), worker 只写说明性 Comments. 每轮重做第 1 步时重新生成, 修复改变体积或结果后记录随之更新.
 2. 提示 (判断): 预检与输出检查, 用法见 Judgments in the review loop 节.
-3. 冻结 (Engine 程序): 固定本轮输入. Spec Readiness 是 subject, Input 与规则副本的快照 (Spec Readiness Reviewer 只读检索仓库的例外保留, 但检索的是本轮视图的树 (`git grep <模式> <树>`), 不是工作树, 以免读到其他实例的未提交改动, 见 [定义并行流程的读取与写入隔离](10-define-parallel-flow-isolation.md)); Commit Audit 由 Engine 暂存后以 `git write-tree` 取得 `tree`, 连同 `base`; 非提交 Code Review 是不可变比较.
-4. 正式审核 (Agent 步骤): 首轮新建 Reviewer 会话, 复审回到原 Reviewer 会话, 交付审核包 (见 Review packet 节), 内含相邻版本差异, 前轮报告与处置台账 (现行 Re-review 节不变). 输出绑定报告 (格式不变). 报告与其他 Agent 步骤的输出一样只经通用检查: Engine 按输出 schema 核对格式 (07), 以及 graph 为该步配置的判断模型输出检查 (首版不为 Reviewer 报告设题); 不另设覆盖核对或抽查 (D15).
-5. 处置 (原 worker 会话的一个 Agent 步骤): 见 Dispositions 节. 判为 "无效" 的发现连同证据带回原 Reviewer 会话, 在下一轮复审中核对.
+3. 冻结 (Engine 程序): 固定本轮输入. Spec Readiness 是 subject, Input 与规则副本的快照 (Spec Readiness Reviewer 只读检索仓库的例外保留, 但检索的是本轮视图的树 (`git grep <模式> <树>`), 不是工作树, 以免读到其他实例的未提交改动, 见 [定义并行流程的读取与写入隔离](10-define-parallel-flow-isolation.md)); Commit Audit 由 Engine 暂存后以 `git write-tree` 取得 `tree`, 连同 `base`; 非提交 Code Review 是不可变比较. 冻结时第 1 步写入的记录同时固定: 授权 issue 的 `Status`, What to build 与 Acceptance criteria 两段 (含验收勾选) 冻结后再改即视为新一轮 (现行 `arw commit-audit verify` 已机械拦截), 所以不再出现审核通过后才补状态或勾选而重审; 冻结时尚未完成的验证结果 (如与审核并行的长测试) 与 Comments 在第 7 步写入, 属记录章节差异, 不使本轮失效 (见 Freezing and invalidation 节).
+4. 正式审核 (Agent 步骤): 首轮新建 Reviewer 会话, 复审回到原 Reviewer 会话, 交付审核包 (见 Review packet 节), 内含相邻版本差异, 前轮报告与处置台账 (现行 Re-review 节不变). 输出绑定报告 (格式不变). 报告与其他 Agent 步骤的输出一样只经通用检查: Engine 按输出 schema 核对格式 (07), 以及 graph 为该步配置的判断模型输出检查 (首版不为 Reviewer 报告设题); 不另设覆盖核对或抽查 (D15). 同一关卡有两个并行的轴时 (Commit Audit 的两个 Reviewer), 先返回报告且有发现的一轴, Engine 立即开该轴的处置步骤 (第 5 步), 不等另一轴; 另一轴继续审它的冻结输入, 返回后同样按此处理.
+5. 处置 (原 worker 会话的一个 Agent 步骤): 见 Dispositions 节. 判为 "无效" 的发现连同证据带回原 Reviewer 会话, 在下一轮复审中核对. 处置与随后的修复写工作区, 不改本轮冻结的输入, 所以与另一轴的审核可以重叠 (见 Freezing and invalidation 节); 同一会话一次只执行一个回合 (07 Coexisting instances 节), 两轴的处置按报告返回先后串行, 后返回的一轴的发现排在前一个处置回合之后. 下一轮 (第 6 步之后回到第 1 步) 在两轴都已返回且各自的处置与修复完成后才开始, 轮次计数不变, 一个关卡仍是一轮一轮地数; 提早开处置只缩短另一轴审核与处置的重叠等待 (墙钟研究估计占活动时间的 0.8%, 悲观 0, 乐观 1.6%, 上限为两轴结束时间差).
 6. 修复 (原 worker 会话) 后做修复核对题 (提示类, 只在配了判断模型且已启用时), 再回到第 1 步开下一轮. 轮次规则 (第 3 轮起只为行为缺陷开修复轮, 措辞, 重复和文档去重类问题记 "记录不修" 后不再修; 实施开始后只涉及 issue subject 措辞, 重复或一致性的问题不受轮次限制, 任何轮次都可记 "记录不修" 且不改 subject; 台账三类处置, 冲突裁决) 由 Engine 按轮次计数和处置输出机械执行; "是否行为缺陷" 仍由处置步骤的 Agent 判断, 拿不准按行为缺陷. 只为核对判为无效的发现而开的复审轮 (见 Dispositions 节) 同样计入轮次, 使循环有界, 规则也最简单 (Main Agent 11-14 定).
 7. 收尾 (Engine 程序): Spec Readiness 依次 `generate`, `promote`, `verify`, 生成路径由 Engine 直接传给提升步骤, 现行 "Main Agent 只提升生成字节" 不再需要; Commit Audit 机械核对最终暂存树相对受审 `tree` 只有记录章节差异, 再运行 `verify` 与 `verify --subject-only` 后提交.
 
@@ -39,8 +39,10 @@ Reviewer 等待: 现行 "等到 30 分钟向用户报告并询问, 不自行停�
 
 - 相邻 diff: 本轮冻结输入相对上一轮冻结输入的差异; 首轮为完整候选相对基线的差异. 相邻 diff 为空时本轴不重跑 (与下文轴结果复用一致).
 - 前轮发现和处置台账: 上一轮 Reviewer 报告, 每条发现的处置 (修复, 判为无效及证据, 台账三类), 以及累计台账.
-- 确定性检查结果: 第 1 步各项检查的通过与警告摘要, Reviewer 不必重复核对已由程序判定的项.
+- 确定性检查结果: 第 1 步各项检查的通过与警告摘要, Reviewer 不必重复核对已由程序判定的项; 加上第 1 步 `prepare` 实测的代码, 测试, 文档量 (Commit Audit), 它们也是 Engine 写入完成记录的同一份数据.
 - 改动文件列表: 本轮冻结候选涉及的文件路径及增删行数.
+
+Reviewer Role 文档与规则副本不以路径交付, 由 Engine 内联注入步骤消息: 首轮在会话的首条消息中给出全文, 复审回到同一会话时规则副本相对上轮有变化才只注入变化部分, Role 字节变化同样处理 (Spec Readiness 实施开始前 Role 变化使记录失效, 见 Freezing and invalidation 节); 不再让 Reviewer 逐个读取这些文件. 依据: 墙钟研究 11-14 (任务 v1-walltime) 在现行 Codex 侧 Reviewer 回合 (`gpt-6-luna`, `xhigh`) 中看到只读规则副本的请求占回合时间的 11.3%, 每回合定位阶段占 17%, 导航请求的中位延迟 6.3 秒; 按这三项折算, 审核包加内联注入可省 Reviewer 时间的 8% 到 20%, 中值 13%. 验收量: 原型 (D25) 中同一类 Reviewer 回合的时长相对现行至少降 10%, 低于 10% 说明这一项没有达到预期, 如实报告并交用户决定, 不自行改验收量. 内联注入的是 Reviewer 本来就要读的全部 Role 与规则, 没有删减.
 
 审核包只是定位的辅助, 不缩小审核范围: Reviewer 仍可读完整冻结候选, 仍按 Role 做完整检查 (见 Coverage 节), 不因提速而丢失上下文.
 
@@ -79,7 +81,7 @@ Reviewer 等待: 现行 "等到 30 分钟向用户报告并询问, 不自行停�
 
 与 08 "正式关卡不是判断" 的关系: 提示类在关卡之外, 只改变 worker 先看什么, 不触及关卡; 关卡结论只来自正式 Reviewer.
 
-计量: Engine 在步骤记录中按会话与回合记下高智能请求数 (每次模型请求, 含工具调用之间的请求) 与 token, 墙钟照 07 记每步起止; 两者供 11 的对照与上述实测使用.
+计量: Engine 在步骤记录中按会话与回合记下高智能请求数 (每次模型请求, 含工具调用之间的请求) 与 token, 墙钟照 07 记每步起止, 另记每个 Agent 步骤的交接开销 (交接延迟与额外请求数, 定义与预算见 07 Flow state and next action 节); 这些记录供 11 的对照与上述实测使用.
 
 ### Readiness record and model settings
 
@@ -93,16 +95,17 @@ Reviewer 等待: 现行 "等到 30 分钟向用户报告并询问, 不自行停�
 3. Reviewer 输出格式不符: Reviewer 的报告缺少输出 schema 要求的字段; Engine 按 07 在同一会话要求重答, 重答合格后进入处置; 两次重答仍不合格时该轮作废, 实例停在可恢复状态.
 4. 修复不完整 (配了判断模型且修复核对已启用): 修复后核对题对发现 X 答 "未解决" (高于阈值); worker 回到 X 补修, 再冻结下一轮, 省掉一轮注定不过的复审. 答 "已解决" 但实际未解决时, Reviewer 在复审中照常报出 X, 成本与不用判断时相同.
 5. 实施开始后 spec Input 变化: Engine 由实例状态知道实施已开始, 只核对 subject, 就绪记录仍有效; 设计变化由提交审核的要求符合审核核对.
+6. 一轴先返回: Commit Audit 的 `code-standards-reviewer` 先返回 2 个问题, `requirements-reviewer` 仍在审; Engine 立即在原 worker 会话开处置步骤, worker 核实后开始修复 (写工作区, 不改冻结的 `tree`); `requirements-reviewer` 随后返回 `No problems.`, 本轮结束; 下一轮冻结含修复, 两轴因冻结输入变化都增量复审. 若 `requirements-reviewer` 也有发现, 它的处置排在前一个处置回合之后, 同一会话不并行两个回合.
 
 ### Interfaces
 
 - 05: 判断模型只做提示类判断 (范围类首版不启用), 不产生关卡结论.
-- 07: 审核步骤都是四类步骤; Reviewer 是普通 Agent 步骤, 模型选择, 会话沿用 (复审回到原 Reviewer 会话, 处置与修复回到原 worker 会话) 与输出核对都按 07; Reviewer 步骤的超时处理例外如上; 步骤记录增加高智能请求数与 token.
+- 07: 审核步骤都是四类步骤; Reviewer 是普通 Agent 步骤, 模型选择, 会话沿用 (复审回到原 Reviewer 会话, 处置与修复回到原 worker 会话) 与输出核对都按 07; Reviewer 步骤的超时处理例外如上; 步骤记录增加高智能请求数, token 与交接开销; Reviewer 的 Role 与规则副本内联注入 (Review packet 节), 属 07 上下文传递由 Engine 组装消息的同一规则; Reviewer 等待由 Engine 完成, Agent 不轮询.
 - 08: 判断只做提示, 没有复核, 屏障与回退 (D24); 提示由 worker 与 Reviewer 校对 (用户 11-13 确认, D16).
 - 11: 提示类的启用与停用依据如上; 四项目标的对照数据来自 Engine 的计量 (含上下文中规则与流程的占比, 判断的误判率).
 - 13: 就绪记录版本 8, haiku 回退删除, "单 Agent 完成全部检查" 原样保留 (不加覆盖清单), "Main Agent 每轮抽查一两处" 取消 (D15).
 - 规则转为 Engine 工作依据 (用户 11-13: 由高智能模型按 ARW 提供的 Skill 把规则转成机械程序与判断模型调用, 产物基本是一张 graph): 关卡的步骤顺序, 预检单元的切分, 轮次与失效规则是 graph 中的程序节点与转移; 预检题由转换从 Role 的检查项生成, 是提示类的判断节点, 范围类首版不设节点; Reviewer 是普通 Agent 节点, 与其他 Agent 节点的区别只在节点数据 (所属工作, 默认模型档位, 本步指令, 只读权限), 其中产生关卡结论的节点标为正式关卡; Reviewer Role 与 `docs/agents/reviewer.md` 中需要判断的部分不转换, 作为文档交给 Reviewer; Role 里可机械判定的检查项移成第 1 步的确定性检查 (程序节点).
-- 14: 验收场景至少包括上面 5 个情景, 以及就绪记录版本 7 在 1.0 中不授权.
+- 14: 验收场景至少包括上面 6 个情景, 以及就绪记录版本 7 在 1.0 中不授权; 墙钟验收口径见 14 的 Comments.
 
 ## Comments
 
@@ -122,3 +125,5 @@ Reviewer 等待: 现行 "等到 30 分钟向用户报告并询问, 不自行停�
 11-14 (D24 答复与两处遗留, 任务 v1-d24ans): 用户 11-13 选 A, 判断模型可选, 配了只做提示, 08 的复核, 屏障与回退随之删除. 本答案相应改写: 冻结与提交不再是 08 的屏障, 删去 "判断被推翻" 的失效条; 提示类在判断模型未配置或未按 11 启用时一律不出, 启用与停用改按 11 的 "离线评测过门槛就启用, 线上记无效率, 超门槛停用"; 范围类首版不启用, 原 D16 预留的 "放宽方向同步交高智能 Agent" 接口与 "08 例外" 做法依附已删的机制, 一并删去, 以后要缩小复审另开 issue (地图 Not yet specified 的对应条随之移出). 另两处: (1) 只为核对判为无效的发现而开的复审轮是否计入轮次 (v1-critfix 留下的待决点), Main Agent 定为计入, 循环有界, 规则简单, 写进第 6 步与 Dispositions 节; (2) 第 6 步的轮次规则原样照搬了 0.x 的 "第 3 轮起记录不修", 0.x 已在 ARW 提交 `b42278c` (effort 0121, G05) 修好: 实施开始后只涉及 issue subject 措辞, 重复或一致性的问题任何轮次都可记 "记录不修" 且不改 subject, 第 6 步按修好后的现行 `.agents/skills/commit/fix-rounds.md` 改写.
 
 11-14 (任务 v1-d26ans, 承接 v1-critfix 的遗留): Role 拆出可机械判定的检查项后, 就绪记录的 Role 身份要把这些检查计入, 否则只改检查项不会使记录失效; 版本 8 的语义变化由两处改为三处 (`reviewerRole.sha256` 覆盖 Role 文档加关卡第 1 步检查所在的 graph 子流程文件), Freezing and invalidation 节相应注明. 另按 22 (Main Agent 定): Reviewer 可以经 Engine 问用户, 取代 `reviewer.md` 的禁止.
+
+11-14 (任务 v1-wtfix, 依据墙钟研究 v1-walltime, D23): 三处写入, 数字都来自对 46 个已交付 issue 的回放. (1) 第 1, 3 步: 记录类事实 (实测量, 验证结果, `Status`, 验收勾选) 由 Engine 在冻结前生成并写入, worker 只写说明性 Comments; 冻结固定的是 `Status`, What to build 与 Acceptance criteria 两段 (现行 `verify` 已拦截的范围), 长测试结果与 Comments 仍可在第 7 步作为记录章节差异写入, 与 Freezing and invalidation 节的 Commit Audit 条一致. 取舍: 研究建议写 "冻结后改这些字段即视为新一轮", 但验证结果与 Comments 本来就允许在冻结后写入而不重审, 全部冻结会让与审核并行的长测试结果无处落笔, 所以只冻结 `verify` 已拦的字段. 验收勾选由 worker 步骤输出 schema 的必填字段给出, Engine 只负责写入, 不判断标准是否满足. (2) Review packet 节: Role 与规则副本内联注入, 验收量为原型中 Reviewer 回合时长至少降 10%. (3) 第 4, 5 步: 先返回有发现的一轴立即开处置, 下一轮仍等两轴都返回且处置完成, 一个会话一次只执行一个回合. 新增情景 6; 交接开销的预算与 Agent 不轮询 Reviewer 写在 07, 墙钟验收口径写在 14.
