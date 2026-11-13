@@ -10,7 +10,7 @@ Blocked by: issue:0099:07, issue:0099:09, issue:0099:22
 
 ## Answer
 
-11-13 worker 分析, 交 Main Agent 综合. 依据: E5b 实验 (11-13, [本地 Jev 类候选的可行性小实验](15-task-local-candidate-feasibility.md) 的实验系列, 46 个 sol 主会话) 的停机统计与 G 类事件, [commit 流程的分层逐节点 JSONL 试转换](../research/conversion-trial/) 及其对 G05, G06 的核对, 用户 11-13 的 D24, D25, D26 答复, ARW HEAD `aa12d6d` 的现行规则 (待修清单的行号以此为准). 两处待用户确认, 见 Comments.
+11-13 worker 分析, 交 Main Agent 综合. 依据: E5b 实验 (11-13, [本地 Jev 类候选的可行性小实验](15-task-local-candidate-feasibility.md) 的实验系列, 46 个 sol 主会话) 的停机统计与 G 类事件, [commit 流程的分层逐节点 JSONL 试转换](../research/conversion-trial/) 及其对 G05, G06 的核对, 用户 11-13 的 D24, D25, D26 答复, ARW HEAD `aa12d6d` 的现行规则 (待修清单的行号以此为准, G05, G06 一节已按 0.x 的 `b42278c` 改写). 两处待确认中, 第 2 处由 Main Agent 定, 第 1 处 (`repo` 范围裁决存放) 为 D27, 见 Comments.
 
 ### Evidence
 
@@ -48,7 +48,7 @@ graph 中同一节点的每个结果值恰好一条边 (22), 所以一张 graph 
   - `fix`: `rule-conflict` 类对应的 graph 或规则修复 (issue ID 或提交).
 - 保存位置: `instance`, `issue` 与 `effort` 范围记在 Engine 私有状态库 (07 的待答事项已含问题, 选项, 背景与所属实例, 只加上述字段); `repo` 范围记在仓库中受跟踪的 JSONL, 由 Engine 作为非实施记录写入并提交; `user` 范围记在 Engine 的用户级目录. 两级与 07 模型映射表的 "全局加仓库两级" 一致 (待用户确认 1).
 - 不承载要求, 不是第二个规则来源: 改变某个 issue 的范围, 行为或验收的答复仍写入该 issue 的 `## What to build` 或 `## Acceptance criteria` (现行 `issue-tracking` 规定记录章节不承载授权例外, 13 原样保留 issue 格式), 台账只记引用. `rule-conflict` 类裁决是规则缺陷的临时处置, 必须有 `fix`; 修复使 `node` 的哈希变化后该条自动失效.
-- 注入: Agent 节点开始时, Engine 选出 `node` 为本节点, `scope` 覆盖本实例且 `nodeHash` 仍与当前节点一致的裁决, 作为 "已有裁决" 一段附在本步消息中 (条数上限与截断由规范定). 进入等待用户节点 (含 Agent 的 "交用户" 分支) 前, Engine 按 `node` 加 `key` 精确匹配: 有 `standing` 裁决时取其答案继续, 步骤记录写明所用裁决 ID, 用户可在入口撤销; 没有匹配时照常等待用户, 答复后写入台账. 匹配只做精确比较, 不做语义相似检索, 所以不依赖判断模型. graph 可以把某个等待用户节点标为不接受常设裁决 (如每次开工的授权) (待用户确认 2).
+- 注入: Agent 节点开始时, Engine 选出 `node` 为本节点, `scope` 覆盖本实例且 `nodeHash` 仍与当前节点一致的裁决, 作为 "已有裁决" 一段附在本步消息中 (条数上限与截断由规范定). 进入等待用户节点 (含 Agent 的 "交用户" 分支) 前, Engine 按 `node` 加 `key` 精确匹配: 有 `standing` 裁决时取其答案继续, 步骤记录写明所用裁决 ID, 用户可在入口撤销; 没有匹配时照常等待用户, 答复后写入台账. 匹配只做精确比较, 不做语义相似检索, 所以不依赖判断模型. 是否常设由用户答复时选定, 默认不常设; graph 可以把某个等待用户节点标为不接受常设裁决 (如每次开工的授权). 这一用法由 Main Agent 11-13 定 (原待确认 2 的选项 A), 见 Comments.
 - 失效: `nodeHash` 不符的裁决不再注入或自动作答, 在一致性检查中列为待复核; `issue` 与 `effort` 范围的裁决随其终态失效.
 
 ### Consistency check
@@ -83,16 +83,16 @@ graph 中同一节点的每个结果值恰好一条边 (22), 所以一张 graph 
 
 ### Pending fixes in current ARW
 
-现行规则中 E5b 冲突的核对结果, 以 HEAD `aa12d6d` 为准. 0099 不改 main 上的治理文档, 修复另排; 一次性迁移时这些段落必须先修或在转换时一次问清, 不得原样转成 graph. 行号指 `.agents/skills/` 与 `docs/agents/` 中的源码, `distribution/` 与 `.claude/skills/` 副本同步修改.
+现行规则中 E5b 冲突的核对结果, G01, G04 以 HEAD `aa12d6d` 为准, G05, G06 以 0121 的 `b42278c` (0.x 已修) 之后的 HEAD `06baf84` 为准. 0099 不改 main 上的治理文档; 一次性迁移时这类段落必须先修或在转换时一次问清, 不得原样转成 graph. 行号指 `.agents/skills/` 与 `docs/agents/` 中的源码, `distribution/` 与 `.claude/skills/` 副本同步修改.
 
-- G05 仍在 (第 1, 2 轮): `.agents/skills/spec-readiness/SKILL.md:14` 与 `.agents/skills/issue-tracking/SKILL.md:45` 规定实施开始后的措辞, 重复或一致性问题不改 subject, 在 `## Comments` 记录处置; 但 `.agents/skills/commit/implementation-workflow.md:11` 的提交门槛只承认修正, 质疑, 转后续 issue 与两类台账, 其中 "记录不修" 仅限第 3 轮起, `.agents/skills/commit/fix-rounds.md:5` 相同; `docs/agents/reviewer.md:26` 只对 `台账:` 行免去重报. 所以第 1, 2 轮的 subject 措辞问题没有合规处置, Reviewer 每轮重报. 修复方向 (试转换建议): 实施开始后的这类问题任何轮次都可记 `台账: ... 记录不修`, spec-readiness 第 14 行改为指向该格式. 09 的轮次规则转换时随之调整.
-- G06 部分修复, 仍潜在: `.agents/skills/issue-tracking/SKILL.md:22` (11-13 加入) 禁止验收标准以 Commit Audit 通过或提交本身为条件, 但只是写作规则, `lib/spec-readiness/precheck.mjs:36` 不检查; 它只覆盖这两种, 提交号, 推送等提交后才有的事实不在内; 同文件第 45 行 "正式验收以某审核通过为条件时, 必须先取得该事实" 仍允许以其他审核为条件. 一旦写进这类验收项, `docs/agents/roles/requirements-reviewer.md:22` 要求在受审树上逐条核对, 而 `.agents/skills/commit/non-implementation-workflow.md:13` 不允许有就绪记录的 issue 经非实施提交进入 `completed`, "先提交再补记" 的出路被堵, 循环重现. 修复方向: precheck 对验收项中的提交后事实给出 `warning:`, 第 22 行扩到 "提交及其后才产生的事实".
+- G05 已修 (0121, `b42278c`, 11-13): 实施开始后只涉及 issue subject 措辞, 重复或一致性的问题, 任何轮次都可记 `台账: ... 记录不修`, 不改 subject. 四处文本一致: `.agents/skills/spec-readiness/SKILL.md:14`, `.agents/skills/issue-tracking/SKILL.md:47` (指向 `fix-rounds.md` 的台账格式), `.agents/skills/commit/implementation-workflow.md:11` 的提交门槛, `.agents/skills/commit/fix-rounds.md:5` 的轮次规则; 长期规范 `docs/specs/agent-repository-workflow/spec.md:533` 同步. 其他措辞, 重复和文档去重类问题仍从第 3 轮起才可记 "记录不修". `docs/agents/reviewer.md` Re-review 节对 `台账:` 行免去重报, 现在第 1, 2 轮的 subject 措辞问题也有合规处置. 09 的轮次规则已按此改写 (v1-d24ans). 1.0 中仍靠分支夹具 (每轮重报同一措辞问题的环) 防止同类复发.
+- G06 已修 (0121, `b42278c`, 11-13), 残余是措辞覆盖: `.agents/skills/issue-tracking/SKILL.md:22` 禁止验收标准以提交及其后才产生的事实 (Commit Audit 通过, 提交本身, 提交号, 推送) 或其他审核的结果为条件, 原允许 "正式验收以某审核通过为条件" 的句子已删; `docs/agents/roles/requirements-reviewer.md:22` 对这类验收项不再要求在受审树上核对, 写成 issue 自身的问题 (应移入预期验证), 所以与 `.agents/skills/commit/non-implementation-workflow.md:13` 的循环不再成立; `lib/spec-readiness/precheck.mjs:36` 对这类验收项给出 `warning:`, `tests/spec-readiness/precheck.test.mjs` 覆盖. 残余: precheck 是关键词正则 (Commit Audit, 提交号, 提交本身, 提交后, 已提交, 推送, 审核名加 "通过" 或 "无问题" 的固定搭配), 只是警告, 其他措辞 (如 "已合并") 靠提交审核报告 (0121 台账已写明如此取舍). 1.0 的工作项检查机械部分 (下文) 在同处扩展, 语义部分由写 issue 的 Agent 步骤的必填字段承担.
 - G01 已修: `.agents/skills/implement/SKILL.md:22` (10-30, `8ccc67f`) 规定只改规则与文档的 issue 不安排就绪审核, 终态按非实施工作流提交; `.agents/skills/commit/non-implementation-workflow.md:13` 允许无就绪记录的 issue 经非实施提交进入 `completed`, 两处一致.
 - G04 已修: 根 `AGENTS.md:45` (11-09, `4e285e8`) 规定 Reviewer 写报告不受 "写前读取 `docs/agents/agent-writes.md`" 约束, `docs/agents/roles/code-standards-reviewer.md:24` 规定不另读指令指向的文档, 两处一致. 1.0 中由上文的文档引用闭包检查防止复发.
 
 ### Interfaces
 
-- 07: 待答事项增加台账字段; 注入是本步消息组装的一部分; standing 裁决自动作答写入步骤记录. 这与 07 "不替用户取默认值" 不冲突, 答案来自用户本人的常设裁决 (待用户确认 2).
+- 07: 待答事项增加台账字段; 注入是本步消息组装的一部分; standing 裁决自动作答写入步骤记录. 这与 07 "不替用户取默认值" 不冲突, 答案来自用户本人的常设裁决 (Main Agent 11-13 定, 见 Comments).
 - 09: 09 的处置台账 (issue `## Comments` 中的 `台账:` 行, 只管单次提交尝试的 Reviewer 发现) 与本 issue 的裁决台账不同, 不合并; G05 的修复改动 09 的轮次规则一句.
 - 22 与 D26: 一致性检查是 22 Verification 节第 1 层静态校验与第 2 层分支测试的扩展, 按 D26 以 graph 为权威运行 (22 已于 11-14 按 D26 改写). 转换时发现的规则矛盾按 D25 一次问清用户, 答案直接定在 graph 中, 不进台账; 台账只收运行时的停机.
 - 21: 归类 Reviewer 文档与方法类 Skill 时把禁令写成可提取的固定句式, 供节点能力对文档禁令的检查使用.
@@ -104,9 +104,13 @@ graph 中同一节点的每个结果值恰好一条边 (22), 所以一张 graph 
 
 11-13: 本 issue 由 E5b 报告第 7 节第 1, 4, 5 条和试转换对 G05, G06 的核对引出. 0099 现有 issue 中没有跨会话持久化用户裁决的机制: 07 的待答事项只属于单个实例, 09 的处置台账只覆盖单次提交尝试的 Reviewer 发现, 22 的验证只检查 graph 形状, 源映射与夹具, 未覆盖文档与 graph 之间, 工作项与常设约束之间的矛盾.
 
-11-13: 待用户确认的两处:
+11-13: 待确认的两处 (第 2 处已由 Main Agent 定, 见下一条; 第 1 处为 D27, 用户 11-14 已答复, 由 `v1-ledgergraph` 随台账改为 graph 形式一并改写本 issue):
 
 - 1 `repo` 范围裁决的保存位置. 选项: A 仓库中受跟踪的 JSONL, 由 Engine 提交 (推荐: 可审阅, 随仓库共享给协作者, 重装 Engine 不丢); B 全部记在 Engine 私有状态 (不改仓库, 但协作者与其他机器看不到, 用户也看不到 diff).
 - 2 standing 裁决的用法. 选项: A 精确匹配时自动作答并继续, 步骤记录写明所用裁决, 用户可撤销 (推荐: 直接减少停机点); B 只注入并照常停下, 用户一键确认 (每次仍停一次, 但不会有用户没注意到的自动决定).
+
+11-13 (Main Agent 定, 状态页记录 08:4x): 待确认 2 采用选项 A: 常设裁决精确匹配时自动作答并继续, 步骤记录写明所用裁决 ID, 用户可撤销. 依据: 用户定的第五目标是减少停机点, E5b 里已裁定的冲突被新会话重问; 答案来自用户本人, 不是替用户取默认值. 附加条件: 是否常设由用户答复时选定, 默认不常设; graph 可把某些等待节点标为不接受常设裁决. 选项 B (只注入, 仍停一次) 不采用. 用户可改.
+
+11-14 (任务 v1-15): G05, G06 一节按 0.x 的 `b42278c` (0121 修复) 核对后改写, 两者都已修, G06 留有措辞覆盖的残余; 22 的 "按 23 先修或在迁移时问清" 同步改为已修.
 
 11-14 (任务 v1-d26ans): 22 已按 D26 改写, 本 issue 对 22 的引用改为其 Verification 节的三层 (静态校验, 分支测试即本 issue 所说的分支夹具, 审核); `reads`/`writes` 与 `guarantees` 已在 22 定下; Reviewer 可问用户已写进 22 与 09.
