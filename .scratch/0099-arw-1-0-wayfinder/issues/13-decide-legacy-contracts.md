@@ -50,7 +50,7 @@ Main Agent 改写为: 用户选定模型, 由 Engine 驱动的对话会话, 负�
 
 - 顺序, 门禁与跳过条件进入流程定义和程序检查 (`implement` 的 Entry, `spec-readiness`, `commit`, `reviewer-launch`, `issue-tracking` 的字段生命周期, `agent-writes.md`, `subagent-allocation.md`); 其中要靠语义判断的条件 (如 "这项改动是否需要用户决定") 写成 Agent 步骤输出 schema 的必填分支字段, 没有可用 Agent 步骤处走保守分支, 见 [定义分流判断的复核与回退合同](08-define-routing-review-and-rollback.md).
 - 单步判断方法变成随流程定义版本化的本步短指令 (`subagent-findings.md`, Reviewer 发现的处置).
-- Reviewer Role 正文保留为文档 (其中可机械判定的检查项移成 09 第 1 步的程序检查); 通用方法继续作为 Skill (`tdd`, `diagnosing-bugs`, `codebase-design`, `domain-modeling`, `research`, `prototype`, `writing-for-agents` 等); 写作与输出规则保留为常读规则.
+- Reviewer Role 正文保留为文档 (其中可机械判定的检查项移成 09 第 1 步的程序检查); 通用方法继续作为 Skill (`tdd`, `diagnosing-bugs`, `codebase-design`, `domain-modeling`, `research`, `prototype`, `writing-for-agents` 等); 写作与输出规则保留为常读规则. 其中问用户与报告的写法变成输出 schema 字段 (`ask-user` 与 `report` 的字段及其说明), 由 Engine 渲染并在交给用户前检查, 不再是常读规则 (22 的 Graph shape 节 "交给用户的文字", 07 的 Before text reaches the user 节, 逐条去向见 21 的 Expression and interaction rules 节); 这类规则中留在常读规则里的只有针对仓库文本的部分.
 - 只服务旧机制的内容删除. 仓库自有区域原样保留 (机械参数移到配置是一处例外, 见 21 决定 B).
 - 例外: ARW 源码仓库自身的规则和流程 (根 `AGENTS.md` 与几份 `docs/agents/` 文档的仓库自有区域, 仅供源码检出的 Skill) 同样按 21 归类, 转换范围内的转成 graph, 这些 graph 只在 ARW 源码检出中加载, 不随 Engine 分发 (用户 11-13, 见 22 的 Source checkout graphs 节). 其他已采用仓库自有规则中的散文类 (写作, 输出等) 仍是文本; 流程类的调整写在仓库层与本机层 (用户 11-14, 见 22 的 Layers 节).
 
@@ -98,3 +98,5 @@ ARW 源码仓库不运行 `workflow update`, 它的升级就是 `arw-1.0` 分支
 11-14 (任务 v1-d26ans): 按 D24, D26 与用户 11-13 "arw 源码仓库中的也要改" 同步: Rules move into the Engine 节的 "少数由判断模型触发" 与 "判断题按 08" 改为 Agent 输出 schema 的必填分支字段; 加一条例外, ARW 源码仓库自身的规则同样转成 graph, 只在源码检出中加载; 静止点的理由补上 Role 拆出机械检查项与就绪记录升到版本 8 (09); Upstream Sync 之后的同步改为直接改 graph.
 
 11-14 (任务 v1-23): D28 答复 (用户, 状态页 #461 11-14 09:29, 选 B), 原话: "需要让用户也知道这个排除规则, 所以不要用隐式的排除方式". Upgrade of adopted repositories 节加升级提交补写两行 `.gitignore`, 以及 0.x 已留下规则的五种情况; 预检的 "工作区干净" 改为 `.tmp/` 按路径排除, 因为现行 0.x 仓库的 `.tmp/` 通常没被忽略, 否则每个这样的仓库都过不了预检. Rules move into the Engine 节最后一条 "其他已采用仓库的自有规则仍是文本" 改为只指散文类规则 (v1-ledgergraph 留下).
+
+11-14 (任务 v1-rulewrite): Rules move into the Engine 节 "写作与输出规则保留为常读规则" 后补一句: 问用户与报告的写法变成输出 schema 字段, 由 Engine 渲染与检查 (用户 11-14 "规则细节在输出时失效", 机制已由 v1-rulecue 写入 22, 07, 19, 21). 本节其余内容不变.
