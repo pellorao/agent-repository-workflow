@@ -25,7 +25,7 @@ Blocked by: issue:0099:16
 因此:
 
 - 判断模型可选 (D24, 推翻 11-11 的 "必需组件"): Engine 不依赖判断模型也完整工作; 未配置或不可用时照常工作, 不出提示, 也不为此打断用户; 配了只做提示 (见 [定义分流判断的复核与回退合同](08-define-routing-review-and-rollback.md)). 原 "Engine 不开工" 与 "停在可恢复状态" 的失败点全部删去, 失败处理见 [定义 Engine 调用 Jev 类模型的接入方式](16-define-judge-model-integration.md).
-- 使用条件: 判断模型要比托管小模型 (DeepSeek flash 一类) 快很多倍, 且准确率不明显降低, 否则不用. 以 E3 判断题集离线评测 (题集见 [本地 Jev 类候选的可行性小实验](15-task-local-candidate-feasibility.md), 评测方法与启用门槛见 [定义 Jev 类模型的评测与转正条件](11-define-evaluation-and-graduation.md)). 11-13 的 E3 结果: 本机 GLiDE-9B 单次延迟 p50 0.56 秒, DeepSeek flash 1.17 秒, 只快约 2 倍; 同一 222 道公开题上准确率 0.739 对 0.766; 分流题的有害方向漏判 15/30 对 12/30. 不满足条件, 所以 1.0 首版实际不配判断模型.
+- 使用条件: 判断模型要比托管小模型 (DeepSeek flash 一类) 快很多倍, 且准确率不明显降低, 否则不用. 以 E3 判断题集离线评测 (题集见 [本地 Jev 类候选的可行性小实验](15-task-local-candidate-feasibility.md), 评测方法与启用门槛见 [定义 Jev 类模型的评测与启用条件](11-define-evaluation-and-graduation.md)). 11-13 的 E3 结果: 本机 GLiDE-9B 单次延迟 p50 0.56 秒, DeepSeek flash 1.17 秒, 只快约 2 倍; 同一 222 道公开题上准确率 0.739 对 0.766; 分流题的有害方向漏判 15/30 对 12/30. 不满足条件, 所以 1.0 首版实际不配判断模型.
 - 首版的部署: 用户要用时只需在配置中给出一个端点 (可不配), 见 [确定判断模型与兼容端点的安装与配置](20-decide-installation-and-configuration.md). 本机安装, 开启脚本, 显卡探测与 Strata 让出推迟到有满足使用条件的模型时, 写在 20 的 When a qualified local model exists 节; 届时沿用用户 11-09 的选择顺序 (本机能正常运行, 速度达标的候选中智能最高的 → 机构内部部署 → 公开部署, 公开部署由用户明确开启) 与 "判断模型优先于同机 Strata", 两者由那时的数据重新核对.
 - 验收: "用判断模型的整体任务执行比不用时快很多" 不再是 1.0 的端到端验收条件 (D24); 1.0 验收对照现行 ARW (11).
 

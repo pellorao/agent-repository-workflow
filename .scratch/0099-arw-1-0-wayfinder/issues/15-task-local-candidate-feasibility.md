@@ -27,7 +27,7 @@ Blocked by: issue:0099:02, issue:0099:05
 
 ## Comments
 
-11-09 (worker): 不用 GPU 的案例集做法与首批进度. 实验要回答的指标与转正门槛见 [定义 Jev 类模型的评测与转正条件](11-define-evaluation-and-graduation.md), 调用接口见 [定义 Engine 调用 Jev 类模型的接入方式](16-define-judge-model-integration.md).
+11-09 (worker): 不用 GPU 的案例集做法与首批进度. 实验要回答的指标与启用门槛见 [定义 Jev 类模型的评测与启用条件](11-define-evaluation-and-graduation.md), 调用接口见 [定义 Engine 调用 Jev 类模型的接入方式](16-define-judge-model-integration.md).
 
 - 来源只取 ARW 公开 GitHub 仓库 (`pellorao/agent-repository-workflow`, 已核对为 PUBLIC) 在固定提交上的内容, 不含本 effort; 因此托管基准与本地候选可以用同一批案例.
 - 每条案例: 类别 (分流, 预检, 输出检查), 一道 `choice` 或 `noul` 题 (`instructions` 与 `criteria`), `state` 文本, 标签, 标签来源 (仓库事实, 高智能 Agent, 人工), 来源提交与路径, 字符数, 哈希. 按类别分层, 40% 作校准集, 60% 作测试集; 另记输入长度与是否含路径和规则文本, 用于看长度与无关内容的影响.
@@ -43,7 +43,7 @@ Blocked by: issue:0099:02, issue:0099:05
 - `noul` 概率高是否对应 "有问题" 的方向, 要在候选兼容核对中确认.
 - Commit Audit 题目自带了需求条文, `state` 只含代码.
 
-端到端测量 (11-11 按 [确定本地判断模型服务的运行责任](18-decide-local-judge-server-ownership.md) 的用户要求补充, 11-14 已按 D24 撤销): 原要求是实验还要测同一批任务用与不用判断模型的端到端墙钟, 因为用户当时要求用判断模型的整体任务执行比不用时快很多. D24 后判断模型可选, 1.0 不配判断模型也要达到验收, 验收对照的是现行 ARW 而不是 "不用判断模型的 1.0" (见 [定义 Jev 类模型的评测与转正条件](11-define-evaluation-and-graduation.md)), 所以不再需要这一项, 本 issue 只给单次延迟, 准确率与校准覆盖的离线事实, 可行性按 18 的使用条件和 E3 题集判断.
+端到端测量 (11-11 按 [确定本地判断模型服务的运行责任](18-decide-local-judge-server-ownership.md) 的用户要求补充, 11-14 已按 D24 撤销): 原要求是实验还要测同一批任务用与不用判断模型的端到端墙钟, 因为用户当时要求用判断模型的整体任务执行比不用时快很多. D24 后判断模型可选, 1.0 不配判断模型也要达到验收, 验收对照的是现行 ARW 而不是 "不用判断模型的 1.0" (见 [定义 Jev 类模型的评测与启用条件](11-define-evaluation-and-graduation.md)), 所以不再需要这一项, 本 issue 只给单次延迟, 准确率与校准覆盖的离线事实, 可行性按 18 的使用条件和 E3 题集判断.
 
 待办: 输出检查约 40 条 (Agent 标注).
 

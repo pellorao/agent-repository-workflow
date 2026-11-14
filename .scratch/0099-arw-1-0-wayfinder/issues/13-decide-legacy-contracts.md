@@ -52,13 +52,21 @@ Main Agent 改写为: 用户选定模型, 由 Engine 驱动的对话会话, 负�
 - 单步判断方法变成随流程定义版本化的本步短指令 (`subagent-findings.md`, Reviewer 发现的处置).
 - Reviewer Role 正文保留为文档 (其中可机械判定的检查项移成 09 第 1 步的程序检查); 通用方法继续作为 Skill (`tdd`, `diagnosing-bugs`, `codebase-design`, `domain-modeling`, `research`, `prototype`, `writing-for-agents` 等); 写作与输出规则保留为常读规则.
 - 只服务旧机制的内容删除. 仓库自有区域原样保留 (机械参数移到配置是一处例外, 见 21 决定 B).
-- 例外: ARW 源码仓库自身的规则和流程 (根 `AGENTS.md` 与几份 `docs/agents/` 文档的仓库自有区域, 仅供源码检出的 Skill) 同样按 21 归类, 转换范围内的转成 graph, 这些 graph 只在 ARW 源码检出中加载, 不随 Engine 分发 (用户 11-13, 见 22 的 Source checkout graphs 节). 其他已采用仓库的自有规则仍是文本.
+- 例外: ARW 源码仓库自身的规则和流程 (根 `AGENTS.md` 与几份 `docs/agents/` 文档的仓库自有区域, 仅供源码检出的 Skill) 同样按 21 归类, 转换范围内的转成 graph, 这些 graph 只在 ARW 源码检出中加载, 不随 Engine 分发 (用户 11-13, 见 22 的 Source checkout graphs 节). 其他已采用仓库自有规则中的散文类 (写作, 输出等) 仍是文本; 流程类的调整写在仓库层与本机层 (用户 11-14, 见 22 的 Layers 节).
 
 仍向仓库分发规则: 保留锁, 受管区域与投影机制, 分发内容缩减为常读的写作与输出规则, 一条 "ARW 流程只经 Engine 运行" 的声明, 方法类 Skill 和 Reviewer Role 文档; 顺序与门禁类 Skill 和文档由 `workflow update` 删除. 现有 update 已能删除不再分发的受管文件, 并把其中的仓库自有区域迁入 `AGENTS.md` (`lib/repository-workflow/workflow.mjs` 约 L1185-1200), 改动最小, 仓库自有规则也继续随 Git 版本化, 由 harness 原生加载. 用户绕过 Engine 直接在仓库中打开 Codex 或 Claude Code 时, 会话可以做普通协助, 不执行 issue 实施, 就绪或提交审核流程. 未采用: 全部规则随 Engine 安装, 在开会话时注入 (要改写仓库工作流和开发两份长期规格, 直接打开的会话失去原生 Skill, 团队规则不再随 Git 版本化).
 
 ### Upgrade of adopted repositories
 
-一次性升级, 不设共存. 顺序: 安装 1.0; 在每个仓库运行 `arw workflow update`, 或由 Engine 首次打开仓库时引导运行. 预检: 锁为 v2; 没有旧 issue 或 `PRD.md` 格式 (否则先 `arw migrate artifacts`); 工作区和索引干净 (被忽略的 `.tmp` 除外), 没有运行中的后台 Agent. 更新内容: 改写受管内容, 删除不再分发的文件并迁移其中的仓库自有区域, 最后写入新锁 (见 Version gate 节). 用户确认计划后, Engine 把升级作为一次非实施提交写入, 每个仓库的升级只占这一个提交. 之后运行升级后审核流程: 找出与 1.0 冲突的仓库自有规则; 有缺口时恰好创建一个补全 issue, 沿用现行 Post-init handoff 规则.
+一次性升级, 不设共存. 顺序: 安装 1.0; 在每个仓库运行 `arw workflow update`, 或由 Engine 首次打开仓库时引导运行. 预检: 锁为 v2; 没有旧 issue 或 `PRD.md` 格式 (否则先 `arw migrate artifacts`); 工作区和索引干净 (`.tmp/` 按路径排除, 不论是否已被忽略: 0.x 不保证它被忽略, 见下), 没有运行中的后台 Agent. 更新内容: 改写受管内容, 删除不再分发的文件并迁移其中的仓库自有区域, 补写 `.gitignore` 的 `.tmp/` 与本机层目录两行 (D28, 见下), 最后写入新锁 (见 Version gate 节). 用户确认计划后, Engine 把升级作为一次非实施提交写入, 每个仓库的升级只占这一个提交. 之后运行升级后审核流程: 找出与 1.0 冲突的仓库自有规则; 有缺口时恰好创建一个补全 issue, 沿用现行 Post-init handoff 规则.
+
+忽略规则 (用户 11-14 D28, 选 B: 写进受跟踪的 `.gitignore`, 不用隐式方式): 升级提交里 Engine 补写 `.tmp/` 与本机层目录两行 (写法, 说明注释和核对见 [确定判断模型与兼容端点的安装与配置](20-decide-installation-and-configuration.md) 的 Repository ignore rules 节). 0.x 已经留下的规则按 `git check-ignore -v` 的来源分情况处理:
+
+- 0.x 没写过 (现行 `workflow init` 与交接清单都不写, ARW/daily 11-14): 两行都加.
+- `.gitignore` 里已有等价规则 (用户手写, 或 0.x 以后交接清单加了 "忽略 `.tmp/`" 一项由 Agent 写入): 该行沿用, 不重复, 不加说明注释. 这两行写入后归仓库所有, `workflow remove` 不撤 (D28 补充), 所以谁写的都一样.
+- 规则只在 `.git/info/exclude` 或用户级忽略文件: 不算数, 两行照加, 那些文件不改不删, 升级计划里提示可自行删去重复项.
+- 子目录 `.gitignore` 或取反规则使查得的结果为未忽略: 照加, 以核对结果为准.
+- `.tmp/` 下已有被跟踪的文件: 加规则不会取消跟踪; 升级计划列出它们, 不自动 `git rm`, 由用户决定.
 
 进行中的工作在静止点进入 1.0: 正在实施, 已暂存待审或审核中的工作先在 0.x 完成或放弃; 旧审核轮不迁移; 未进入终态的实施 issue 在 1.0 下重跑 Spec Readiness, 可以做增量复审; Wayfinder issue, map, spec 和 Application Source Issue 直接沿用. 理由: 现行规则规定 Reviewer Role 字节变化后就绪记录失效 (完整 `verify`), 1.0 必然改写 Role (拆出可机械判定的检查项, 09), 就绪记录也升到版本 8 (09), 0.x 的记录本来就不能沿用, 重跑就绪是在执行现行规则, 不是新增成本. 未采用: Engine 从 Artifact, 工作区和暂存区推断并接管流程实例 (只用一次的重建逻辑, 而且未提交改动的归属和恢复基线都无法证明); 接受 0.x 的 `satisfied` 记录, 已开工的 issue 只核对 subject (Engine 无法可靠判断哪些已开工, 要逐个问用户).
 
@@ -77,8 +85,8 @@ ARW 源码仓库不运行 `workflow update`, 它的升级就是 `arw-1.0` 分支
 ### Interfaces
 
 - 09: 就绪记录的新模式, Reviewer Role 的改写 (可机械判定的检查项移到 09 第 1 步的确定性检查, Role 只留需判断的部分), "每轮抽查一两处" 的去向 (已取消, D15), haiku 回退规则的去向.
-- [定义并行流程的读取与写入隔离](10-define-parallel-flow-isolation.md): 临时工作区由 Engine 提供身份; `docs/agents/parallel-implementation.md` 的 worktree 规则并入 10.
-- [整理 ARW 1.0 规范的结构与验收场景](14-prototype-spec-outline.md): 大纲要有 "从 0.x 升级" 一章, 验收场景至少包括: 有未提交工作时升级被拒; 0.x 运行时在 v3 锁仓库上失败; v2 锁仓库上 Engine 不开工; 按 Failure recovery 节手工回退; 跨版本的 Application 关联仍可同步.
+- [定义并行流程的读取与写入隔离](10-define-parallel-flow-isolation.md): 临时工作区由 Engine 提供身份, `.tmp/` 的忽略规则 (D28); `docs/agents/parallel-implementation.md` 的 worktree 规则并入 10.
+- [整理 ARW 1.0 规范的结构与验收场景](14-prototype-spec-outline.md): 大纲要有 "从 0.x 升级" 一章, 验收场景至少包括: 有未提交工作时升级被拒; 0.x 运行时在 v3 锁仓库上失败; v2 锁仓库上 Engine 不开工; 按 Failure recovery 节手工回退; 跨版本的 Application 关联仍可同步; 0.x 仓库升级后 `git check-ignore` 对 `.tmp/` 与本机层目录通过, 已有等价规则时不重复加, 只在 `.git/info/exclude` 有规则时仍补写 `.gitignore`.
 - 未核实的推断, 留给规范与实施验证: 0.x 管理进程遇到 1.0 新增的 SQLite 表时的行为; 用户是否在脚本或 CI 中调用门禁命令; 跨版本时 Application 关联只靠 Artifact 格式不变即可工作.
 
 ## Comments
@@ -88,3 +96,5 @@ ARW 源码仓库不运行 `workflow update`, 它的升级就是 `arw-1.0` 分支
 11-13: 用户 11-12 对五项取舍全部选择建议做法, 并补充规则分发的方向 (大部分规则内置进 Engine). 按 11-12 的分析草稿写入 `## Answer`, 各项的未采用做法与理由一并记在对应节中; 07 的两项架构判断已保留, 草稿中 "若被推翻" 的分支不再保留. 术语一节按 07 的 "会话一视同仁" 改写.
 
 11-14 (任务 v1-d26ans): 按 D24, D26 与用户 11-13 "arw 源码仓库中的也要改" 同步: Rules move into the Engine 节的 "少数由判断模型触发" 与 "判断题按 08" 改为 Agent 输出 schema 的必填分支字段; 加一条例外, ARW 源码仓库自身的规则同样转成 graph, 只在源码检出中加载; 静止点的理由补上 Role 拆出机械检查项与就绪记录升到版本 8 (09); Upstream Sync 之后的同步改为直接改 graph.
+
+11-14 (任务 v1-23): D28 答复 (用户, 状态页 #461 11-14 09:29, 选 B), 原话: "需要让用户也知道这个排除规则, 所以不要用隐式的排除方式". Upgrade of adopted repositories 节加升级提交补写两行 `.gitignore`, 以及 0.x 已留下规则的五种情况; 预检的 "工作区干净" 改为 `.tmp/` 按路径排除, 因为现行 0.x 仓库的 `.tmp/` 通常没被忽略, 否则每个这样的仓库都过不了预检. Rules move into the Engine 节最后一条 "其他已采用仓库的自有规则仍是文本" 改为只指散文类规则 (v1-ledgergraph 留下).

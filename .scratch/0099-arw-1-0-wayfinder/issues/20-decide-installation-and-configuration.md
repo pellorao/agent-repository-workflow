@@ -18,7 +18,7 @@ Blocked by: issue:0099:07, issue:0099:16, issue:0099:18
 
 ### First version: one endpoint
 
-- 判断模型一节可以为空. 用户要用时在配置中给出一个端点, 模型名, 凭据文件路径, 超时和按提示类别的指派 (16); 端点可以是机构内部部署, 也可以是用户明确选择的公开部署, 内容边界按 [定义 Jev 类模型的评测与转正条件](11-define-evaluation-and-graduation.md).
+- 判断模型一节可以为空. 用户要用时在配置中给出一个端点, 模型名, 凭据文件路径, 超时和按提示类别的指派 (16); 端点可以是机构内部部署, 也可以是用户明确选择的公开部署, 内容边界按 [定义 Jev 类模型的评测与启用条件](11-define-evaluation-and-graduation.md).
 - 配置命令 (例如 `arw judge configure`) 只登记端点, 并做一次兼容核对 (返回字段, 概率之和为 1, 模型名) 与一组固定题目的延迟测量, 结果 (日期, 实际模型版本, 延迟) 写入配置; 核对不通过时报告原因, 不登记该端点, Engine 照常工作. 哪些提示类别启用按 11 的离线评测.
 - 首版不探测显卡, 不下载运行时或模型文件, 不生成开启脚本, 不让出 Strata, 不建防火墙规则; Engine 不开启, 释放或重启判断模型服务, 服务由用户或其部署方维护.
 
@@ -30,7 +30,7 @@ Blocked by: issue:0099:07, issue:0099:16, issue:0099:18
 
 - 配置是一个显式命令 (例如 `arw judge configure`), 首次安装后和用户要求时运行, 不在 Engine 运行中自动重选. 结果写入用户级配置的判断模型一节; Engine 开启判断模型前只核对所选项仍然可用 (文件存在且大小一致, 显卡仍在, 端点可达), 不可用时按 16 不出提示, 原因写在配置状态中.
 - 探测: 先看 `nvidia-smi` 是否可用并读取每块卡的名称, 总显存, 已用显存和驱动版本 (Windows, Linux 和 WSL 都可用); 没有时按平台选 Vulkan, ROCm 或 Metal 构建; 再用所选运行时的 `--list-devices` 核对. 同时记下 CPU 核数和内存. 按进程的显存在 Windows 上不可见, 所以探测只用整卡数值, 不尝试判断谁在占用.
-- 本机档: ARW 发布内附一份候选目录, 每项写明模型文件, 运行时构建, 所需显存和最小上下文, 按 ARW 案例上的准确率排好次序 (案例与门槛来自 [本地 Jev 类候选的可行性小实验](15-task-local-candidate-feasibility.md) 和 [定义 Jev 类模型的评测与转正条件](11-define-evaluation-and-graduation.md)). 配置命令从高到低取第一个所需显存不超过可用显存 (总量减去不可让出的占用, 再留余量) 的候选, 安装后做一次本机测量: 兼容核对 (返回字段, 概率之和为 1, 模型名) 加一组固定题目的延迟. 通过速度门槛就选定; 不通过就试下一个. 只有 CPU 时同样测量, 并记 CPU 占用, 超过门槛视为本机不可用. 数值门槛由实验给出, 不在此定.
+- 本机档: ARW 发布内附一份候选目录, 每项写明模型文件, 运行时构建, 所需显存和最小上下文, 按 ARW 案例上的准确率排好次序 (案例与门槛来自 [本地 Jev 类候选的可行性小实验](15-task-local-candidate-feasibility.md) 和 [定义 Jev 类模型的评测与启用条件](11-define-evaluation-and-graduation.md)). 配置命令从高到低取第一个所需显存不超过可用显存 (总量减去不可让出的占用, 再留余量) 的候选, 安装后做一次本机测量: 兼容核对 (返回字段, 概率之和为 1, 模型名) 加一组固定题目的延迟. 通过速度门槛就选定; 不通过就试下一个. 只有 CPU 时同样测量, 并记 CPU 占用, 超过门槛视为本机不可用. 数值门槛由实验给出, 不在此定.
 - 机构内部档与公开档: 用户在配置中给出端点, 模型名和凭据文件路径, 配置命令做同样的兼容核对与延迟测量; 公开档只在用户明确开启时参与. 三档都不可用时配置命令报告缺什么, 不配判断模型, Engine 照常工作.
 - 选定项和测量结果 (候选 ID, 测得的显存与延迟, 日期) 一并写入配置, 供以后比较和排查.
 
@@ -89,11 +89,26 @@ Engine 跟随用户安装的 Claude Code 与 Codex (用户 11-13 确认, D19), �
 - 自检失败时该角色不可用, 需要它的流程停在可恢复状态, 报告失败的请求与错误, 上一个通过的版本, 以及怎样装回该版本并暂停自动更新 (Claude Code: 按版本号安装并设置 `DISABLE_AUTOUPDATER`; Codex: npm 按版本安装并设置 `check_for_update_on_startup = false`). Engine 不悄悄把该角色换成别的模型, 因为角色用哪个模型是用户的选择.
 - Engine 不替用户修改 harness 的安装或更新设置; 用户固定版本后, Engine 只按上述自检使用.
 
+### Repository ignore rules
+
+用户 11-14 D28 (状态页 #461, 选 B), 原话: "需要让用户也知道这个排除规则, 所以不要用隐式的排除方式". Engine 的临时根 `.tmp/` ([定义并行流程的读取与写入隔离](10-define-parallel-flow-isolation.md)) 与本机层目录 ([定义规则到 graph 的转换与 Engine 按 graph 执行](22-define-rule-to-graph-conversion.md) 的 Layers 节, 目录名留给规范正文) 都必须被 Git 忽略: 前者只有中间产物, 后者放只对本机成立的预置答案与补丁, 误入提交会把本机裁决发给协作者. 现行 0.x 没有机制保证 (`arw workflow init` 与交接清单都不写忽略规则, ARW/daily 11-14 复现: `git status` 出现 `?? .tmp/`, `arw text check` 把它当受管理范围). 规则写在受跟踪的 `.gitignore` 中, 随仓库共享, 用户看得见; 不用 `.git/info/exclude` 或用户级忽略文件.
+
+- 谁保证: Engine, 经 `arw workflow` 命令和打开仓库时的核对; 用户与 Agent 不手写. 每个由 ARW 采用的 Git 仓库各自一份 (Application 的 Module 仓库同样).
+- 写什么: 仓库根 `.gitignore` 加 `.tmp/` 与本机层目录两行, 前面一行固定注释, 写给用户看 (说明这两行为什么在, 可以留着; 不是撤销标记, 没有程序读它, 文字留给规范正文). 写入后这两行归仓库所有 (repository owned, 用户 11-14 D28 补充: "加了之后就属于 repository owned 了, 不应该被清理"), Engine 以后只在缺失时补写, 不改不撤. 加之前先对两个目录下的探测路径 (如 `.tmp/probe`) 运行 `git check-ignore -v`: 来源是受跟踪的 `.gitignore` 的规则就是已有等价规则, 该行不重复加, 也不加注释 (只缺一行时只加那一行); 来源是 `.git/info/exclude`, 用户级忽略文件或查不到的都照加, 前两者的内容不属于 ARW, 不改不删, 只在输出中提示可自行删去重复项. `.gitignore` 不存在时创建; 沿用文件已有的换行风格.
+- 何时写: `arw workflow init` 随 init 的其他改动一并写入 (提交方式沿用 init 的现行规则); 0.x 升级时进升级提交 ([确定现有 ARW 合同在 1.0 中的继承范围](13-decide-legacy-contracts.md)); 以后发现缺了, 由 `arw workflow update` 补写 (见下条). `.tmp/` 与本机层目录在第一次使用前已写好, 因为 init 与升级都早于任何流程实例.
+- 怎样检查: Engine 打开仓库时, 以及每次创建实例临时工作区, 写本机层文件前, 对两个目录运行 `git check-ignore -q -- <目录>/probe`, 退出码 0 为通过; `arw workflow verify` 也核对同一项. 缺失时给出修复提示: Engine 补写缺的行 (经用户同意, 作为非实施提交写入, 这是一次需要令牌的写入, 按 10 排队), 或用户自己写. `.tmp/` 缺失: 流程照常, 因为 Engine 自己的 Git 操作按路径排除 `.tmp/` (10), 只是用户的 `git status` 会看到它; 本机层目录缺失: Engine 拒绝写本机层文件 (用户可改选仓库层, 或先补写规则), 已有的本机层文件照常读取并提示. 用户不同意补写时不再逐次追问, 只在 `arw workflow verify` 与入口状态中留一行.
+- 卸载时: `arw workflow remove` (把 ARW 从仓库移出) 不撤也不改 `.gitignore` 的这两行 (写入后归仓库所有, D28 补充), 不论是 Engine 加的还是用户原有的. `.tmp/` 的内容按现行规则不自动清理, 命令输出列出仍存在的目录请用户自行删除. 本机层目录的内容 (保留的本机裁决) 仍由命令像对其他仓库自有内容那样询问保留或删除 (`--local-layer <retain|delete>`), 只决定目录内容的去留, 与 `.gitignore` 无关. 卸载 Engine (`uninstall.mjs`) 不改任何仓库.
+- 未采用: `.git/info/exclude` 或用户级忽略文件 (用户否决: 隐式, 其他克隆与协作者看不到); 只靠 Engine 的路径排除 (用户的 Git 操作, 编辑器和其他工具仍会看到 `.tmp/`); 卸载时撤掉这两行 (用户 11-14 D28 补充: 写入后属于仓库, 不该清理).
+- 自定的取舍 (Main Agent 可改): 本机层目录缺规则时拒绝写本机层而不是只提示, 因为本机裁决进了提交就无法收回 (已推送后); 探测路径用目录下不存在的名字, 不要求目录已建立.
+
 ### Scenarios
 
 - 没有配判断模型 (首版默认): Engine 正常开工, 所有流程照常, 不出任何提示, 也没有关于判断模型的提醒.
 - 用户配置了机构内部端点: 配置命令核对通过后登记; 已按 11 离线评测通过的提示类别启用, 其余类别不提示.
 - 运行中端点不可用: 该题不提示, 流程照常, 调用记录记下失败类别.
+- 新仓库 `arw workflow init`: `.gitignore` 带一行说明注释加上 `.tmp/` 与本机层目录两行, 随 init 的改动提交; `git check-ignore -q -- .tmp/probe` 退出码 0. 仓库本来就有 `.tmp/` 规则时只加本机层那一行.
+- 用户手工删掉 `.gitignore` 中本机层目录那一行后常设一个仅本机的答案: Engine 拒绝写本机层, 提示补写; 补写后才能写.
+- `arw workflow remove`: `.gitignore` 的两行与注释都不动 (不论 `--local-layer` 选什么); 选择删除本机层目录时只删目录内容.
 - 用户的 Claude Code 自动更新后兼容端点返回 400: 下一回合前的自检失败, 流程停在可恢复状态, 报告给出上一个通过的版本与安装命令; 用户装回旧版本或上游修复后从该步继续.
 
 ### Interfaces
@@ -102,6 +117,8 @@ Engine 跟随用户安装的 Claude Code 与 Codex (用户 11-13 确认, D19), �
 - 配置命令: 首版登记端点并核对; 以后另有探测, 选择, 下载与校验, 生成开启脚本和放行规则命令.
 - 以后: 开启脚本的 `start` 与 `stop` 两个动作及其退出状态与失败原因; 安装归属清单新增判断模型目录与 Windows 侧文件 (Engine 在 WSL 时).
 - Engine 状态中的兼容自检记录 ((harness 版本, 端点, 模型) 与结果).
+- 仓库忽略规则 (D28): 写入与核对的命令行为 (卸载不撤) 见 Repository ignore rules 节; 10 的 `.tmp/` 路径排除是它的双保险, 22 的本机层目录依赖它, 13 的 0.x 升级按它处理已有规则.
+- [整理 ARW 1.0 规范的结构与验收场景](14-prototype-spec-outline.md): 验收场景加上面三个忽略规则情景.
 
 ## Comments
 
@@ -115,3 +132,7 @@ Engine 跟随用户安装的 Claude Code 与 Codex (用户 11-13 确认, D19), �
 11-13: D19 答复 (用户, 状态页 11-13 07:08): 选 A, 四处都按推荐: 配置命令下载固定版本且用户确认后才下载; Engine 在 WSL 时判断模型放 Windows 侧; Strata lease 被占时不抢占; harness 版本变化先自检, 失败停在可恢复状态. 答案中四处 "待用户确认" 已改为定稿.
 
 11-14 (D24 答复, 任务 v1-d24ans): 用户 11-13 选 A, 判断模型改为可选, 首版只需配置一个端点 (可不配), 本机安装等推迟; 同日用户的使用条件 (比 DeepSeek flash 一类快很多倍且准确率不明显降低) 使首版实际不配. 本答案相应改写: What the premises already settle 节改为可选的前提; 新增 First version: one endpoint 节; 原 Configuration command and probing, Runtime and model files, Start script, Windows and WSL placement, Yielding the GPU 五节与对应情景移到 When a qualified local model exists 节下, 其中 "Engine 不开工" (三档都不可用, Strata lease 被占) 改为不开启判断模型, 不出提示, 流程照常; 判断模型的开启与空闲释放时机由 07 移到 Start script; "模型变化退回全量复核" 改为按 11 重新离线评测. Autostart and LAN entry 与 Harness version drift 两节不涉及判断模型, 首版照做. D19 的四处确认对以后一节仍有效.
+
+11-14 (任务 v1-23): D28 答复 (用户, 状态页 #461 11-14 09:29, 选 B), 原话: "需要让用户也知道这个排除规则, 所以不要用隐式的排除方式". 新增 Repository ignore rules 节, 定下 `.tmp/` 与本机层目录由 Engine 写进受跟踪的 `.gitignore` (前有一行给用户看的说明注释, 已有等价规则不重复加), 写入时机 (`workflow init`, 0.x 升级提交, 之后由 `workflow update` 补写), 用 `git check-ignore` 的核对 (打开仓库, 建临时工作区, 写本机层前, 以及 `workflow verify`), 缺失时的处置 (`.tmp/` 只提示, 本机层目录拒绝写本机层), `workflow remove` 时不撤 (原写作撤掉带标记的行, 同日 D28 补充改为写入后归仓库所有, 见下一条). 自定的取舍 (Main Agent 可改) 见该节末条.
+
+11-14 (任务 v1-23fix): D28 补充 (用户, 终端 09:4x), 原话: "而且加了后不用卸载时清理, 加了之后就属于 repository owned 了, 不应该被清理." 据此 Repository ignore rules 节: 注释改为给用户看的说明, 不再是撤销标记; `workflow remove` 不撤不改这两行; `--local-layer <retain|delete>` 只决定本机层目录内容的去留; 删去 "0.x 或用户手写的等价规则不撤" 的取舍与 "不加注释标记" 的未采用理由.
